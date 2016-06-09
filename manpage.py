@@ -263,7 +263,7 @@ def unescape(t, strip_weird_tags = False):
 
     #t = t.replace("\\*(lq", "&ldquo;")
     #t = t.replace("\\*(rq", "&rdquo;")
-    #t = t.replace("\\(aq", "'")
+    t = t.replace("\\(aq", "'")
     #t = t.replace("\\*(dg", "(!)")
     #t = t.replace("\\e", "\\")
 
