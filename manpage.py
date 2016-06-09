@@ -53,7 +53,8 @@ class ManPage(object):
             if len(line) == 0:
                 # FIXME: Empty lines should have a nicer behavior
                 # https://www.gnu.org/software/groff/manual/html_node/Implicit-Line-Breaks.html
-                self.add_text("\n<p>\n")
+                if not self.in_pre:
+                    self.add_text("\n<p>\n")
             elif line[0] in cc:
                 self.line = line[1:]
                 self.parse_request()
@@ -138,7 +139,7 @@ class ManPage(object):
     def end_pre(self):
         if self.in_pre == True:
             self.in_pre = False
-            self.add_text("\n".join(self.pre_buffer))
+            self.add_text("\n<pre>%s</pre>" % "\n".join(self.pre_buffer))
             self.pre_buffer = []
 
     def start_list(self):
