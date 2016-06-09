@@ -30,7 +30,6 @@
 </head>
 <body>
   ${nav}
-  <a href="..">..</a>
   <div class="container final">
     ${header}
     ${breadcrumb}
