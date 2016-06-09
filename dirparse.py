@@ -6,9 +6,10 @@ import sys
 import glob
 import os.path
 import os
-from collections import Counter
+from collections import Counter, defaultdict
 
 root_html = "public_html/"
+base_host = "http://localhost:8000/"
 
 def main():
     _, src = sys.argv
@@ -16,9 +17,11 @@ def main():
     cnt = Counter()
     errors, mps, oks = (0, 0, 0)
 
+    pages = defaultdict()
+    mandirpages = defaultdict(list)
+
     for file in glob.iglob("%s/man?/*.?" % src):
-        print ""
-        print "Processing man page %s..." % (file, )
+        print "Processing man page %s ..." % (file, )
         try:
             manpage = ManPage(file)
             content = manpage.html()
@@ -33,23 +36,54 @@ def main():
             print " * ERR: %s" % (file, )
             continue
 
+
         basename = os.path.basename(file)
+        dstdir = os.path.dirname(file)
+        filepath = os.path.join(dstdir, basename) + ".html"
+
+        manbasedir = os.path.basename(dstdir)
+
         dstdir = os.path.join(root_html, os.path.dirname(file))
-        dstfile = os.path.join(dstdir, basename) + ".html"
 
         if not os.path.exists(dstdir):
             os.makedirs(dstdir)
 
-        print " * OK: %s" % (dstfile,)
+        dstfile = os.path.join(root_html, filepath)
+        url = "%s%s" % (base_host, filepath)
+
+        print " * OK: %s - %s" % (url, dstfile,)
         oks += 1
         file = open(dstfile, "w")
         file.write(content)
         file.close()
 
-    print ""
-    print "> Total processed: %s (OK: %s / MP: %s / ERR: %s)" % \
+        pages[basename] = (manpage.subtitle, manbasedir)
+        mandirpages[manbasedir].append(basename)
+
+    print "\n> Total processed: %s (OK: %s / MP: %s / ERR: %s)" % \
         (errors + oks + mps, oks, mps, errors, )
-    print cnt
+
+    # DEBUG:
+
+    # Missing parsers
+    # print cnt
+
+    # print pages
+    # print mandirpages
+
+    for directory, page_files in mandirpages.items():
+        content = ""
+        for page_file in page_files:
+            content += "<li><a href='%s'>%s</a> - %s\n" % (page_file + ".html", page_file, pages[page_file][0])
+        content = "<ul>\n%s</ul>" % content
+
+        file = open(os.path.join(root_html, src, directory, "index.html"), "w")
+        file.write(content)
+        file.close()
+
 
 if __name__ == '__main__':
+    import time
+    start_time = time.time()
     main()
+    print("--- %s seconds ---" % (time.time() - start_time))
