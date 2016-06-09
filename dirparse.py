@@ -7,6 +7,7 @@ import glob
 import os.path
 import os
 from collections import Counter, defaultdict
+import re
 
 root_html = "public_html/"
 base_host = "http://localhost:8000/"
@@ -39,7 +40,7 @@ def main():
 
         basename = os.path.basename(file)
         dstdir = os.path.dirname(file)
-        filepath = os.path.join(dstdir, basename) + ".html"
+        filepath = os.path.join(dstdir, basename) + ".tmp.html"
 
         manbasedir = os.path.basename(dstdir)
 
@@ -66,7 +67,8 @@ def main():
     # DEBUG:
 
     # Missing parsers
-    # print cnt
+    print "Missing Parsers"
+    print cnt
 
     # print pages
     # print mandirpages
@@ -75,12 +77,46 @@ def main():
         content = ""
         for page_file in page_files:
             content += "<li><a href='%s'>%s</a> - %s\n" % (page_file + ".html", page_file, pages[page_file][0])
-        content = "<ul>\n%s</ul>" % content
+        content = "<ul><li><a href='..'>..</a></li>\n%s</ul>" % content
 
         file = open(os.path.join(root_html, src, directory, "index.html"), "w")
         file.write(content)
         file.close()
 
+    list_of_pages = pages.keys()
+
+    # Linkify
+    for directory, page_files in mandirpages.items():
+        for page_file in page_files:
+            tmp_page = os.path.join(root_html, src, directory, page_file) + ".tmp.html"
+            final_page = os.path.join(root_html, src, directory, page_file) + ".html"
+
+            with open(tmp_page) as f:
+                content = f.read()
+
+            file = open(final_page, "w")
+            file.write(linkify(content, list_of_pages))
+            file.close()
+
+            os.unlink(tmp_page) 
+
+linkifier = re.compile(
+    r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
+
+def linkify(text, pages):
+    def repl(m):
+        manpage = m.groupdict()['page']
+        section = m.groupdict()['section']
+        page = '.'.join([manpage, section])
+
+        out = "<strong>%s</strong>(%s)" % (manpage, section, )
+
+        if page in pages:
+            out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
+                section, manpage, section, out, )
+        return out
+
+    return linkifier.sub(repl, text)
 
 if __name__ == '__main__':
     import time

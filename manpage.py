@@ -95,12 +95,16 @@ class ManPage(object):
             raise MissingParser("MACRO %s : %s" % (macro, self.line_rest, ))
 
     def parse_request(self):
-        split = unescape(self.line).lstrip().split(None, 1)
+        split = self.line.lstrip().split(None, 1)
+        strip_weird_tags = False
 
         self.line_request = split[0]
 
+        if self.line_request == "BI":
+            strip_weird_tags = True
+
         if len(split) == 2:
-            self.line_rest = split[1]
+            self.line_rest = unescape(split[1], strip_weird_tags)
             self.line_rest_spaced = space_tags(self.line_rest)
         else:
             self.line_rest = ""
@@ -191,6 +195,7 @@ class ManPage(object):
         for title, content in self.sections_content:
             section_contents += section_tpl.safe_substitute(
                 title = title,
+#                content = linkify(content),
                 content = content,
                 )
 
@@ -240,7 +245,7 @@ def stylize_odd_even(style, args):
 
     return buff
 
-def unescape(t):
+def unescape(t, strip_weird_tags = False):
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
     #t = t.replace("\%", "")
@@ -279,9 +284,11 @@ def unescape(t):
         #r'<strong>\1</strong>',
         #t)
 
-    #if t.startswith(".BI"):
-        #t = t.replace("\\fB", "")
-        #t = t.replace("\\fR", "")
+    if strip_weird_tags:
+        # FIXME: This is ugly (zdump is broken on BI)
+        t = t.replace("\\fB", "")
+        t = t.replace("\\fI", "")
+        t = t.replace("\\fR", "")
 
     return t
 
