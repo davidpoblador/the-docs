@@ -6,8 +6,8 @@ from string import Template
 import sys
 
 cc = ("'", ".")
-single_styles = set(['B', 'I'])
-compound_styles = set(['IR', 'BR', 'RI', 'BI'])
+single_styles = {'B', 'I'}
+compound_styles = {'IR', 'RI', 'BR', 'RB', 'BI', 'IB'}
 
 style_trans = {
     'I': 'em',
@@ -72,13 +72,21 @@ class ManPage(object):
         if macro == '\\"':
             # Comment
             pass
-        elif macro in ['LP', 'PP', 'P']:
+        elif macro in {'LP', 'PP', 'P'}:
             self.end_list()
             self.add_text("<p>")
         elif macro == 'nf':
             self.start_pre()
         elif macro == 'fi':
             self.end_pre()
+        elif macro in {'br'}:
+            if not self.in_pre:
+                self.add_text("<br>")
+        elif macro in {'sp'}:
+            if self.in_pre:
+                self.add_text("\n")
+            else:
+                self.add_text("<p>")
         elif macro == 'TP':
             self.start_list()
         elif macro == 'RS':
@@ -119,6 +127,7 @@ class ManPage(object):
 
         if self.in_pre == True:
             buffer_to_append = self.pre_buffer
+            append_text = append_text.rstrip()
         elif self.list_state == 1:
             self.list_state = 2
             buffer_to_append = self.list_buffer
@@ -255,7 +264,7 @@ def unescape(t, strip_weird_tags = False):
 
     #t = t.replace("\`", "`")
     #t = t.replace("\&", " ")  # FIXME: Might need tweaking
-    #t = t.replace("\\\\", "&#92;")
+    t = t.replace("\\\\", "&#92;")
 
     #t = t.replace("\[char46]", "&#46;")
     t = t.replace("\\(em", "&ndash;")
@@ -263,11 +272,15 @@ def unescape(t, strip_weird_tags = False):
 
     #t = t.replace("\\*(lq", "&ldquo;")
     #t = t.replace("\\*(rq", "&rdquo;")
+    
+    # FIXME: make fancy quotes
     t = t.replace("\\(aq", "'")
+
     #t = t.replace("\\*(dg", "(!)")
     #t = t.replace("\\e", "\\")
 
-    #t = t.replace("<", "&lt;").replace(">", "&gt;")
+    # Preserve < >
+    t = t.replace("<", "&lt;").replace(">", "&gt;")
 
     # Fixme (when we have time dir_colors.5 shows why this needs fixing)
     t = re.sub(
