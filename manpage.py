@@ -15,6 +15,18 @@ style_trans = {
     'B': 'strong',
 }
 
+SECTIONS = {
+    'man1' : "Executable programs or shell commands", 
+    'man2' : "System calls", 
+    'man3' : "Library calls", 
+    'man4' : "Special files", 
+    'man5' : "File formats and conventions", 
+    'man6' : "Games", 
+    'man7' : "Miscellaneous", 
+    'man8' : "System administration commands",
+    'man0' : "ERROR. Section 0",
+}
+
 class ManPage(object):
     def __init__(self, manfile, section = 0, redirected_from = False):
         self.title = ""
@@ -90,6 +102,9 @@ class ManPage(object):
 
         if macro == '\\"':
             # Comment
+            pass
+        elif macro in {'ad'}:
+            # Catchall for ignores. We might need to revisit
             pass
         elif macro in {'so'} and self.first_line:
             self.process_redirect()
@@ -232,7 +247,7 @@ class ManPage(object):
         header_tpl = load_template('header')
         #nav_tpl = load_template('nav')
         #sidebaritem_tpl = load_template('sidebaritem')
-        #breadcrumb_tpl = load_template('breadcrumb')
+        breadcrumb_tpl = load_template('breadcrumb')
         #content_tpl = load_template('manpage-content')
 
         section_tpl = load_template('section')
@@ -241,7 +256,6 @@ class ManPage(object):
         for title, content in self.sections_content:
             section_contents += section_tpl.safe_substitute(
                 title = title,
-#                content = linkify(content),
                 content = content,
                 )
 
@@ -253,7 +267,11 @@ class ManPage(object):
             # TODO: Fix canonical, nav, breadcrumb
             canonical = "",
             nav = "",
-            breadcrumb = "",
+            breadcrumb=breadcrumb_tpl.substitute(
+                section=section,
+                section_name=SECTIONS["man" + section],
+                manpage=title,
+            ),
             title = "%s - %s" % (self.title, self.subtitle, ),
             header = header_tpl.substitute(
                 section = section,

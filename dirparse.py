@@ -56,6 +56,7 @@ def process_file(list_of_files, src, redirects = {}):
         except:
             errs += 1
             print " * ERR: %s" % (file, )
+            raise
             continue
 
         basename = os.path.basename(file)
@@ -135,15 +136,25 @@ def main():
 
         base_tpl = load_template('base')
         header_tpl = load_template('header')
+        breadcrumb_tpl = load_template('breadcrumb-section')
+
+        full_section = SECTIONS[directory]
+        numeric_section = directory.replace('man', '', 1)
 
         out = base_tpl.safe_substitute(
             title="Linux Man Pages - %s" % SECTIONS[directory],
             canonical="",
             header=header_tpl.safe_substitute(
-                title=SECTIONS[directory],
+                title=full_section,
+                section=numeric_section,
+                subtitle="",
+            ),
+            breadcrumb=breadcrumb_tpl.substitute(
+                section_name=full_section,
+                section=numeric_section,
             ),
             content=content,
-            metadescription=SECTIONS[directory].replace("\"", "\'"),
+            metadescription=full_section.replace("\"", "\'"),
         )
 
         f = open(os.path.join(root_html, src, directory, 'index.html'), 'w')

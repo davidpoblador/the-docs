@@ -29,7 +29,6 @@
   ${canonical}
 </head>
 <body>
-  ${nav}
   <div class="container final">
     ${header}
     ${breadcrumb}
