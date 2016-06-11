@@ -12,21 +12,22 @@ from string import Template
 
 # FIXME: Horrible hack
 SECTIONS = {
-    'man1' : "Executable programs or shell commands", 
-    'man2' : "System calls", 
-    'man3' : "Library calls", 
-    'man4' : "Special files", 
-    'man5' : "File formats and conventions", 
-    'man6' : "Games", 
-    'man7' : "Miscellaneous", 
-    'man8' : "System administration commands",
-    'man0' : "ERROR. Section 0",
+    'man1': "Executable programs or shell commands",
+    'man2': "System calls",
+    'man3': "Library calls",
+    'man4': "Special files",
+    'man5': "File formats and conventions",
+    'man6': "Games",
+    'man7': "Miscellaneous",
+    'man8': "System administration commands",
+    'man0': "ERROR. Section 0",
 }
 
 root_html = "public_html/"
 base_host = "http://localhost:8000/"
 
-def process_file(list_of_files, src, redirects = {}):
+
+def process_file(list_of_files, src, redirects={}):
     cnt = Counter()
     errs, mps, oks = (0, 0, 0)
     redirected_pages = defaultdict()
@@ -37,8 +38,9 @@ def process_file(list_of_files, src, redirects = {}):
         print "Processing man page %s ..." % (file, )
         try:
             if redirects:
-                instead = os.path.join(src, redirects[file][0], redirects[file][1], )
-                manpage = ManPage(instead, redirected_from = file)
+                instead = os.path.join(src, redirects[file][
+                                       0], redirects[file][1], )
+                manpage = ManPage(instead, redirected_from=file)
             else:
                 manpage = ManPage(file)
             if manpage.redirect:
@@ -83,6 +85,7 @@ def process_file(list_of_files, src, redirects = {}):
 
     return pages, redirected_pages, mandirpages, errs, oks, mps, cnt
 
+
 def main():
     _, src = sys.argv
 
@@ -105,7 +108,7 @@ def main():
             iterator = redirects.keys()
 
         t_pages, redirects, t_mandirpages, errs, oks, mps, cnt = \
-            process_file(iterator, src, redirects = redirects)
+            process_file(iterator, src, redirects=redirects)
 
         for directory, available_pages in t_mandirpages.items():
             mandirpages[directory] |= set(available_pages)
@@ -130,7 +133,8 @@ def main():
         content = "<dl class=\"dl-vertical\">"
         for page_file in sorted(page_files):
             desc = pages[page_file][0]
-            term = "<a href=\"%s.html\">%s</a>" % (page_file, format_name(page_file), )
+            term = "<a href=\"%s.html\">%s</a>" % (
+                page_file, format_name(page_file), )
             content += "<dt>%s</dt>" % (term, )
             content += "<dd>%s</dd>" % (desc, )
 
@@ -169,8 +173,10 @@ def main():
     for directory, page_files in mandirpages.items():
         for page_file in sorted(page_files):
 
-            tmp_page = os.path.join(root_html, src, directory, page_file) + ".tmp.html"
-            final_page = os.path.join(root_html, src, directory, page_file) + ".html"
+            tmp_page = os.path.join(
+                root_html, src, directory, page_file) + ".tmp.html"
+            final_page = os.path.join(
+                root_html, src, directory, page_file) + ".html"
 
             with open(tmp_page) as f:
                 content = f.read()
@@ -190,7 +196,7 @@ def main():
         metadescription="Linux Man Pages",
         title="Linux Man Pages",
         # FIXME: Remove nav
-        nav = "",
+        nav="",
         canonical="",
         header="",
         breadcrumb="",
@@ -207,6 +213,7 @@ def main():
 linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
 
+
 def linkify(text, pages):
     def repl(m):
         manpage = m.groupdict()['page']
@@ -222,12 +229,15 @@ def linkify(text, pages):
 
     return linkifier.sub(repl, text)
 
+
 def split_manpage(manpage):
     return manpage.rsplit('.', 1)
+
 
 def format_name(manpage):
     base, section = split_manpage(manpage)
     return "<strong>%s</strong>(%s)" % (base, section, )
+
 
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))
@@ -244,7 +254,7 @@ if __name__ == '__main__':
     elapsed = time.time() - start_time
 
     with open("parse.log", "a") as myfile:
-        myfile.write("%s / T:%s O:%s M:%s E:%s / %ss\n" % \
-            (time.time(), total, oks, mps, errs, elapsed))
+        myfile.write("%s / T:%s O:%s M:%s E:%s / %ss\n" %
+                     (time.time(), total, oks, mps, errs, elapsed))
 
     print("--- %s seconds ---" % (elapsed))

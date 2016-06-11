@@ -16,22 +16,24 @@ style_trans = {
 }
 
 SECTIONS = {
-    'man1' : "Executable programs or shell commands", 
-    'man2' : "System calls", 
-    'man3' : "Library calls", 
-    'man4' : "Special files", 
-    'man5' : "File formats and conventions", 
-    'man6' : "Games", 
-    'man7' : "Miscellaneous", 
-    'man8' : "System administration commands",
-    'man0' : "ERROR. Section 0",
+    'man1': "Executable programs or shell commands",
+    'man2': "System calls",
+    'man3': "Library calls",
+    'man4': "Special files",
+    'man5': "File formats and conventions",
+    'man6': "Games",
+    'man7': "Miscellaneous",
+    'man8': "System administration commands",
+    'man0': "ERROR. Section 0",
 }
 
+
 class ManPage(object):
-    def __init__(self, manfile, section = 0, redirected_from = False):
+
+    def __init__(self, manfile, section=0, redirected_from=False):
         self.title = ""
         self.subtitle = ""
-        
+
         self.current_section = ""
 
         self.buff = []
@@ -53,9 +55,9 @@ class ManPage(object):
             self.manpage_name = os.path.basename(manfile)
 
         self.header = {
-            "title" : "",
-            "section" : "",
-            "date" : "",
+            "title": "",
+            "section": "",
+            "date": "",
         }
 
         with open(manfile) as f:
@@ -142,7 +144,7 @@ class ManPage(object):
         elif macro == 'SH':
             self.end_list()
             self.add_section()
-        elif macro in single_styles|compound_styles:
+        elif macro in single_styles | compound_styles:
             self.add_style()
         else:
             raise MissingParser("MACRO %s : %s" % (macro, self.line_rest, ))
@@ -228,7 +230,7 @@ class ManPage(object):
             try:
                 while True:
                     s, e = cells.index('T{'), cells.index('T}')
-                    cells[s:e+1] = [' '.join(cells[s+1:e])]
+                    cells[s:e + 1] = [' '.join(cells[s + 1:e])]
             except:
                 pass
 
@@ -240,7 +242,7 @@ class ManPage(object):
                     if first:
                         out += "\n<th>%s</th>" % cell
                     else:
-                        out += "\n<td>%s</td>" % cell                    
+                        out += "\n<td>%s</td>" % cell
                 del cells[0:columns]
                 first = False
                 out += "</tr>\n"
@@ -266,7 +268,8 @@ class ManPage(object):
     def end_list(self):
         if self.list_state > 0:
             self.list_state = 0
-            self.add_text("\n<dl class=\"dl-vertical inner\">%s</dl>\n" % " ".join(self.list_buffer))
+            self.add_text("\n<dl class=\"dl-vertical inner\">%s</dl>\n" %
+                          " ".join(self.list_buffer))
             self.list_buffer = []
 
     def flush_section(self):
@@ -275,7 +278,7 @@ class ManPage(object):
         else:
             self.sections_content.append(
                 (self.current_section, " ".join(self.buff), )
-                )
+            )
         self.buff = []
 
     def add_style(self):
@@ -283,7 +286,8 @@ class ManPage(object):
         if style in single_styles:
             self.add_text(stylize(style, " ".join(toargs(self.line_rest))))
         elif style in compound_styles:
-            self.add_text(stylize_odd_even(style, toargs(self.line_rest_spaced)))
+            self.add_text(stylize_odd_even(
+                style, toargs(self.line_rest_spaced)))
 
     def add_section(self):
         if self.current_section != "":
@@ -295,9 +299,9 @@ class ManPage(object):
         params = toargs(self.line_rest)
 
         self.header = {
-            "title" : params[0],
-            "section" : params[1],
-            "date" : params[2]
+            "title": params[0],
+            "section": params[1],
+            "date": params[2]
         }
 
     def html(self):
@@ -313,9 +317,9 @@ class ManPage(object):
         section_contents = ""
         for title, content in self.sections_content:
             section_contents += section_tpl.safe_substitute(
-                title = title,
-                content = content,
-                )
+                title=title,
+                content=content,
+            )
 
         base_tpl = load_template('base')
 
@@ -323,21 +327,22 @@ class ManPage(object):
 
         return base_tpl.safe_substitute(
             # TODO: Fix canonical, nav, breadcrumb
-            canonical = "",
-            nav = "",
+            canonical="",
+            nav="",
             breadcrumb=breadcrumb_tpl.substitute(
                 section=section,
                 section_name=SECTIONS["man" + section],
                 manpage=title,
             ),
-            title = "%s - %s" % (self.title, self.subtitle, ),
-            header = header_tpl.substitute(
-                section = section,
-                title = title, # FIXME: Mess
-                subtitle = self.subtitle,
-                ),
-            content = section_contents,
-            )
+            title="%s - %s" % (self.title, self.subtitle, ),
+            header=header_tpl.substitute(
+                section=section,
+                title=title,  # FIXME: Mess
+                subtitle=self.subtitle,
+            ),
+            content=section_contents,
+        )
+
 
 def space_tags(text_to_space):
     # TODO: Fix dirty hack for shlex (getent.1 first BR)
@@ -348,11 +353,13 @@ def space_tags(text_to_space):
 
     return spaced_rest
 
+
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))
     out = Template(''.join(fp.readlines()))
     fp.close()
     return out
+
 
 def stylize(style, text):
     if style == 'R':
@@ -360,16 +367,18 @@ def stylize(style, text):
     else:
         return "<%s>%s</%s>" % (style_trans[style], text, style_trans[style], )
 
+
 def stylize_odd_even(style, args):
     buff = ""
     c = 0
     for arg in args:
-        buff += stylize(style[c%2], arg)
+        buff += stylize(style[c % 2], arg)
         c = c + 1
 
     return buff
 
-def unescape(t, strip_weird_tags = False):
+
+def unescape(t, strip_weird_tags=False):
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
     #t = t.replace("\%", "")
@@ -377,16 +386,16 @@ def unescape(t, strip_weird_tags = False):
     #t = t.replace("\}", "")
 
     #t = t.replace("\`", "`")
-    #t = t.replace("\&", " ")  # FIXME: Might need tweaking
+    # t = t.replace("\&", " ")  # FIXME: Might need tweaking
     t = t.replace("\\\\", "&#92;")
 
-    #t = t.replace("\[char46]", "&#46;")
+    # t = t.replace("\[char46]", "&#46;")
     t = t.replace("\\(em", "&ndash;")
     #t = t.replace("\\(en", "&ndash;")
 
     #t = t.replace("\\*(lq", "&ldquo;")
     #t = t.replace("\\*(rq", "&rdquo;")
-    
+
     # FIXME: make fancy quotes
     t = t.replace("\\(aq", "'")
 
@@ -407,10 +416,10 @@ def unescape(t, strip_weird_tags = False):
         r'<strong>\1</strong>',
         t)
 
-    #t = re.sub(
-        #r'\\f\(CW(.*?)\\fP',
-        #r'<strong>\1</strong>',
-        #t)
+    # t = re.sub(
+    # r'\\f\(CW(.*?)\\fP',
+    # r'<strong>\1</strong>',
+    # t)
 
     if strip_weird_tags:
         # FIXME: This is ugly (zdump is broken on BI)
@@ -419,6 +428,7 @@ def unescape(t, strip_weird_tags = False):
         t = t.replace("\\fR", "")
 
     return t
+
 
 def toargs(extra):
     try:
@@ -433,6 +443,7 @@ def toargs(extra):
                 raise
 
     return args
+
 
 class MissingParser(Exception):
     pass
