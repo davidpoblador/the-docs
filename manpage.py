@@ -38,8 +38,10 @@ class ManPage(object):
         self.sections_content = []
         self.list_state = 0
         self.in_pre = False
+        self.in_table = False
         self.list_buffer = []
         self.pre_buffer = []
+        self.table_buffer = []
         self.first_line = True
         self.redirect = []
         self.indent = 0.0
@@ -111,6 +113,10 @@ class ManPage(object):
         elif macro in {'LP', 'PP', 'P'}:
             self.end_list()
             self.add_text("<p>")
+        elif macro == 'TS':
+            self.start_table()
+        elif macro == 'TE':
+            self.end_table()
         elif macro == 'nf':
             self.start_pre()
         elif macro == 'fi':
@@ -163,9 +169,11 @@ class ManPage(object):
         append_text = text
         buffer_to_append = self.buff
 
-        if self.in_pre == True:
+        if self.in_pre:
             buffer_to_append = self.pre_buffer
             append_text = append_text.rstrip()
+        elif self.in_table:
+            buffer_to_append = self.table_buffer
         elif self.list_state == 1:
             self.list_state = 2
             buffer_to_append = self.list_buffer
@@ -192,6 +200,56 @@ class ManPage(object):
                 num = float(num)
 
             self.prev_indent, self.indent = self.indent, num
+
+    def start_table(self):
+        self.in_table = True
+
+    def end_table(self):
+        if self.in_table:
+            state = 0
+            cells = []
+            splitter = '\t'
+            for line in self.table_buffer:
+                row = line.split(splitter)
+                if state == 0 and row[-1].endswith('.'):
+                    columns = len(row[0].split())
+                    state = 2
+                elif state == 0 and row[0].startswith('tab('):
+                    splitter = re.sub(r'^tab\((.+)\);', r'\1', row[0])
+                elif state == 2:
+                    if len(row) == 1 and row[0] == '_':
+                        pass
+                    else:
+                        if 'T{' not in line and 'T}' not in line:
+                            while len(row) < columns:
+                                row.append('')
+                        cells.extend(row)
+
+            try:
+                while True:
+                    s, e = cells.index('T{'), cells.index('T}')
+                    cells[s:e+1] = [' '.join(cells[s+1:e])]
+            except:
+                pass
+
+            out = ""
+            first = True
+            while cells:
+                out += "\n<tr>"
+                for cell in cells[0:columns]:
+                    if first:
+                        out += "\n<th>%s</th>" % cell
+                    else:
+                        out += "\n<td>%s</td>" % cell                    
+                del cells[0:columns]
+                first = False
+                out += "</tr>\n"
+            out = "<table class=\"table table-striped\">%s</table>" % out
+
+            self.add_text("\n%s\n" % out)
+
+            self.table_buffer = []
+            self.in_table = False
 
     def start_pre(self):
         self.in_pre = True
