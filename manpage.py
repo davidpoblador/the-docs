@@ -4,6 +4,7 @@ import shlex
 import re
 from string import Template
 import sys
+import os.path
 
 cc = ("'", ".")
 single_styles = {'B', 'I'}
@@ -15,7 +16,7 @@ style_trans = {
 }
 
 class ManPage(object):
-    def __init__(self, manfile, section = 0):
+    def __init__(self, manfile, section = 0, redirected_from = False):
         self.title = ""
         self.subtitle = ""
         
@@ -27,6 +28,13 @@ class ManPage(object):
         self.in_pre = False
         self.list_buffer = []
         self.pre_buffer = []
+        self.first_line = True
+        self.redirect = []
+
+        if redirected_from:
+            self.manpage_name = os.path.basename(redirected_from)
+        else:
+            self.manpage_name = os.path.basename(manfile)
 
         self.header = {
             "title" : "",
@@ -58,13 +66,22 @@ class ManPage(object):
             elif line[0] in cc:
                 self.line = line[1:]
                 self.parse_request()
+                if self.redirect:
+                    break
             else:
                 self.line = line
                 # TODO: Text lines can be comments:
                 # https://www.gnu.org/software/groff/manual/html_node/Comments.html#index-_005c_0022
                 self.add_text(unescape(line))
 
-        self.flush_section()
+            if self.first_line:
+                self.first_line = False
+
+        if not self.redirect:
+            self.flush_section()
+
+    def process_redirect(self):
+        self.redirect = self.line_rest.split("/")
 
     def process_request(self):
         macro = self.line_request
@@ -72,6 +89,8 @@ class ManPage(object):
         if macro == '\\"':
             # Comment
             pass
+        elif macro in {'so'} and self.first_line:
+            self.process_redirect()
         elif macro in {'LP', 'PP', 'P'}:
             self.end_list()
             self.add_text("<p>")
@@ -211,6 +230,8 @@ class ManPage(object):
 
         base_tpl = load_template('base')
 
+        title, section = self.manpage_name.rsplit('.', 1)
+
         return base_tpl.safe_substitute(
             # TODO: Fix canonical, nav, breadcrumb
             canonical = "",
@@ -218,8 +239,8 @@ class ManPage(object):
             breadcrumb = "",
             title = "%s - %s" % (self.title, self.subtitle, ),
             header = header_tpl.substitute(
-                section = self.header['section'],
-                title = self.title,
+                section = section,
+                title = title, # FIXME: Mess
                 subtitle = self.subtitle,
                 ),
             content = section_contents,

@@ -26,20 +26,26 @@ SECTIONS = {
 root_html = "public_html/"
 base_host = "http://localhost:8000/"
 
-def main():
-    _, src = sys.argv
-
+def process_file(list_of_files, src, redirects = {}):
     cnt = Counter()
-    errors, mps, oks = (0, 0, 0)
-
+    errs, mps, oks = (0, 0, 0)
+    redirected_pages = defaultdict()
     pages = defaultdict()
     mandirpages = defaultdict(list)
 
-    for file in glob.iglob("%s/man?/*.?" % src):
+    for file in list_of_files:
         print "Processing man page %s ..." % (file, )
         try:
-            manpage = ManPage(file)
-            content = manpage.html()
+            if redirects:
+                instead = os.path.join(src, redirects[file][0], redirects[file][1], )
+                manpage = ManPage(instead, redirected_from = file)
+            else:
+                manpage = ManPage(file)
+            if manpage.redirect:
+                redirected_pages[file] = manpage.redirect
+                continue
+            else:
+                content = manpage.html()
         except MissingParser as e:
             mps += 1
             mp = str(e).split(" ", 2)[1]
@@ -48,15 +54,13 @@ def main():
             cnt[mp] += 1
             continue
         except:
-            errors += 1
+            errs += 1
             print " * ERR: %s" % (file, )
             continue
-
 
         basename = os.path.basename(file)
         dstdir = os.path.dirname(file)
         filepath = os.path.join(dstdir, basename) + ".tmp.html"
-
         manbasedir = os.path.basename(dstdir)
 
         dstdir = os.path.join(root_html, os.path.dirname(file))
@@ -76,21 +80,52 @@ def main():
         pages[basename] = (manpage.subtitle, manbasedir)
         mandirpages[manbasedir].append(basename)
 
-    print "\n> Total processed: %s (OK: %s / MP: %s / ERR: %s)" % \
-        (errors + oks + mps, oks, mps, errors, )
+    return pages, redirected_pages, mandirpages, errs, oks, mps, cnt
 
-    # DEBUG:
+def main():
+    _, src = sys.argv
+
+    total = dict()
+    total['errs'] = 0
+    total['oks'] = 0
+    total['mps'] = 0
+    missing_parser_counter = Counter()
+    first_pass = True
+    redirects = defaultdict()
+
+    pages = defaultdict()
+    mandirpages = defaultdict(list)
+
+    while first_pass or redirects:
+        if first_pass:
+            iterator = glob.iglob("%s/man?/*.?" % src)
+            redirects = {}
+        else:
+            iterator = redirects.keys()
+
+        t_pages, redirects, t_mandirpages, errs, oks, mps, cnt = \
+            process_file(iterator, src, redirects = redirects)
+
+        mandirpages.update(t_mandirpages)
+        pages.update(t_pages)
+        total['errs'] += errs
+        total['oks'] += oks
+        total['mps'] += mps
+        missing_parser_counter += cnt
+
+        first_pass = False
+
+    pages_processed = total['errs'] + total['oks'] + total['mps']
+    print "\n> Total processed: %s (OK: %s / MP: %s / ERR: %s)" % \
+        (pages_processed, total['oks'], total['mps'], total['errs'], )
 
     # Missing parsers
     print "Missing Parsers"
-    print cnt
-
-    # print pages
-    # print mandirpages
+    print missing_parser_counter
 
     for directory, page_files in mandirpages.items():
         content = "<dl class=\"dl-vertical\">"
-        for page_file in page_files:
+        for page_file in sorted(page_files):
             desc = pages[page_file][0]
             term = "<a href=\"%s.html\">%s</a>" % (page_file, format_name(page_file), )
             content += "<dt>%s</dt>" % (term, )
