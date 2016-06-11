@@ -231,7 +231,7 @@ if __name__ == '__main__':
     elapsed = time.time() - start_time
 
     with open("parse.log", "a") as myfile:
-        myfile.write("%s / T:%s O:%s M:%s E:%s / %ss" % \
+        myfile.write("%s / T:%s O:%s M:%s E:%s / %ss\n" % \
             (time.time(), total, oks, mps, errs, elapsed))
 
     print("--- %s seconds ---" % (elapsed))

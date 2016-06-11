@@ -30,6 +30,8 @@ class ManPage(object):
         self.pre_buffer = []
         self.first_line = True
         self.redirect = []
+        self.indent = 0.0
+        self.prev_indent = 0.0
 
         if redirected_from:
             self.manpage_name = os.path.basename(redirected_from)
@@ -98,6 +100,8 @@ class ManPage(object):
             self.start_pre()
         elif macro == 'fi':
             self.end_pre()
+        elif macro == 'in':
+            self.set_indent()
         elif macro in {'br'}:
             if not self.in_pre:
                 self.add_text("<br>")
@@ -160,6 +164,19 @@ class ManPage(object):
         title, subtitle = content.split('-', 1)
         self.title = title.strip()
         self.subtitle = subtitle.strip()
+
+    def set_indent(self):
+        if not self.line_rest:
+            self.indent, self.prev_indent = (self.prev_indent, self.indent)
+        else:
+            macro_pattern = re.compile("^([+-]?)([\d\.]+).*$")
+            sign, num = macro_pattern.search(self.line_rest).groups()
+            if sign == '-':
+                num = - float(num)
+            else:
+                num = float(num)
+
+            self.prev_indent, self.indent = self.indent, num
 
     def start_pre(self):
         self.in_pre = True
