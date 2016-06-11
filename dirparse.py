@@ -95,7 +95,7 @@ def main():
     redirects = defaultdict()
 
     pages = defaultdict()
-    mandirpages = defaultdict(list)
+    mandirpages = defaultdict(set)
 
     while first_pass or redirects:
         if first_pass:
@@ -107,7 +107,9 @@ def main():
         t_pages, redirects, t_mandirpages, errs, oks, mps, cnt = \
             process_file(iterator, src, redirects = redirects)
 
-        mandirpages.update(t_mandirpages)
+        for directory, available_pages in t_mandirpages.items():
+            mandirpages[directory] |= set(available_pages)
+
         pages.update(t_pages)
         total['errs'] += errs
         total['oks'] += oks
