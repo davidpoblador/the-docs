@@ -188,6 +188,8 @@ def main():
     f.write(index)
     f.close()
 
+    return pages_processed, total['oks'], total['mps'], total['errs']
+
 
 linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
@@ -223,5 +225,13 @@ def load_template(template):
 if __name__ == '__main__':
     import time
     start_time = time.time()
-    main()
-    print("--- %s seconds ---" % (time.time() - start_time))
+
+    total, oks, mps, errs = main()
+
+    elapsed = time.time() - start_time
+
+    with open("parse.log", "a") as myfile:
+        myfile.write("%s / T:%s O:%s M:%s E:%s / %ss" % \
+            (time.time(), total, oks, mps, errs, elapsed))
+
+    print("--- %s seconds ---" % (elapsed))
