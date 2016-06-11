@@ -8,6 +8,7 @@ import os.path
 import os
 from collections import Counter, defaultdict
 import re
+from string import Template
 
 root_html = "public_html/"
 base_host = "http://localhost:8000/"
@@ -99,7 +100,28 @@ def main():
             file.write(linkify(content, list_of_pages))
             file.close()
 
-            os.unlink(tmp_page) 
+            os.unlink(tmp_page)
+
+    # Generate base index
+    base_tpl = load_template('base')
+    index_tpl = load_template('index-contents')
+
+    index = base_tpl.safe_substitute(
+        # FIXME: Naming templates should be better
+        metadescription="Linux Man Pages",
+        title="Linux Man Pages",
+        # FIXME: Remove nav
+        nav = "",
+        canonical="",
+        header="",
+        breadcrumb="",
+        content=index_tpl.substitute(),
+    )
+
+    f = open("%s/index.html" % (os.path.join(root_html, src), ), 'w')
+    f.write(index)
+    f.close()
+
 
 linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
@@ -118,6 +140,12 @@ def linkify(text, pages):
         return out
 
     return linkifier.sub(repl, text)
+
+def load_template(template):
+    fp = open("templates/%s.tpl" % (template, ))
+    out = Template(''.join(fp.readlines()))
+    fp.close()
+    return out
 
 if __name__ == '__main__':
     import time
