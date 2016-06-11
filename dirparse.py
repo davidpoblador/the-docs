@@ -10,6 +10,19 @@ from collections import Counter, defaultdict
 import re
 from string import Template
 
+# FIXME: Horrible hack
+SECTIONS = {
+    'man1' : "Executable programs or shell commands", 
+    'man2' : "System calls", 
+    'man3' : "Library calls", 
+    'man4' : "Special files", 
+    'man5' : "File formats and conventions", 
+    'man6' : "Games", 
+    'man7' : "Miscellaneous", 
+    'man8' : "System administration commands",
+    'man0' : "ERROR. Section 0",
+}
+
 root_html = "public_html/"
 base_host = "http://localhost:8000/"
 
@@ -76,20 +89,38 @@ def main():
     # print mandirpages
 
     for directory, page_files in mandirpages.items():
-        content = ""
+        content = "<dl class=\"dl-vertical\">"
         for page_file in page_files:
-            content += "<li><a href='%s'>%s</a> - %s\n" % (page_file + ".html", page_file, pages[page_file][0])
-        content = "<ul><li><a href='..'>..</a></li>\n%s</ul>" % content
+            desc = pages[page_file][0]
+            term = "<a href=\"%s.html\">%s</a>" % (page_file, format_name(page_file), )
+            content += "<dt>%s</dt>" % (term, )
+            content += "<dd>%s</dd>" % (desc, )
 
-        file = open(os.path.join(root_html, src, directory, "index.html"), "w")
-        file.write(content)
-        file.close()
+        content += "</dl>"
+
+        base_tpl = load_template('base')
+        header_tpl = load_template('header')
+
+        out = base_tpl.safe_substitute(
+            title="Linux Man Pages - %s" % SECTIONS[directory],
+            canonical="",
+            header=header_tpl.safe_substitute(
+                title=SECTIONS[directory],
+            ),
+            content=content,
+            metadescription=SECTIONS[directory].replace("\"", "\'"),
+        )
+
+        f = open(os.path.join(root_html, src, directory, 'index.html'), 'w')
+        f.write(out)
+        f.close()
 
     list_of_pages = pages.keys()
 
     # Linkify
     for directory, page_files in mandirpages.items():
-        for page_file in page_files:
+        for page_file in sorted(page_files):
+
             tmp_page = os.path.join(root_html, src, directory, page_file) + ".tmp.html"
             final_page = os.path.join(root_html, src, directory, page_file) + ".html"
 
@@ -140,6 +171,13 @@ def linkify(text, pages):
         return out
 
     return linkifier.sub(repl, text)
+
+def split_manpage(manpage):
+    return manpage.rsplit('.', 1)
+
+def format_name(manpage):
+    base, section = split_manpage(manpage)
+    return "<strong>%s</strong>(%s)" % (base, section, )
 
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))
