@@ -28,8 +28,9 @@ def main():
             content = manpage.html()
         except MissingParser as e:
             mps += 1
-            print " * MP: %s" % (file, )
             mp = str(e).split(" ", 2)[1]
+            print " * MP(%s): %s" % (mp, file, )
+
             cnt[mp] += 1
             continue
         except:
