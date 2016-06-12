@@ -144,6 +144,9 @@ class ManPage(object):
         elif macro == 'SH':
             self.end_list()
             self.add_section()
+        elif macro == 'SS':
+            self.end_list()
+            self.add_subsection()
         elif macro in single_styles | compound_styles:
             self.add_style()
         else:
@@ -294,6 +297,11 @@ class ManPage(object):
             self.flush_section()
 
         self.current_section = self.line_rest
+
+    def add_subsection(self):
+        # FIXME: Probably we should store a tree for having an index
+
+        self.add_text("\n<h3>%s</h3>\n<p>" % self.line_rest)
 
     def set_header(self):
         params = toargs(self.line_rest)

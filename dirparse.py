@@ -248,9 +248,7 @@ def load_template(template):
 if __name__ == '__main__':
     import time
     start_time = time.time()
-
     total, oks, mps, errs = main()
-
     elapsed = time.time() - start_time
 
     with open("parse.log", "a") as myfile:
