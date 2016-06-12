@@ -110,7 +110,7 @@ class ManPage(object):
         if macro == '\\"':
             # Comment
             pass
-        elif macro in {'ad', 'PD', 'nh'}:
+        elif macro in {'ad', 'PD', 'nh', 'hy', 'HP'}:
             # Catchall for ignores. We might need to revisit
             pass
         elif macro in {'so'} and self.first_line:
