@@ -110,7 +110,7 @@ class ManPage(object):
         if macro == '\\"':
             # Comment
             pass
-        elif macro in {'ad', 'PD', 'nh', 'hy', 'HP'}:
+        elif macro in {'ad', 'PD', 'nh', 'hy', 'HP', 'UE'}:
             # Catchall for ignores. We might need to revisit
             pass
         elif macro in {'so'} and self.first_line:
@@ -155,6 +155,8 @@ class ManPage(object):
             self.end_def()
             self.end_list()
             self.add_subsection()
+        elif macro == 'UR':
+            self.add_url()
         elif macro in single_styles | compound_styles:
             self.add_style()
         else:
@@ -203,6 +205,9 @@ class ManPage(object):
         title, subtitle = content.split('-', 1)
         self.title = title.strip()
         self.subtitle = subtitle.strip()
+
+    def add_url(self):
+        self.add_text("<a href=\"%s\">%s</a>" % (self.line_rest, self.line_rest,))
 
     def set_indent(self):
         if not self.line_rest:
