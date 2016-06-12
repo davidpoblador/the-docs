@@ -429,7 +429,7 @@ def unescape(t, strip_weird_tags=False):
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
     #t = t.replace("\%", "")
-    #t = t.replace("\:", "")
+    t = t.replace("\:", "")
     #t = t.replace("\}", "")
 
     #t = t.replace("\`", "`")
