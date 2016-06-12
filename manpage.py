@@ -83,7 +83,7 @@ class ManPage(object):
                 # FIXME: Empty lines should have a nicer behavior
                 # https://www.gnu.org/software/groff/manual/html_node/Implicit-Line-Breaks.html
                 if not self.in_pre:
-                    self.add_text("\n<p>\n")
+                    self.add_text("\n<p class='spacer'>\n")
             elif line[0] in cc:
                 self.line = line[1:]
                 self.parse_request()
