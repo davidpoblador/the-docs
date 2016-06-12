@@ -293,6 +293,7 @@ class ManPage(object):
                 style, toargs(self.line_rest_spaced)))
 
     def add_section(self):
+        self.end_pre()
         if self.current_section != "":
             self.flush_section()
 
