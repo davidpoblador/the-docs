@@ -145,9 +145,11 @@ class ManPage(object):
         elif macro == 'TP':
             self.start_def()
         elif macro == 'RS':
-            self.add_text("\n<p class=\"inner\">")
+            self.end_def()
+            self.add_text("\n<div class=\"inner\">")
         elif macro == 'RE':
-            self.add_text("</p>")
+            self.end_def()
+            self.add_text("</div>")
         elif macro == 'TH':
             self.set_header()
         elif macro == 'SH':
@@ -197,7 +199,10 @@ class ManPage(object):
         elif self.def_state == 1:
             self.def_state = 2
             buffer_to_append = self.def_buffer
-            append_text = "\n  <dt>%s</dt>\n    <dd>" % text
+            if self.def_buffer:
+                append_text = "</dd>\n  <dt>%s</dt>\n    <dd>" % text
+            else:
+                append_text = "\n  <dt>%s</dt>\n    <dd>" % text
         elif self.def_state == 2:
             buffer_to_append = self.def_buffer
 
