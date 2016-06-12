@@ -38,13 +38,16 @@ class ManPage(object):
 
         self.buff = []
         self.sections_content = []
-        self.list_state = 0
+        self.def_state = 0
         self.in_pre = False
         self.in_table = False
-        self.list_buffer = []
+        self.def_buffer = []
         self.pre_buffer = []
+        self.list_buffer = []
+        self.list_full_buffer = []
         self.table_buffer = []
         self.first_line = True
+        self.list_state = False
         self.redirect = []
         self.indent = 0.0
         self.prev_indent = 0.0
@@ -113,8 +116,11 @@ class ManPage(object):
         elif macro in {'so'} and self.first_line:
             self.process_redirect()
         elif macro in {'LP', 'PP', 'P'}:
+            self.end_def()
             self.end_list()
             self.add_text("<p>")
+        elif macro == 'IP':
+            self.start_list()
         elif macro == 'TS':
             self.start_table()
         elif macro == 'TE':
@@ -134,7 +140,7 @@ class ManPage(object):
             else:
                 self.add_text("<p>")
         elif macro == 'TP':
-            self.start_list()
+            self.start_def()
         elif macro == 'RS':
             self.add_text("\n<p class=\"inner\">")
         elif macro == 'RE':
@@ -142,9 +148,11 @@ class ManPage(object):
         elif macro == 'TH':
             self.set_header()
         elif macro == 'SH':
+            self.end_def()
             self.end_list()
             self.add_section()
         elif macro == 'SS':
+            self.end_def()
             self.end_list()
             self.add_subsection()
         elif macro in single_styles | compound_styles:
@@ -177,16 +185,19 @@ class ManPage(object):
         if self.in_pre:
             buffer_to_append = self.pre_buffer
             append_text = append_text.rstrip()
+        elif self.list_state:
+            buffer_to_append = self.list_buffer
         elif self.in_table:
             buffer_to_append = self.table_buffer
-        elif self.list_state == 1:
-            self.list_state = 2
-            buffer_to_append = self.list_buffer
+        elif self.def_state == 1:
+            self.def_state = 2
+            buffer_to_append = self.def_buffer
             append_text = "\n  <dt>%s</dt>\n    <dd>" % text
-        elif self.list_state == 2:
-            buffer_to_append = self.list_buffer
+        elif self.def_state == 2:
+            buffer_to_append = self.def_buffer
 
-        buffer_to_append.append(append_text)
+        if append_text:
+            buffer_to_append.append(append_text)
 
     def extract_title(self, content):
         title, subtitle = content.split('-', 1)
@@ -266,14 +277,36 @@ class ManPage(object):
             self.pre_buffer = []
 
     def start_list(self):
-        self.list_state = 1
+        if len(toargs(self.line_rest)):
+            if self.list_state:
+                self.list_full_buffer.append("<li>%s</li>\n" % " ".join(self.list_buffer).rstrip())
+                self.list_buffer = []
+            else:
+                self.list_state = True
+        else:
+            # FIXME
+            # parse_P(macro, extra, manpage)
+            self.add_text("<p class=\"inner\">")
 
     def end_list(self):
-        if self.list_state > 0:
-            self.list_state = 0
+        if self.list_state:
+            if self.list_buffer:
+                self.list_full_buffer.append("<li>%s</li>\n" % " ".join(self.list_buffer))
+                self.list_buffer = []
+
+            self.list_state = False
+            self.add_text("\n<ul>%s</ul>\n" % " ".join(self.list_full_buffer))
+            self.list_full_buffer = []
+
+    def start_def(self):
+        self.def_state = 1
+
+    def end_def(self):
+        if self.def_state > 0:
+            self.def_state = 0
             self.add_text("\n<dl class=\"dl-vertical inner\">%s</dl>\n" %
-                          " ".join(self.list_buffer))
-            self.list_buffer = []
+                          " ".join(self.def_buffer))
+            self.def_buffer = []
 
     def flush_section(self):
         if self.current_section == "NAME":
