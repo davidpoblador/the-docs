@@ -107,7 +107,7 @@ class ManPage(object):
     def process_request(self):
         macro = self.line_request
 
-        if macro == '\\"':
+        if macro.startswith('\\"'):
             # Comment
             pass
         elif macro in {'ad', 'PD', 'nh', 'hy', 'HP', 'UE'}:
