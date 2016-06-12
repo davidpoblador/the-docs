@@ -113,7 +113,7 @@ class ManPage(object):
         elif macro in {'ad', 'PD', 'nh', 'hy', 'HP', 'UE'}:
             # Catchall for ignores. We might need to revisit
             pass
-        elif macro in {'ft'}:
+        elif macro in {'ft', 'fam'}:
             # FIXME: Need fixing
             pass
         elif macro in {'so'} and self.first_line:
