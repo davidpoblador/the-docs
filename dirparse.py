@@ -129,7 +129,9 @@ def main():
     print "Missing Parsers"
     print missing_parser_counter
 
+    # Directory Indexes
     for directory, page_files in mandirpages.items():
+        print " * Generating indexes for %s" % directory
         content = "<dl class=\"dl-vertical\">"
         for page_file in sorted(page_files):
             desc = pages[page_file][0]
@@ -167,11 +169,11 @@ def main():
         f.write(out)
         f.close()
 
-    list_of_pages = pages.keys()
-
     # Linkify
+    list_of_pages = pages.keys()
     for directory, page_files in mandirpages.items():
         for page_file in sorted(page_files):
+            print " * Generating links for: %s" % page_file
 
             tmp_page = os.path.join(
                 root_html, src, directory, page_file) + ".tmp.html"
