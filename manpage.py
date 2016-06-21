@@ -71,6 +71,8 @@ class ManPage(object):
             if not line:
                 if not self.in_pre and self.sections:
                     self.add_spacer()
+                elif self.in_pre:
+                    self.add_content("")
             elif line[0] in self.cc:
                 self.blank_line = False
                 split = line[1:].split(None, 1)
@@ -112,7 +114,7 @@ class ManPage(object):
                     line = "%s %s" % (extra_line, line,)
                     extra_line = None
 
-                if len(line) and line[-1] == "\\":
+                if not self.in_pre and len(line) and line[-1] == "\\":
                     extra_line = line
                     continue
 
