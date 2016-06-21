@@ -112,10 +112,11 @@ class ManPage(object):
 
                 if extra_line:
                     line = "%s %s" % (extra_line, line,)
+
                     extra_line = None
 
-                if not self.in_pre and len(line) and line[-1] == "\\":
-                    extra_line = line
+                if len(line) and line[-1] == "\\" and line[0] in self.cc:
+                    extra_line = line[:-1]
                     continue
 
                 yield line
