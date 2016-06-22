@@ -7,8 +7,11 @@ import glob
 import os.path
 import os
 from collections import Counter, defaultdict
-import re
 from string import Template
+try:
+    import re2 as re
+except ImportError:
+    pass
 
 # FIXME: Horrible hack
 SECTIONS = {
@@ -170,7 +173,7 @@ def main():
         f.close()
 
     # Linkify
-    list_of_pages = pages.keys()
+    list_of_pages = set(pages.keys())
     for directory, page_files in mandirpages.items():
         for page_file in sorted(page_files):
             print " * Generating links for: %s" % page_file
@@ -211,10 +214,8 @@ def main():
 
     return pages_processed, total['oks'], total['mps'], total['errs']
 
-
 linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
-
 
 def linkify(text, pages):
     def repl(m):
@@ -231,15 +232,12 @@ def linkify(text, pages):
 
     return linkifier.sub(repl, text)
 
-
 def split_manpage(manpage):
     return manpage.rsplit('.', 1)
-
 
 def format_name(manpage):
     base, section = split_manpage(manpage)
     return "<strong>%s</strong>(%s)" % (base, section, )
-
 
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))

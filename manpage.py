@@ -5,7 +5,10 @@ import shlex
 import pprint
 from string import Template
 import os
-import re
+try:
+    import re2 as re
+except ImportError:
+    pass
 
 class ManPage(object):
     cc = ("'", ".")
@@ -56,23 +59,25 @@ class ManPage(object):
 
         self.parse()
 
+    def process_spaced_lines(self, line):
+        if not self.spaced_lines_buffer:
+            return
+
+        if (not line) or (not line.startswith(" ")):
+            self.blank_line = False
+            self.add_text("\n<pre>%s</pre>\n" % '\n'.join(self.spaced_lines_buffer))
+            self.spaced_lines_buffer = []
+
     def parse(self):
         for line in self.get_line():
             if self.redirect:
                 break
-            if line:
-                line = entitize(line)
 
-            if self.spaced_lines_buffer and not line.startswith(" "):
-                self.blank_line = False
-                self.add_text("\n<pre>%s</pre>\n" % '\n'.join(self.spaced_lines_buffer))
-                self.spaced_lines_buffer = []
+            self.process_spaced_lines(line)
 
             if not line:
-                if not self.in_pre and self.sections:
+                if self.sections:
                     self.add_spacer()
-                elif self.in_pre:
-                    self.add_content("")
             elif line[0] in self.cc:
                 self.blank_line = False
                 split = line[1:].split(None, 1)
@@ -80,9 +85,12 @@ class ManPage(object):
                 macro = split[0]
                 line_contents = None
                 if len(split) == 2:
-                    line_contents = unescape(split[1])
+                    line_contents = split[1]
 
-                self.parse_macro(macro, line_contents)
+                del split
+
+                self.parse_macro(macro, unescape(line_contents))
+
             elif self.in_table:
                 self.table_buffer.append(unescape(line))
             else:
@@ -119,10 +127,15 @@ class ManPage(object):
                     extra_line = line[:-1]
                     continue
 
+                if line:
+                    line = entitize(line)
+
                 yield line
 
     def add_spacer(self):
-        if not self.blank_line:
+        if self.in_pre:
+            self.append_to_pre_buffer(None)
+        elif not self.blank_line:
             self.blank_line = True
             self.add_text("\n<p class='spacer'>\n")
 
@@ -166,14 +179,8 @@ class ManPage(object):
             pass
         elif macro in {'so'} and self.first_line:
             self.process_redirect(data)
-        elif macro in {'br'}:
-            if not self.in_pre:
-                self.add_spacer()
-        elif macro in {'sp'}:
-            if self.in_pre:
-                self.add_text("\n")
-            else:
-                self.add_spacer()
+        elif macro in {'br', 'sp'}:
+            self.add_spacer()
         elif macro == 'TS':
             self.in_table = True
         elif macro == 'TE':
@@ -191,7 +198,6 @@ class ManPage(object):
         elif macro in {'LP', 'PP', 'P'}:
             self.flush_dl()
             self.flush_li()
-            #self.end_list()
             self.add_spacer()
         elif macro == 'in':
             # We do not mess with indents
@@ -220,20 +226,29 @@ class ManPage(object):
         self.add_text("<a href=\"%s\">%s</a>" % (data, data,))
 
     def add_content(self, data):
+        if not self.sections:
+            return
+
         if self.preserve_next_line:
             self.process_dl(data)
             return
 
         if self.in_pre:
-            self.pre_buffer.append(unescape(data))
-        elif self.sections:
+            self.append_to_pre_buffer(data)
+        else:
             self.content_buffer.append(data)
 
     def add_text(self, data, indent = 0):
         if self.in_pre:
-            self.pre_buffer.append(unescape(data))
+            self.append_to_pre_buffer(data)
         else:
             self.append_to_current_buffer(data, indent)
+
+    def append_to_pre_buffer(self, data):
+        if data is None:
+            self.pre_buffer.append("")
+        else:
+            self.pre_buffer.append(unescape(data))
 
     def end_table(self):
         if self.in_table:
@@ -330,7 +345,7 @@ class ManPage(object):
     def process_li(self, data):
         if data:
             bullet = toargs(data)[0]
-            if bullet == '(bu':
+            if bullet in {'(bu','\(bu'}:
                 bullet = '*'
 
             if not self.in_li:
@@ -340,14 +355,13 @@ class ManPage(object):
             self.append_to_current_buffer("<dt>%s</dt>" % bullet, 2)
             self.append_to_current_buffer("<dd>", 2)
         else:
-            # FIXME
-            # parse_P(macro, extra, manpage)
             self.add_spacer()
 
     def add_style(self, style, data):
         if not data:
-            pass
-        elif style in self.single_styles:
+            return
+
+        if style in self.single_styles:
             self.add_content(stylize(style, " ".join(toargs(data))))
         elif style in self.compound_styles:
             self.add_content(stylize_odd_even(style, toargs(data)))
@@ -447,16 +461,19 @@ style_trans = {
 }
 
 def toargs(data):
-    try:
-        args = shlex.split(data)
-    except:
+    if ("'" not in data) and ("\"" not in data):
+        args = data.split()
+    else:
         try:
-            args = shlex.split(data + "\"")
+            args = shlex.split(data)
         except:
             try:
-                args = shlex.split(data + "'")
+                args = shlex.split(data + "\"")
             except:
-                raise
+                try:
+                    args = shlex.split(data + "'")
+                except:
+                    raise
 
     return args
 
@@ -476,6 +493,9 @@ def stylize_odd_even(style, args):
     return buff
 
 def unescape(t, strip_weird_tags=False):
+    if not t:
+        return t
+
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
     #t = t.replace("\%", "")
@@ -528,7 +548,6 @@ def unescape(t, strip_weird_tags=False):
 
 def entitize(line):
     return line.replace("<", "&lt;").replace(">", "&gt;")
-
 
 class MissingParser(Exception):
     pass
