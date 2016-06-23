@@ -29,6 +29,7 @@ SECTIONS = {
     'man0': "ERROR. Section 0",
 }
 
+
 def main():
     _, src = sys.argv
     list_of_manfiles = list(glob.iglob("%s/man?/*.?" % src))
@@ -69,7 +70,8 @@ def main():
     list_of_pages = set(pages.keys())
     for directory, page_files in mandirpages.items():
         for page_file in sorted(page_files):
-            final_page = os.path.join(root_html, src, directory, page_file) + ".html"
+            final_page = os.path.join(
+                root_html, src, directory, page_file) + ".html"
             print " * Writing page: %s" % final_page
 
             file = open(final_page, "w")
@@ -97,12 +99,20 @@ def main():
         numeric_section = directory.replace('man', '', 1)
 
         out = base_tpl.safe_substitute(
-            title="Linux Man Pages - %s" % full_section,
+            title="Linux Man Pages - %s" %
+            full_section,
             canonical="",
-            header=header_tpl.safe_substitute(title=full_section, section=numeric_section, subtitle=""),
-            breadcrumb=breadcrumb_tpl.substitute(section_name=full_section, section=numeric_section),
+            header=header_tpl.safe_substitute(
+                title=full_section,
+                section=numeric_section,
+                subtitle=""),
+            breadcrumb=breadcrumb_tpl.substitute(
+                section_name=full_section,
+                section=numeric_section),
             content=content,
-            metadescription=full_section.replace("\"", "\'"),
+            metadescription=full_section.replace(
+                "\"",
+                "\'"),
         )
 
         f = open(os.path.join(root_html, src, directory, 'index.html'), 'w')
@@ -129,12 +139,15 @@ def main():
     f.write(index)
     f.close()
 
+
 def get_redirection_file(src, manpage_redirect):
     return os.path.join(src, *manpage_redirect)
+
 
 def format_name(manpage):
     base, section = manpage.rsplit('.', 1)
     return "<strong>%s</strong>(%s)" % (base, section, )
+
 
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))

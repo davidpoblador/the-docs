@@ -10,6 +10,7 @@ try:
 except ImportError:
     pass
 
+
 class ManPage(object):
     cc = ("'", ".")
     single_styles = {'B', 'I'}
@@ -44,7 +45,7 @@ class ManPage(object):
         self.table_buffer = []
         self.pre_buffer = []
         self.spaced_lines_buffer = []
-        self.blank_line = False # Previous line was blank
+        self.blank_line = False  # Previous line was blank
         self.content_buffer = []
 
         self.state = []
@@ -65,7 +66,10 @@ class ManPage(object):
 
         if (not line) or (not line.startswith(" ")):
             self.blank_line = False
-            self.add_text("\n<pre>%s</pre>\n" % '\n'.join(self.spaced_lines_buffer))
+            self.add_text(
+                "\n<pre>%s</pre>\n" %
+                '\n'.join(
+                    self.spaced_lines_buffer))
             self.spaced_lines_buffer = []
 
     def parse(self):
@@ -95,7 +99,7 @@ class ManPage(object):
                 self.table_buffer.append(unescape(line))
             else:
                 if self.capture_name_section:
-                    self.name_section_buffer.append(unescape(line))        
+                    self.name_section_buffer.append(unescape(line))
                 else:
                     self.blank_line = False
                     if line.startswith(" ") and not self.in_pre:
@@ -238,7 +242,7 @@ class ManPage(object):
         else:
             self.content_buffer.append(data)
 
-    def add_text(self, data, indent = 0):
+    def add_text(self, data, indent=0):
         if self.in_pre:
             self.append_to_pre_buffer(data)
         else:
@@ -297,12 +301,11 @@ class ManPage(object):
             self.table_buffer = []
             self.in_table = False
 
-
     def process_dl(self, data):
         if not self.in_dl:
             self.save_state()
             self.in_dl = True
-            if len(data)>6:
+            if len(data) > 6:
                 self.append_to_current_buffer("<dl class='dl-vertical'>", 1)
             else:
                 self.append_to_current_buffer("<dl class='dl-horizontal'>", 1)
@@ -333,7 +336,7 @@ class ManPage(object):
         self.content_buffer = []
         self.append_to_current_buffer(paragraph, 1)
 
-    def append_to_current_buffer(self, data, nl = 0):
+    def append_to_current_buffer(self, data, nl=0):
         if self.content_buffer:
             self.flush_paragraph()
 
@@ -345,7 +348,7 @@ class ManPage(object):
     def process_li(self, data):
         if data:
             bullet = toargs(data)[0]
-            if bullet in {'(bu','\(bu'}:
+            if bullet in {'(bu', '\(bu'}:
                 bullet = '*'
 
             if not self.in_li:
@@ -413,7 +416,7 @@ class ManPage(object):
         self.title = title.strip()
         self.subtitle = subtitle.strip()
 
-    def html(self, dest_links = None):
+    def html(self, dest_links=None):
         if self.redirect:
             return "REDIRECTION %s" % self.redirect
 
@@ -453,6 +456,7 @@ class ManPage(object):
             content=section_contents,
         )
 
+
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))
     out = Template(''.join(fp.readlines()))
@@ -463,6 +467,7 @@ style_trans = {
     'I': 'em',
     'B': 'strong',
 }
+
 
 def toargs(data):
     if ("'" not in data) and ("\"" not in data):
@@ -481,11 +486,13 @@ def toargs(data):
 
     return args
 
+
 def stylize(style, text):
     if style == 'R':
         return text
     else:
         return "<%s>%s</%s>" % (style_trans[style], text, style_trans[style], )
+
 
 def stylize_odd_even(style, args):
     buff = ""
@@ -495,6 +502,7 @@ def stylize_odd_even(style, args):
         c = c + 1
 
     return buff
+
 
 def unescape(t, strip_weird_tags=False):
     if not t:
@@ -547,11 +555,13 @@ def unescape(t, strip_weird_tags=False):
 
     return t
 
+
 def entitize(line):
     return line.replace("<", "&lt;").replace(">", "&gt;")
 
 linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
+
 
 def linkify(text, pages):
     def repl(m):
@@ -567,6 +577,7 @@ def linkify(text, pages):
         return out
 
     return linkifier.sub(repl, text)
+
 
 class MissingParser(Exception):
     pass
