@@ -177,7 +177,7 @@ class ManPage(object):
         elif macro in {'ft', 'fam'}:
             # FIXME: Need fixing
             pass
-        elif macro in {'so'} and self.first_line:
+        elif macro in {'so'}:
             self.process_redirect(data)
         elif macro in {'br', 'sp'}:
             self.add_spacer()
