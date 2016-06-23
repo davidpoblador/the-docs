@@ -510,21 +510,18 @@ def unescape(t, strip_weird_tags=False):
     t = t.replace("\&", " ")  # FIXME: Might need tweaking
     t = t.replace("\\\\", "&#92;")
 
-    # t = t.replace("\[char46]", "&#46;")
+    t = t.replace("\[char46]", "&#46;")
     t = t.replace("\\(em", "&ndash;")
-    #t = t.replace("\\(en", "&ndash;")
+    t = t.replace("\\(en", "&ndash;")
 
-    t = t.replace("\\*(lq", "&ldquo;")
-    t = t.replace("\\*(rq", "&rdquo;")
+    t = t.replace("\\*(lq", "&ldquo;").replace("\\(lq", "&ldquo;")
+    t = t.replace("\\*(rq", "&rdquo;").replace("\\(rq", "&rdquo;")
 
     # FIXME: make fancy quotes
     t = t.replace("\\(aq", "'")
 
     #t = t.replace("\\*(dg", "(!)")
     #t = t.replace("\\e", "\\")
-
-    # Preserve < >
-    # t = t.replace("<", "&lt;").replace(">", "&gt;")
 
     # Fixme (when we have time dir_colors.5 shows why this needs fixing)
     t = re.sub(
