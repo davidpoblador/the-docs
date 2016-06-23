@@ -413,7 +413,7 @@ class ManPage(object):
         self.title = title.strip()
         self.subtitle = subtitle.strip()
 
-    def html(self):
+    def html(self, dest_links = None):
         if self.redirect:
             return "REDIRECTION %s" % self.redirect
 
@@ -421,9 +421,13 @@ class ManPage(object):
 
         section_contents = ""
         for title, content in self.sections:
+            if dest_links:
+                section_content = linkify(''.join(content), dest_links)
+            else:
+                section_content = ''.join(content)
             section_contents += section_tpl.safe_substitute(
                 title=title,
-                content=''.join(content),
+                content=section_content,
             )
 
         header_tpl = load_template('header')
@@ -510,8 +514,8 @@ def unescape(t, strip_weird_tags=False):
     t = t.replace("\\(em", "&ndash;")
     #t = t.replace("\\(en", "&ndash;")
 
-    #t = t.replace("\\*(lq", "&ldquo;")
-    #t = t.replace("\\*(rq", "&rdquo;")
+    t = t.replace("\\*(lq", "&ldquo;")
+    t = t.replace("\\*(rq", "&rdquo;")
 
     # FIXME: make fancy quotes
     t = t.replace("\\(aq", "'")
@@ -548,6 +552,24 @@ def unescape(t, strip_weird_tags=False):
 
 def entitize(line):
     return line.replace("<", "&lt;").replace(">", "&gt;")
+
+linkifier = re.compile(
+    r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
+
+def linkify(text, pages):
+    def repl(m):
+        manpage = m.groupdict()['page']
+        section = m.groupdict()['section']
+        page = '.'.join([manpage, section])
+
+        out = "<strong>%s</strong>(%s)" % (manpage, section, )
+
+        if page in pages:
+            out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
+                section, manpage, section, out, )
+        return out
+
+    return linkifier.sub(repl, text)
 
 class MissingParser(Exception):
     pass
