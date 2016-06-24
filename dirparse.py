@@ -41,11 +41,17 @@ def main():
         print "Processing man page %s ..." % (manfile, )
         try:
             manpage = ManPage(manfile)
+            g = manpage.parse()
 
-            while manpage.redirect:
-                redirection = get_redirection_file(src, manpage.redirect)
+            redirect, subtitle = g.next()
+
+            while redirect:
+                redirection = get_redirection_file(src, redirect)
                 print " * Page %s has a redirection to %s..." % (manfile, redirection)
                 manpage = ManPage(redirection, redirected_from=manfile)
+                g = manpage.parse()
+
+                redirect, subtitle = g.next()
 
         except MissingParser as e:
             mp = str(e).split(" ", 2)[1]
@@ -60,9 +66,9 @@ def main():
         manbasedir = os.path.basename(dstdir)
 
         mandirpages[manbasedir].add(basename)
-        pages[basename] = (manpage.subtitle, manbasedir)
+        pages[basename] = (subtitle, manbasedir)
 
-        list_of_manpages[basename] = manpage
+        list_of_manpages[basename] = [manpage, g]
 
     del(list_of_manfiles)
 
@@ -74,8 +80,19 @@ def main():
                 root_html, src, directory, page_file) + ".html"
             print " * Writing page: %s" % final_page
 
+            try:
+                list_of_manpages[page_file][1].next()
+            except StopIteration:
+                pass
+            except MissingParser as e:
+                mp = str(e).split(" ", 2)[1]
+                print " * MP(%s): %s" % (mp, manfile, )
+                continue
+
+            list_of_manpages[page_file][0].set_pages(list_of_pages)
+
             file = open(final_page, "w")
-            file.write(list_of_manpages[page_file].html(list_of_pages))
+            file.write(list_of_manpages[page_file][0].html())
             file.close()
 
     # Directory Indexes

@@ -5,11 +5,12 @@ import shlex
 import pprint
 from string import Template
 import os
+from repoze.lru import lru_cache
 try:
     import re2 as re
 except ImportError:
     pass
-
+import inspect
 
 class ManPage(object):
     cc = ("'", ".")
@@ -32,6 +33,8 @@ class ManPage(object):
     def __init__(self, filename, redirected_from=False):
         self.filename = filename
 
+        self.subtitle = ""
+
         self.sections = []
         self.current_buffer = None
 
@@ -51,19 +54,21 @@ class ManPage(object):
         self.state = []
         self.depth = 0
 
-        self.first_line = True
         self.redirect = []
+
+        self.list_of_pages = set()
+
         if redirected_from:
             self.manpage_name = os.path.basename(redirected_from)
         else:
             self.manpage_name = os.path.basename(filename)
 
-        self.parse()
+        # self.parse()
+
+    def set_pages(self, list_of_pages):
+        self.list_of_pages = list_of_pages
 
     def process_spaced_lines(self, line):
-        if not self.spaced_lines_buffer:
-            return
-
         if (not line) or (not line.startswith(" ")):
             self.blank_line = False
             self.add_text(
@@ -73,27 +78,24 @@ class ManPage(object):
             self.spaced_lines_buffer = []
 
     def parse(self):
+        yield_subtitle = False
         for line in self.get_line():
             if self.redirect:
                 break
 
-            self.process_spaced_lines(line)
+            if not yield_subtitle and self.subtitle:
+                yield_subtitle = True
+                yield self.redirect, self.subtitle
+
+            if self.spaced_lines_buffer:
+                self.process_spaced_lines(line)
 
             if not line:
                 if self.sections:
                     self.add_spacer()
             elif line[0] in self.cc:
                 self.blank_line = False
-                split = line[1:].split(None, 1)
-
-                macro = split[0]
-                line_contents = None
-                if len(split) == 2:
-                    line_contents = split[1]
-
-                del split
-
-                self.parse_macro(macro, unescape(line_contents))
+                self.parse_macro(line[1:])
 
             elif self.in_table:
                 self.table_buffer.append(unescape(line))
@@ -107,11 +109,10 @@ class ManPage(object):
                     else:
                         self.add_content(line)
 
-            if self.first_line:
-                self.first_line = False
-
         if not self.redirect:
             self.flush_current_section()
+        else:
+            yield None, None
 
     def process_redirect(self, data):
         self.redirect = data.split("/")
@@ -124,17 +125,15 @@ class ManPage(object):
 
                 if extra_line:
                     line = "%s %s" % (extra_line, line,)
-
                     extra_line = None
 
-                if len(line) and line[-1] == "\\" and line[0] in self.cc:
+                if not line:
+                    yield line
+                elif line[-1] == "\\" and line[0] in self.cc:
                     extra_line = line[:-1]
                     continue
-
-                if line:
-                    line = entitize(line)
-
-                yield line
+                else:
+                    yield entitize(line)
 
     def add_spacer(self):
         if self.in_pre:
@@ -171,19 +170,36 @@ class ManPage(object):
             self.in_li = False
             self.restore_state()
 
-    def parse_macro(self, macro, data):
+    def parse_macro(self, line):
+        if " " in line:
+            macro, data = line.split(None, 1)
+        else:
+            macro, data = line, None
+
         if macro.startswith('\\"'):
             # Comment
-            pass
+            return
         elif macro in {'ad', 'PD', 'nh', 'hy', 'HP', 'UE'}:
             # Catchall for ignores. We might need to revisit
-            pass
+            return
         elif macro in {'ft', 'fam'}:
             # FIXME: Need fixing
-            pass
+            return
+
+        if macro == "SH":
+            self.add_section(data)
+            return
+        elif macro == "SS":
+            self.add_subsection(data)
+            return
         elif macro in {'so'}:
             self.process_redirect(data)
-        elif macro in {'br', 'sp'}:
+            return
+
+        if data:
+            data = unescape(data)
+
+        if macro in {'br', 'sp'}:
             self.add_spacer()
         elif macro == 'TS':
             self.in_table = True
@@ -206,8 +222,6 @@ class ManPage(object):
         elif macro == 'in':
             # We do not mess with indents
             pass
-        elif macro == "SH":
-            self.add_section(data)
         elif macro == "nf":
             self.start_pre()
         elif macro == 'fi':
@@ -216,12 +230,11 @@ class ManPage(object):
             self.save_state()
         elif macro == "RE":
             self.restore_state()
-        elif macro == "SS":
-            self.add_subsection(data)
         elif macro == 'UR':
             self.add_url(data)
         elif macro in self.single_styles | self.compound_styles:
-            self.add_style(macro, data)
+            if data:
+                self.add_content(self.add_style(macro, data))
         else:
             raise MissingParser("MACRO %s : %s" % (macro, data, ))
             pass
@@ -360,14 +373,12 @@ class ManPage(object):
         else:
             self.add_spacer()
 
+    #@lru_cache(maxsize=10000)
     def add_style(self, style, data):
-        if not data:
-            return
-
         if style in self.single_styles:
-            self.add_content(stylize(style, " ".join(toargs(data))))
+            return (stylize(style, " ".join(toargs(data))))
         elif style in self.compound_styles:
-            self.add_content(stylize_odd_even(style, toargs(data)))
+            return (stylize_odd_even(style, toargs(data)))
 
     def set_header(self, data):
         headers = shlex.split(data)
@@ -416,21 +427,31 @@ class ManPage(object):
         self.title = title.strip()
         self.subtitle = subtitle.strip()
 
-    def html(self, dest_links=None):
+    def linkify(self, text):
+        def repl(m):
+            manpage = m.groupdict()['page']
+            section = m.groupdict()['section']
+            page = '.'.join([manpage, section])
+
+            out = "<strong>%s</strong>(%s)" % (manpage, section, )
+
+            if page in self.list_of_pages:
+                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
+                    section, manpage, section, out, )
+            return out
+
+        return linkifier.sub(repl, text)
+
+    def html(self):
         if self.redirect:
             return "REDIRECTION %s" % self.redirect
 
         section_tpl = load_template('section')
-
         section_contents = ""
-        for title, content in self.sections:
-            if dest_links:
-                section_content = linkify(''.join(content), dest_links)
-            else:
-                section_content = ''.join(content)
+        for title, content in self.sections:            
             section_contents += section_tpl.safe_substitute(
                 title=title,
-                content=section_content,
+                content=''.join(content),
             )
 
         header_tpl = load_template('header')
@@ -453,7 +474,7 @@ class ManPage(object):
                 title=title,  # FIXME: Mess
                 subtitle=self.subtitle,
             ),
-            content=section_contents,
+            content=self.linkify(section_contents),
         )
 
 
@@ -468,7 +489,7 @@ style_trans = {
     'B': 'strong',
 }
 
-
+#@lru_cache(maxsize=10000)
 def toargs(data):
     if ("'" not in data) and ("\"" not in data):
         args = data.split()
@@ -505,7 +526,11 @@ def stylize_odd_even(style, args):
 
 
 def unescape(t, strip_weird_tags=False):
+    #print "DEBUG", inspect.stack()[1]
     if not t:
+        return t
+
+    if "\\" not in t:
         return t
 
     t = t.replace("\-", "-")
@@ -563,26 +588,17 @@ linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
 
 
-def linkify(text, pages):
-    def repl(m):
-        manpage = m.groupdict()['page']
-        section = m.groupdict()['section']
-        page = '.'.join([manpage, section])
-
-        out = "<strong>%s</strong>(%s)" % (manpage, section, )
-
-        if page in pages:
-            out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
-                section, manpage, section, out, )
-        return out
-
-    return linkifier.sub(repl, text)
-
-
 class MissingParser(Exception):
     pass
 
 if __name__ == '__main__':
     manpage = ManPage(sys.argv[1])
+    g = manpage.parse()
+
+    try:
+        while True:
+            g.next()
+    except StopIteration:
+        pass
 
     print manpage.html()
