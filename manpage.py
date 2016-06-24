@@ -96,7 +96,6 @@ class ManPage(object):
             elif line[0] in self.cc:
                 self.blank_line = False
                 self.parse_macro(line[1:])
-
             elif self.in_table:
                 self.table_buffer.append(unescape(line))
             else:
@@ -252,6 +251,8 @@ class ManPage(object):
 
         if self.in_pre:
             self.append_to_pre_buffer(data)
+        elif self.in_table:
+            self.table_buffer.append(data)
         else:
             self.content_buffer.append(data)
 
@@ -448,7 +449,7 @@ class ManPage(object):
 
         section_tpl = load_template('section')
         section_contents = ""
-        for title, content in self.sections:            
+        for title, content in self.sections:
             section_contents += section_tpl.safe_substitute(
                 title=title,
                 content=''.join(content),
