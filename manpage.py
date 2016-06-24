@@ -10,7 +10,6 @@ try:
     import re2 as re
 except ImportError:
     pass
-import inspect
 
 class ManPage(object):
     cc = ("'", ".")
@@ -62,6 +61,11 @@ class ManPage(object):
             self.manpage_name = os.path.basename(redirected_from)
         else:
             self.manpage_name = os.path.basename(filename)
+
+        self.macros_to_ignore = {'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam'}
+        self.macros_to_space = {'br', 'sp'}
+        self.style_macros = self.single_styles | self.compound_styles
+        self.bullet_chars = {'(bu', '\(bu'}
 
         # self.parse()
 
@@ -169,6 +173,7 @@ class ManPage(object):
             self.in_li = False
             self.restore_state()
 
+    #@profile
     def parse_macro(self, line):
         if " " in line:
             macro, data = line.split(None, 1)
@@ -178,11 +183,7 @@ class ManPage(object):
         if macro.startswith('\\"'):
             # Comment
             return
-        elif macro in {'ad', 'PD', 'nh', 'hy', 'HP', 'UE'}:
-            # Catchall for ignores. We might need to revisit
-            return
-        elif macro in {'ft', 'fam'}:
-            # FIXME: Need fixing
+        elif macro in self.macros_to_ignore:
             return
 
         if macro == "SH":
@@ -198,7 +199,7 @@ class ManPage(object):
         if data:
             data = unescape(data)
 
-        if macro in {'br', 'sp'}:
+        if macro in self.macros_to_space:
             self.add_spacer()
         elif macro == 'TS':
             self.in_table = True
@@ -231,7 +232,7 @@ class ManPage(object):
             self.restore_state()
         elif macro == 'UR':
             self.add_url(data)
-        elif macro in self.single_styles | self.compound_styles:
+        elif macro in self.style_macros:
             if data:
                 self.add_content(self.add_style(macro, data))
         else:
@@ -361,8 +362,8 @@ class ManPage(object):
 
     def process_li(self, data):
         if data:
-            bullet = toargs(data)[0]
-            if bullet in {'(bu', '\(bu'}:
+            bullet = data.split()[0]
+            if bullet in self.bullet_chars:
                 bullet = '*'
 
             if not self.in_li:
@@ -379,7 +380,10 @@ class ManPage(object):
         if style in self.single_styles:
             return stylize(style, data)
         elif style in self.compound_styles:
-            return stylize_odd_even(style, toargs(data))
+            if " " not in data:
+                return stylize_odd_even(style, [data, ])
+            else:
+                return stylize_odd_even(style, toargs(data))
 
     def set_header(self, data):
         headers = shlex.split(data)
@@ -428,20 +432,20 @@ class ManPage(object):
         self.title = title.strip()
         self.subtitle = subtitle.strip()
 
+    def repl(self, m):
+        manpage = m.groupdict()['page']
+        section = m.groupdict()['section']
+        page = '.'.join([manpage, section])
+
+        out = "<strong>%s</strong>(%s)" % (manpage, section, )
+
+        if page in self.list_of_pages:
+            out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
+                section, manpage, section, out, )
+        return out
+
     def linkify(self, text):
-        def repl(m):
-            manpage = m.groupdict()['page']
-            section = m.groupdict()['section']
-            page = '.'.join([manpage, section])
-
-            out = "<strong>%s</strong>(%s)" % (manpage, section, )
-
-            if page in self.list_of_pages:
-                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
-                    section, manpage, section, out, )
-            return out
-
-        return linkifier.sub(repl, text)
+        return linkifier.sub(self.repl, text)
 
     def html(self):
         if self.redirect:
@@ -492,9 +496,6 @@ style_trans = {
 
 #@lru_cache(maxsize=10000)
 def toargs(data):
-    if " " not in data:
-        return [data, ]
-
     if ("'" not in data) and ("\"" not in data):
         args = data.split()
     else:
