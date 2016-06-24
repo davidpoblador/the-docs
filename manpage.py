@@ -376,9 +376,9 @@ class ManPage(object):
     #@lru_cache(maxsize=10000)
     def add_style(self, style, data):
         if style in self.single_styles:
-            return (stylize(style, " ".join(toargs(data))))
+            return stylize(style, data)
         elif style in self.compound_styles:
-            return (stylize_odd_even(style, toargs(data)))
+            return stylize_odd_even(style, toargs(data))
 
     def set_header(self, data):
         headers = shlex.split(data)
@@ -491,6 +491,9 @@ style_trans = {
 
 #@lru_cache(maxsize=10000)
 def toargs(data):
+    if " " not in data:
+        return [data, ]
+
     if ("'" not in data) and ("\"" not in data):
         args = data.split()
     else:
@@ -526,7 +529,6 @@ def stylize_odd_even(style, args):
 
 
 def unescape(t, strip_weird_tags=False):
-    #print "DEBUG", inspect.stack()[1]
     if not t:
         return t
 
