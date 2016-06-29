@@ -6,10 +6,11 @@ import pprint
 from string import Template
 import os
 from repoze.lru import lru_cache
-try:
-    import re2 as re
-except ImportError:
-    pass
+import re
+#try:
+#    import re2 as re
+#except ImportError:
+#    pass
 
 class ManPage(object):
     cc = ("'", ".")
@@ -599,8 +600,8 @@ if __name__ == '__main__':
 
     try:
         while True:
-            g.next()
+            next(g)
     except StopIteration:
         pass
 
-    print manpage.html()
+    print(manpage.html())

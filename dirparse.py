@@ -8,10 +8,11 @@ import os.path
 import os
 from collections import Counter, defaultdict
 from string import Template
-try:
-    import re2 as re
-except ImportError:
-    pass
+import re
+#try:
+#    import re2 as re
+#except ImportError:
+#    pass
 
 root_html = "public_html/"
 base_host = "http://localhost:8000/"
@@ -38,27 +39,27 @@ def main():
     pages = defaultdict()
 
     for manfile in list_of_manfiles:
-        print "Processing man page %s ..." % (manfile, )
+        print("Processing man page %s ..." % (manfile, ))
         try:
             manpage = ManPage(manfile)
             g = manpage.parse()
 
-            redirect, subtitle = g.next()
+            redirect, subtitle = next(g)
 
             while redirect:
                 redirection = get_redirection_file(src, redirect)
-                print " * Page %s has a redirection to %s..." % (manfile, redirection)
+                print(" * Page %s has a redirection to %s..." % (manfile, redirection))
                 manpage = ManPage(redirection, redirected_from=manfile)
                 g = manpage.parse()
 
-                redirect, subtitle = g.next()
+                redirect, subtitle = next(g)
 
         except MissingParser as e:
             mp = str(e).split(" ", 2)[1]
-            print " * MP(%s): %s" % (mp, manfile, )
+            print(" * MP(%s): %s" % (mp, manfile, ))
             continue
         except:
-            print " * ERR: %s" % (manfile, )
+            print(" * ERR: %s" % (manfile, ))
             raise
 
         basename = os.path.basename(manfile)
@@ -74,19 +75,19 @@ def main():
 
     # Write and Linkify
     list_of_pages = set(pages.keys())
-    for directory, page_files in mandirpages.items():
+    for directory, page_files in list(mandirpages.items()):
         for page_file in sorted(page_files):
             final_page = os.path.join(
                 root_html, src, directory, page_file) + ".html"
-            print " * Writing page: %s" % final_page
+            print(" * Writing page: %s" % final_page)
 
             try:
-                list_of_manpages[page_file][1].next()
+                next(list_of_manpages[page_file][1])
             except StopIteration:
                 pass
             except MissingParser as e:
                 mp = str(e).split(" ", 2)[1]
-                print " * MP(%s): %s" % (mp, manfile, )
+                print(" * MP(%s): %s" % (mp, manfile, ))
                 continue
 
             list_of_manpages[page_file][0].set_pages(list_of_pages)
@@ -96,8 +97,8 @@ def main():
             file.close()
 
     # Directory Indexes
-    for directory, page_files in mandirpages.items():
-        print " * Generating indexes for %s" % directory
+    for directory, page_files in list(mandirpages.items()):
+        print(" * Generating indexes for %s" % directory)
         content = "<dl class=\"dl-vertical\">"
         for page_file in sorted(page_files):
             desc = pages[page_file][0]
@@ -178,4 +179,4 @@ if __name__ == '__main__':
     main()
     elapsed = time.time() - start_time
 
-    print("--- %s seconds ---" % (elapsed))
+    print(("--- %s seconds ---" % (elapsed)))
