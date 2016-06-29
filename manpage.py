@@ -102,20 +102,19 @@ class ManPage(object):
                 self.parse_macro(line[1:])
             elif self.in_table:
                 self.table_buffer.append(unescape(line))
+            elif self.capture_name_section:
+                self.name_section_buffer.append(unescape(line))
+            elif line.startswith(" ") and not self.in_pre:
+                self.blank_line = False
+                self.spaced_lines_buffer.append(unescape(line))
             else:
-                if self.capture_name_section:
-                    self.name_section_buffer.append(unescape(line))
-                else:
-                    self.blank_line = False
-                    if line.startswith(" ") and not self.in_pre:
-                        self.spaced_lines_buffer.append(unescape(line))
-                    else:
-                        self.add_content(line)
-
-        if not self.redirect:
-            self.flush_current_section()
+                self.blank_line = False
+                self.add_content(line)
         else:
-            yield None, None
+            self.flush_current_section()
+
+        if self.redirect:
+            yield self.redirect, None
 
     def process_redirect(self, data):
         self.redirect = data.split("/")
@@ -173,7 +172,6 @@ class ManPage(object):
             self.in_li = False
             self.restore_state()
 
-    #@profile
     def parse_macro(self, line):
         if " " in line:
             macro, data = line.split(None, 1)
