@@ -45,7 +45,9 @@ def main():
 
             while redirect:
                 redirection = get_redirection_file(src, redirect)
-                print(" * Page %s has a redirection to %s..." % (manfile, redirection))
+                print(
+                    " * Page %s has a redirection to %s..." %
+                    (manfile, redirection))
                 manpage = ManPage(redirection, redirected_from=manfile)
                 g = manpage.parse()
 
@@ -103,7 +105,7 @@ def main():
                 file = open(final_page, "w")
                 file.write(out)
                 file.close()
-    
+
     checksum_file = open('checksums.dat', 'wb')
     marshal.dump(checksums, checksum_file)
     checksum_file.close()

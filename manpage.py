@@ -12,6 +12,7 @@ try:
 except ImportError:
     pass
 
+
 class ManPage(object):
     cc = ("'", ".")
     single_styles = {'B', 'I'}
@@ -63,7 +64,8 @@ class ManPage(object):
         else:
             self.manpage_name = os.path.basename(filename)
 
-        self.macros_to_ignore = {'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam'}
+        self.macros_to_ignore = {
+            'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam'}
         self.macros_to_space = {'br', 'sp'}
         self.style_macros = self.single_styles | self.compound_styles
         self.bullet_chars = {'(bu', '\(bu'}
@@ -492,6 +494,7 @@ style_trans = {
     'B': 'strong',
 }
 
+
 @lru_cache(maxsize=100000)
 def toargs(data):
     if ("'" not in data) and ("\"" not in data):
@@ -516,6 +519,7 @@ def stylize(style, text):
         return text
     else:
         return "<%s>%s</%s>" % (style_trans[style], text, style_trans[style], )
+
 
 def stylize_odd_even(style, args):
     buff = ""
