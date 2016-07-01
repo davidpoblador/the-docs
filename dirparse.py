@@ -82,9 +82,14 @@ def main():
     # Write and Linkify
     list_of_pages = set(pages.keys())
     for directory, page_files in list(mandirpages.items()):
+        man_directory = os.path.join(root_html, src, directory)
+        try:
+            os.makedirs(man_directory)
+        except OSError:
+            pass
+
         for page_file in sorted(page_files):
-            final_page = os.path.join(
-                root_html, src, directory, page_file) + ".html"
+            final_page = os.path.join(man_directory, page_file) + ".html"
             print(" * Writing page: %s" % final_page)
 
             try:
