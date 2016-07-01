@@ -374,7 +374,6 @@ class ManPage(object):
         else:
             self.add_spacer()
 
-    #@lru_cache(maxsize=10000)
     def add_style(self, style, data):
         if style in self.single_styles:
             return stylize(style, data)
@@ -493,7 +492,7 @@ style_trans = {
     'B': 'strong',
 }
 
-#@lru_cache(maxsize=10000)
+@lru_cache(maxsize=100000)
 def toargs(data):
     if ("'" not in data) and ("\"" not in data):
         args = data.split()
@@ -517,7 +516,6 @@ def stylize(style, text):
         return text
     else:
         return "<%s>%s</%s>" % (style_trans[style], text, style_trans[style], )
-
 
 def stylize_odd_even(style, args):
     buff = ""
