@@ -197,6 +197,11 @@ class ManPage(object):
             self.process_redirect(data)
             return
 
+        if macro in self.style_macros:
+            if data:
+                self.add_content(self.add_style(macro, data))
+            return
+
         if data:
             data = unescape(data)
 
@@ -233,9 +238,6 @@ class ManPage(object):
             self.restore_state()
         elif macro == 'UR':
             self.add_url(data)
-        elif macro in self.style_macros:
-            if data:
-                self.add_content(self.add_style(macro, data))
         else:
             raise MissingParser("MACRO %s : %s" % (macro, data, ))
             pass
@@ -378,8 +380,9 @@ class ManPage(object):
 
     def add_style(self, style, data):
         if style in self.single_styles:
-            return stylize(style, data)
+            return stylize(style, unescape(data))
         elif style in self.compound_styles:
+            data = unescape(data, strip_weird_tags = True)
             if " " not in data:
                 return stylize_odd_even(style, [data, ])
             else:
