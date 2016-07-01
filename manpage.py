@@ -7,10 +7,10 @@ from string import Template
 import os
 from repoze.lru import lru_cache
 import re
-#try:
-#    import re2 as re
-#except ImportError:
-#    pass
+try:
+    import re2 as re
+except ImportError:
+    pass
 
 class ManPage(object):
     cc = ("'", ".")

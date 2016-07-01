@@ -8,11 +8,7 @@ import os.path
 import os
 from collections import Counter, defaultdict
 from string import Template
-import re
-#try:
-#    import re2 as re
-#except ImportError:
-#    pass
+
 
 root_html = "public_html/"
 base_host = "http://localhost:8000/"
