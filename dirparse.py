@@ -6,9 +6,10 @@ import sys
 import glob
 import os.path
 import os
-from collections import Counter, defaultdict
+from collections import defaultdict
 from string import Template
-
+from hashlib import md5
+import marshal
 
 root_html = "public_html/"
 base_host = "http://localhost:8000/"
@@ -69,6 +70,13 @@ def main():
 
     del(list_of_manfiles)
 
+    try:
+        checksum_file = open('checksums.dat', 'rb')
+        checksums = marshal.load(checksum_file)
+        checksum_file.close()
+    except IOError:
+        checksums = {}
+
     # Write and Linkify
     list_of_pages = set(pages.keys())
     for directory, page_files in list(mandirpages.items()):
@@ -87,10 +95,20 @@ def main():
                 continue
 
             list_of_manpages[page_file][0].set_pages(list_of_pages)
+            out = list_of_manpages[page_file][0].html()
+            checksum = md5(out).hexdigest()
 
-            file = open(final_page, "w")
-            file.write(list_of_manpages[page_file][0].html())
-            file.close()
+            if checksum != checksums.get(final_page, None):
+                checksums[final_page] = checksum
+                file = open(final_page, "w")
+                file.write(out)
+                file.close()
+    
+    checksum_file = open('checksums.dat', 'wb')
+    marshal.dump(checksums, checksum_file)
+    checksum_file.close()
+
+    del(checksums)
 
     # Directory Indexes
     for directory, page_files in list(mandirpages.items()):
