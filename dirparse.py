@@ -31,6 +31,7 @@ SECTIONS = {
 def main():
     _, src = sys.argv
     list_of_manfiles = list(glob.iglob("%s/man?/*.?" % src))
+    base_src = os.path.basename(src)
     list_of_manpages = dict()
     mandirpages = defaultdict(set)
     pages = defaultdict()
@@ -82,7 +83,7 @@ def main():
     # Write and Linkify
     list_of_pages = set(pages.keys())
     for directory, page_files in list(mandirpages.items()):
-        man_directory = os.path.join(root_html, src, directory)
+        man_directory = os.path.join(root_html, base_src, directory)
         try:
             os.makedirs(man_directory)
         except OSError:
@@ -154,7 +155,7 @@ def main():
                 "\'"),
         )
 
-        f = open(os.path.join(root_html, src, directory, 'index.html'), 'w')
+        f = open(os.path.join(root_html, base_src, directory, 'index.html'), 'w')
         f.write(out)
         f.close()
 
@@ -174,7 +175,7 @@ def main():
         content=index_tpl.substitute(),
     )
 
-    f = open("%s/index.html" % (os.path.join(root_html, src), ), 'w')
+    f = open("%s/index.html" % (os.path.join(root_html, base_src), ), 'w')
     f.write(index)
     f.close()
 
