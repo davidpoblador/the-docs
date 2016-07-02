@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>syscalls - Linux system calls</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">syscalls<small> (2)</small></h1>
+        <p class="lead">Linux system calls</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">syscalls</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>Linux system calls.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The system call is the fundamental interface between an application and the Linux kernel.</p>
+  <h3>System calls and library wrapper functions</h3>
+<p>System calls are generally not invoked directly, but rather via wrapper functions in glibc (or perhaps some other library). For details of direct invocation of a system call, see <a href="../man2/intro.2.html"><strong>intro</strong>(2)</a>. Often, but not always, the name of the wrapper function is the same as the name of the system call that it invokes. For example, glibc contains a function <strong>truncate</strong>() which invokes the underlying "truncate" system call.</p>
+<p class='spacer'>
+
+<p>Often the glibc wrapper function is quite thin, doing little work other than copying arguments to the right registers before invoking the system call, and then setting <em>errno</em> appropriately after the system call has returned. (These are the same steps that are performed by <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>, which can be used to invoke system calls for which no wrapper function is provided.) Note: system calls indicate a failure by returning a negative error number to the caller; when this happens, the wrapper function negates the returned error number (to make it positive), copies it to <em>errno</em>, and returns -1 to the caller of the wrapper.</p>
+<p class='spacer'>
+
+<p>Sometimes, however, the wrapper function does some extra work before invoking the system call. For example, nowadays there are (for reasons described below) two related system calls, <a href="../man2/truncate.2.html"><strong>truncate</strong>(2)</a> and <a href="../man2/truncate64.2.html"><strong>truncate64</strong>(2)</a>, and the glibc <strong>truncate</strong>() wrapper function checks which of those system calls are provided by the kernel and determines which should be employed.</p>
+  <h3>System call list</h3>
+  <p>Below is a list of the Linux system calls. In the list, the <em>Kernel</em> column indicates the kernel version for those system calls that were new in Linux 2.2, or have appeared since that kernel version. Note the following points:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>Where no kernel version is indicated, the system call appeared in kernel 1.0 or earlier.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Where a system call is marked "1.2" this means the system call probably appeared in a 1.1.x kernel version, and first appeared in a stable kernel with 1.2. (Development of the 1.2 kernel was initiated from a branch of kernel 1.0.6 via the 1.1.x unstable kernel series.)</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Where a system call is marked "2.0" this means the system call probably appeared in a 1.3.x kernel version, and first appeared in a stable kernel with 2.0. (Development of the 2.0 kernel was initiated from a branch of kernel 1.2.x, somewhere around 1.2.10, via the 1.3.x unstable kernel series.)</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Where a system call is marked "2.2" this means the system call probably appeared in a 2.1.x kernel version, and first appeared in a stable kernel with 2.2.0. (Development of the 2.2 kernel was initiated from a branch of kernel 2.0.21 via the 2.1.x unstable kernel series.)</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Where a system call is marked "2.4" this means the system call probably appeared in a 2.3.x kernel version, and first appeared in a stable kernel with 2.4.0. (Development of the 2.4 kernel was initiated from a branch of kernel 2.2.8 via the 2.3.x unstable kernel series.)</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Where a system call is marked "2.6" this means the system call probably appeared in a 2.5.x kernel version, and first appeared in a stable kernel with 2.6.0. (Development of kernel 2.6 was initiated from a branch of kernel 2.4.15 via the 2.5.x unstable kernel series.)</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Starting with kernel 2.6.0, the development model changed, and new system calls may appear in each 2.6.x release. In this case, the exact version number where the system call appeared is shown. This convention continues with the 3.x kernel series, which followed on from kernel 2.6.39, and the 4.x kernel series, which followed on from kernel 3.19.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>In some cases, a system call was added to a stable kernel series after it branched from the previous stable kernel series, and then backported into the earlier stable kernel series. For example some system calls that appeared in 2.6.x were also backported into a 2.4.x release after 2.4.15. When this is so, the version where the system call appeared in both of the major kernel series is listed.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The list of system calls that are available as at kernel 4.5 (or in a few cases only on older kernels) is as follows:</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p class='spacer'>
+
+<table class="table table-striped">
+<tr>
+<th><strong>System call</strong></th>
+<th><strong>Kernel</strong></th>
+<th><strong>Notes</strong></th></tr>
+
+<tr>
+<td><a href="../man2/_llseek.2.html"><strong>_llseek</strong>(2)</a></td>
+<td>1.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/_newselect.2.html"><strong>_newselect</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/_sysctl.2.html"><strong>_sysctl</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/accept.2.html"><strong>accept</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/accept4.2.html"><strong>accept4</strong>(2)</a></td>
+<td>2.6.28</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/access.2.html"><strong>access</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/acct.2.html"><strong>acct</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/add_key.2.html"><strong>add_key</strong>(2)</a></td>
+<td>2.6.11</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/adjtimex.2.html"><strong>adjtimex</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/alarm.2.html"><strong>alarm</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/alloc_hugepages.2.html"><strong>alloc_hugepages</strong>(2)</a></td>
+<td>2.5.36</td>
+<td>Removed in 2.5.44</td></tr>
+
+<tr>
+<td><a href="../man2/bdflush.2.html"><strong>bdflush</strong>(2)</a></td>
+<td>1.2</td>
+<td>Deprecated (does nothing)   since 2.6  </td></tr>
+
+<tr>
+<td><a href="../man2/bind.2.html"><strong>bind</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/bpf.2.html"><strong>bpf</strong>(2)</a></td>
+<td>3.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/brk.2.html"><strong>brk</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/cacheflush.2.html"><strong>cacheflush</strong>(2)</a></td>
+<td>1.2</td>
+<td>Not on x86</td></tr>
+
+<tr>
+<td><a href="../man2/capget.2.html"><strong>capget</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/capset.2.html"><strong>capset</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/chmod.2.html"><strong>chmod</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/chown.2.html"><strong>chown</strong>(2)</a></td>
+<td>2.2</td>
+<td>See <a href="../man2/chown.2.html"><strong>chown</strong>(2)</a> for   version details  </td></tr>
+
+<tr>
+<td><a href="../man2/chown32.2.html"><strong>chown32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/chroot.2.html"><strong>chroot</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><strong>clock_adjtime</strong>(2)</td>
+<td>2.6.39</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/clock_getres.2.html"><strong>clock_getres</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/clock_nanosleep.2.html"><strong>clock_nanosleep</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/clock_settime.2.html"><strong>clock_settime</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/clone.2.html"><strong>clone</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/close.2.html"><strong>close</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/connect.2.html"><strong>connect</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/copy_file_range.2.html"><strong>copy_file_range</strong>(2)</a></td>
+<td>4.5</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/creat.2.html"><strong>creat</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/create_module.2.html"><strong>create_module</strong>(2)</a></td>
+<td>1.0</td>
+<td>Removed in 2.6</td></tr>
+
+<tr>
+<td><a href="../man2/delete_module.2.html"><strong>delete_module</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/dup.2.html"><strong>dup</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/dup2.2.html"><strong>dup2</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/dup3.2.html"><strong>dup3</strong>(2)</a></td>
+<td>2.6.27</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/epoll_create.2.html"><strong>epoll_create</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/epoll_create1.2.html"><strong>epoll_create1</strong>(2)</a></td>
+<td>2.6.27</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/epoll_ctl.2.html"><strong>epoll_ctl</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/epoll_pwait.2.html"><strong>epoll_pwait</strong>(2)</a></td>
+<td>2.6.19</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/eventfd.2.html"><strong>eventfd</strong>(2)</a></td>
+<td>2.6.22</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/eventfd2.2.html"><strong>eventfd2</strong>(2)</a></td>
+<td>2.6.27</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/execve.2.html"><strong>execve</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/execveat.2.html"><strong>execveat</strong>(2)</a></td>
+<td>3.19</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/exit.2.html"><strong>exit</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/exit_group.2.html"><strong>exit_group</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/faccessat.2.html"><strong>faccessat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fadvise64.2.html"><strong>fadvise64</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fadvise64_64.2.html"><strong>fadvise64_64</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a></td>
+<td>2.6.23</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fanotify_init.2.html"><strong>fanotify_init</strong>(2)</a></td>
+<td>2.6.37</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fanotify_mark.2.html"><strong>fanotify_mark</strong>(2)</a></td>
+<td>2.6.37</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fchdir.2.html"><strong>fchdir</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fchmod.2.html"><strong>fchmod</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fchmodat.2.html"><strong>fchmodat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fchown.2.html"><strong>fchown</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fchown32.2.html"><strong>fchown32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fchownat.2.html"><strong>fchownat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fcntl64.2.html"><strong>fcntl64</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fdatasync.2.html"><strong>fdatasync</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fgetxattr.2.html"><strong>fgetxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/finit_module.2.html"><strong>finit_module</strong>(2)</a></td>
+<td>3.8</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/flistxattr.2.html"><strong>flistxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/flock.2.html"><strong>flock</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fork.2.html"><strong>fork</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/free_hugepages.2.html"><strong>free_hugepages</strong>(2)</a></td>
+<td>2.5.36</td>
+<td>Removed in 2.5.44</td></tr>
+
+<tr>
+<td><a href="../man2/fremovexattr.2.html"><strong>fremovexattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fsetxattr.2.html"><strong>fsetxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fstat.2.html"><strong>fstat</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fstat64.2.html"><strong>fstat64</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fstatat64.2.html"><strong>fstatat64</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fstatfs.2.html"><strong>fstatfs</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fstatfs64.2.html"><strong>fstatfs64</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/fsync.2.html"><strong>fsync</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ftruncate64.2.html"><strong>ftruncate64</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/futex.2.html"><strong>futex</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/futimesat.2.html"><strong>futimesat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/get_kernel_syms.2.html"><strong>get_kernel_syms</strong>(2)</a></td>
+<td>1.0</td>
+<td>Removed in 2.6</td></tr>
+
+<tr>
+<td><a href="../man2/get_mempolicy.2.html"><strong>get_mempolicy</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/get_robust_list.2.html"><strong>get_robust_list</strong>(2)</a></td>
+<td>2.6.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/get_thread_area.2.html"><strong>get_thread_area</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getcpu.2.html"><strong>getcpu</strong>(2)</a></td>
+<td>2.6.19</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getcwd.2.html"><strong>getcwd</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getdents.2.html"><strong>getdents</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getdents64.2.html"><strong>getdents64</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getegid.2.html"><strong>getegid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getegid32.2.html"><strong>getegid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/geteuid.2.html"><strong>geteuid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/geteuid32.2.html"><strong>geteuid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getgid.2.html"><strong>getgid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getgid32.2.html"><strong>getgid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getgroups.2.html"><strong>getgroups</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getgroups32.2.html"><strong>getgroups32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getitimer.2.html"><strong>getitimer</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getpeername.2.html"><strong>getpeername</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/getpagesize.2.html"><strong>getpagesize</strong>(2)</a></td>
+<td>2.0</td>
+<td>Not on x86</td></tr>
+
+<tr>
+<td><a href="../man2/getpgid.2.html"><strong>getpgid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getpgrp.2.html"><strong>getpgrp</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getppid.2.html"><strong>getppid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getpriority.2.html"><strong>getpriority</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getrandom.2.html"><strong>getrandom</strong>(2)</a></td>
+<td>3.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getresgid.2.html"><strong>getresgid</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getresgid32.2.html"><strong>getresgid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getresuid.2.html"><strong>getresuid</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getresuid32.2.html"><strong>getresuid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getrusage.2.html"><strong>getrusage</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getsid.2.html"><strong>getsid</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getsockname.2.html"><strong>getsockname</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a></td>
+<td>2.4.11</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/gettimeofday.2.html"><strong>gettimeofday</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getuid.2.html"><strong>getuid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getuid32.2.html"><strong>getuid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/getxattr.2.html"><strong>getxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/init_module.2.html"><strong>init_module</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/inotify_add_watch.2.html"><strong>inotify_add_watch</strong>(2)</a></td>
+<td>2.6.13</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/inotify_init.2.html"><strong>inotify_init</strong>(2)</a></td>
+<td>2.6.13</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/inotify_init1.2.html"><strong>inotify_init1</strong>(2)</a></td>
+<td>2.6.27</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/inotify_rm_watch.2.html"><strong>inotify_rm_watch</strong>(2)</a></td>
+<td>2.6.13</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/io_cancel.2.html"><strong>io_cancel</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/io_destroy.2.html"><strong>io_destroy</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/io_getevents.2.html"><strong>io_getevents</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/io_setup.2.html"><strong>io_setup</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/io_submit.2.html"><strong>io_submit</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ioperm.2.html"><strong>ioperm</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/iopl.2.html"><strong>iopl</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ioprio_get.2.html"><strong>ioprio_get</strong>(2)</a></td>
+<td>2.6.13</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ioprio_set.2.html"><strong>ioprio_set</strong>(2)</a></td>
+<td>2.6.13</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/kcmp.2.html"><strong>kcmp</strong>(2)</a></td>
+<td>3.5</td>
+<td></td></tr>
+
+<tr>
+<td><strong>kern_features</strong>(2)</td>
+<td>3.7</td>
+<td>Sparc64</td></tr>
+
+<tr>
+<td><a href="../man2/kexec_file_load.2.html"><strong>kexec_file_load</strong>(2)</a></td>
+<td>3.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/kexec_load.2.html"><strong>kexec_load</strong>(2)</a></td>
+<td>2.6.13</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/keyctl.2.html"><strong>keyctl</strong>(2)</a></td>
+<td>2.6.11</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/kill.2.html"><strong>kill</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/lchown.2.html"><strong>lchown</strong>(2)</a></td>
+<td>1.0</td>
+<td>See <a href="../man2/chown.2.html"><strong>chown</strong>(2)</a> for   version details  </td></tr>
+
+<tr>
+<td><a href="../man2/lchown32.2.html"><strong>lchown32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/lgetxattr.2.html"><strong>lgetxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/link.2.html"><strong>link</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/linkat.2.html"><strong>linkat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/listen.2.html"><strong>listen</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/llistxattr.2.html"><strong>llistxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/lookup_dcookie.2.html"><strong>lookup_dcookie</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/lremovexattr.2.html"><strong>lremovexattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/lseek.2.html"><strong>lseek</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/lsetxattr.2.html"><strong>lsetxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/lstat.2.html"><strong>lstat</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/lstat64.2.html"><strong>lstat64</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/madvise.2.html"><strong>madvise</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mbind.2.html"><strong>mbind</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/memfd_create.2.html"><strong>memfd_create</strong>(2)</a></td>
+<td>3.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/migrate_pages.2.html"><strong>migrate_pages</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mincore.2.html"><strong>mincore</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mkdir.2.html"><strong>mkdir</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mkdirat.2.html"><strong>mkdirat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mknod.2.html"><strong>mknod</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mknodat.2.html"><strong>mknodat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mlock2.2.html"><strong>mlock2</strong>(2)</a></td>
+<td>4.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mlockall.2.html"><strong>mlockall</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mmap2.2.html"><strong>mmap2</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/modify_ldt.2.html"><strong>modify_ldt</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mount.2.html"><strong>mount</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/move_pages.2.html"><strong>move_pages</strong>(2)</a></td>
+<td>2.6.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mprotect.2.html"><strong>mprotect</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mq_getsetattr.2.html"><strong>mq_getsetattr</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mq_notify.2.html"><strong>mq_notify</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mq_open.2.html"><strong>mq_open</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mq_timedreceive.2.html"><strong>mq_timedreceive</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mq_timedsend.2.html"><strong>mq_timedsend</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mq_unlink.2.html"><strong>mq_unlink</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/mremap.2.html"><strong>mremap</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/msgctl.2.html"><strong>msgctl</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/msgget.2.html"><strong>msgget</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/msgrcv.2.html"><strong>msgrcv</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/msgsnd.2.html"><strong>msgsnd</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/msync.2.html"><strong>msync</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/munlock.2.html"><strong>munlock</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/munlockall.2.html"><strong>munlockall</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/munmap.2.html"><strong>munmap</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/name_to_handle_at.2.html"><strong>name_to_handle_at</strong>(2)</a></td>
+<td>2.6.39</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/nanosleep.2.html"><strong>nanosleep</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/nfsservctl.2.html"><strong>nfsservctl</strong>(2)</a></td>
+<td>2.2</td>
+<td>Removed in 3.1</td></tr>
+
+<tr>
+<td><a href="../man2/nice.2.html"><strong>nice</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/oldfstat.2.html"><strong>oldfstat</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/oldlstat.2.html"><strong>oldlstat</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/oldolduname.2.html"><strong>oldolduname</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/oldstat.2.html"><strong>oldstat</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/olduname.2.html"><strong>olduname</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/open.2.html"><strong>open</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/open_by_handle_at.2.html"><strong>open_by_handle_at</strong>(2)</a></td>
+<td>2.6.39</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/openat.2.html"><strong>openat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/pause.2.html"><strong>pause</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/pciconfig_iobase.2.html"><strong>pciconfig_iobase</strong>(2)</a></td>
+<td>2.2.15; 2.4</td>
+<td>Not on x86</td></tr>
+
+<tr>
+<td><a href="../man2/pciconfig_read.2.html"><strong>pciconfig_read</strong>(2)</a></td>
+<td>2.0.26; 2.2</td>
+<td>Not on x86</td></tr>
+
+<tr>
+<td><a href="../man2/pciconfig_write.2.html"><strong>pciconfig_write</strong>(2)</a></td>
+<td>2.0.26; 2.2</td>
+<td>Not on x86</td></tr>
+
+<tr>
+<td><a href="../man2/perf_event_open.2.html"><strong>perf_event_open</strong>(2)</a></td>
+<td>2.6.31</td>
+<td>Was perf_counter_open() in   2.6.31; renamed in 2.6.32  </td></tr>
+
+<tr>
+<td><a href="../man2/personality.2.html"><strong>personality</strong>(2)</a></td>
+<td>1.2</td>
+<td></td></tr>
+
+<tr>
+<td><strong>perfctr</strong>(2)</td>
+<td>2.2</td>
+<td>Sparc; removed in 2.6.34</td></tr>
+
+<tr>
+<td><a href="../man2/perfmonctl.2.html"><strong>perfmonctl</strong>(2)</a></td>
+<td>2.4</td>
+<td>ia64</td></tr>
+
+<tr>
+<td><a href="../man2/pipe.2.html"><strong>pipe</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/pipe2.2.html"><strong>pipe2</strong>(2)</a></td>
+<td>2.6.27</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/pivot_root.2.html"><strong>pivot_root</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/poll.2.html"><strong>poll</strong>(2)</a></td>
+<td>2.0.36; 2.2</td>
+<td></td></tr>
+
+<tr>
+<td><strong>ppc_rtas</strong>(2)</td>
+<td>2.6.2</td>
+<td>PowerPC only</td></tr>
+
+<tr>
+<td><a href="../man2/ppoll.2.html"><strong>ppoll</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/prctl.2.html"><strong>prctl</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/pread64.2.html"><strong>pread64</strong>(2)</a></td>
+<td></td>
+<td>Added as "pread" in 2.2;   renamed "pread64" in 2.6  </td></tr>
+
+<tr>
+<td><a href="../man2/preadv.2.html"><strong>preadv</strong>(2)</a></td>
+<td>2.6.30</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/preadv2.2.html"><strong>preadv2</strong>(2)</a></td>
+<td>4.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/prlimit64.2.html"><strong>prlimit64</strong>(2)</a></td>
+<td>2.6.36</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/process_vm_readv.2.html"><strong>process_vm_readv</strong>(2)</a></td>
+<td>3.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/process_vm_writev.2.html"><strong>process_vm_writev</strong>(2)</a></td>
+<td>3.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/pselect6.2.html"><strong>pselect6</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/pwrite64.2.html"><strong>pwrite64</strong>(2)</a></td>
+<td></td>
+<td>Added as "pwrite" in 2.2;   renamed "pwrite64" in 2.6  </td></tr>
+
+<tr>
+<td><a href="../man2/pwritev.2.html"><strong>pwritev</strong>(2)</a></td>
+<td>2.6.30</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/pwritev2.2.html"><strong>pwritev2</strong>(2)</a></td>
+<td>4.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/query_module.2.html"><strong>query_module</strong>(2)</a></td>
+<td>2.2</td>
+<td>Removed in 2.6</td></tr>
+
+<tr>
+<td><a href="../man2/quotactl.2.html"><strong>quotactl</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/read.2.html"><strong>read</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/readahead.2.html"><strong>readahead</strong>(2)</a></td>
+<td>2.4.13</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/readdir.2.html"><strong>readdir</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/readlinkat.2.html"><strong>readlinkat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/readv.2.html"><strong>readv</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/reboot.2.html"><strong>reboot</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/recv.2.html"><strong>recv</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/recvfrom.2.html"><strong>recvfrom</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/recvmmsg.2.html"><strong>recvmmsg</strong>(2)</a></td>
+<td>2.6.33</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/remap_file_pages.2.html"><strong>remap_file_pages</strong>(2)</a></td>
+<td>2.6</td>
+<td>Deprecated since 3.16</td></tr>
+
+<tr>
+<td><a href="../man2/removexattr.2.html"><strong>removexattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rename.2.html"><strong>rename</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/renameat.2.html"><strong>renameat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/renameat2.2.html"><strong>renameat2</strong>(2)</a></td>
+<td>3.15</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/request_key.2.html"><strong>request_key</strong>(2)</a></td>
+<td>2.6.11</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/restart_syscall.2.html"><strong>restart_syscall</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rt_sigaction.2.html"><strong>rt_sigaction</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rt_sigpending.2.html"><strong>rt_sigpending</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rt_sigprocmask.2.html"><strong>rt_sigprocmask</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rt_sigqueueinfo.2.html"><strong>rt_sigqueueinfo</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rt_sigreturn.2.html"><strong>rt_sigreturn</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rt_sigsuspend.2.html"><strong>rt_sigsuspend</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rt_sigtimedwait.2.html"><strong>rt_sigtimedwait</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/rt_tgsigqueueinfo.2.html"><strong>rt_tgsigqueueinfo</strong>(2)</a></td>
+<td>2.6.31</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/s390_runtime_instr.2.html"><strong>s390_runtime_instr</strong>(2)</a></td>
+<td>3.7</td>
+<td>s390 only</td></tr>
+
+<tr>
+<td><a href="../man2/s390_pci_mmio_read.2.html"><strong>s390_pci_mmio_read</strong>(2)</a></td>
+<td>3.19</td>
+<td>s390 only</td></tr>
+
+<tr>
+<td><a href="../man2/s390_pci_mmio_write.2.html"><strong>s390_pci_mmio_write</strong>(2)</a></td>
+<td>3.19</td>
+<td>s390 only</td></tr>
+
+<tr>
+<td><a href="../man2/sched_get_priority_max.2.html"><strong>sched_get_priority_max</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_get_priority_min.2.html"><strong>sched_get_priority_min</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_getaffinity.2.html"><strong>sched_getaffinity</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_getattr.2.html"><strong>sched_getattr</strong>(2)</a></td>
+<td>3.14</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_getparam.2.html"><strong>sched_getparam</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_getscheduler.2.html"><strong>sched_getscheduler</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_rr_get_interval.2.html"><strong>sched_rr_get_interval</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_setaffinity.2.html"><strong>sched_setaffinity</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_setattr.2.html"><strong>sched_setattr</strong>(2)</a></td>
+<td>3.14</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_setparam.2.html"><strong>sched_setparam</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_setscheduler.2.html"><strong>sched_setscheduler</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sched_yield.2.html"><strong>sched_yield</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/seccomp.2.html"><strong>seccomp</strong>(2)</a></td>
+<td>3.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/select.2.html"><strong>select</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/semctl.2.html"><strong>semctl</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/semget.2.html"><strong>semget</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/semop.2.html"><strong>semop</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/semtimedop.2.html"><strong>semtimedop</strong>(2)</a></td>
+<td>2.6; 2.4.22</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/send.2.html"><strong>send</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/sendfile.2.html"><strong>sendfile</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sendfile64.2.html"><strong>sendfile64</strong>(2)</a></td>
+<td>2.6; 2.4.19</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sendmmsg.2.html"><strong>sendmmsg</strong>(2)</a></td>
+<td>3.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/sendto.2.html"><strong>sendto</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a></td>
+<td>2.6.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/set_robust_list.2.html"><strong>set_robust_list</strong>(2)</a></td>
+<td>2.6.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/set_thread_area.2.html"><strong>set_thread_area</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/set_tid_address.2.html"><strong>set_tid_address</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setdomainname.2.html"><strong>setdomainname</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setfsgid.2.html"><strong>setfsgid</strong>(2)</a></td>
+<td>1.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setfsgid32.2.html"><strong>setfsgid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setfsuid.2.html"><strong>setfsuid</strong>(2)</a></td>
+<td>1.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setfsuid32.2.html"><strong>setfsuid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setgid.2.html"><strong>setgid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setgid32.2.html"><strong>setgid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setgroups32.2.html"><strong>setgroups32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sethostname.2.html"><strong>sethostname</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setitimer.2.html"><strong>setitimer</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setns.2.html"><strong>setns</strong>(2)</a></td>
+<td>3.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setpgid.2.html"><strong>setpgid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setpriority.2.html"><strong>setpriority</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setregid.2.html"><strong>setregid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setregid32.2.html"><strong>setregid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setresgid.2.html"><strong>setresgid</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setresgid32.2.html"><strong>setresgid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setresuid.2.html"><strong>setresuid</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setresuid32.2.html"><strong>setresuid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setreuid.2.html"><strong>setreuid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setreuid32.2.html"><strong>setreuid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setrlimit.2.html"><strong>setrlimit</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setsid.2.html"><strong>setsid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/settimeofday.2.html"><strong>settimeofday</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setuid.2.html"><strong>setuid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setuid32.2.html"><strong>setuid32</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/setup.2.html"><strong>setup</strong>(2)</a></td>
+<td>1.0</td>
+<td>Removed in 2.2</td></tr>
+
+<tr>
+<td><a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a></td>
+<td>2.6; 2.4.18</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sgetmask.2.html"><strong>sgetmask</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/shmat.2.html"><strong>shmat</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/shmctl.2.html"><strong>shmctl</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/shmdt.2.html"><strong>shmdt</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/shmget.2.html"><strong>shmget</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/shutdown.2.html"><strong>shutdown</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sigaltstack.2.html"><strong>sigaltstack</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/signal.2.html"><strong>signal</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/signalfd.2.html"><strong>signalfd</strong>(2)</a></td>
+<td>2.6.22</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/signalfd4.2.html"><strong>signalfd4</strong>(2)</a></td>
+<td>2.6.27</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sigpending.2.html"><strong>sigpending</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sigreturn.2.html"><strong>sigreturn</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sigsuspend.2.html"><strong>sigsuspend</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/socket.2.html"><strong>socket</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/socketpair.2.html"><strong>socketpair</strong>(2)</a></td>
+<td>2.0</td>
+<td>See notes on <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a></td></tr>
+
+<tr>
+<td><a href="../man2/splice.2.html"><strong>splice</strong>(2)</a></td>
+<td>2.6.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a></td>
+<td>2.6.16</td>
+<td>PowerPC only</td></tr>
+
+<tr>
+<td><a href="../man2/spu_run.2.html"><strong>spu_run</strong>(2)</a></td>
+<td>2.6.16</td>
+<td>PowerPC only</td></tr>
+
+<tr>
+<td><a href="../man2/ssetmask.2.html"><strong>ssetmask</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/stat.2.html"><strong>stat</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/stat64.2.html"><strong>stat64</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/statfs.2.html"><strong>statfs</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/statfs64.2.html"><strong>statfs64</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/stime.2.html"><strong>stime</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/subpage_prot.2.html"><strong>subpage_prot</strong>(2)</a></td>
+<td>2.6.25</td>
+<td>PowerPC only</td></tr>
+
+<tr>
+<td><a href="../man2/swapoff.2.html"><strong>swapoff</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/swapon.2.html"><strong>swapon</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/symlink.2.html"><strong>symlink</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/symlinkat.2.html"><strong>symlinkat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sync.2.html"><strong>sync</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sync_file_range.2.html"><strong>sync_file_range</strong>(2)</a></td>
+<td>2.6.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sync_file_range2.2.html"><strong>sync_file_range2</strong>(2)</a></td>
+<td>2.6.22</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/syncfs.2.html"><strong>syncfs</strong>(2)</a></td>
+<td>2.6.39</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sysfs.2.html"><strong>sysfs</strong>(2)</a></td>
+<td>1.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/sysinfo.2.html"><strong>sysinfo</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/syslog.2.html"><strong>syslog</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/tee.2.html"><strong>tee</strong>(2)</a></td>
+<td>2.6.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/tgkill.2.html"><strong>tgkill</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/time.2.html"><strong>time</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/timer_create.2.html"><strong>timer_create</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/timer_delete.2.html"><strong>timer_delete</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/timer_getoverrun.2.html"><strong>timer_getoverrun</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/timer_gettime.2.html"><strong>timer_gettime</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/timer_settime.2.html"><strong>timer_settime</strong>(2)</a></td>
+<td>2.6</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/timerfd_create.2.html"><strong>timerfd_create</strong>(2)</a></td>
+<td>2.6.25</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/timerfd_gettime.2.html"><strong>timerfd_gettime</strong>(2)</a></td>
+<td>2.6.25</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/timerfd_settime.2.html"><strong>timerfd_settime</strong>(2)</a></td>
+<td>2.6.25</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/times.2.html"><strong>times</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/tkill.2.html"><strong>tkill</strong>(2)</a></td>
+<td>2.6; 2.4.22</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/truncate.2.html"><strong>truncate</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/truncate64.2.html"><strong>truncate64</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ugetrlimit.2.html"><strong>ugetrlimit</strong>(2)</a></td>
+<td>2.4</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/umask.2.html"><strong>umask</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/umount.2.html"><strong>umount</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/umount2.2.html"><strong>umount2</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/uname.2.html"><strong>uname</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/unlinkat.2.html"><strong>unlinkat</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a></td>
+<td>2.6.16</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/uselib.2.html"><strong>uselib</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/ustat.2.html"><strong>ustat</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><strong>userfaultfd</strong>(2)</td>
+<td>4.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/utime.2.html"><strong>utime</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/utimensat.2.html"><strong>utimensat</strong>(2)</a></td>
+<td>2.6.22</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/utimes.2.html"><strong>utimes</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><strong>utrap_install</strong>(2)</td>
+<td>2.2</td>
+<td>Sparc only</td></tr>
+
+<tr>
+<td><a href="../man2/vfork.2.html"><strong>vfork</strong>(2)</a></td>
+<td>2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/vhangup.2.html"><strong>vhangup</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/vm86old.2.html"><strong>vm86old</strong>(2)</a></td>
+<td>1.0</td>
+<td>Was "vm86"; renamed in   2.0.28/2.2  </td></tr>
+
+<tr>
+<td><a href="../man2/vm86.2.html"><strong>vm86</strong>(2)</a></td>
+<td>2.0.28; 2.2</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/vmsplice.2.html"><strong>vmsplice</strong>(2)</a></td>
+<td>2.6.17</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/wait4.2.html"><strong>wait4</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/waitid.2.html"><strong>waitid</strong>(2)</a></td>
+<td>2.6.10</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/waitpid.2.html"><strong>waitpid</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/write.2.html"><strong>write</strong>(2)</a></td>
+<td>1.0</td>
+<td></td></tr>
+
+<tr>
+<td><a href="../man2/writev.2.html"><strong>writev</strong>(2)</a></td>
+<td>2.0</td>
+<td></td></tr>
+</table>
+
+<p class='spacer'>
+
+<p>On many platforms, including x86-32, socket calls are all multiplexed (via glibc wrapper functions) through <a href="../man2/socketcall.2.html"><strong>socketcall</strong>(2)</a> and similarly System&nbsp;V IPC calls are multiplexed through <a href="../man2/ipc.2.html"><strong>ipc</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>Although slots are reserved for them in the system call table, the following system calls are not implemented in the standard kernel: <a href="../man2/afs_syscall.2.html"><strong>afs_syscall</strong>(2)</a>,<strong>"</strong>__NR_afs_syscall<strong>is</strong>53<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/break.2.html"><strong>break</strong>(2)</a>,<strong>"</strong>__NR_break<strong>is</strong>17<strong>on</strong>Linux<strong>2.6.22/i386</strong> <strong>ftime</strong>(2),<strong>"</strong>__NR_ftime<strong>is</strong>35<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/getpmsg.2.html"><strong>getpmsg</strong>(2)</a>,<strong>"</strong>__NR_getpmsg<strong>is</strong>188<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/gtty.2.html"><strong>gtty</strong>(2)</a>,<strong>"</strong>__NR_gtty<strong>is</strong>32<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/idle.2.html"><strong>idle</strong>(2)</a>,<strong>"</strong>__NR_idle<strong>is</strong>112<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/lock.2.html"><strong>lock</strong>(2)</a>,<strong>"</strong>__NR_lock<strong>is</strong>53<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/madvise1.2.html"><strong>madvise1</strong>(2)</a>,<strong>"</strong>__NR_madvise1<strong>is</strong>219<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/mpx.2.html"><strong>mpx</strong>(2)</a>,<strong>"</strong>__NR_mpx<strong>is</strong>66<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/phys.2.html"><strong>phys</strong>(2)</a>,<strong>"</strong>Slot<strong>has</strong>been<strong>reused</strong> <a href="../man2/prof.2.html"><strong>prof</strong>(2)</a>,<strong>"</strong>__NR_prof<strong>is</strong>44<strong>on</strong>Linux<strong>2.6.22/i386</strong> <strong>profil</strong>(2),<strong>"</strong>__NR_profil<strong>is</strong>98<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/putpmsg.2.html"><strong>putpmsg</strong>(2)</a>,<strong>"</strong>__NR_putpmsg<strong>is</strong>189<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/security.2.html"><strong>security</strong>(2)</a>,<strong>"</strong>__NR_security<strong>is</strong>223<strong>on</strong>Linux<strong>2.4/i386</strong> <a href="../man2/stty.2.html"><strong>stty</strong>(2)</a>,<strong>"</strong>__NR_stty<strong>is</strong>31<strong>on</strong>Linux<strong>2.6.22/i386</strong> <a href="../man2/tuxcall.2.html"><strong>tuxcall</strong>(2)</a>,<strong>"</strong>__NR_tuxcall<strong>is</strong>184<strong>on</strong>x86_64,<strong>also</strong>on<strong>PPC</strong>and<strong>alpha</strong> <strong>ulimit</strong>(2),<strong>"</strong>__NR_ulimit<strong>is</strong>58<strong>on</strong>Linux<strong>2.6.22/i386</strong> and <a href="../man2/vserver.2.html"><strong>vserver</strong>(2)</a><strong>"</strong>__NR_vserver<strong>is</strong>273<strong>on</strong>Linux<strong>2.6.22/i386</strong> (see also <a href="../man2/unimplemented.2.html"><strong>unimplemented</strong>(2)</a>). However, <a href="../man3/ftime.3.html"><strong>ftime</strong>(3)</a>, <a href="../man3/profil.3.html"><strong>profil</strong>(3)</a>, and <a href="../man3/ulimit.3.html"><strong>ulimit</strong>(3)</a> exist as library routines. The slot for <a href="../man2/phys.2.html"><strong>phys</strong>(2)</a> is in use since kernel 2.1.116 for <a href="../man2/umount.2.html"><strong>umount</strong>(2)</a>; <a href="../man2/phys.2.html"><strong>phys</strong>(2)</a> will never be implemented. The <a href="../man2/getpmsg.2.html"><strong>getpmsg</strong>(2)</a> and <a href="../man2/putpmsg.2.html"><strong>putpmsg</strong>(2)</a> calls are for kernels patched to support STREAMS, and may never be in the standard kernel.</p>
+<p class='spacer'>
+
+<p>There was briefly <strong>set_zone_reclaim</strong>(2), added in Linux 2.6.13, and removed in 2.6.16; this system call was never available to user space.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>Roughly speaking, the code belonging to the system call with number __NR_xxx defined in <em>/usr/include/asm/unistd.h</em> can be found in the Linux kernel source in the routine <em>sys_xxx</em>(). (The dispatch table for i386 can be found in <em>/usr/src/linux/arch/i386/kernel/entry.S</em>.) There are many exceptions, however, mostly because older system calls were superseded by newer ones, and this has been treated somewhat unsystematically. On platforms with proprietary operating-system emulation, such as parisc, sparc, sparc64, and alpha, there are many additional system calls; mips64 also contains a full set of 32-bit system calls.</p>
+<p class='spacer'>
+
+  <p>Over time, changes to the interfaces of some system calls have been necessary. One reason for such changes was the need to increase the size of structures or scalar values passed to the system call. Because of these changes, certain architectures (notably, longstanding 32-bit architectures such as i386) now have various groups of related system calls (e.g., <a href="../man2/truncate.2.html"><strong>truncate</strong>(2)</a> and <a href="../man2/truncate64.2.html"><strong>truncate64</strong>(2)</a>) which perform similar tasks, but which vary in details such as the size of their arguments. (As noted earlier, applications are generally unaware of this: the glibc wrapper functions do some work to ensure that the right system call is invoked, and that ABI compatibility is preserved for old binaries.) Examples of systems calls that exist in multiple versions are the following:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>By now there are three different versions of <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>: <em>sys_stat</em>() (slot <em>__NR_oldstat</em>), <em>sys_newstat</em>() (slot <em>__NR_stat</em>), and <em>sys_stat64</em>() (slot <em>__NR_stat64</em>), with the last being the most current. A similar story applies for <a href="../man2/lstat.2.html"><strong>lstat</strong>(2)</a> and <a href="../man2/fstat.2.html"><strong>fstat</strong>(2)</a>.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Similarly, the defines <em>__NR_oldolduname</em>, <em>__NR_olduname</em>, and <em>__NR_uname</em> refer to the routines <em>sys_olduname</em>(), <em>sys_uname</em>() and <em>sys_newuname</em>().</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>In Linux 2.0, a new version of <a href="../man2/vm86.2.html"><strong>vm86</strong>(2)</a> appeared, with the old and the new kernel routines being named <em>sys_vm86old</em>() and <em>sys_vm86</em>().</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>In Linux 2.4, a new version of <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a> appeared, with the old and the new kernel routines being named <em>sys_old_getrlimit</em>() (slot <em>__NR_getrlimit</em>) and <em>sys_getrlimit</em>() (slot <em>__NR_ugetrlimit</em>).</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Linux 2.4 increased the size of user and group IDs from 16 to 32 bits. To support this change, a range of system calls were added (e.g., <a href="../man2/chown32.2.html"><strong>chown32</strong>(2)</a>, <a href="../man2/getuid32.2.html"><strong>getuid32</strong>(2)</a>, <a href="../man2/getgroups32.2.html"><strong>getgroups32</strong>(2)</a>, <a href="../man2/setresuid32.2.html"><strong>setresuid32</strong>(2)</a>), superseding earlier calls of the same name without the "32" suffix.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Linux 2.4 added support for applications on 32-bit architectures to access large files (i.e., files for which the sizes and file offsets can't be represented in 32 bits.) To support this change, replacements were required for system calls that deal with file offsets and sizes. Thus the following system calls were added: <a href="../man2/fcntl64.2.html"><strong>fcntl64</strong>(2)</a>, <a href="../man2/getdents64.2.html"><strong>getdents64</strong>(2)</a>, <a href="../man2/stat64.2.html"><strong>stat64</strong>(2)</a>, <a href="../man2/statfs64.2.html"><strong>statfs64</strong>(2)</a>, <a href="../man2/truncate64.2.html"><strong>truncate64</strong>(2)</a>, and their analogs that work with file descriptors or symbolic links. These system calls supersede the older system calls which, except in the case of the "stat" calls, have the same name without the "64" suffix.</p>
+<p class='spacer'>
+
+  <p>On newer platforms that only have 64-bit file access and 32-bit UIDs/GIDs (e.g., alpha, ia64, s390x, x86-64), there is just a single version of the UID/GID and file access system calls. On platforms (typically, 32-bit platforms) where the *64 and *32 calls exist, the other versions are obsolete.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>The <em>rt_sig*</em> calls were added in kernel 2.2 to support the addition of real-time signals (see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>). These system calls supersede the older system calls of the same name without the "rt_" prefix.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>The <a href="../man2/select.2.html"><strong>select</strong>(2)</a> and <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> system calls use five or more arguments, which caused problems in the way argument passing on the i386 used to be set up. Thus, while other architectures have <em>sys_select</em>() and <em>sys_mmap</em>() corresponding to <em>__NR_select</em> and <em>__NR_mmap</em>, on i386 one finds <em>old_select</em>() and <em>old_mmap</em>() (routines that use a pointer to a argument block) instead. These days passing five arguments is not a problem any more, and there is a <em>__NR__newselect</em> that corresponds directly to <em>sys_select</em>() and similarly <em>__NR_mmap2</em>.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/intro.2.html"><strong>intro</strong>(2)</a>, <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>, <a href="../man2/unimplemented.2.html"><strong>unimplemented</strong>(2)</a>, <a href="../man3/errno.3.html"><strong>errno</strong>(3)</a>, <a href="../man7/libc.7.html"><strong>libc</strong>(7)</a>, <a href="../man7/vdso.7.html"><strong>vdso</strong>(7)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

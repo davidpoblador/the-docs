@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>get_robust_list, set_robust_list - get/set list of robust futexes</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">set_robust_list<small> (2)</small></h1>
+        <p class="lead">get/set list of robust futexes</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">set_robust_list</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;linux/futex.h&gt;</strong>
+<strong>#include &lt;sys/types.h&gt;</strong>
+<strong>#include &lt;syscall.h&gt;</strong>
+
+<strong>long get_robust_list(int </strong><em>pid</em><strong>, struct robust_list_head **</strong><em>head_ptr</em><strong>,</strong>
+<strong>                     size_t *</strong><em>len_ptr</em><strong>);</strong>
+<strong>long set_robust_list(struct robust_list_head *</strong><em>head</em><strong>, size_t </strong><em>len</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p><em>Note</em>: There are no glibc wrappers for these system calls; see NOTES.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The robust futex implementation needs to maintain per-thread lists of the robust futexes which are to be unlocked when the thread exits. These lists are managed in user space; the kernel is notified about only the location of the head of the list.</p>
+<p class='spacer'>
+
+<p>The <strong>get_robust_list</strong>() system call returns the head of the robust futex list of the thread whose thread ID is specified in <em>pid</em>. If <em>pid</em> is 0, the head of the list for the calling thread is returned. The list head is stored in the location pointed to by <em>head_ptr</em>. The size of the object pointed to by <em>**head_ptr</em> is stored in <em>len_ptr</em>.</p>
+<p class='spacer'>
+
+<p>Permission to employ <strong>get_robust_list</strong>() is governed by a ptrace access mode <strong>PTRACE_MODE_READ_REALCREDS</strong> check; see <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>The <strong>set_robust_list</strong>() system call requests the kernel to record the head of the list of robust futexes owned by the calling thread. The <em>head</em> argument is the list head to record. The <em>len</em> argument should be <em>sizeof(*head)</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>set_robust_list</strong>() and <strong>get_robust_list</strong>() system calls return zero when the operation is successful, an error code otherwise.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <p>The <strong>set_robust_list</strong>() system call can fail with the following error:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>len</em> does not equal <em>sizeof(struct&nbsp;robust_list_head)</em>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The <strong>get_robust_list</strong>() system call can fail with the following errors:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>The calling process does not have permission to see the robust futex list of the thread with the thread ID <em>pid</em>, and does not have the <strong>CAP_SYS_PTRACE</strong> capability.</p>
+    </dd>
+    <dt><strong>ESRCH</strong></dt>
+    <dd>
+  <p>No thread with the thread ID <em>pid</em> could be found.</p>
+    </dd>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>The head of the robust futex list can't be stored at the location <em>head</em>.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>These system calls were added in Linux 2.6.17.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>These system calls are not needed by normal applications. No support for them is provided in glibc. In the unlikely event that you want to call them directly, use <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>A thread can have only one robust futex list; therefore applications that wish to use this functionality should use the robust mutexes provided by glibc.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/futex.2.html"><strong>futex</strong>(2)</a></p>
+<p class='spacer'>
+
+<p><em>Documentation/robust-futexes.txt</em> and <em>Documentation/robust-futex-ABI.txt</em> in the Linux kernel source tree</p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

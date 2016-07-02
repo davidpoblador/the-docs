@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cacheflush - flush contents of instruction and/or data cache</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">cacheflush<small> (2)</small></h1>
+        <p class="lead">flush contents of instruction and/or data cache</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">cacheflush</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;asm/cachectl.h&gt;</strong>
+
+<strong>int cacheflush(char *</strong><em>addr</em><strong>, int nbytes</strong><em>, int cache</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+  <p><strong>cacheflush</strong>() flushes the contents of the indicated cache(s) for the user addresses in the range <em>addr</em> to <em>(addr+nbytes-1)</em>. <em>cache</em> may be one of:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>ICACHE</strong></dt>
+    <dd>
+  <p>Flush the instruction cache.</p>
+    </dd>
+    <dt><strong>DCACHE</strong></dt>
+    <dd>
+  <p>Write back to memory and invalidate the affected valid cache lines.</p>
+    </dd>
+    <dt><strong>BCACHE</strong></dt>
+    <dd>
+  <p>Same as <strong>(ICACHE|DCACHE)</strong>.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p><strong>cacheflush</strong>() returns 0 on success or -1 on error. If errors are detected, <em>errno</em> will indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>Some or all of the address range <em>addr</em> to <em>(addr+nbytes-1)</em> is not accessible.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>cache</em> is not one of <strong>ICACHE</strong>, <strong>DCACHE</strong>, or <strong>BCACHE</strong> (but see BUGS).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>Historically, this system call was available on all MIPS UNIX variants including RISC/os, IRIX, Ultrix, NetBSD, OpenBSD, and FreeBSD (and also on some non-UNIX MIPS operating systems), so that the existence of this call in MIPS operating systems is a de-facto standard.</p>
+  <h3>Caveat</h3>
+<p><strong>cacheflush</strong>() should not be used in programs intended to be portable. On Linux, this call first appeared on the MIPS architecture, but nowadays, Linux provides a <strong>cacheflush</strong>() system call on some other architectures, but with different arguments.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>Linux kernels older than version 2.6.11 ignore the <em>addr</em> and <em>nbytes</em> arguments, making this function fairly expensive. Therefore, the whole cache is always flushed.</p>
+<p class='spacer'>
+
+<p>This function always behaves as if <strong>BCACHE</strong> has been passed for the <em>cache</em> argument and does not do any error checking on the <em>cache</em> argument.</p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

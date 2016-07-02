@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ipv6 - Linux IPv6 protocol implementation</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">ipv6<small> (7)</small></h1>
+        <p class="lead">Linux IPv6 protocol implementation</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man7"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">ipv6</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/socket.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>#include &lt;netinet/in.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><em>tcp6_socket</em><strong> = socket(AF_INET6, SOCK_STREAM, 0);</strong></p>
+<p class='spacer'>
+
+<p><em>raw6_socket</em><strong> = socket(AF_INET6, SOCK_RAW, </strong><em>protocol</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><em>udp6_socket</em><strong> = socket(AF_INET6, SOCK_DGRAM, </strong><em>protocol</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>Linux 2.2 optionally implements the Internet Protocol, version 6. This man page contains a description of the IPv6 basic API as implemented by the Linux kernel and glibc 2.1. The interface is based on the BSD sockets interface; see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>.</p>
+<p class='spacer'>
+
+<p>The IPv6 API aims to be mostly compatible with the IPv4 API (see <strong>ip</strong>(7)). Only differences are described in this man page.</p>
+<p class='spacer'>
+
+<p>To bind an <strong>AF_INET6</strong> socket to any process, the local address should be copied from the <em>in6addr_any</em> variable which has <em>in6_addr</em> type. In static initializations, <strong>IN6ADDR_ANY_INIT</strong> may also be used, which expands to a constant expression. Both of them are in network byte order.</p>
+<p class='spacer'>
+
+<p>The IPv6 loopback address (::1) is available in the global <em>in6addr_loopback</em> variable. For initializations, <strong>IN6ADDR_LOOPBACK_INIT</strong> should be used.</p>
+<p class='spacer'>
+
+<p>IPv4 connections can be handled with the v6 API by using the v4-mapped-on-v6 address type; thus a program needs to support only this API type to support both protocols. This is handled transparently by the address handling functions in the C library.</p>
+<p class='spacer'>
+
+<p>IPv4 and IPv6 share the local port space. When you get an IPv4 connection or packet to a IPv6 socket, its source address will be mapped to v6 and it will be mapped to v6.</p>
+  <h3>Address format</h3>
+<pre>struct sockaddr_in6 {
+    sa_family_t     sin6_family;   /* AF_INET6 */
+    in_port_t       sin6_port;     /* port number */
+    uint32_t        sin6_flowinfo; /* IPv6 flow information */
+    struct in6_addr sin6_addr;     /* IPv6 address */
+    uint32_t        sin6_scope_id; /* Scope ID (new in 2.4) */
+};
+
+struct in6_addr {
+    unsigned char   s6_addr[16];   /* IPv6 address */
+};</pre>
+
+<p class='spacer'>
+
+<p><em>sin6_family</em> is always set to <strong>AF_INET6</strong>; <em>sin6_port</em> is the protocol port (see <em>sin_port</em> in <strong>ip</strong>(7)); <em>sin6_flowinfo</em> is the IPv6 flow identifier; <em>sin6_addr</em> is the 128-bit IPv6 address. <em>sin6_scope_id</em> is an ID depending on the scope of the address. It is new in Linux 2.4. Linux supports it only for link-local addresses, in that case <em>sin6_scope_id</em> contains the interface index (see <a href="../man7/netdevice.7.html"><strong>netdevice</strong>(7)</a>)</p>
+<p class='spacer'>
+
+<p>IPv6 supports several address types: unicast to address a single host, multicast to address a group of hosts, anycast to address the nearest member of a group of hosts (not implemented in Linux), IPv4-on-IPv6 to address a IPv4 host, and other reserved address types.</p>
+<p class='spacer'>
+
+<p>The address notation for IPv6 is a group of 8 4-digit hexadecimal numbers, separated with a ':'.  "::" stands for a string of 0 bits. Special addresses are ::1 for loopback and ::FFFF:&lt;IPv4 address&gt; for IPv4-mapped-on-IPv6.</p>
+<p class='spacer'>
+
+<p>The port space of IPv6 is shared with IPv4.</p>
+  <h3>Socket options</h3>
+  <p>IPv6 supports some protocol-specific socket options that can be set with <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> and read with <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a>. The socket option level for IPv6 is <strong>IPPROTO_IPV6</strong>. A boolean integer flag is zero when it is false, otherwise true.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>IPV6_ADDRFORM</strong></dt>
+    <dd>
+  <p>Turn an <strong>AF_INET6</strong> socket into a socket of a different address family. Only <strong>AF_INET</strong> is currently supported for that. It is allowed only for IPv6 sockets that are connected and bound to a v4-mapped-on-v6 address. The argument is a pointer to an integer containing <strong>AF_INET</strong>. This is useful to pass v4-mapped sockets as file descriptors to programs that don't know how to deal with the IPv6 API.</p>
+    </dd>
+    <dt><strong>IPV6_ADD_MEMBERSHIP, IPV6_DROP_MEMBERSHIP</strong></dt>
+    <dd>
+  <p>Control membership in multicast groups. Argument is a pointer to a <em>struct ipv6_mreq</em>.</p>
+    </dd>
+    <dt><strong>IPV6_MTU</strong></dt>
+    <dd>
+  <p><strong>getsockopt</strong>(): Retrieve the current known path MTU of the current socket. Only valid when the socket has been connected. Returns an integer.</p>
+<p class='spacer'>
+
+  <p><strong>setsockopt</strong>(): Set the MTU to be used for the socket. The MTU is limited by the device MTU or the path MTU when path MTU discovery is enabled. Argument is a pointer to integer.</p>
+    </dd>
+    <dt><strong>IPV6_MTU_DISCOVER</strong></dt>
+    <dd>
+  <p>Control path-MTU discovery on the socket. See <strong>IP_MTU_DISCOVER</strong> in <strong>ip</strong>(7) for details.</p>
+    </dd>
+    <dt><strong>IPV6_MULTICAST_HOPS</strong></dt>
+    <dd>
+  <p>Set the multicast hop limit for the socket. Argument is a pointer to an integer. -1 in the value means use the route default, otherwise it should be between 0 and 255.</p>
+    </dd>
+    <dt><strong>IPV6_MULTICAST_IF</strong></dt>
+    <dd>
+  <p>Set the device for outgoing multicast packets on the socket. This is allowed only for <strong>SOCK_DGRAM</strong> and <strong>SOCK_RAW</strong> socket. The argument is a pointer to an interface index (see <a href="../man7/netdevice.7.html"><strong>netdevice</strong>(7)</a>) in an integer.</p>
+    </dd>
+    <dt><strong>IPV6_MULTICAST_LOOP</strong></dt>
+    <dd>
+  <p>Control whether the socket sees multicast packets that it has send itself. Argument is a pointer to boolean.</p>
+    </dd>
+    <dt><strong>IPV6_RECVPKTINFO</strong> (since Linux 2.6.14)</dt>
+    <dd>
+  <p>Set delivery of the <strong>IPV6_PKTINFO</strong> control message on incoming datagrams. Such control messages contain a <em>struct in6_pktinfo</em>, as per RFC 3542. Only allowed for <strong>SOCK_DGRAM</strong> or <strong>SOCK_RAW</strong> sockets. Argument is a pointer to a boolean value in an integer.</p>
+    </dd>
+    <dt><strong>IPV6_RTHDR, IPV6_AUTHHDR, IPV6_DSTOPTS, IPV6_HOPOPTS, IPV6_FLOWINFO, IPV6_HOPLIMIT</strong></dt>
+    <dd>
+  <p>Set delivery of control messages for incoming datagrams containing extension headers from the received packet. <strong>IPV6_RTHDR</strong> delivers the routing header, <strong>IPV6_AUTHHDR</strong> delivers the authentication header, <strong>IPV6_DSTOPTS</strong> delivers the destination options, <strong>IPV6_HOPOPTS</strong> delivers the hop options, <strong>IPV6_FLOWINFO</strong> delivers an integer containing the flow ID, <strong>IPV6_HOPLIMIT</strong> delivers an integer containing the hop count of the packet. The control messages have the same type as the socket option. All these header options can also be set for outgoing packets by putting the appropriate control message into the control buffer of <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a>. Only allowed for <strong>SOCK_DGRAM</strong> or <strong>SOCK_RAW</strong> sockets. Argument is a pointer to a boolean value.</p>
+    </dd>
+    <dt><strong>IPV6_RECVERR</strong></dt>
+    <dd>
+  <p>Control receiving of asynchronous error options. See <strong>IP_RECVERR</strong> in <strong>ip</strong>(7) for details. Argument is a pointer to boolean.</p>
+    </dd>
+    <dt><strong>IPV6_ROUTER_ALERT</strong></dt>
+    <dd>
+  <p>Pass forwarded packets containing a router alert hop-by-hop option to this socket. Only allowed for <strong>SOCK_RAW</strong> sockets. The tapped packets are not forwarded by the kernel, it is the user's responsibility to send them out again. Argument is a pointer to an integer. A positive integer indicates a router alert option value to intercept. Packets carrying a router alert option with a value field containing this integer will be delivered to the socket. A negative integer disables delivery of packets with router alert options to this socket.</p>
+    </dd>
+    <dt><strong>IPV6_UNICAST_HOPS</strong></dt>
+    <dd>
+  <p>Set the unicast hop limit for the socket. Argument is a pointer to an integer. -1 in the value means use the route default, otherwise it should be between 0 and 255.</p>
+    </dd>
+    <dt><strong>IPV6_V6ONLY</strong> (since Linux 2.4.21 and 2.6)</dt>
+    <dd>
+  <p>If this flag is set to true (nonzero), then the socket is restricted to sending and receiving IPv6 packets only. In this case, an IPv4 and an IPv6 application can bind to a single port at the same time.</p>
+<p class='spacer'>
+
+  <p>If this flag is set to false (zero), then the socket can be used to send and receive packets to and from an IPv6 address or an IPv4-mapped IPv6 address.</p>
+<p class='spacer'>
+
+  <p>The argument is a pointer to a boolean value in an integer.</p>
+<p class='spacer'>
+
+  <p>The default value for this flag is defined by the contents of the file <em>/proc/sys/net/ipv6/bindv6only</em>. The default value for that file is 0 (false).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>ENODEV</strong></dt>
+    <dd>
+  <p>The user tried to <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a> to a link-local IPv6 address, but the <em>sin6_scope_id</em> in the supplied <em>sockaddr_in6</em> structure is not a valid interface index.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>Linux 2.4 will break binary compatibility for the <em>sockaddr_in6</em> for 64-bit hosts by changing the alignment of <em>in6_addr</em> and adding an additional <em>sin6_scope_id</em> field. The kernel interfaces stay compatible, but a program including <em>sockaddr_in6</em> or <em>in6_addr</em> into other structures may not be. This is not a problem for 32-bit hosts like i386.</p>
+<p class='spacer'>
+
+<p>The <em>sin6_flowinfo</em> field is new in Linux 2.4. It is transparently passed/read by the kernel when the passed address length contains it. Some programs that pass a longer address buffer and then check the outgoing address length may break.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>The <em>sockaddr_in6</em> structure is bigger than the generic <em>sockaddr</em>. Programs that assume that all address types can be stored safely in a <em>struct sockaddr</em> need to be changed to use <em>struct sockaddr_storage</em> for that instead.</p>
+<p class='spacer'>
+
+<p><strong>SOL_IP</strong>, <strong>SOL_IPV6</strong>, <strong>SOL_ICMPV6</strong> and other <strong>SOL_</strong>* socket options are nonportable variants of <strong>IPPROTO_</strong>*. See also <strong>ip</strong>(7).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>The IPv6 extended API as in RFC&nbsp;2292 is currently only partly implemented; although the 2.2 kernel has near complete support for receiving options, the macros for generating IPv6 options are missing in glibc 2.1.</p>
+<p class='spacer'>
+
+<p>IPSec support for EH and AH headers is missing.</p>
+<p class='spacer'>
+
+<p>Flow label management is not complete and not documented here.</p>
+<p class='spacer'>
+
+<p>This man page is not complete.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>, <strong>ip</strong>(7)</p>
+<p class='spacer'>
+
+<p>RFC&nbsp;2553: IPv6 BASIC API; Linux tries to be compliant to this. RFC&nbsp;2460: IPv6 specification.</p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

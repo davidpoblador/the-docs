@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sigaltstack - set and/or get signal stack context</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">sigstack<small> (3)</small></h1>
+        <p class="lead">set and/or get signal stack context</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man3"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">sigstack</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;signal.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>int sigaltstack(const stack_t *</strong><em>ss</em><strong>, stack_t *</strong><em>oss</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
+<p class='spacer'>
+
+  <p><strong>sigaltstack</strong>(): _XOPEN_SOURCE&nbsp;&gt;=&nbsp;500</p>
+<pre>    || /* Since glibc 2.12: */ _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L
+    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>sigaltstack</strong>() allows a process to define a new alternate signal stack and/or retrieve the state of an existing alternate signal stack. An alternate signal stack is used during the execution of a signal handler if the establishment of that handler (see <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>) requested it.</p>
+<p class='spacer'>
+
+  <p>The normal sequence of events for using an alternate signal stack is the following:</p>
+  <dl class='dl-horizontal'>
+    <dt>1.</dt>
+    <dd>
+  <p>Allocate an area of memory to be used for the alternate signal stack.</p>
+    </dd>
+    <dt>2.</dt>
+    <dd>
+  <p>Use <strong>sigaltstack</strong>() to inform the system of the existence and location of the alternate signal stack.</p>
+    </dd>
+    <dt>3.</dt>
+    <dd>
+  <p>When establishing a signal handler using <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, inform the system that the signal handler should be executed on the alternate signal stack by specifying the <strong>SA_ONSTACK</strong> flag.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The <em>ss</em> argument is used to specify a new alternate signal stack, while the <em>oss</em> argument is used to retrieve information about the currently established signal stack. If we are interested in performing just one of these tasks, then the other argument can be specified as NULL. Each of these arguments is a structure of the following type:</p>
+<p class='spacer'>
+
+<pre>typedef struct {
+    void  *ss_sp;     /* Base address of stack */
+    int    ss_flags;  /* Flags */
+    size_t ss_size;   /* Number of bytes in stack */
+} stack_t;</pre>
+
+<p class='spacer'>
+
+<p>To establish a new alternate signal stack, <em>ss.ss_flags</em> is set to zero, and <em>ss.ss_sp</em> and <em>ss.ss_size</em> specify the starting address and size of the stack. The constant <strong>SIGSTKSZ</strong> is defined to be large enough to cover the usual size requirements for an alternate signal stack, and the constant <strong>MINSIGSTKSZ</strong> defines the minimum size required to execute a signal handler.</p>
+<p class='spacer'>
+
+<p>When a signal handler is invoked on the alternate stack, the kernel automatically aligns the address given in <em>ss.ss_sp</em> to a suitable address boundary for the underlying hardware architecture.</p>
+<p class='spacer'>
+
+<p>To disable an existing stack, specify <em>ss.ss_flags</em> as <strong>SS_DISABLE</strong>. In this case, the remaining fields in <em>ss</em> are ignored.</p>
+<p class='spacer'>
+
+  <p>If <em>oss</em> is not NULL, then it is used to return information about the alternate signal stack which was in effect prior to the call to <strong>sigaltstack</strong>(). The <em>oss.ss_sp</em> and <em>oss.ss_size</em> fields return the starting address and size of that stack. The <em>oss.ss_flags</em> may return either of the following values:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>SS_ONSTACK</strong></dt>
+    <dd>
+  <p>The process is currently executing on the alternate signal stack. (Note that it is not possible to change the alternate signal stack if the process is currently executing on it.)</p>
+    </dd>
+    <dt><strong>SS_DISABLE</strong></dt>
+    <dd>
+  <p>The alternate signal stack is currently disabled.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p><strong>sigaltstack</strong>() returns 0 on success, or -1 on failure with <em>errno</em> set to indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>Either <em>ss</em> or <em>oss</em> is not NULL and points to an area outside of the process's address space.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>ss</em> is not NULL and the <em>ss_flags</em> field contains a nonzero value other than <strong>SS_DISABLE</strong>.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>The specified size of the new alternate signal stack <em>ss.ss_size</em> was less than <strong>MINSTKSZ</strong>.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>An attempt was made to change the alternate signal stack while it was active (i.e., the process was already executing on the current alternate signal stack).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ATTRIBUTES</h2>
+        <div class="sectioncontent">
+
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
+<table class="table table-striped">
+<tr>
+<th>Interface</th>
+<th>Attribute</th>
+<th>Value</th></tr>
+
+<tr>
+<td><strong>sigaltstack</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe</td></tr>
+</table>
+
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>POSIX.1-2001, POSIX.1-2009, SUSv2, SVr4.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>The most common usage of an alternate signal stack is to handle the <strong>SIGSEGV</strong> signal that is generated if the space available for the normal process stack is exhausted: in this case, a signal handler for <strong>SIGSEGV</strong> cannot be invoked on the process stack; if we wish to handle it, we must use an alternate signal stack.</p>
+<p class='spacer'>
+
+<p>Establishing an alternate signal stack is useful if a process expects that it may exhaust its standard stack. This may occur, for example, because the stack grows so large that it encounters the upwardly growing heap, or it reaches a limit established by a call to <strong>setrlimit(RLIMIT_STACK, &rlim)</strong>. If the standard stack is exhausted, the kernel sends the process a <strong>SIGSEGV</strong> signal. In these circumstances the only way to catch this signal is on an alternate signal stack.</p>
+<p class='spacer'>
+
+<p>On most hardware architectures supported by Linux, stacks grow downward. <strong>sigaltstack</strong>() automatically takes account of the direction of stack growth.</p>
+<p class='spacer'>
+
+<p>Functions called from a signal handler executing on an alternate signal stack will also use the alternate signal stack. (This also applies to any handlers invoked for other signals while the process is executing on the alternate signal stack.) Unlike the standard stack, the system does not automatically extend the alternate signal stack. Exceeding the allocated size of the alternate signal stack will lead to unpredictable results.</p>
+<p class='spacer'>
+
+<p>A successful call to <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> removes any existing alternate signal stack. A child process created via <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> inherits a copy of its parent's alternate signal stack settings.</p>
+<p class='spacer'>
+
+<p><strong>sigaltstack</strong>() supersedes the older <strong>sigstack</strong>() call. For backward compatibility, glibc also provides <strong>sigstack</strong>(). All new applications should be written using <strong>sigaltstack</strong>().</p>
+  <h3>History</h3>
+<p>4.2BSD had a <strong>sigstack</strong>() system call. It used a slightly different struct, and had the major disadvantage that the caller had to know the direction of stack growth.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The following code segment demonstrates the use of <strong>sigaltstack</strong>():</p>
+<p class='spacer'>
+
+<pre>stack_t ss;
+
+ss.ss_sp = malloc(SIGSTKSZ);
+if (ss.ss_sp == NULL)
+    /* Handle error */;
+ss.ss_size = SIGSTKSZ;
+ss.ss_flags = 0;
+if (sigaltstack(&ss, NULL) == -1)
+    /* Handle error */;</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, <a href="../man2/setrlimit.2.html"><strong>setrlimit</strong>(2)</a>, <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, <a href="../man3/siglongjmp.3.html"><strong>siglongjmp</strong>(3)</a>, <a href="../man3/sigsetjmp.3.html"><strong>sigsetjmp</strong>(3)</a>, <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

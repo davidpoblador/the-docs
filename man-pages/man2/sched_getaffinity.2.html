@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sched_setaffinity, sched_getaffinity - \ set and get a thread's CPU affinity mask</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">sched_getaffinity<small> (2)</small></h1>
+        <p class="lead">\ set and get a thread's CPU affinity mask</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">sched_getaffinity</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include &lt;sched.h&gt;</strong>
+
+<strong>int sched_setaffinity(pid_t </strong><em>pid</em><strong>, size_t </strong><em>cpusetsize</em><strong>,</strong>
+<strong>                      const cpu_set_t *</strong><em>mask</em><strong>);</strong>
+
+<strong>int sched_getaffinity(pid_t </strong><em>pid</em><strong>, size_t </strong><em>cpusetsize</em><strong>,</strong>
+<strong>                      cpu_set_t *</strong><em>mask</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>A thread's CPU affinity mask determines the set of CPUs on which it is eligible to run. On a multiprocessor system, setting the CPU affinity mask can be used to obtain performance benefits. For example, by dedicating one CPU to a particular thread (i.e., setting the affinity mask of that thread to specify a single CPU, and setting the affinity mask of all other threads to exclude that CPU), it is possible to ensure maximum execution speed for that thread. Restricting a thread to run on a single CPU also avoids the performance cost caused by the cache invalidation that occurs when a thread ceases to execute on one CPU and then recommences execution on a different CPU.</p>
+<p class='spacer'>
+
+<p>A CPU affinity mask is represented by the <em>cpu_set_t</em> structure, a "CPU set", pointed to by <em>mask</em>. A set of macros for manipulating CPU sets is described in <a href="../man3/CPU_SET.3.html"><strong>CPU_SET</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p><strong>sched_setaffinity</strong>() sets the CPU affinity mask of the thread whose ID is <em>pid</em> to the value specified by <em>mask</em>. If <em>pid</em> is zero, then the calling thread is used. The argument <em>cpusetsize</em> is the length (in bytes) of the data pointed to by <em>mask</em>. Normally this argument would be specified as <em>sizeof(cpu_set_t)</em>.</p>
+<p class='spacer'>
+
+<p>If the thread specified by <em>pid</em> is not currently running on one of the CPUs specified in <em>mask</em>, then that thread is migrated to one of the CPUs specified in <em>mask</em>.</p>
+<p class='spacer'>
+
+<p><strong>sched_getaffinity</strong>() writes the affinity mask of the thread whose ID is <em>pid</em> into the <em>cpu_set_t</em> structure pointed to by <em>mask</em>. The <em>cpusetsize</em> argument specifies the size (in bytes) of <em>mask</em>. If <em>pid</em> is zero, then the mask of the calling thread is returned.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>sched_setaffinity</strong>() and <strong>sched_getaffinity</strong>() return 0. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>A supplied memory address was invalid.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>The affinity bit mask <em>mask</em> contains no processors that are currently physically on the system and permitted to the thread according to any restrictions that may be imposed by the "cpuset" mechanism described in <a href="../man7/cpuset.7.html"><strong>cpuset</strong>(7)</a>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>sched_getaffinity</strong>() and, in kernels before 2.6.9, <strong>sched_setaffinity</strong>()) <em>cpusetsize</em> is smaller than the size of the affinity mask used by the kernel.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>(<strong>sched_setaffinity</strong>()) The calling thread does not have appropriate privileges. The caller needs an effective user ID equal to the real user ID or effective user ID of the thread identified by <em>pid</em>, or it must possess the <strong>CAP_SYS_NICE</strong> capability.</p>
+    </dd>
+    <dt><strong>ESRCH</strong></dt>
+    <dd>
+  <p>The thread whose ID is <em>pid</em> could not be found.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>The CPU affinity system calls were introduced in Linux kernel 2.5.8. The system call wrappers were introduced in glibc 2.3. Initially, the glibc interfaces included a <em>cpusetsize</em> argument, typed as <em>unsigned int</em>. In glibc 2.3.3, the <em>cpusetsize</em> argument was removed, but was then restored in glibc 2.3.4, with type <em>size_t</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>These system calls are Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>After a call to <strong>sched_setaffinity</strong>(), the set of CPUs on which the thread will actually run is the intersection of the set specified in the <em>mask</em> argument and the set of CPUs actually present on the system. The system may further restrict the set of CPUs on which the thread runs if the "cpuset" mechanism described in <a href="../man7/cpuset.7.html"><strong>cpuset</strong>(7)</a> is being used. These restrictions on the actual set of CPUs on which the thread will run are silently imposed by the kernel.</p>
+<p class='spacer'>
+
+<p>There are various ways of determining the number of CPUs available on the system, including: inspecting the contents of <em>/proc/cpuinfo</em>; using <a href="../man3/sysconf.3.html"><strong>sysconf</strong>(3)</a> to obtain the values of the <strong>_SC_NPROCESSORS_CONF</strong> and <strong>_SC_NPROCESSORS_ONLN</strong> parameters; and inspecting the list of CPU directories under <em>/sys/devices/system/cpu/</em>.</p>
+<p class='spacer'>
+
+<p><a href="../man7/sched.7.html"><strong>sched</strong>(7)</a> has a description of the Linux scheduling scheme.</p>
+<p class='spacer'>
+
+<p>The affinity mask is a per-thread attribute that can be adjusted independently for each of the threads in a thread group. The value returned from a call to <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a> can be passed in the argument <em>pid</em>. Specifying <em>pid</em> as 0 will set the attribute for the calling thread, and passing the value returned from a call to <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a> will set the attribute for the main thread of the thread group. (If you are using the POSIX threads API, then use <a href="../man3/pthread_setaffinity_np.3.html"><strong>pthread_setaffinity_np</strong>(3)</a> instead of <strong>sched_setaffinity</strong>().)</p>
+<p class='spacer'>
+
+<p>The <em>isolcpus</em> boot option can be used to isolate one or more CPUs at boot time, so that no processes are scheduled onto those CPUs. Following the use of this boot option, the only way to schedule processes onto the isolated CPUs is via <strong>sched_setaffinity</strong>() or the <a href="../man7/cpuset.7.html"><strong>cpuset</strong>(7)</a> mechanism. For further information, see the kernel source file <em>Documentation/kernel-parameters.txt</em>. As noted in that file, <em>isolcpus</em> is the preferred mechanism of isolating CPUs (versus the alternative of manually setting the CPU affinity of all processes on the system).</p>
+<p class='spacer'>
+
+<p>A child created via <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> inherits its parent's CPU affinity mask. The affinity mask is preserved across an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p>
+  <h3>C library/kernel differences</h3>
+<p>This manual page describes the glibc interface for the CPU affinity calls. The actual system call interface is slightly different, with the <em>mask</em> being typed as <em>unsigned long&nbsp;*</em>, reflecting the fact that the underlying implementation of CPU sets is a simple bit mask. On success, the raw <strong>sched_getaffinity</strong>() system call returns the size (in bytes) of the <em>cpumask_t</em> data type that is used internally by the kernel to represent the CPU set bit mask.</p>
+  <h3>Handling systems with large CPU affinity masks</h3>
+<p>The underlying system calls (which represent CPU masks as bit masks of type <em>unsigned long&nbsp;*</em>) impose no restriction on the size of the CPU mask. However, the <em>cpu_set_t</em> data type used by glibc has a fixed size of 128 bytes, meaning that the maximum CPU number that can be represented is 1023. If the kernel CPU affinity mask is larger than 1024, then calls of the form:</p>
+<p class='spacer'>
+
+<pre>    sched_getaffinity(pid, sizeof(cpu_set_t), &mask);</pre>
+
+<p class='spacer'>
+
+<p>will fail with the error <strong>EINVAL</strong>, the error produced by the underlying system call for the case where the <em>mask</em> size specified in <em>cpusetsize</em> is smaller than the size of the affinity mask used by the kernel. (Depending on the system CPU topology, the kernel affinity mask can be substantially larger than the number of active CPUs in the system.)</p>
+<p class='spacer'>
+
+<p>When working on systems with large kernel CPU affinity masks, one must dynamically allocate the <em>mask</em> argument (see <a href="../man3/CPU_ALLOC.3.html"><strong>CPU_ALLOC</strong>(3)</a>). Currently, the only way to do this is by probing for the size of the required mask using <strong>sched_getaffinity</strong>() calls with increasing mask sizes (until the call does not fail with the error <strong>EINVAL</strong>).</p>
+<p class='spacer'>
+
+<p>Be aware that <a href="../man3/CPU_ALLOC.3.html"><strong>CPU_ALLOC</strong>(3)</a> may allocate a slightly larger CPU set than requested (because CPU sets are implemented as bit masks allocated in units of <em>sizeof(long)</em>). Consequently, <strong>sched_getaffinity</strong>() can set bits beyond the requested allocation size, because the kernel sees a few additional bits. Therefore, the caller should iterate over the bits in the returned set, counting those which are set, and stop upon reaching the value returned by <a href="../man3/CPU_COUNT.3.html"><strong>CPU_COUNT</strong>(3)</a> (rather than iterating over the number of bits requested to be allocated).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The program below creates a child process. The parent and child then each assign themselves to a specified CPU and execute identical loops that consume some CPU time. Before terminating, the parent waits for the child to complete. The program takes three command-line arguments: the CPU number for the parent, the CPU number for the child, and the number of loop iterations that both processes should perform.</p>
+<p class='spacer'>
+
+<p>As the sample runs below demonstrate, the amount of real and CPU time consumed when running the program will depend on intra-core caching effects and whether the processes are using the same CPU.</p>
+<p class='spacer'>
+
+<p>We first employ <strong>lscpu</strong>(1) to determine that this (x86) system has two cores, each with two CPUs:</p>
+<p class='spacer'>
+
+<pre>$ <strong>lscpu | grep -i 'core.*:|socket'</strong>
+Thread(s) per core:    2
+Core(s) per socket:    2
+Socket(s):             1</pre>
+
+<p class='spacer'>
+
+<p>We then time the operation of the example program for three cases: both processes running on the same CPU; both processes running on different CPUs on the same core; and both processes running on different CPUs on different cores.</p>
+<p class='spacer'>
+
+<pre>$ <strong>time -p ./a.out 0 0 100000000</strong>
+real 14.75
+user 3.02
+sys 11.73
+$ <strong>time -p ./a.out 0 1 100000000</strong>
+real 11.52
+user 3.98
+sys 19.06
+$ <strong>time -p ./a.out 0 3 100000000</strong>
+real 7.89
+user 3.29
+sys 12.07</pre>
+
+  <h3>Program source</h3>
+  <p> </p>
+<pre>#define _GNU_SOURCE
+#include &lt;sched.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/wait.h&gt;
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); &#92;
+                        } while (0)
+
+int
+main(int argc, char *argv[])
+{
+    cpu_set_t set;
+    int parentCPU, childCPU;
+    int nloops, j;
+
+    if (argc != 4) {
+        fprintf(stderr, "Usage: %s parent-cpu child-cpu num-loops&#92;n",
+                argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    parentCPU = atoi(argv[1]);
+    childCPU = atoi(argv[2]);
+    nloops = atoi(argv[3]);
+
+    CPU_ZERO(&set);
+
+    switch (fork()) {
+    case -1:            /* Error */
+        errExit("fork");
+
+    case 0:             /* Child */
+        CPU_SET(childCPU, &set);
+
+        if (sched_setaffinity(getpid(), sizeof(set), &set) == -1)
+            errExit("sched_setaffinity");
+
+        for (j = 0; j &lt; nloops; j++)
+            getppid();
+
+        exit(EXIT_SUCCESS);
+
+    default:            /* Parent */
+        CPU_SET(parentCPU, &set);
+
+        if (sched_setaffinity(getpid(), sizeof(set), &set) == -1)
+            errExit("sched_setaffinity");
+
+        for (j = 0; j &lt; nloops; j++)
+            getppid();
+
+        wait(NULL);     /* Wait for child to terminate */
+        exit(EXIT_SUCCESS);
+    }
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>lscpu</strong>(1), <strong>nproc</strong>(1), <strong>taskset</strong>(1), <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/getcpu.2.html"><strong>getcpu</strong>(2)</a>, <a href="../man2/getpriority.2.html"><strong>getpriority</strong>(2)</a>, <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a>, <a href="../man2/nice.2.html"><strong>nice</strong>(2)</a>, <a href="../man2/sched_get_priority_max.2.html"><strong>sched_get_priority_max</strong>(2)</a>, <a href="../man2/sched_get_priority_min.2.html"><strong>sched_get_priority_min</strong>(2)</a>, <a href="../man2/sched_getscheduler.2.html"><strong>sched_getscheduler</strong>(2)</a>, <a href="../man2/sched_setscheduler.2.html"><strong>sched_setscheduler</strong>(2)</a>, <a href="../man2/setpriority.2.html"><strong>setpriority</strong>(2)</a>, <a href="../man3/CPU_SET.3.html"><strong>CPU_SET</strong>(3)</a>, <a href="../man3/pthread_setaffinity_np.3.html"><strong>pthread_setaffinity_np</strong>(3)</a>, <a href="../man3/sched_getcpu.3.html"><strong>sched_getcpu</strong>(3)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/cpuset.7.html"><strong>cpuset</strong>(7)</a>, <a href="../man7/sched.7.html"><strong>sched</strong>(7)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

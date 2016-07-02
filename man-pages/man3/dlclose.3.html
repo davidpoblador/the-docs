@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dlclose, dlopen, dlmopen - open and close a shared object</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">dlclose<small> (3)</small></h1>
+        <p class="lead">open and close a shared object</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man3"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">dlclose</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;dlfcn.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>void *dlopen(const char *</strong><em>filename</em><strong>, int </strong><em>flags</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><strong>int dlclose(void *</strong><em>handle</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><strong>#define _GNU_SOURCE</strong></p>
+<p class='spacer'>
+
+<p><strong>#include &lt;dlfcn.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>void *dlmopen (Lmid_t </strong><em>lmid</em><strong>, const char *</strong><em>filename</em><strong>, int </strong><em>flags</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p>Link with <em>-ldl</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+  <h3>dlopen()</h3>
+<p>The function <strong>dlopen</strong>() loads the dynamic shared object (shared library) file named by the null-terminated string <em>filename</em> and returns an opaque "handle" for the loaded object. This handle is employed with other functions in the dlopen API, such as <a href="../man3/dlsym.3.html"><strong>dlsym</strong>(3)</a>, <a href="../man3/dladdr.3.html"><strong>dladdr</strong>(3)</a>, <a href="../man3/dlinfo.3.html"><strong>dlinfo</strong>(3)</a>, and <strong>dlclose</strong>().</p>
+<p class='spacer'>
+
+  <p>If <em>filename</em> is NULL, then the returned handle is for the main program. If <em>filename</em> contains a slash ("/"), then it is interpreted as a (relative or absolute) pathname. Otherwise, the dynamic linker searches for the object as follows (see <a href="../man8/ld.so.8.html"><strong>ld.so</strong>(8)</a> for further details):</p>
+  <dl class='dl-horizontal'>
+    <dt>o</dt>
+    <dd>
+  <p>(ELF only) If the executable file for the calling program contains a DT_RPATH tag, and does not contain a DT_RUNPATH tag, then the directories listed in the DT_RPATH tag are searched.</p>
+    </dd>
+    <dt>o</dt>
+    <dd>
+  <p>If, at the time that the program was started, the environment variable <strong>LD_LIBRARY_PATH</strong> was defined to contain a colon-separated list of directories, then these are searched. (As a security measure, this variable is ignored for set-user-ID and set-group-ID programs.)</p>
+    </dd>
+    <dt>o</dt>
+    <dd>
+  <p>(ELF only) If the executable file for the calling program contains a DT_RUNPATH tag, then the directories listed in that tag are searched.</p>
+    </dd>
+    <dt>o</dt>
+    <dd>
+  <p>The cache file <em>/etc/ld.so.cache</em> (maintained by <a href="../man8/ldconfig.8.html"><strong>ldconfig</strong>(8)</a>) is checked to see whether it contains an entry for <em>filename</em>.</p>
+    </dd>
+    <dt>o</dt>
+    <dd>
+  <p>The directories <em>/lib</em> and <em>/usr/lib</em> are searched (in that order).</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If the object specified by <em>filename</em> has dependencies on other shared objects, then these are also automatically loaded by the dynamic linker using the same rules. (This process may occur recursively, if those objects in turn have dependencies, and so on.)</p>
+<p class='spacer'>
+
+  <p>One of the following two values must be included in <em>flags</em>:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>RTLD_LAZY</strong></dt>
+    <dd>
+  <p>Perform lazy binding. Only resolve symbols as the code that references them is executed. If the symbol is never referenced, then it is never resolved. (Lazy binding is performed only for function references; references to variables are always immediately bound when the shared object is loaded.) Since glibc 2.1.1, this flag is overridden by the effect of the <strong>LD_BIND_NOW</strong> environment variable.</p>
+    </dd>
+    <dt><strong>RTLD_NOW</strong></dt>
+    <dd>
+  <p>If this value is specified, or the environment variable <strong>LD_BIND_NOW</strong> is set to a nonempty string, all undefined symbols in the shared object are resolved before <strong>dlopen</strong>() returns. If this cannot be done, an error is returned.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>Zero or more of the following values may also be ORed in <em>flags</em>:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>RTLD_GLOBAL</strong></dt>
+    <dd>
+  <p>The symbols defined by this shared object will be made available for symbol resolution of subsequently loaded shared objects.</p>
+    </dd>
+    <dt><strong>RTLD_LOCAL</strong></dt>
+    <dd>
+  <p>This is the converse of <strong>RTLD_GLOBAL</strong>, and the default if neither flag is specified. Symbols defined in this shared object are not made available to resolve references in subsequently loaded shared objects.</p>
+    </dd>
+    <dt><strong>RTLD_NODELETE</strong> (since glibc 2.2)</dt>
+    <dd>
+  <p>Do not unload the shared object during <strong>dlclose</strong>(). Consequently, the object's static variables are not reinitialized if the object is reloaded with <strong>dlopen</strong>() at a later time.</p>
+    </dd>
+    <dt><strong>RTLD_NOLOAD</strong> (since glibc 2.2)</dt>
+    <dd>
+  <p>Don't load the shared object. This can be used to test if the object is already resident (<strong>dlopen</strong>() returns NULL if it is not, or the object's handle if it is resident). This flag can also be used to promote the flags on a shared object that is already loaded. For example, a shared object that was previously loaded with <strong>RTLD_LOCAL</strong> can be reopened with <strong>RTLD_NOLOAD&nbsp;|&nbsp;RTLD_GLOBAL</strong>.</p>
+    </dd>
+    <dt><strong>RTLD_DEEPBIND</strong> (since glibc 2.3.4)</dt>
+    <dd>
+  <p>Place the lookup scope of the symbols in this shared object ahead of the global scope. This means that a self-contained object will use its own symbols in preference to global symbols with the same name contained in objects that have already been loaded.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If <em>filename</em> is NULL, then the returned handle is for the main program. When given to <strong>dlsym</strong>(), this handle causes a search for a symbol in the main program, followed by all shared objects loaded at program startup, and then all shared objects loaded by <strong>dlopen</strong>() with the flag <strong>RTLD_GLOBAL</strong>.</p>
+<p class='spacer'>
+
+<p>External references in the shared object are resolved using the shared objects in that object's dependency list and any other objects previously opened with the <strong>RTLD_GLOBAL</strong> flag. If the executable was linked with the flag "-rdynamic" (or, synonymously, "--export-dynamic"), then the global symbols in the executable will also be used to resolve references in a dynamically loaded shared object.</p>
+<p class='spacer'>
+
+<p>If the same shared object is loaded again with <strong>dlopen</strong>(), the same object handle is returned. The dynamic linker maintains reference counts for object handles, so a dynamically loaded shared object is not deallocated until <strong>dlclose</strong>() has been called on it as many times as <strong>dlopen</strong>() has succeeded on it. Any initialization returns (see below) are called just once. However, a subsequent <strong>dlopen</strong>() call that loads the same shared object with <strong>RTLD_NOW</strong> may force symbol resolution for a shared object earlier loaded with <strong>RTLD_LAZY</strong>.</p>
+<p class='spacer'>
+
+<p>If <strong>dlopen</strong>() fails for any reason, it returns NULL.</p>
+  <h3>dlmopen()</h3>
+<p>This function performs the same task as <strong>dlopen</strong>()&ndash;the <em>filename</em> and <em>flags</em> arguments, as well as the return value, are the same, except for the differences noted below.</p>
+<p class='spacer'>
+
+<p>The <strong>dlmopen</strong>() function differs from <strong>dlopen</strong>() primarily in that it accepts an additional argument, <em>lmid</em>, that specifies the link-map list (also referred to as a <em>namespace</em>) in which the shared object should be loaded. (By comparison, <strong>dlopen</strong>() adds the dynamically loaded shared object to the same namespace as the shared object from which the <strong>dlopen</strong>() call is made.) The <em>Lmid_t</em> type is an opaque handle that refers to a namespace.</p>
+<p class='spacer'>
+
+  <p>The <em>lmid</em> argument is either the ID of an existing namespace (which can be obtained using the <a href="../man3/dlinfo.3.html"><strong>dlinfo</strong>(3)</a> <strong>RTLD_DI_LMID</strong> request) or one of the following special values:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>LM_ID_BASE</strong></dt>
+    <dd>
+  <p>Load the shared object in the initial namespace (i.e., the application's namespace).</p>
+    </dd>
+    <dt><strong>LM_ID_NEWLM</strong></dt>
+    <dd>
+  <p>Create a new namespace and load the shared object in that namespace. The object must have been correctly linked to reference all of the other shared objects that it requires, since the new namespace is initially empty.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If <em>filename</em> is NULL, then the only permitted value for <em>lmid</em> is <strong>LM_ID_BASE</strong>.</p>
+  <h3>dlclose()</h3>
+<p>The function <strong>dlclose</strong>() decrements the reference count on the dynamically loaded shared object referred to by <em>handle</em>. If the reference count drops to zero, then the object is unloaded. All shared objects that were automatically loaded when <strong>dlopen</strong>() was invoked on the object referred to by <em>handle</em> are recursively closed in the same manner.</p>
+<p class='spacer'>
+
+<p>A successful return from <strong>dlclose</strong>() does not guarantee that the symbols associated with <em>handle</em> are removed from the caller's address space. In addition to references resulting from explicit <strong>dlopen</strong>() calls, a shared object may have been implicitly loaded (and reference counted) because of dependencies in other shared objects. Only when all references have been released can the shared object be removed from the address space.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>dlopen</strong>() and <strong>dlmopen</strong>() return a non-NULL handle for the loaded library. On error (file could not be found, was not readable, had the wrong format, or caused errors during loading), these functions return NULL.</p>
+<p class='spacer'>
+
+<p>On success, <strong>dlclose</strong>() returns 0; on error, it returns a nonzero value.</p>
+<p class='spacer'>
+
+<p>Errors from these functions can be diagnosed using <a href="../man3/dlerror.3.html"><strong>dlerror</strong>(3)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>dlopen</strong>() and <strong>dlclose</strong>() are present in glibc 2.0 and later. <strong>dlmopen</strong>() first appeared in glibc 2.3.4.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ATTRIBUTES</h2>
+        <div class="sectioncontent">
+
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
+<table class="table table-striped">
+<tr>
+<th>Interface</th>
+<th>Attribute</th>
+<th>Value</th></tr>
+
+<tr>
+<td><strong>dlopen</strong>(),   <strong>dlmopen</strong>(),   <strong>dlclose</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe</td></tr>
+</table>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>POSIX.1-2001 describes <strong>dlclose</strong>() and <strong>dlopen</strong>(). The <strong>dlmopen</strong>() function is a GNU extension.</p>
+<p class='spacer'>
+
+<p>The <strong>RTLD_NOLOAD</strong>, <strong>RTLD_NODELETE</strong>, and <strong>RTLD_DEEPBIND</strong> flags are GNU extensions; the first two of these flags are also present on Solaris.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+  <h3>dlmopen() and namespaces</h3>
+<p>A link-map list defines an isolated namespace for the resolution of symbols by the dynamic linker. Within a namespace, dependent shared objects are implicitly loaded according to the usual rules, and symbol references are likewise resolved according to the usual rules, but such resolution is confined to the definitions provided by the objects that have been (explicitly and implicitly) loaded into the namespace.</p>
+<p class='spacer'>
+
+<p>The <strong>dlmopen</strong>() function permits object-load isolation&ndash;the ability to load a shared object in a new namespace without exposing the rest of the application to the symbols made available by the new object. Note that the use of the <strong>RTLD_LOCAL</strong> flag is not sufficient for this purpose, since it prevents a shared object's symbols from being available to <em>any</em> other shared object. In some cases, we may want to make the symbols provided by a dynamically loaded shared object available to (a subset of) other shared objects without exposing those symbols to the entire application. This can be achieved by using a separate namespace and the <strong>RTLD_GLOBAL</strong> flag.</p>
+<p class='spacer'>
+
+<p>The <strong>dlmopen</strong>() function also can be used to provide better isolation than the <strong>RTLD_LOCAL</strong> flag. In particular, shared objects loaded with <strong>RTLD_LOCAL</strong> may be promoted to <strong>RTLD_GLOBAL</strong> if they are dependencies of another shared object loaded with <strong>RTLD_GLOBAL</strong>. Thus, <strong>RTLD_LOCAL</strong> is insufficient to isolate a loaded shared object except in the (uncommon) case where one has explicit control over all shared object dependencies.</p>
+<p class='spacer'>
+
+<p>Possible uses of <strong>dlmopen</strong>() are plugins where the author of the plugin-loading framework can't trust the plugin authors and does not wish any undefined symbols from the plugin framework to be resolved to plugin symbols. Another use is to load the same object more than once. Without the use of <strong>dlmopen</strong>(), this would require the creation of distinct copies of the shared object file. Using <strong>dlmopen</strong>(), this can be achieved by loading the same shared object file into different namespaces.</p>
+<p class='spacer'>
+
+<p>The glibc implementation supports a maximum of 16 namespaces.</p>
+  <h3>Initialization and finalization functions</h3>
+<p>Shared objects may export functions using the <strong>__attribute__((constructor))</strong> and <strong>__attribute__((destructor))</strong> function attributes. Constructor functions are executed before <strong>dlopen</strong>() returns, and destructor functions are executed before <strong>dlclose</strong>() returns. A shared object may export multiple constructors and destructors, and priorities can be associated with each function to determine the order in which they are executed. See the <strong>gcc</strong> info pages (under "Function attributes") for further information.</p>
+<p class='spacer'>
+
+<p>An older method of (partially) achieving the same result is via the use of two special symbols recognized by the linker: <strong>_init</strong> and <strong>_fini</strong>. If a dynamically loaded shared object exports a routine named <strong>_init</strong>(), then that code is executed after loading a shared object, before <strong>dlopen</strong>() returns. If the shared object exports a routine named <strong>_fini</strong>(), then that routine is called just before the object is unloaded. In this case, one must avoid linking against the system startup files, which contain default versions of these files; this can be done by using the <strong>gcc</strong>(1) <em>-nostartfiles</em> command-line option.</p>
+<p class='spacer'>
+
+<p>Use of <strong>_init</strong> and <strong>_fini</strong> is now deprecated in favor of the aforementioned constructors and destructors, which among other advantages, permit multiple initialization and finalization functions to be defined.</p>
+<p class='spacer'>
+
+<p>Since glibc 2.2.3, <a href="../man3/atexit.3.html"><strong>atexit</strong>(3)</a> can be used to register an exit handler that is automatically called when a shared object is unloaded.</p>
+  <h3>History</h3>
+<p>These functions are part of the dlopen API, derived from SunOS.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The program below loads the (glibc) math library, looks up the address of the <a href="../man3/cos.3.html"><strong>cos</strong>(3)</a> function, and prints the cosine of 2.0. The following is an example of building and running the program:</p>
+<p class='spacer'>
+
+<pre>$ <strong>cc dlopen_demo.c -ldl</strong>
+$ <strong>./a.out</strong>
+-0.416147</pre>
+
+  <h3>Program source</h3>
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;dlfcn.h&gt;
+#include &lt;gnu/lib-names.h&gt;  /* Defines LIBM_SO (which will be a
+                               string such as "libm.so.6") */
+int
+main(void)
+{
+    void *handle;
+    double (*cosine)(double);
+    char *error;
+
+    handle = dlopen(LIBM_SO, RTLD_LAZY);
+    if (!handle) {
+        fprintf(stderr, "%s\en", dlerror());
+        exit(EXIT_FAILURE);
+    }
+
+    dlerror();    /* Clear any existing error */
+
+    cosine = (double (*)(double)) dlsym(handle, "cos");
+
+    /* According to the ISO C standard, casting between function
+       pointers and 'void *', as done above, produces undefined results.
+       POSIX.1-2003 and POSIX.1-2008 accepted this state of affairs and
+       proposed the following workaround:
+
+           *(void **) (&cosine) = dlsym(handle, "cos");
+
+       This (clumsy) cast conforms with the ISO C standard and will
+       avoid any compiler warnings.
+
+       The 2013 Technical Corrigendum to POSIX.1-2008 (a.k.a.
+       POSIX.1-2013) improved matters by requiring that conforming
+       implementations support casting 'void *' to a function pointer.
+       Nevertheless, some compilers (e.g., gcc with the '-pedantic'
+       option) may complain about the cast used in this program. */
+
+    error = dlerror();
+    if (error != NULL) {
+        fprintf(stderr, "%s\en", error);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("%f\en", (*cosine)(2.0));
+    dlclose(handle);
+    exit(EXIT_SUCCESS);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>As at glibc 2.21, specifying the <strong>RTLD_GLOBAL</strong> flag when calling <strong>dlmopen</strong>() generates an error. Furthermore, specifying <strong>RTLD_GLOBAL</strong> when calling <strong>dlopen</strong>() results in a program crash (<strong>SIGSEGV</strong>) if the call is made from any object loaded in a namespace other than the initial namespace.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>ld</strong>(1), <a href="../man1/ldd.1.html"><strong>ldd</strong>(1)</a>, <a href="../man1/pldd.1.html"><strong>pldd</strong>(1)</a>, <a href="../man3/dl_iterate_phdr.3.html"><strong>dl_iterate_phdr</strong>(3)</a>, <a href="../man3/dladdr.3.html"><strong>dladdr</strong>(3)</a>, <a href="../man3/dlerror.3.html"><strong>dlerror</strong>(3)</a>, <a href="../man3/dlinfo.3.html"><strong>dlinfo</strong>(3)</a>, <a href="../man3/dlsym.3.html"><strong>dlsym</strong>(3)</a>, <a href="../man7/rtld-audit.7.html"><strong>rtld-audit</strong>(7)</a>, <a href="../man8/ld.so.8.html"><strong>ld.so</strong>(8)</a>, <a href="../man8/ldconfig.8.html"><strong>ldconfig</strong>(8)</a></p>
+<p class='spacer'>
+
+<p>gcc info pages, ld info pages</p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

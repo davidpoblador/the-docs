@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mremap - remap a virtual memory address</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">mremap<small> (2)</small></h1>
+        <p class="lead">remap a virtual memory address</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">mremap</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+
+<strong>#include &lt;sys/mman.h&gt;</strong>
+
+<strong>void *mremap(void *</strong><em>old_address</em><strong>, size_t </strong><em>old_size</em><strong>,</strong>
+<strong>             size_t </strong><em>new_size</em><strong>, int </strong><em>flags</em><strong>, ... /* void *</strong><em>new_address</em><strong> */);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>mremap</strong>() expands (or shrinks) an existing memory mapping, potentially moving it at the same time (controlled by the <em>flags</em> argument and the available virtual address space).</p>
+<p class='spacer'>
+
+<p><em>old_address</em> is the old address of the virtual memory block that you want to expand (or shrink). Note that <em>old_address</em> has to be page aligned. <em>old_size</em> is the old size of the virtual memory block. <em>new_size</em> is the requested size of the virtual memory block after the resize. An optional fifth argument, <em>new_address</em>, may be provided; see the description of <strong>MREMAP_FIXED</strong> below.</p>
+<p class='spacer'>
+
+<p>In Linux the memory is divided into pages. A user process has (one or) several linear virtual memory segments. Each virtual memory segment has one or more mappings to real memory pages (in the page table). Each virtual memory segment has its own protection (access rights), which may cause a segmentation violation if the memory is accessed incorrectly (e.g., writing to a read-only segment). Accessing virtual memory outside of the segments will also cause a segmentation violation.</p>
+<p class='spacer'>
+
+<p><strong>mremap</strong>() uses the Linux page table scheme. <strong>mremap</strong>() changes the mapping between virtual addresses and memory pages. This can be used to implement a very efficient <a href="../man3/realloc.3.html"><strong>realloc</strong>(3)</a>.</p>
+<p class='spacer'>
+
+  <p>The <em>flags</em> bit-mask argument may be 0, or include the following flag:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>MREMAP_MAYMOVE</strong></dt>
+    <dd>
+  <p>By default, if there is not sufficient space to expand a mapping at its current location, then <strong>mremap</strong>() fails. If this flag is specified, then the kernel is permitted to relocate the mapping to a new virtual address, if necessary. If the mapping is relocated, then absolute pointers into the old mapping location become invalid (offsets relative to the starting address of the mapping should be employed).</p>
+    </dd>
+    <dt><strong>MREMAP_FIXED</strong> (since Linux 2.3.31)</dt>
+    <dd>
+  <p>This flag serves a similar purpose to the <strong>MAP_FIXED</strong> flag of <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. If this flag is specified, then <strong>mremap</strong>() accepts a fifth argument, <em>void&nbsp;*new_address</em>, which specifies a page-aligned address to which the mapping must be moved. Any previous mapping at the address range specified by <em>new_address</em> and <em>new_size</em> is unmapped. If <strong>MREMAP_FIXED</strong> is specified, then <strong>MREMAP_MAYMOVE</strong> must also be specified.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If the memory segment specified by <em>old_address</em> and <em>old_size</em> is locked (using <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a> or similar), then this lock is maintained when the segment is resized and/or relocated. As a consequence, the amount of memory locked by the process may change.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success <strong>mremap</strong>() returns a pointer to the new virtual memory area. On error, the value <strong>MAP_FAILED</strong> (that is, <em>(void&nbsp;*)&nbsp;-1</em>) is returned, and <em>errno</em> is set appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EAGAIN</strong></dt>
+    <dd>
+  <p>The caller tried to expand a memory segment that is locked, but this was not possible without exceeding the <strong>RLIMIT_MEMLOCK</strong> resource limit.</p>
+    </dd>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>"Segmentation fault." Some address in the range <em>old_address</em> to <em>old_address</em>+<em>old_size</em> is an invalid virtual memory address for this process. You can also get <strong>EFAULT</strong> even if there exist mappings that cover the whole address space requested, but those mappings are of different types.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>An invalid argument was given. Possible causes are: <em>old_address</em> was not page aligned; a value other than <strong>MREMAP_MAYMOVE</strong> or <strong>MREMAP_FIXED</strong> was specified in <em>flags</em>; <em>new_size</em> was zero; <em>new_size</em> or <em>new_address</em> was invalid; or the new address range specified by <em>new_address</em> and <em>new_size</em> overlapped the old address range specified by <em>old_address</em> and <em>old_size</em>; or <strong>MREMAP_FIXED</strong> was specified without also specifying <strong>MREMAP_MAYMOVE</strong>.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>The memory area cannot be expanded at the current virtual address, and the <strong>MREMAP_MAYMOVE</strong> flag is not set in <em>flags</em>. Or, there is not enough (virtual) memory available.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>This call is Linux-specific, and should not be used in programs intended to be portable.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Prior to version 2.4, glibc did not expose the definition of <strong>MREMAP_FIXED</strong>, and the prototype for <strong>mremap</strong>() did not allow for the <em>new_address</em> argument.</p>
+<p class='spacer'>
+
+<p>If <strong>mremap</strong>() is used to move or expand an area locked with <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a> or equivalent, the <strong>mremap</strong>() call will make a best effort to populate the new area but will not fail with <strong>ENOMEM</strong> if the area cannot be populated.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/brk.2.html"><strong>brk</strong>(2)</a>, <a href="../man2/getpagesize.2.html"><strong>getpagesize</strong>(2)</a>, <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>, <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a>, <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a>, <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>, <a href="../man3/realloc.3.html"><strong>realloc</strong>(3)</a></p>
+<p class='spacer'>
+
+<p>Your favorite text book on operating systems for more information on paged memory (e.g., <em>Modern Operating Systems</em> by Andrew S. Tanenbaum, <em>Inside Linux</em> by Randolf Bentson, <em>The Design of the UNIX Operating System</em> by Maurice J. Bach)</p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

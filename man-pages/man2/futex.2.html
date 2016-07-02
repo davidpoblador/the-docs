@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>futex - fast user-space locking</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">futex<small> (2)</small></h1>
+        <p class="lead">fast user-space locking</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">futex</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre>
+<strong>"#include &lt;linux/futex.h&gt;"</strong>
+<strong>"#include &lt;sys/time.h&gt;"</strong>
+
+<strong>int futex(int *</strong><em>uaddr</em><strong>, int </strong><em>futex_op</em><strong>, int </strong><em>val</em><strong>,</strong>
+<strong>          const struct timespec *</strong><em>timeout</em><strong>,</strong><em>   /* or: uint32_t <em>val2</em> */</em>
+<strong>          int *</strong><em>uaddr2</em><strong>, int </strong><em>val3</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The <strong>futex</strong>() system call provides a method for waiting until a certain condition becomes true. It is typically used as a blocking construct in the context of shared-memory synchronization. When using futexes, the majority of the synchronization operations are performed in user space. A user-space program employs the <strong>futex</strong>() system call only when it is likely that the program has to block for a longer time until the condition becomes true. Other <strong>futex</strong>() operations can be used to wake any processes or threads waiting for a particular condition.</p>
+<p class='spacer'>
+
+<p>A futex is a 32-bit value&ndash;referred to below as a <em>futex word</em>&ndash;whose address is supplied to the <strong>futex</strong>() system call. (Futexes are 32 bits in size on all platforms, including 64-bit systems.) All futex operations are governed by this value. In order to share a futex between processes, the futex is placed in a region of shared memory, created using (for example) <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> or <a href="../man2/shmat.2.html"><strong>shmat</strong>(2)</a>. (Thus, the futex word may have different virtual addresses in different processes, but these addresses all refer to the same location in physical memory.) In a multithreaded program, it is sufficient to place the futex word in a global variable shared by all threads.</p>
+<p class='spacer'>
+
+<p>When executing a futex operation that requests to block a thread, the kernel will block only if the futex word has the value that the calling thread supplied (as one of the arguments of the <strong>futex</strong>() call) as the expected value of the futex word. The loading of the futex word's value, the comparison of that value with the expected value, and the actual blocking will happen atomically and will be totally ordered with respect to concurrent operations performed by other threads on the same futex word. Thus, the futex word is used to connect the synchronization in user space with the implementation of blocking by the kernel. Analogously to an atomic compare-and-exchange operation that potentially changes shared memory, blocking via a futex is an atomic compare-and-block operation.</p>
+<p class='spacer'>
+
+<p>One use of futexes is for implementing locks. The state of the lock (i.e., acquired or not acquired) can be represented as an atomically accessed flag in shared memory. In the uncontended case, a thread can access or modify the lock state with atomic instructions, for example atomically changing it from not acquired to acquired using an atomic compare-and-exchange instruction. (Such instructions are performed entirely in user mode, and the kernel maintains no information about the lock state.) On the other hand, a thread may be unable to acquire a lock because it is already acquired by another thread. It then may pass the lock's flag as a futex word and the value representing the acquired state as the expected value to a <strong>futex</strong>() wait operation. This <strong>futex</strong>() operation will block if and only if the lock is still acquired (i.e., the value in the futex word still matches the "acquired state"). When releasing the lock, a thread has to first reset the lock state to not acquired and then execute a futex operation that wakes threads blocked on the lock flag used as a futex word (this can be further optimized to avoid unnecessary wake-ups). See <a href="../man7/futex.7.html"><strong>futex</strong>(7)</a> for more detail on how to use futexes.</p>
+<p class='spacer'>
+
+<p>Besides the basic wait and wake-up futex functionality, there are further futex operations aimed at supporting more complex use cases.</p>
+<p class='spacer'>
+
+<p>Note that no explicit initialization or destruction is necessary to use futexes; the kernel maintains a futex (i.e., the kernel-internal implementation artifact) only while operations such as <strong>FUTEX_WAIT</strong>, described below, are being performed on a particular futex word.</p>
+  <h3>Arguments</h3>
+<p>The <em>uaddr</em> argument points to the futex word. On all platforms, futexes are four-byte integers that must be aligned on a four-byte boundary. The operation to perform on the futex is specified in the <em>futex_op</em> argument; <em>val</em> is a value whose meaning and purpose depends on <em>futex_op</em>.</p>
+<p class='spacer'>
+
+<p>The remaining arguments (<em>timeout</em>, <em>uaddr2</em>, and <em>val3</em>) are required only for certain of the futex operations described below. Where one of these arguments is not required, it is ignored.</p>
+<p class='spacer'>
+
+<p>For several blocking operations, the <em>timeout</em> argument is a pointer to a <em>timespec</em> structure that specifies a timeout for the operation. However,  notwithstanding the prototype shown above, for some operations, the least significant four bytes are used as an integer whose meaning is determined by the operation. For these operations, the kernel casts the <em>timeout</em> value first to <em>unsigned long,</em> then to <em>uint32_t</em>, and in the remainder of this page, this argument is referred to as <em>val2</em> when interpreted in this fashion.</p>
+<p class='spacer'>
+
+<p>Where it is required, the <em>uaddr2</em> argument is a pointer to a second futex word that is employed by the operation.</p>
+<p class='spacer'>
+
+<p>The interpretation of the final integer argument, <em>val3</em>, depends on the operation.</p>
+  <h3>Futex operations</h3>
+  <p>The <em>futex_op</em> argument consists of two parts: a command that specifies the operation to be performed, bit-wise ORed with zero or more options that modify the behaviour of the operation. The options that may be included in <em>futex_op</em> are as follows:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>FUTEX_PRIVATE_FLAG</strong> (since Linux 2.6.22)</dt>
+    <dd>
+  <p>This option bit can be employed with all futex operations. It tells the kernel that the futex is process-private and not shared with another process (i.e., it is being used for synchronization only between threads of the same process). This allows the kernel to make some additional performance optimizations.</p>
+<p class='spacer'>
+
+  <p>As a convenience, <em>&lt;linux/futex.h&gt;</em> defines a set of constants with the suffix <strong>_PRIVATE</strong> that are equivalents of all of the operations listed below, but with the <strong>FUTEX_PRIVATE_FLAG</strong> ORed into the constant value. Thus, there are <strong>FUTEX_WAIT_PRIVATE</strong>, <strong>FUTEX_WAKE_PRIVATE</strong>, and so on.</p>
+    </dd>
+    <dt><strong>FUTEX_CLOCK_REALTIME</strong> (since Linux 2.6.28)</dt>
+    <dd>
+  <p>This option bit can be employed only with the <strong>FUTEX_WAIT_BITSET</strong>, <strong>FUTEX_WAIT_REQUEUE_PI</strong>, and (since Linux 4.5) <strong>FUTEX_WAIT</strong> operations.</p>
+<p class='spacer'>
+
+  <p>If this option is set, the kernel measures the <em>timeout</em> against the <strong>CLOCK_REALTIME</strong> clock.</p>
+<p class='spacer'>
+
+  <p>If this option is not set, the kernel measures the <em>timeout</em> against the <strong>CLOCK_MONOTONIC</strong> clock.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The operation specified in <em>futex_op</em> is one of the following:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>FUTEX_WAIT</strong> (since Linux 2.6.0)</dt>
+    <dd>
+  <p>This operation tests that the value at the futex word pointed to by the address <em>uaddr</em> still contains the expected value <em>val</em>, and if so, then sleeps waiting for a <strong>FUTEX_WAKE</strong> operation on the futex word. The load of the value of the futex word is an atomic memory access (i.e., using atomic machine instructions of the respective architecture). This load, the comparison with the expected value, and starting to sleep are performed atomically and totally ordered with respect to other futex operations on the same futex word. If the thread starts to sleep, it is considered a waiter on this futex word. If the futex value does not match <em>val</em>, then the call fails immediately with the error <strong>EAGAIN</strong>.</p>
+<p class='spacer'>
+
+  <p>The purpose of the comparison with the expected value is to prevent lost wake-ups. If another thread changed the value of the futex word after the calling thread decided to block based on the prior value, and if the other thread executed a <strong>FUTEX_WAKE</strong> operation (or similar wake-up) after the value change and before this <strong>FUTEX_WAIT</strong> operation, then the calling thread will observe the value change and will not start to sleep.</p>
+<p class='spacer'>
+
+  <p>If the <em>timeout</em> is not NULL, the structure it points to specifies a timeout for the wait. (This interval will be rounded up to the system clock granularity, and is guaranteed not to expire early.) The timeout is by default measured according to the <strong>CLOCK_MONOTONIC</strong> clock, but, since Linux 4.5, the <strong>CLOCK_REALTIME</strong> clock can be selected by specifying <strong>FUTEX_CLOCK_REALTIME</strong> in <em>futex_op</em>. If <em>timeout</em> is NULL, the call blocks indefinitely.</p>
+<p class='spacer'>
+
+  <p><em>Note</em>: for <strong>FUTEX_WAIT</strong>, <em>timeout</em> is interpreted as a <em>relative</em> value. This differs from other futex operations, where <em>timeout</em> is interpreted as an absolute value. To obtain the equivalent of <strong>FUTEX_WAIT</strong> with an absolute timeout, employ <strong>FUTEX_WAIT_BITSET</strong> with <em>val3</em> specified as <strong>FUTEX_BITSET_MATCH_ANY</strong>.</p>
+<p class='spacer'>
+
+  <p>The arguments <em>uaddr2</em> and <em>val3</em> are ignored.</p>
+    </dd>
+    <dt><strong>FUTEX_WAKE</strong> (since Linux 2.6.0)</dt>
+    <dd>
+  <p>This operation wakes at most <em>val</em> of the waiters that are waiting (e.g., inside <strong>FUTEX_WAIT</strong>) on the futex word at the address <em>uaddr</em>. Most commonly, <em>val</em> is specified as either 1 (wake up a single waiter) or <strong>INT_MAX</strong> (wake up all waiters). No guarantee is provided about which waiters are awoken (e.g., a waiter with a higher scheduling priority is not guaranteed to be awoken in preference to a waiter with a lower priority).</p>
+<p class='spacer'>
+
+  <p>The arguments <em>timeout</em>, <em>uaddr2</em>, and <em>val3</em> are ignored.</p>
+    </dd>
+    <dt><strong>FUTEX_FD</strong> (from Linux 2.6.0 up to and including Linux 2.6.25)</dt>
+    <dd>
+  <p>This operation creates a file descriptor that is associated with the futex at <em>uaddr</em>. The caller must close the returned file descriptor after use. When another process or thread performs a <strong>FUTEX_WAKE</strong> on the futex word, the file descriptor indicates as being readable with <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, and <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a></p>
+<p class='spacer'>
+
+  <p>The file descriptor can be used to obtain asynchronous notifications: if <em>val</em> is nonzero, then, when another process or thread executes a <strong>FUTEX_WAKE</strong>, the caller will receive the signal number that was passed in <em>val</em>.</p>
+<p class='spacer'>
+
+  <p>The arguments <em>timeout</em>, <em>uaddr2</em> and <em>val3</em> are ignored.</p>
+<p class='spacer'>
+
+  <p>Because it was inherently racy, <strong>FUTEX_FD</strong> has been removed from Linux 2.6.26 onward.</p>
+    </dd>
+    <dt><strong>FUTEX_REQUEUE</strong> (since Linux 2.6.0)</dt>
+    <dd>
+  <p>This operation performs the same task as <strong>FUTEX_CMP_REQUEUE</strong> (see below), except that no check is made using the value in <em>val3</em>. (The argument <em>val3</em> is ignored.)</p>
+    </dd>
+    <dt><strong>FUTEX_CMP_REQUEUE</strong> (since Linux 2.6.7)</dt>
+    <dd>
+  <p>This operation first checks whether the location <em>uaddr</em> still contains the value <em>val3</em>. If not, the operation fails with the error <strong>EAGAIN</strong>. Otherwise, the operation wakes up a maximum of <em>val</em> waiters that are waiting on the futex at <em>uaddr</em>. If there are more than <em>val</em> waiters, then the remaining waiters are removed from the wait queue of the source futex at <em>uaddr</em> and added to the wait queue of the target futex at <em>uaddr2</em>. The <em>val2</em> argument specifies an upper limit on the number of waiters that are requeued to the futex at <em>uaddr2</em>.</p>
+<p class='spacer'>
+
+  <p>The load from <em>uaddr</em> is an atomic memory access (i.e., using atomic machine instructions of the respective architecture). This load, the comparison with <em>val3</em>, and the requeueing of any waiters are performed atomically and totally ordered with respect to other operations on the same futex word.</p>
+<p class='spacer'>
+
+  <p>Typical values to specify for <em>val</em> are 0 or 1. (Specifying <strong>INT_MAX</strong> is not useful, because it would make the <strong>FUTEX_CMP_REQUEUE</strong> operation equivalent to <strong>FUTEX_WAKE</strong>.) The limit value specified via <em>val2</em> is typically either 1 or <strong>INT_MAX</strong>. (Specifying the argument as 0 is not useful, because it would make the <strong>FUTEX_CMP_REQUEUE</strong> operation equivalent to <strong>FUTEX_WAIT</strong>.)</p>
+<p class='spacer'>
+
+  <p>The <strong>FUTEX_CMP_REQUEUE</strong> operation was added as a replacement for the earlier <strong>FUTEX_REQUEUE</strong>. The difference is that the check of the value at <em>uaddr</em> can be used to ensure that requeueing happens only under certain conditions, which allows race conditions to be avoided in certain use cases.</p>
+<p class='spacer'>
+
+  <p>Both <strong>FUTEX_REQUEUE</strong> and <strong>FUTEX_CMP_REQUEUE</strong> can be used to avoid "thundering herd" wake-ups that could occur when using <strong>FUTEX_WAKE</strong> in cases where all of the waiters that are woken need to acquire another futex. Consider the following scenario, where multiple waiter threads are waiting on B, a wait queue implemented using a futex:</p>
+<p class='spacer'>
+
+<pre>lock(A)
+while (!check_value(V)) {
+    unlock(A);
+    block_on(B);
+    lock(A);
+};
+unlock(A);</pre>
+
+<p class='spacer'>
+
+  <p>If a waker thread used <strong>FUTEX_WAKE</strong>, then all waiters waiting on B would be woken up, and they would all try to acquire lock A. However, waking all of the threads in this manner would be pointless because all except one of the threads would immediately block on lock A again. By contrast, a requeue operation wakes just one waiter and moves the other waiters to lock A, and when the woken waiter unlocks A then the next waiter can proceed.</p>
+    </dd>
+    <dt><strong>FUTEX_WAKE_OP</strong> (since Linux 2.6.14)</dt>
+    <dd>
+  <p>This operation was added to support some user-space use cases where more than one futex must be handled at the same time. The most notable example is the implementation of <strong>pthread_cond_signal</strong>(3), which requires operations on two futexes, the one used to implement the mutex and the one used in the implementation of the wait queue associated with the condition variable. <strong>FUTEX_WAKE_OP</strong> allows such cases to be implemented without leading to high rates of contention and context switching.</p>
+<p class='spacer'>
+
+  <p>The <strong>FUTEX_WAKE_OP</strong> operation is equivalent to executing the following code atomically and totally ordered with respect to other futex operations on any of the two supplied futex words:</p>
+<p class='spacer'>
+
+<pre>int oldval = *(int *) uaddr2;
+*(int *) uaddr2 = oldval <em>op</em> <em>oparg</em>;
+futex(uaddr, FUTEX_WAKE, val, 0, 0, 0);
+if (oldval <em>cmp</em> <em>cmparg</em>)
+    futex(uaddr2, FUTEX_WAKE, val2, 0, 0, 0);</pre>
+
+<p class='spacer'>
+
+      <p>In other words, <strong>FUTEX_WAKE_OP</strong> does the following:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+      <p>saves the original value of the futex word at <em>uaddr2</em> and performs an operation to modify the value of the futex at <em>uaddr2</em>; this is an atomic read-modify-write memory access (i.e., using atomic machine instructions of the respective architecture)</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>wakes up a maximum of <em>val</em> waiters on the futex for the futex word at <em>uaddr</em>; and</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>dependent on the results of a test of the original value of the futex word at <em>uaddr2</em>, wakes up a maximum of <em>val2</em> waiters on the futex for the futex word at <em>uaddr2</em>.</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+  <p>The operation and comparison that are to be performed are encoded in the bits of the argument <em>val3</em>. Pictorially, the encoding is:</p>
+<p class='spacer'>
+
+<pre>+---+---+-----------+-----------+
+|op |cmp|   oparg   |  cmparg   |
++---+---+-----------+-----------+
+  4   4       12          12    &lt;== # of bits</pre>
+
+<p class='spacer'>
+
+  <p>Expressed in code, the encoding is:</p>
+<p class='spacer'>
+
+<pre>#define FUTEX_OP(op, oparg, cmp, cmparg) &#92;
+                (((op & 0xf) &lt;&lt; 28) | &#92;
+                ((cmp & 0xf) &lt;&lt; 24) | &#92;
+                ((oparg & 0xfff) &lt;&lt; 12) | &#92;
+                (cmparg & 0xfff))</pre>
+
+<p class='spacer'>
+
+  <p>In the above, <em>op</em> and <em>cmp</em> are each one of the codes listed below. The <em>oparg</em> and <em>cmparg</em> components are literal numeric values, except as noted below.</p>
+<p class='spacer'>
+
+  <p>The <em>op</em> component has one of the following values:</p>
+<p class='spacer'>
+
+<pre>FUTEX_OP_SET        0  /* uaddr2 = oparg; */
+FUTEX_OP_ADD        1  /* uaddr2 += oparg; */
+FUTEX_OP_OR         2  /* uaddr2 |= oparg; */
+FUTEX_OP_ANDN       3  /* uaddr2 &= ~oparg; */
+FUTEX_OP_XOR        4  /* uaddr2 ^= oparg; */</pre>
+
+<p class='spacer'>
+
+  <p>In addition, bit-wise ORing the following value into <em>op</em> causes <em>"(1&nbsp;&lt;&lt;&nbsp;oparg)"</em> to be used as the operand:</p>
+<p class='spacer'>
+
+<pre>FUTEX_OP_ARG_SHIFT  8  /* Use (1 &lt;&lt; oparg) as operand */</pre>
+
+<p class='spacer'>
+
+  <p>The <em>cmp</em> field is one of the following:</p>
+<p class='spacer'>
+
+<pre>FUTEX_OP_CMP_EQ     0  /* if (oldval == cmparg) wake */
+FUTEX_OP_CMP_NE     1  /* if (oldval != cmparg) wake */
+FUTEX_OP_CMP_LT     2  /* if (oldval &lt; cmparg) wake */
+FUTEX_OP_CMP_LE     3  /* if (oldval &lt;= cmparg) wake */
+FUTEX_OP_CMP_GT     4  /* if (oldval &gt; cmparg) wake */
+FUTEX_OP_CMP_GE     5  /* if (oldval &gt;= cmparg) wake */</pre>
+
+<p class='spacer'>
+
+  <p>The return value of <strong>FUTEX_WAKE_OP</strong> is the sum of the number of waiters woken on the futex <em>uaddr</em> plus the number of waiters woken on the futex <em>uaddr2</em>.</p>
+    </dd>
+    <dt><strong>FUTEX_WAIT_BITSET</strong> (since Linux 2.6.25)</dt>
+    <dd>
+  <p>This operation is like <strong>FUTEX_WAIT</strong> except that <em>val3</em> is used to provide a 32-bit bit mask to the kernel. This bit mask, in which at least one bit must be set, is stored in the kernel-internal state of the waiter. See the description of <strong>FUTEX_WAKE_BITSET</strong> for further details.</p>
+<p class='spacer'>
+
+  <p>If <em>timeout</em> is not NULL, the structure it points to specifies an absolute timeout for the wait operation. If <em>timeout</em> is NULL, the operation can block indefinitely.</p>
+<p class='spacer'>
+
+  <p>The <em>uaddr2</em> argument is ignored.</p>
+    </dd>
+    <dt><strong>FUTEX_WAKE_BITSET</strong> (since Linux 2.6.25)</dt>
+    <dd>
+  <p>This operation is the same as <strong>FUTEX_WAKE</strong> except that the <em>val3</em> argument is used to provide a 32-bit bit mask to the kernel. This bit mask, in which at least one bit must be set, is used to select which waiters should be woken up. The selection is done by a bit-wise AND of the "wake" bit mask (i.e., the value in <em>val3</em>) and the bit mask which is stored in the kernel-internal state of the waiter (the "wait" bit mask that is set using <strong>FUTEX_WAIT_BITSET</strong>). All of the waiters for which the result of the AND is nonzero are woken up; the remaining waiters are left sleeping.</p>
+<p class='spacer'>
+
+  <p>The effect of <strong>FUTEX_WAIT_BITSET</strong> and <strong>FUTEX_WAKE_BITSET</strong> is to allow selective wake-ups among multiple waiters that are blocked on the same futex. However, note that, depending on the use case, employing this bit-mask multiplexing feature on a futex can be less efficient than simply using multiple futexes, because employing bit-mask multiplexing requires the kernel to check all waiters on a futex, including those that are not interested in being woken up (i.e., they do not have the relevant bit set in their "wait" bit mask).</p>
+<p class='spacer'>
+
+  <p>The constant <strong>FUTEX_BITSET_MATCH_ANY</strong>, which corresponds to all 32 bits set in the bit mask, can be used as the <em>val3</em> argument for <strong>FUTEX_WAIT_BITSET</strong> and <strong>FUTEX_WAKE_BITSET</strong>. Other than differences in the handling of the <em>timeout</em> argument, the <strong>FUTEX_WAIT</strong> operation is equivalent to <strong>FUTEX_WAIT_BITSET</strong> with <em>val3</em> specified as <strong>FUTEX_BITSET_MATCH_ANY</strong>; that is, allow a wake-up by any waker. The <strong>FUTEX_WAKE</strong> operation is equivalent to <strong>FUTEX_WAKE_BITSET</strong> with <em>val3</em> specified as <strong>FUTEX_BITSET_MATCH_ANY</strong>; that is, wake up any waiter(s).</p>
+<p class='spacer'>
+
+  <p>The <em>uaddr2</em> and <em>timeout</em> arguments are ignored.</p>
+    </dd>
+  </dl>
+  <h3>Priority-inheritance futexes</h3>
+<p>Linux supports priority-inheritance (PI) futexes in order to handle priority-inversion problems that can be encountered with normal futex locks. Priority inversion is the problem that occurs when a high-priority task is blocked waiting to acquire a lock held by a low-priority task, while tasks at an intermediate priority continuously preempt the low-priority task from the CPU. Consequently, the low-priority task makes no progress toward releasing the lock, and the high-priority task remains blocked.</p>
+<p class='spacer'>
+
+<p>Priority inheritance is a mechanism for dealing with the priority-inversion problem. With this mechanism, when a high-priority task becomes blocked by a lock held by a low-priority task, the priority of the low-priority task is temporarily raised to that of the high-priority task, so that it is not preempted by any intermediate level tasks, and can thus make progress toward releasing the lock. To be effective, priority inheritance must be transitive, meaning that if a high-priority task blocks on a lock held by a lower-priority task that is itself blocked by a lock held by another intermediate-priority task (and so on, for chains of arbitrary length), then both of those tasks (or more generally, all of the tasks in a lock chain) have their priorities raised to be the same as the high-priority task.</p>
+<p class='spacer'>
+
+<p>From a user-space perspective, what makes a futex PI-aware is a policy agreement (described below) between user space and the kernel about the value of the futex word, coupled with the use of the PI-futex operations described below. (Unlike the other futex operations described above, the PI-futex operations are designed for the implementation of very specific IPC mechanisms.)</p>
+<p class='spacer'>
+
+  <p>The PI-futex operations described below differ from the other futex operations in that they impose policy on the use of the value of the futex word:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>If the lock is not acquired, the futex word's value shall be 0.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>If the lock is acquired, the futex word's value shall be the thread ID (TID; see <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a>) of the owning thread.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>If the lock is owned and there are threads contending for the lock, then the <strong>FUTEX_WAITERS</strong> bit shall be set in the futex word's value; in other words, this value is:</p>
+<p class='spacer'>
+
+<pre>    FUTEX_WAITERS | TID</pre>
+
+    </dd>
+<p class='spacer'>
+
+  <p>(Note that is invalid for a PI futex word to have no owner and <strong>FUTEX_WAITERS</strong> set.)</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>With this policy in place, a user-space application can acquire an unacquired lock or release a lock using atomic instructions executed in user mode (e.g., a compare-and-swap operation such as <em>cmpxchg</em> on the x86 architecture). Acquiring a lock simply consists of using compare-and-swap to atomically set the futex word's value to the caller's TID if its previous value was 0. Releasing a lock requires using compare-and-swap to set the futex word's value to 0 if the previous value was the expected TID.</p>
+<p class='spacer'>
+
+<p>If a futex is already acquired (i.e., has a nonzero value), waiters must employ the <strong>FUTEX_LOCK_PI</strong> operation to acquire the lock. If other threads are waiting for the lock, then the <strong>FUTEX_WAITERS</strong> bit is set in the futex value; in this case, the lock owner must employ the <strong>FUTEX_UNLOCK_PI</strong> operation to release the lock.</p>
+<p class='spacer'>
+
+<p>In the cases where callers are forced into the kernel (i.e., required to perform a <strong>futex</strong>() call), they then deal directly with a so-called RT-mutex, a kernel locking mechanism which implements the required priority-inheritance semantics. After the RT-mutex is acquired, the futex value is updated accordingly, before the calling thread returns to user space.</p>
+<p class='spacer'>
+
+<p>It is important to note that the kernel will update the futex word's value prior to returning to user space. (This prevents the possibility of the futex word's value ending up in an invalid state, such as having an owner but the value being 0, or having waiters but not having the <strong>FUTEX_WAITERS</strong> bit set.)</p>
+<p class='spacer'>
+
+<p>If a futex has an associated RT-mutex in the kernel (i.e., there are blocked waiters) and the owner of the futex/RT-mutex dies unexpectedly, then the kernel cleans up the RT-mutex and hands it over to the next waiter. This in turn requires that the user-space value is updated accordingly. To indicate that this is required, the kernel sets the <strong>FUTEX_OWNER_DIED</strong> bit in the futex word along with the thread ID of the new owner. User space can detect this situation via the presence of the <strong>FUTEX_OWNER_DIED</strong> bit and is then responsible for cleaning up the stale state left over by the dead owner.</p>
+<p class='spacer'>
+
+  <p>PI futexes are operated on by specifying one of the values listed below in <em>futex_op</em>. Note that the PI futex operations must be used as paired operations and are subject to some additional requirements:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p><strong>FUTEX_LOCK_PI</strong> and <strong>FUTEX_TRYLOCK_PI</strong> pair with <strong>FUTEX_UNLOCK_PI.</strong> <strong>FUTEX_UNLOCK_PI</strong> must be called only on a futex owned by the calling thread, as defined by the value policy, otherwise the error <strong>EPERM</strong> results.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p><strong>FUTEX_WAIT_REQUEUE_PI</strong> pairs with <strong>FUTEX_CMP_REQUEUE_PI</strong>. This must be performed from a non-PI futex to a distinct PI futex (or the error <strong>EINVAL</strong> results). Additionally, <em>val</em> (the number of waiters to be woken) must be 1 (or the error <strong>EINVAL</strong> results).</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The PI futex operations are as follows:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>FUTEX_LOCK_PI</strong> (since Linux 2.6.18)</dt>
+    <dd>
+  <p>This operation is used after an attempt to acquire the lock via an atomic user-mode instruction failed because the futex word has a nonzero value&ndash;specifically, because it contained the (PID-namespace-specific) TID of the lock owner.</p>
+<p class='spacer'>
+
+      <p>The operation checks the value of the futex word at the address <em>uaddr</em>. If the value is 0, then the kernel tries to atomically set the futex value to the caller's TID. If the futex word's value is nonzero, the kernel atomically sets the <strong>FUTEX_WAITERS</strong> bit, which signals the futex owner that it cannot unlock the futex in user space atomically by setting the futex value to 0. After that, the kernel:</p>
+      <dl class='dl-horizontal'>
+        <dt>1.</dt>
+        <dd>
+      <p>Tries to find the thread which is associated with the owner TID.</p>
+        </dd>
+        <dt>2.</dt>
+        <dd>
+      <p>Creates or reuses kernel state on behalf of the owner. (If this is the first waiter, there is no kernel state for this futex, so kernel state is created by locking the RT-mutex and the futex owner is made the owner of the RT-mutex. If there are existing waiters, then the existing state is reused.)</p>
+        </dd>
+        <dt>3.</dt>
+        <dd>
+      <p>Attaches the waiter to the futex (i.e., the waiter is enqueued on the RT-mutex waiter list).</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+  <p>If more than one waiter exists, the enqueueing of the waiter is in descending priority order. (For information on priority ordering, see the discussion of the <strong>SCHED_DEADLINE</strong>, <strong>SCHED_FIFO</strong>, and <strong>SCHED_RR</strong> scheduling policies in <a href="../man7/sched.7.html"><strong>sched</strong>(7)</a>.) The owner inherits either the waiter's CPU bandwidth (if the waiter is scheduled under the <strong>SCHED_DEADLINE</strong> policy) or the waiter's priority (if the waiter is scheduled under the <strong>SCHED_RR</strong> or <strong>SCHED_FIFO</strong> policy). This inheritance follows the lock chain in the case of nested locking and performs deadlock detection.</p>
+<p class='spacer'>
+
+  <p>The <em>timeout</em> argument provides a timeout for the lock attempt. If <em>timeout</em> is not NULL, the structure it points to specifies an absolute timeout, measured against the <strong>CLOCK_REALTIME</strong> clock. If <em>timeout</em> is NULL, the operation will block indefinitely.</p>
+<p class='spacer'>
+
+  <p>The <em>uaddr2</em>, <em>val</em>, and <em>val3</em> arguments are ignored.</p>
+    </dd>
+    <dt><strong>FUTEX_TRYLOCK_PI</strong> (since Linux 2.6.18)</dt>
+    <dd>
+  <p>This operation tries to acquire the lock at <em>uaddr</em>. It is invoked when a user-space atomic acquire did not succeed because the futex word was not 0.</p>
+<p class='spacer'>
+
+  <p>Because the kernel has access to more state information than user space, acquisition of the lock might succeed if performed by the kernel in cases where the futex word (i.e., the state information accessible to use-space) contains stale state (<strong>FUTEX_WAITERS</strong> and/or <strong>FUTEX_OWNER_DIED</strong>). This can happen when the owner of the futex died. User space cannot handle this condition in a race-free manner, but the kernel can fix this up and acquire the futex.</p>
+<p class='spacer'>
+
+  <p>The <em>uaddr2</em>, <em>val</em>, <em>timeout</em>, and <em>val3</em> arguments are ignored.</p>
+    </dd>
+    <dt><strong>FUTEX_UNLOCK_PI</strong> (since Linux 2.6.18)</dt>
+    <dd>
+  <p>This operation wakes the top priority waiter that is waiting in <strong>FUTEX_LOCK_PI</strong> on the futex address provided by the <em>uaddr</em> argument.</p>
+<p class='spacer'>
+
+  <p>This is called when the user-space value at <em>uaddr</em> cannot be changed atomically from a TID (of the owner) to 0.</p>
+<p class='spacer'>
+
+  <p>The <em>uaddr2</em>, <em>val</em>, <em>timeout</em>, and <em>val3</em> arguments are ignored.</p>
+    </dd>
+    <dt><strong>FUTEX_CMP_REQUEUE_PI</strong> (since Linux 2.6.31)</dt>
+    <dd>
+  <p>This operation is a PI-aware variant of <strong>FUTEX_CMP_REQUEUE</strong>. It requeues waiters that are blocked via <strong>FUTEX_WAIT_REQUEUE_PI</strong> on <em>uaddr</em> from a non-PI source futex (<em>uaddr</em>) to a PI target futex (<em>uaddr2</em>).</p>
+<p class='spacer'>
+
+  <p>As with <strong>FUTEX_CMP_REQUEUE</strong>, this operation wakes up a maximum of <em>val</em> waiters that are waiting on the futex at <em>uaddr</em>. However, for <strong>FUTEX_CMP_REQUEUE_PI</strong>, <em>val</em> is required to be 1 (since the main point is to avoid a thundering herd). The remaining waiters are removed from the wait queue of the source futex at <em>uaddr</em> and added to the wait queue of the target futex at <em>uaddr2</em>.</p>
+<p class='spacer'>
+
+  <p>The <em>val2</em> and <em>val3</em> arguments serve the same purposes as for <strong>FUTEX_CMP_REQUEUE</strong>.</p>
+    </dd>
+    <dt><strong>FUTEX_WAIT_REQUEUE_PI</strong> (since Linux 2.6.31)</dt>
+    <dd>
+  <p>Wait on a non-PI futex at <em>uaddr</em> and potentially be requeued (via a <strong>FUTEX_CMP_REQUEUE_PI</strong> operation in another task) onto a PI futex at <em>uaddr2</em>. The wait operation on <em>uaddr</em> is the same as for <strong>FUTEX_WAIT</strong>.</p>
+<p class='spacer'>
+
+  <p>The waiter can be removed from the wait on <em>uaddr</em> without requeueing on <em>uaddr2</em> via a <strong>FUTEX_WAKE</strong> operation in another task. In this case, the <strong>FUTEX_WAIT_REQUEUE_PI</strong> operation fails with the error <strong>EAGAIN</strong>.</p>
+<p class='spacer'>
+
+  <p>If <em>timeout</em> is not NULL, the structure it points to specifies an absolute timeout for the wait operation. If <em>timeout</em> is NULL, the operation can block indefinitely.</p>
+<p class='spacer'>
+
+  <p>The <em>val3</em> argument is ignored.</p>
+<p class='spacer'>
+
+  <p>The <strong>FUTEX_WAIT_REQUEUE_PI</strong> and <strong>FUTEX_CMP_REQUEUE_PI</strong> were added to support a fairly specific use case: support for priority-inheritance-aware POSIX threads condition variables. The idea is that these operations should always be paired, in order to ensure that user space and the kernel remain in sync. Thus, in the <strong>FUTEX_WAIT_REQUEUE_PI</strong> operation, the user-space application pre-specifies the target of the requeue that takes place in the <strong>FUTEX_CMP_REQUEUE_PI</strong> operation.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>In the event of an error (and assuming that <strong>futex</strong>() was invoked via <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>), all operations return -1 and set <em>errno</em> to indicate the cause of the error.</p>
+<p class='spacer'>
+
+  <p>The return value on success depends on the operation, as described in the following list:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>FUTEX_WAIT</strong></dt>
+    <dd>
+  <p>Returns 0 if the caller was woken up. Note that a wake-up can also be caused by common futex usage patterns in unrelated code that happened to have previously used the futex word's memory location (e.g., typical futex-based implementations of Pthreads mutexes can cause this under some conditions). Therefore, callers should always conservatively assume that a return value of 0 can mean a spurious wake-up, and use the futex word's value (i.e., the user-space synchronization scheme) to decide whether to continue to block or not.</p>
+    </dd>
+    <dt><strong>FUTEX_WAKE</strong></dt>
+    <dd>
+  <p>Returns the number of waiters that were woken up.</p>
+    </dd>
+    <dt><strong>FUTEX_FD</strong></dt>
+    <dd>
+  <p>Returns the new file descriptor associated with the futex.</p>
+    </dd>
+    <dt><strong>FUTEX_REQUEUE</strong></dt>
+    <dd>
+  <p>Returns the number of waiters that were woken up.</p>
+    </dd>
+    <dt><strong>FUTEX_CMP_REQUEUE</strong></dt>
+    <dd>
+  <p>Returns the total number of waiters that were woken up or requeued to the futex for the futex word at <em>uaddr2</em>. If this value is greater than <em>val</em>, then the difference is the number of waiters requeued to the futex for the futex word at <em>uaddr2</em>.</p>
+    </dd>
+    <dt><strong>FUTEX_WAKE_OP</strong></dt>
+    <dd>
+  <p>Returns the total number of waiters that were woken up. This is the sum of the woken waiters on the two futexes for the futex words at <em>uaddr</em> and <em>uaddr2</em>.</p>
+    </dd>
+    <dt><strong>FUTEX_WAIT_BITSET</strong></dt>
+    <dd>
+  <p>Returns 0 if the caller was woken up. See <strong>FUTEX_WAIT</strong> for how to interpret this correctly in practice.</p>
+    </dd>
+    <dt><strong>FUTEX_WAKE_BITSET</strong></dt>
+    <dd>
+  <p>Returns the number of waiters that were woken up.</p>
+    </dd>
+    <dt><strong>FUTEX_LOCK_PI</strong></dt>
+    <dd>
+  <p>Returns 0 if the futex was successfully locked.</p>
+    </dd>
+    <dt><strong>FUTEX_TRYLOCK_PI</strong></dt>
+    <dd>
+  <p>Returns 0 if the futex was successfully locked.</p>
+    </dd>
+    <dt><strong>FUTEX_UNLOCK_PI</strong></dt>
+    <dd>
+  <p>Returns 0 if the futex was successfully unlocked.</p>
+    </dd>
+    <dt><strong>FUTEX_CMP_REQUEUE_PI</strong></dt>
+    <dd>
+  <p>Returns the total number of waiters that were woken up or requeued to the futex for the futex word at <em>uaddr2</em>. If this value is greater than <em>val</em>, then difference is the number of waiters requeued to the futex for the futex word at <em>uaddr2</em>.</p>
+    </dd>
+    <dt><strong>FUTEX_WAIT_REQUEUE_PI</strong></dt>
+    <dd>
+  <p>Returns 0 if the caller was successfully requeued to the futex for the futex word at <em>uaddr2</em>.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EACCES</strong></dt>
+    <dd>
+  <p>No read access to the memory of a futex word.</p>
+    </dd>
+    <dt><strong>EAGAIN</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_WAIT</strong>, <strong>FUTEX_WAIT_BITSET</strong>, <strong>FUTEX_WAIT_REQUEUE_PI</strong>) The value pointed to by <em>uaddr</em> was not equal to the expected value <em>val</em> at the time of the call.</p>
+<p class='spacer'>
+
+  <p><strong>Note</strong>: on Linux, the symbolic names <strong>EAGAIN</strong> and <strong>EWOULDBLOCK</strong> (both of which appear in different parts of the kernel futex code) have the same value.</p>
+    </dd>
+    <dt><strong>EAGAIN</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE</strong>, <strong>FUTEX_CMP_REQUEUE_PI</strong>) The value pointed to by <em>uaddr</em> is not equal to the expected value <em>val3</em>.</p>
+    </dd>
+    <dt><strong>EAGAIN</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_LOCK_PI</strong>, <strong>FUTEX_TRYLOCK_PI</strong>, <strong>FUTEX_CMP_REQUEUE_PI</strong>) The futex owner thread ID of <em>uaddr</em> (for <strong>FUTEX_CMP_REQUEUE_PI</strong>: <em>uaddr2</em>) is about to exit, but has not yet handled the internal state cleanup. Try again.</p>
+    </dd>
+    <dt><strong>EDEADLK</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_LOCK_PI</strong>, <strong>FUTEX_TRYLOCK_PI</strong>, <strong>FUTEX_CMP_REQUEUE_PI</strong>) The futex word at <em>uaddr</em> is already locked by the caller.</p>
+    </dd>
+    <dt><strong>EDEADLK</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE_PI</strong>) While requeueing a waiter to the PI futex for the futex word at <em>uaddr2</em>, the kernel detected a deadlock.</p>
+    </dd>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>A required pointer argument (i.e., <em>uaddr</em>, <em>uaddr2</em>, or <em>timeout</em>) did not point to a valid user-space address.</p>
+    </dd>
+    <dt><strong>EINTR</strong></dt>
+    <dd>
+  <p>A <strong>FUTEX_WAIT</strong> or <strong>FUTEX_WAIT_BITSET</strong> operation was interrupted by a signal (see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>). In kernels before Linux 2.6.22, this error could also be returned for on a spurious wakeup; since Linux 2.6.22, this no longer happens.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>The operation in <em>futex_op</em> is one of those that employs a timeout, but the supplied <em>timeout</em> argument was invalid (<em>tv_sec</em> was less than zero, or <em>tv_nsec</em> was not less than 1,000,000,000).</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>The operation specified in <em>futex_op</em> employs one or both of the pointers <em>uaddr</em> and <em>uaddr2</em>, but one of these does not point to a valid object&ndash;that is, the address is not four-byte-aligned.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_WAIT_BITSET</strong>, <strong>FUTEX_WAKE_BITSET</strong>) The bit mask supplied in <em>val3</em> is zero.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE_PI</strong>) <em>uaddr</em> equals <em>uaddr2</em> (i.e., an attempt was made to requeue to the same futex).</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_FD</strong>) The signal number supplied in <em>val</em> is invalid.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_WAKE</strong>, <strong>FUTEX_WAKE_OP</strong>, <strong>FUTEX_WAKE_BITSET</strong>, <strong>FUTEX_REQUEUE</strong>, <strong>FUTEX_CMP_REQUEUE</strong>) The kernel detected an inconsistency between the user-space state at <em>uaddr</em> and the kernel state&ndash;that is, it detected a waiter which waits in <strong>FUTEX_LOCK_PI</strong> on <em>uaddr</em>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_LOCK_PI</strong>, <strong>FUTEX_TRYLOCK_PI</strong>, <strong>FUTEX_UNLOCK_PI</strong>) The kernel detected an inconsistency between the user-space state at <em>uaddr</em> and the kernel state. This indicates either state corruption or that the kernel found a waiter on <em>uaddr</em> which is waiting via <strong>FUTEX_WAIT</strong> or <strong>FUTEX_WAIT_BITSET</strong>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE_PI</strong>) The kernel detected an inconsistency between the user-space state at <em>uaddr2</em> and the kernel state; that is, the kernel detected a waiter which waits via <strong>FUTEX_WAIT</strong> or <strong>FUTEX_WAIT_BITSET</strong> on <em>uaddr2</em>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE_PI</strong>) The kernel detected an inconsistency between the user-space state at <em>uaddr</em> and the kernel state; that is, the kernel detected a waiter which waits via <strong>FUTEX_WAIT</strong> or <strong>FUTEX_WAIT_BITESET</strong> on <em>uaddr</em>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE_PI</strong>) The kernel detected an inconsistency between the user-space state at <em>uaddr</em> and the kernel state; that is, the kernel detected a waiter which waits on <em>uaddr</em> via <strong>FUTEX_LOCK_PI</strong> (instead of <strong>FUTEX_WAIT_REQUEUE_PI</strong>).</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE_PI</strong>) An attempt was made to requeue a waiter to a futex other than that specified by the matching <strong>FUTEX_WAIT_REQUEUE_PI</strong> call for that waiter.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE_PI</strong>) The <em>val</em> argument is not 1.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>Invalid argument.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_LOCK_PI</strong>, <strong>FUTEX_TRYLOCK_PI</strong>, <strong>FUTEX_CMP_REQUEUE_PI</strong>) The kernel could not allocate memory to hold state information.</p>
+    </dd>
+    <dt><strong>ENFILE</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_FD</strong>) The system-wide limit on the total number of open files has been reached.</p>
+    </dd>
+    <dt><strong>ENOSYS</strong></dt>
+    <dd>
+  <p>Invalid operation specified in <em>futex_op</em>.</p>
+    </dd>
+    <dt><strong>ENOSYS</strong></dt>
+    <dd>
+  <p>The <strong>FUTEX_CLOCK_REALTIME</strong> option was specified in <em>futex_op</em>, but the accompanying operation was neither <strong>FUTEX_WAIT</strong>, <strong>FUTEX_WAIT_BITSET</strong>, nor <strong>FUTEX_WAIT_REQUEUE_PI</strong>.</p>
+    </dd>
+    <dt><strong>ENOSYS</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_LOCK_PI</strong>, <strong>FUTEX_TRYLOCK_PI</strong>, <strong>FUTEX_UNLOCK_PI</strong>, <strong>FUTEX_CMP_REQUEUE_PI</strong>, <strong>FUTEX_WAIT_REQUEUE_PI</strong>) A run-time check determined that the operation is not available. The PI-futex operations are not implemented on all architectures and are not supported on some CPU variants.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_LOCK_PI</strong>, <strong>FUTEX_TRYLOCK_PI</strong>, <strong>FUTEX_CMP_REQUEUE_PI</strong>) The caller is not allowed to attach itself to the futex at <em>uaddr</em> (for <strong>FUTEX_CMP_REQUEUE_PI</strong>: the futex at <em>uaddr2</em>). (This may be caused by a state corruption in user space.)</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_UNLOCK_PI</strong>) The caller does not own the lock represented by the futex word.</p>
+    </dd>
+    <dt><strong>ESRCH</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_LOCK_PI</strong>, <strong>FUTEX_TRYLOCK_PI</strong>, <strong>FUTEX_CMP_REQUEUE_PI</strong>) The thread ID in the futex word at <em>uaddr</em> does not exist.</p>
+    </dd>
+    <dt><strong>ESRCH</strong></dt>
+    <dd>
+  <p>(<strong>FUTEX_CMP_REQUEUE_PI</strong>) The thread ID in the futex word at <em>uaddr2</em> does not exist.</p>
+    </dd>
+    <dt><strong>ETIMEDOUT</strong></dt>
+    <dd>
+  <p>The operation in <em>futex_op</em> employed the timeout specified in <em>timeout</em>, and the timeout expired before the operation completed.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>Futexes were first made available in a stable kernel release with Linux 2.6.0.</p>
+<p class='spacer'>
+
+<p>Initial futex support was merged in Linux 2.5.7 but with different semantics from what was described above. A four-argument system call with the semantics described in this page was introduced in Linux 2.5.40. A fifth argument was added in Linux 2.5.70, and a sixth argument was added in Linux 2.6.7.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>This system call is Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>Several higher-level programming abstractions are implemented via futexes, including POSIX semaphores and various POSIX threads synchronization mechanisms (mutexes, condition variables, read-write locks, and barriers).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The program below demonstrates use of futexes in a program where a parent process and a child process use a pair of futexes located inside a shared anonymous mapping to synchronize access to a shared resource: the terminal. The two processes each write <em>nloops</em> (a command-line argument that defaults to 5 if omitted) messages to the terminal and employ a synchronization protocol that ensures that they alternate in writing messages. Upon running this program we see output such as the following:</p>
+<p class='spacer'>
+
+<pre>$ <strong>./futex_demo</strong>
+Parent (18534) 0
+Child  (18535) 0
+Parent (18534) 1
+Child  (18535) 1
+Parent (18534) 2
+Child  (18535) 2
+Parent (18534) 3
+Child  (18535) 3
+Parent (18534) 4
+Child  (18535) 4</pre>
+
+  <h3>Program source</h3>
+  <p> </p>
+<pre>/* futex_demo.c
+
+   Usage: futex_demo [nloops]
+                    (Default: 5)
+
+   Demonstrate the use of futexes in a program where parent and child
+   use a pair of futexes located inside a shared anonymous mapping to
+   synchronize access to a shared resource: the terminal. The two
+   processes each write 'num-loops' messages to the terminal and employ
+   a synchronization protocol that ensures that they alternate in
+   writing messages.
+*/
+#define _GNU_SOURCE
+#include &lt;stdio.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/wait.h&gt;
+#include &lt;sys/mman.h&gt;
+#include &lt;sys/syscall.h&gt;
+#include &lt;linux/futex.h&gt;
+#include &lt;sys/time.h&gt;
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); &#92;
+                        } while (0)
+
+static int *futex1, *futex2, *iaddr;
+
+static int
+futex(int *uaddr, int futex_op, int val,
+      const struct timespec *timeout, int *uaddr2, int val3)
+{
+    return syscall(SYS_futex, uaddr, futex_op, val,
+                   timeout, uaddr, val3);
+}
+
+/* Acquire the futex pointed to by 'futexp': wait for its value to
+   become 1, and then set the value to 0. */
+
+static void
+fwait(int *futexp)
+{
+    int s;
+
+    /* __sync_bool_compare_and_swap(ptr, oldval, newval) is a gcc
+       built-in function.  It atomically performs the equivalent of:
+
+           if (*ptr == oldval)
+               *ptr = newval;
+
+       It returns true if the test yielded true and *ptr was updated.
+       The alternative here would be to employ the equivalent atomic
+       machine-language instructions.  For further information, see
+       the GCC Manual. */
+
+    while (1) {
+
+        /* Is the futex available? */
+
+        if (__sync_bool_compare_and_swap(futexp, 1, 0))
+            break;      /* Yes */
+
+        /* Futex is not available; wait */
+
+        s = futex(futexp, FUTEX_WAIT, 0, NULL, NULL, 0);
+        if (s == -1 && errno != EAGAIN)
+            errExit("futex-FUTEX_WAIT");
+    }
+}
+
+/* Release the futex pointed to by 'futexp': if the futex currently
+   has the value 0, set its value to 1 and the wake any futex waiters,
+   so that if the peer is blocked in fpost(), it can proceed. */
+
+static void
+fpost(int *futexp)
+{
+    int s;
+
+    /* __sync_bool_compare_and_swap() was described in comments above */
+
+    if (__sync_bool_compare_and_swap(futexp, 0, 1)) {
+
+        s = futex(futexp, FUTEX_WAKE, 1, NULL, NULL, 0);
+        if (s  == -1)
+            errExit("futex-FUTEX_WAKE");
+    }
+}
+
+int
+main(int argc, char *argv[])
+{
+    pid_t childPid;
+    int j, nloops;
+
+    setbuf(stdout, NULL);
+
+    nloops = (argc &gt; 1) ? atoi(argv[1]) : 5;
+
+    /* Create a shared anonymous mapping that will hold the futexes.
+       Since the futexes are being shared between processes, we
+       subsequently use the "shared" futex operations (i.e., not the
+       ones suffixed "_PRIVATE") */
+
+    iaddr = mmap(NULL, sizeof(int) * 2, PROT_READ | PROT_WRITE,
+                MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    if (iaddr == MAP_FAILED)
+        errExit("mmap");
+
+    futex1 = &iaddr[0];
+    futex2 = &iaddr[1];
+
+    *futex1 = 0;        /* State: unavailable */
+    *futex2 = 1;        /* State: available */
+
+    /* Create a child process that inherits the shared anonymous
+       mapping */
+
+    childPid = fork();
+    if (childPid == -1)
+        errExit("fork");
+
+    if (childPid == 0) {        /* Child */
+        for (j = 0; j &lt; nloops; j++) {
+            fwait(futex1);
+            printf("Child  (%ld) %d&#92;n", (long) getpid(), j);
+            fpost(futex2);
+        }
+
+        exit(EXIT_SUCCESS);
+    }
+
+    /* Parent falls through to here */
+
+    for (j = 0; j &lt; nloops; j++) {
+        fwait(futex2);
+        printf("Parent (%ld) %d&#92;n", (long) getpid(), j);
+        fpost(futex1);
+    }
+
+    wait(NULL);
+
+    exit(EXIT_SUCCESS);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/get_robust_list.2.html"><strong>get_robust_list</strong>(2)</a>, <a href="../man2/restart_syscall.2.html"><strong>restart_syscall</strong>(2)</a>, <strong>pthread_mutexattr_getprotocol</strong>(3), <a href="../man7/futex.7.html"><strong>futex</strong>(7)</a>, <a href="../man7/sched.7.html"><strong>sched</strong>(7)</a></p>
+<p class='spacer'>
+
+  <p>The following kernel source files:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p><em>Documentation/pi-futex.txt</em></p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p><em>Documentation/futex-requeue-pi.txt</em></p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p><em>Documentation/locking/rt-mutex.txt</em></p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p><em>Documentation/locking/rt-mutex-design.txt</em></p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p><em>Documentation/robust-futex-ABI.txt</em></p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Franke, H., Russell, R., and Kirwood, M., 2002. <em>Fuss, Futexes and Furwocks: Fast Userlevel Locking in Linux</em> (from proceedings of the Ottawa Linux Symposium 2002),</p>
+<p class='spacer'>
+<a href="http://kernel.org/doc/ols/2002/ols2002-pages-479-495.pdf">http://kernel.org/doc/ols/2002/ols2002-pages-479-495.pdf</a>
+<p class='spacer'>
+
+<p>Hart, D., 2009. <em>A futex overview and update</em>,</p><a href="http://lwn.net/Articles/360699/">http://lwn.net/Articles/360699/</a>
+<p class='spacer'>
+
+<p>Hart, D. and Guniguntala, D., 2009. <em>Requeue-PI: Making Glibc Condvars PI-Aware</em> (from proceedings of the 2009 Real-Time Linux Workshop),</p><a href="http://lwn.net/images/conf/rtlws11/papers/proc/p10.pdf">http://lwn.net/images/conf/rtlws11/papers/proc/p10.pdf</a>
+<p class='spacer'>
+
+<p>Drepper, U., 2011. <em>Futexes Are Tricky</em>,</p><a href="http://www.akkadia.org/drepper/futex.pdf">http://www.akkadia.org/drepper/futex.pdf</a>
+<p class='spacer'>
+
+<p>Futex example library, futex-*.tar.bz2 at</p>
+<p class='spacer'>
+<a href="ftp://ftp.kernel.org/pub/linux/kernel/people/rusty/">ftp://ftp.kernel.org/pub/linux/kernel/people/rusty/</a>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

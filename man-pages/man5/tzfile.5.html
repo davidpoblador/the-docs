@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tzfile - timezone information</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">tzfile<small> (5)</small></h1>
+        <p class="lead">timezone information</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man5"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">tzfile</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>This page describes the structure of the timezone files used by <a href="../man3/tzset.3.html"><strong>tzset</strong>(3)</a>. These files are typically found under one of the directories <em>/usr/lib/zoneinfo</em> or <em>/usr/share/zoneinfo</em>.</p>
+<p class='spacer'>
+
+  <p>Timezone information files begin with a 44-byte header structured as follows:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>The magic four-byte sequence "TZif" identifying this as a timezone information file.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>A single character identifying the version of the file's format: either an ASCII NUL ('&#92;0') or a '2' (<strong>0x32</strong>).</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Fifteen bytes containing zeros reserved for future use.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+      <p>Six four-byte values of type <em>long</em>, written in a "standard" byte order (the high-order byte of the value is written first). These values are, in order:</p>
+      <dl class='dl-vertical'>
+        <dt><em>tzh_ttisgmtcnt</em></dt>
+        <dd>
+      <p>The number of UTC/local indicators stored in the file.</p>
+        </dd>
+        <dt><em>tzh_ttisstdcnt</em></dt>
+        <dd>
+      <p>The number of standard/wall indicators stored in the file.</p>
+        </dd>
+        <dt><em>tzh_leapcnt</em></dt>
+        <dd>
+      <p>The number of leap seconds for which data is stored in the file.</p>
+        </dd>
+        <dt><em>tzh_timecnt</em></dt>
+        <dd>
+      <p>The number of "transition times" for which data is stored in the file.</p>
+        </dd>
+        <dt><em>tzh_typecnt</em></dt>
+        <dd>
+      <p>The number of "local time types" for which data is stored in the file (must not be zero).</p>
+        </dd>
+        <dt><em>tzh_charcnt</em></dt>
+        <dd>
+      <p>The number of characters of "timezone abbreviation strings" stored in the file.</p>
+        </dd>
+      </dl>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The above header is followed by <em>tzh_timecnt</em> four-byte values of type <em>long</em>, sorted in ascending order. These values are written in "standard" byte order. Each is used as a transition time (as returned by <a href="../man2/time.2.html"><strong>time</strong>(2)</a>) at which the rules for computing local time change. Next come <em>tzh_timecnt</em> one-byte values of type <em>unsigned char</em>; each one tells which of the different types of "local time" types described in the file is associated with the same-indexed transition time. These values serve as indices into an array of <em>ttinfo</em> structures (with <em>tzh_typecnt</em> entries) that appear next in the file; these structures are defined as follows:</p>
+<p class='spacer'>
+
+<pre>struct ttinfo {
+    long         tt_gmtoff;
+    int          tt_isdst;
+    unsigned int tt_abbrind;
+};</pre>
+
+<p class='spacer'>
+
+<p>Each structure is written as a four-byte value for <em>tt_gmtoff</em> of type <em>long</em>, in a standard byte order, followed by a one-byte value for <em>tt_isdst</em> and a one-byte value for <em>tt_abbrind</em>. In each structure, <em>tt_gmtoff</em> gives the number of seconds to be added to UTC, <em>tt_isdst</em> tells whether <em>tm_isdst</em> should be set by <a href="../man3/localtime.3.html"><strong>localtime</strong>(3)</a>, and <em>tt_abbrind</em> serves as an index into the array of timezone abbreviation characters that follow the <em>ttinfo</em> structure(s) in the file.</p>
+<p class='spacer'>
+
+<p>Then there are <em>tzh_leapcnt</em> pairs of four-byte values, written in standard byte order; the first value of each pair gives the time (as returned by <a href="../man2/time.2.html"><strong>time</strong>(2)</a>) at which a leap second occurs; the second gives the <em>total</em> number of leap seconds to be applied after the given time. The pairs of values are sorted in ascending order by time.</p>
+<p class='spacer'>
+
+<p>Then there are <em>tzh_ttisstdcnt</em> standard/wall indicators, each stored as a one-byte value; they tell whether the transition times associated with local time types were specified as standard time or wall clock time, and are used when a timezone file is used in handling POSIX-style timezone environment variables.</p>
+<p class='spacer'>
+
+<p>Finally, there are <em>tzh_ttisgmtcnt</em> UTC/local indicators, each stored as a one-byte value; they tell whether the transition times associated with local time types were specified as UTC or local time, and are used when a timezone file is used in handling POSIX-style timezone environment variables.</p>
+<p class='spacer'>
+
+<p><a href="../man3/localtime.3.html"><strong>localtime</strong>(3)</a> uses the first standard-time <em>ttinfo</em> structure in the file (or simply the first <em>ttinfo</em> structure in the absence of a standard-time structure) if either <em>tzh_timecnt</em> is zero or the time argument is less than the first transition time recorded in the file.</p>
+  <h3>Version 2 format</h3>
+<p>For version-2-format timezone files, the above header and data is followed by a second header and data, identical in format except that eight bytes are used for each transition time or leap-second time (and that the version byte in the header record is <strong>0x32</strong> rather than <strong>0x00</strong>). After the second header and data comes a newline-enclosed, POSIX-TZ-environment-variable-style string for use in handling instants after the last transition time stored in the file (with nothing between the newlines if there is no POSIX representation for such instants).</p>
+<p class='spacer'>
+
+  <p>The second section of the timezone file consists of another 44-byte header record, identical in structure to the one at the beginning of the file, except that it applies to the data that follows, which is also identical in structure to the first section of the timezone file, with the following differences:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>The transition time values, after the header, are eight-byte values.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>In each leap second record, the leap second value is an eight-byte value. The accumulated leap second count is still a four-byte value.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>In all cases, the eight-byte time values are given in the "standard" byte order, the high-order byte first.</p>
+  <h3>POSIX timezone string</h3>
+<p>The second eight-byte time value section is followed by an optional third section: a single ASCII newline character ('&#92;n'), then a text string followed by a second newline character. The text string is a POSIX timezone string, whose format is described in the <a href="../man3/tzset.3.html"><strong>tzset</strong>(3)</a> manual page.</p>
+<p class='spacer'>
+
+<p>The POSIX timezone string defines a rule for computing transition times that follow the last transition time explicitly specified in the timezone information file.</p>
+  <h3>Summary of the timezone information file format</h3>
+    <p> </p>
+<pre>Four-byte value section
+(header version <strong>0x00</strong> or <strong>0x32</strong>)
+        Header record
+        Four-byte transition times
+        Transition time index
+        <strong>ttinfo</strong> structures
+        Timezone abbreviation array
+        Leap second records
+        Standard/Wall array
+        UTC/Local array
+
+Eight-byte value section
+(only if first header version is <strong>0x32</strong>,
+the second header's version is also <strong>0x32</strong>)
+        Header record
+        Eight-byte transition times
+        Transition time index
+        <strong>ttinfo</strong> structures
+        Timezone abbreviation array
+        Leap second records
+        Standard/Wall array
+        UTC/Local array
+
+Third section
+(optional, only in <strong>0x32</strong> version files)
+        Newline character
+        Timezone string
+        Newline character</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man3/ctime.3.html"><strong>ctime</strong>(3)</a>, <a href="../man3/tzset.3.html"><strong>tzset</strong>(3)</a>, <a href="../man8/tzselect.8.html"><strong>tzselect</strong>(8)</a>,</p>
+<p class='spacer'>
+
+<p><em>timezone/tzfile.h</em> in the glibc source tree</p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

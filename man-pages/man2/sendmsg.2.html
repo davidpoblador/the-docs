@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>send, sendto, sendmsg - send a message on a socket</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">sendmsg<small> (2)</small></h1>
+        <p class="lead">send a message on a socket</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">sendmsg</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;sys/types.h&gt;</strong>
+<strong>#include &lt;sys/socket.h&gt;</strong>
+
+<strong>ssize_t send(int </strong><em>sockfd</em><strong>, const void *</strong><em>buf</em><strong>, size_t </strong><em>len</em><strong>, int </strong><em>flags</em><strong>);</strong>
+
+<strong>ssize_t sendto(int </strong><em>sockfd</em><strong>, const void *</strong><em>buf</em><strong>, size_t </strong><em>len</em><strong>, int </strong><em>flags</em><strong>,</strong>
+<strong>               const struct sockaddr *</strong><em>dest_addr</em><strong>, socklen_t </strong><em>addrlen</em><strong>);</strong>
+
+<strong>ssize_t sendmsg(int </strong><em>sockfd</em><strong>, const struct msghdr *</strong><em>msg</em><strong>, int </strong><em>flags</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The system calls <strong>send</strong>(), <strong>sendto</strong>(), and <strong>sendmsg</strong>() are used to transmit a message to another socket.</p>
+<p class='spacer'>
+
+<p>The <strong>send</strong>() call may be used only when the socket is in a <em>connected</em> state (so that the intended recipient is known). The only difference between <strong>send</strong>() and <a href="../man2/write.2.html"><strong>write</strong>(2)</a> is the presence of <em>flags</em>. With a zero <em>flags</em> argument, <strong>send</strong>() is equivalent to <a href="../man2/write.2.html"><strong>write</strong>(2)</a>. Also, the following call</p>
+<p class='spacer'>
+
+<pre>    send(sockfd, buf, len, flags);</pre>
+
+<p class='spacer'>
+
+<p>is equivalent to</p>
+<p class='spacer'>
+
+<pre>    sendto(sockfd, buf, len, flags, NULL, 0);</pre>
+
+<p class='spacer'>
+
+<p>The argument <em>sockfd</em> is the file descriptor of the sending socket.</p>
+<p class='spacer'>
+
+<p>If <strong>sendto</strong>() is used on a connection-mode (<strong>SOCK_STREAM</strong>, <strong>SOCK_SEQPACKET</strong>) socket, the arguments <em>dest_addr</em> and <em>addrlen</em> are ignored (and the error <strong>EISCONN</strong> may be returned when they are not NULL and 0), and the error <strong>ENOTCONN</strong> is returned when the socket was not actually connected. Otherwise, the address of the target is given by <em>dest_addr</em> with <em>addrlen</em> specifying its size. For <strong>sendmsg</strong>(), the address of the target is given by <em>msg.msg_name</em>, with <em>msg.msg_namelen</em> specifying its size.</p>
+<p class='spacer'>
+
+<p>For <strong>send</strong>() and <strong>sendto</strong>(), the message is found in <em>buf</em> and has length <em>len</em>. For <strong>sendmsg</strong>(), the message is pointed to by the elements of the array <em>msg.msg_iov</em>. The <strong>sendmsg</strong>() call also allows sending ancillary data (also known as control information).</p>
+<p class='spacer'>
+
+<p>If the message is too long to pass atomically through the underlying protocol, the error <strong>EMSGSIZE</strong> is returned, and the message is not transmitted.</p>
+<p class='spacer'>
+
+<p>No indication of failure to deliver is implicit in a <strong>send</strong>(). Locally detected errors are indicated by a return value of -1.</p>
+<p class='spacer'>
+
+<p>When the message does not fit into the send buffer of the socket, <strong>send</strong>() normally blocks, unless the socket has been placed in nonblocking I/O mode. In nonblocking mode it would fail with the error <strong>EAGAIN</strong> or <strong>EWOULDBLOCK</strong> in this case. The <a href="../man2/select.2.html"><strong>select</strong>(2)</a> call may be used to determine when it is possible to send more data.</p>
+  <h3>The flags argument</h3>
+  <p>The <em>flags</em> argument is the bitwise OR of zero or more of the following flags.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>MSG_CONFIRM</strong> (since Linux 2.3.15)</dt>
+    <dd>
+  <p>Tell the link layer that forward progress happened: you got a successful reply from the other side. If the link layer doesn't get this it will regularly reprobe the neighbor (e.g., via a unicast ARP). Only valid on <strong>SOCK_DGRAM</strong> and <strong>SOCK_RAW</strong> sockets and currently implemented only for IPv4 and IPv6. See <a href="../man7/arp.7.html"><strong>arp</strong>(7)</a> for details.</p>
+    </dd>
+    <dt><strong>MSG_DONTROUTE</strong></dt>
+    <dd>
+  <p>Don't use a gateway to send out the packet, send to hosts only on directly connected networks. This is usually used only by diagnostic or routing programs. This is defined only for protocol families that route; packet sockets don't.</p>
+    </dd>
+    <dt><strong>MSG_DONTWAIT</strong> (since Linux 2.2)</dt>
+    <dd>
+  <p>Enables nonblocking operation; if the operation would block, <strong>EAGAIN</strong> or <strong>EWOULDBLOCK</strong> is returned. This provides similar behavior to setting the <strong>O_NONBLOCK</strong> flag (via the <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> <strong>F_SETFL</strong> operation), but differs in that <strong>MSG_DONTWAIT</strong> is a per-call option, whereas <strong>O_NONBLOCK</strong> is a setting on the open file description (see <a href="../man2/open.2.html"><strong>open</strong>(2)</a>), which will affect all threads in the calling process and as well as other processes that hold file descriptors referring to the same open file description.</p>
+    </dd>
+    <dt><strong>MSG_EOR</strong> (since Linux 2.2)</dt>
+    <dd>
+  <p>Terminates a record (when this notion is supported, as for sockets of type <strong>SOCK_SEQPACKET</strong>).</p>
+    </dd>
+    <dt><strong>MSG_MORE</strong> (since Linux 2.4.4)</dt>
+    <dd>
+  <p>The caller has more data to send. This flag is used with TCP sockets to obtain the same effect as the <strong>TCP_CORK</strong> socket option (see <a href="../man7/tcp.7.html"><strong>tcp</strong>(7)</a>), with the difference that this flag can be set on a per-call basis.</p>
+<p class='spacer'>
+
+  <p>Since Linux 2.6, this flag is also supported for UDP sockets, and informs the kernel to package all of the data sent in calls with this flag set into a single datagram which is transmitted only when a call is performed that does not specify this flag. (See also the <strong>UDP_CORK</strong> socket option described in <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a>.)</p>
+    </dd>
+    <dt><strong>MSG_NOSIGNAL</strong> (since Linux 2.2)</dt>
+    <dd>
+  <p>Don't generate a <strong>SIGPIPE</strong> signal if the peer on a stream-oriented socket has closed the connection. The <strong>EPIPE</strong> error is still returned. This provides similar behavior to using <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> to ignore <strong>SIGPIPE</strong>, but, whereas <strong>MSG_NOSIGNAL</strong> is a per-call feature, ignoring <strong>SIGPIPE</strong> sets a process attribute that affects all threads in the process.</p>
+    </dd>
+    <dt><strong>MSG_OOB</strong></dt>
+    <dd>
+  <p>Sends <em>out-of-band</em> data on sockets that support this notion (e.g., of type <strong>SOCK_STREAM</strong>); the underlying protocol must also support <em>out-of-band</em> data.</p>
+    </dd>
+  </dl>
+  <h3>sendmsg()</h3>
+  <p>The definition of the <em>msghdr</em> structure employed by <strong>sendmsg</strong>() is as follows:</p>
+<pre>
+struct msghdr {
+    void         *msg_name;       /* optional address */
+    socklen_t     msg_namelen;    /* size of address */
+    struct iovec *msg_iov;        /* scatter/gather array */
+    size_t        msg_iovlen;     /* # elements in msg_iov */
+    void         *msg_control;    /* ancillary data, see below */
+    size_t        msg_controllen; /* ancillary data buffer len */
+    int           msg_flags;      /* flags (unused) */
+};</pre>
+
+<p class='spacer'>
+
+<p>The <em>msg_name</em> field is used on an unconnected socket to specify the target address for a datagram. It points to a buffer containing the address; the <em>msg_namelen</em> field should be set to the size of the address. For a connected socket, these fields should be specified as NULL and 0, respectively.</p>
+<p class='spacer'>
+
+<p>The <em>msg_iov</em> and <em>msg_iovlen</em> fields specify scatter-gather locations, as for <a href="../man2/writev.2.html"><strong>writev</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>You may send control information using the <em>msg_control</em> and <em>msg_controllen</em> members. The maximum control buffer length the kernel can process is limited per socket by the value in <em>/proc/sys/net/core/optmem_max</em>; see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>.</p>
+<p class='spacer'>
+
+<p>The <em>msg_flags</em> field is ignored.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, these calls return the number of bytes sent. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <p>These are some standard errors generated by the socket layer. Additional errors may be generated and returned from the underlying protocol modules; see their respective manual pages.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>EACCES</strong></dt>
+    <dd>
+  <p>(For UNIX domain sockets, which are identified by pathname) Write permission is denied on the destination socket file, or search permission is denied for one of the directories the path prefix. (See <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
+<p class='spacer'>
+
+  <p>(For UDP sockets) An attempt was made to send to a network/broadcast address as though it was a unicast address.</p>
+    </dd>
+    <dt><strong>EAGAIN</strong> or <strong>EWOULDBLOCK</strong></dt>
+    <dd>
+  <p>The socket is marked nonblocking and the requested operation would block. POSIX.1-2001 allows either error to be returned for this case, and does not require these constants to have the same value, so a portable application should check for both possibilities.</p>
+    </dd>
+    <dt><strong>EAGAIN</strong></dt>
+    <dd>
+  <p>(Internet domain datagram sockets) The socket referred to by <em>sockfd</em> had not previously been bound to an address and, upon attempting to bind it to an ephemeral port, it was determined that all port numbers in the ephemeral port range are currently in use. See the discussion of <em>/proc/sys/net/ipv4/ip_local_port_range</em> in <strong>ip</strong>(7).</p>
+    </dd>
+    <dt><strong>EBADF</strong></dt>
+    <dd>
+  <p><em>sockfd</em> is not a valid open file descriptor.</p>
+    </dd>
+    <dt><strong>ECONNRESET</strong></dt>
+    <dd>
+  <p>Connection reset by peer.</p>
+    </dd>
+    <dt><strong>EDESTADDRREQ</strong></dt>
+    <dd>
+  <p>The socket is not connection-mode, and no peer address is set.</p>
+    </dd>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>An invalid user space address was specified for an argument.</p>
+    </dd>
+    <dt><strong>EINTR</strong></dt>
+    <dd>
+  <p>A signal occurred before any data was transmitted; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>Invalid argument passed.</p>
+    </dd>
+    <dt><strong>EISCONN</strong></dt>
+    <dd>
+  <p>The connection-mode socket was connected already but a recipient was specified. (Now either this error is returned, or the recipient specification is ignored.)</p>
+    </dd>
+    <dt><strong>EMSGSIZE</strong></dt>
+    <dd>
+  <p>The socket type requires that message be sent atomically, and the size of the message to be sent made this impossible.</p>
+    </dd>
+    <dt><strong>ENOBUFS</strong></dt>
+    <dd>
+  <p>The output queue for a network interface was full. This generally indicates that the interface has stopped sending, but may be caused by transient congestion. (Normally, this does not occur in Linux. Packets are just silently dropped when a device queue overflows.)</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>No memory available.</p>
+    </dd>
+    <dt><strong>ENOTCONN</strong></dt>
+    <dd>
+  <p>The socket is not connected, and no target has been given.</p>
+    </dd>
+    <dt><strong>ENOTSOCK</strong></dt>
+    <dd>
+  <p>The file descriptor <em>sockfd</em> does not refer to a socket.</p>
+    </dd>
+    <dt><strong>EOPNOTSUPP</strong></dt>
+    <dd>
+  <p>Some bit in the <em>flags</em> argument is inappropriate for the socket type.</p>
+    </dd>
+    <dt><strong>EPIPE</strong></dt>
+    <dd>
+  <p>The local end has been shut down on a connection oriented socket. In this case, the process will also receive a <strong>SIGPIPE</strong> unless <strong>MSG_NOSIGNAL</strong> is set.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>4.4BSD, SVr4, POSIX.1-2001. These interfaces first appeared in 4.2BSD.</p>
+<p class='spacer'>
+
+<p>POSIX.1-2001 describes only the <strong>MSG_OOB</strong> and <strong>MSG_EOR</strong> flags. POSIX.1-2008 adds a specification of <strong>MSG_NOSIGNAL</strong>. The <strong>MSG_CONFIRM</strong> flag is a Linux extension.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>According to POSIX.1-2001, the <em>msg_controllen</em> field of the <em>msghdr</em> structure should be typed as <em>socklen_t</em>, but glibc currently types it as <em>size_t</em>.</p>
+<p class='spacer'>
+
+<p>See <a href="../man2/sendmmsg.2.html"><strong>sendmmsg</strong>(2)</a> for information about a Linux-specific system call that can be used to transmit multiple datagrams in a single call.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>Linux may return <strong>EPIPE</strong> instead of <strong>ENOTCONN</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>An example of the use of <strong>sendto</strong>() is shown in <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/sendfile.2.html"><strong>sendfile</strong>(2)</a>, <a href="../man2/sendmmsg.2.html"><strong>sendmmsg</strong>(2)</a>, <a href="../man2/shutdown.2.html"><strong>shutdown</strong>(2)</a>, <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, <a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>, <strong>ip</strong>(7), <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>, <a href="../man7/tcp.7.html"><strong>tcp</strong>(7)</a>, <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

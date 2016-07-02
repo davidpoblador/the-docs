@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sem_wait, sem_timedwait, sem_trywait - lock a semaphore</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">sem_timedwait<small> (3)</small></h1>
+        <p class="lead">lock a semaphore</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man3"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">sem_timedwait</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;semaphore.h&gt;</strong>
+
+<strong>int sem_wait(sem_t *</strong><em>sem</em><strong>);</strong>
+
+<strong>int sem_trywait(sem_t *</strong><em>sem</em><strong>);</strong>
+
+<strong>int sem_timedwait(sem_t *</strong><em>sem</em><strong>, const struct timespec *</strong><em>abs_timeout</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>Link with <em>-pthread</em>.</p>
+<p class='spacer'>
+
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
+<p class='spacer'>
+
+<p><strong>sem_timedwait</strong>(): _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>sem_wait</strong>() decrements (locks) the semaphore pointed to by <em>sem</em>. If the semaphore's value is greater than zero, then the decrement proceeds, and the function returns, immediately. If the semaphore currently has the value zero, then the call blocks until either it becomes possible to perform the decrement (i.e., the semaphore value rises above zero), or a signal handler interrupts the call.</p>
+<p class='spacer'>
+
+<p><strong>sem_trywait</strong>() is the same as <strong>sem_wait</strong>(), except that if the decrement cannot be immediately performed, then call returns an error (<em>errno</em> set to <strong>EAGAIN</strong>) instead of blocking.</p>
+<p class='spacer'>
+
+<p><strong>sem_timedwait</strong>() is the same as <strong>sem_wait</strong>(), except that <em>abs_timeout</em> specifies a limit on the amount of time that the call should block if the decrement cannot be immediately performed. The <em>abs_timeout</em> argument points to a structure that specifies an absolute timeout in seconds and nanoseconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). This structure is defined as follows:</p>
+<p class='spacer'>
+
+<pre>struct timespec {
+    time_t tv_sec;      /* Seconds */
+    long   tv_nsec;     /* Nanoseconds [0 .. 999999999] */
+};</pre>
+
+<p class='spacer'>
+
+<p>If the timeout has already expired by the time of the call, and the semaphore could not be locked immediately, then <strong>sem_timedwait</strong>() fails with a timeout error (<em>errno</em> set to <strong>ETIMEDOUT</strong>).</p>
+<p class='spacer'>
+
+<p>If the operation can be performed immediately, then <strong>sem_timedwait</strong>() never fails with a timeout error, regardless of the value of <em>abs_timeout</em>. Furthermore, the validity of <em>abs_timeout</em> is not checked in this case.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>All of these functions return 0 on success; on error, the value of the semaphore is left unchanged, -1 is returned, and <em>errno</em> is set to indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EINTR</strong></dt>
+    <dd>
+  <p>The call was interrupted by a signal handler; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>sem</em> is not a valid semaphore.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The following additional error can occur for <strong>sem_trywait</strong>():</p>
+  <dl class='dl-vertical'>
+    <dt><strong>EAGAIN</strong></dt>
+    <dd>
+  <p>The operation could not be performed without blocking (i.e., the semaphore currently has the value zero).</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The following additional errors can occur for <strong>sem_timedwait</strong>():</p>
+  <dl class='dl-vertical'>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>The value of <em>abs_timeout.tv_nsecs</em> is less than 0, or greater than or equal to 1000 million.</p>
+    </dd>
+    <dt><strong>ETIMEDOUT</strong></dt>
+    <dd>
+  <p>The call timed out before the semaphore could be locked.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ATTRIBUTES</h2>
+        <div class="sectioncontent">
+
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
+<table class="table table-striped">
+<tr>
+<th>Interface</th>
+<th>Attribute</th>
+<th>Value</th></tr>
+
+<tr>
+<td><strong>sem_wait</strong>(),   <strong>sem_trywait</strong>(),   <strong>sem_timedwait</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe</td></tr>
+</table>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>POSIX.1-2001, POSIX.1-2008.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>A signal handler always interrupts a blocked call to one of these functions, regardless of the use of the <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> <strong>SA_RESTART</strong> flag.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The (somewhat trivial) program shown below operates on an unnamed semaphore. The program expects two command-line arguments. The first argument specifies a seconds value that is used to set an alarm timer to generate a <strong>SIGALRM</strong> signal. This handler performs a <a href="../man3/sem_post.3.html"><strong>sem_post</strong>(3)</a> to increment the semaphore that is being waited on in <em>main()</em> using <strong>sem_timedwait</strong>(). The second command-line argument specifies the length of the timeout, in seconds, for <strong>sem_timedwait</strong>(). The following shows what happens on two different runs of the program:</p>
+<p class='spacer'>
+
+<pre>$<strong> ./a.out 2 3</strong>
+About to call sem_timedwait()
+sem_post() from handler
+sem_timedwait() succeeded
+$<strong> ./a.out 2 1</strong>
+About to call sem_timedwait()
+sem_timedwait() timed out</pre>
+
+  <h3>Program source</h3>
+  <p> </p>
+<pre>#include &lt;unistd.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;semaphore.h&gt;
+#include &lt;time.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;signal.h&gt;
+
+sem_t sem;
+
+#define handle_error(msg) &#92;
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+static void
+handler(int sig)
+{
+    write(STDOUT_FILENO, "sem_post() from handler&#92;n", 24);
+    if (sem_post(&sem) == -1) {
+        write(STDERR_FILENO, "sem_post() failed&#92;n", 18);
+        _exit(EXIT_FAILURE);
+    }
+}
+
+int
+main(int argc, char *argv[])
+{
+    struct sigaction sa;
+    struct timespec ts;
+    int s;
+
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;alarm-secs&gt; &lt;wait-secs&gt;&#92;n",
+                argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    if (sem_init(&sem, 0, 0) == -1)
+        handle_error("sem_init");
+
+    /* Establish SIGALRM handler; set alarm timer using argv[1] */
+
+    sa.sa_handler = handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    if (sigaction(SIGALRM, &sa, NULL) == -1)
+        handle_error("sigaction");
+
+    alarm(atoi(argv[1]));
+
+    /* Calculate relative interval as current time plus
+       number of seconds given argv[2] */
+
+    if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
+        handle_error("clock_gettime");
+
+    ts.tv_sec += atoi(argv[2]);
+
+    printf("main() about to call sem_timedwait()&#92;n");
+    while ((s = sem_timedwait(&sem, &ts)) == -1 && errno == EINTR)
+        continue;       /* Restart if interrupted by handler */
+
+    /* Check what happened */
+
+    if (s == -1) {
+        if (errno == ETIMEDOUT)
+            printf("sem_timedwait() timed out&#92;n");
+        else
+            perror("sem_timedwait");
+    } else
+        printf("sem_timedwait() succeeded&#92;n");
+
+    exit((s == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>, <a href="../man3/sem_getvalue.3.html"><strong>sem_getvalue</strong>(3)</a>, <a href="../man3/sem_post.3.html"><strong>sem_post</strong>(3)</a>, <a href="../man7/sem_overview.7.html"><strong>sem_overview</strong>(7)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

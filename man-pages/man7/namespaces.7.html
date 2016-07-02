@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>namespaces - overview of Linux namespaces</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">namespaces<small> (7)</small></h1>
+        <p class="lead">overview of Linux namespaces</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man7"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">namespaces</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>A namespace wraps a global system resource in an abstraction that makes it appear to the processes within the namespace that they have their own isolated instance of the global resource. Changes to the global resource are visible to other processes that are members of the namespace, but are invisible to other processes. One use of namespaces is to implement containers.</p>
+<p class='spacer'>
+
+<p>Linux provides the following namespaces:</p>
+<table class="table table-striped">
+<tr>
+<th>Namespace</th>
+<th>Constant</th>
+<th>Isolates</th></tr>
+
+<tr>
+<td>Cgroup</td>
+<td>CLONE_NEWCGROUP</td>
+<td>Cgroup root directory</td></tr>
+
+<tr>
+<td>IPC</td>
+<td>CLONE_NEWIPC</td>
+<td>System V IPC, POSIX message queues</td></tr>
+
+<tr>
+<td>Network</td>
+<td>CLONE_NEWNET</td>
+<td>Network devices, stacks, ports, etc.</td></tr>
+
+<tr>
+<td>Mount</td>
+<td>CLONE_NEWNS</td>
+<td>Mount points</td></tr>
+
+<tr>
+<td>PID</td>
+<td>CLONE_NEWPID</td>
+<td>Process IDs</td></tr>
+
+<tr>
+<td>User</td>
+<td>CLONE_NEWUSER</td>
+<td>User and group IDs</td></tr>
+
+<tr>
+<td>UTS</td>
+<td>CLONE_NEWUTS</td>
+<td>Hostname and NIS domain name</td></tr>
+</table>
+
+<p class='spacer'>
+
+<p>This page describes the various namespaces and the associated <em>/proc</em> files, and summarizes the APIs for working with namespaces.</p>
+  <h3>The namespaces API</h3>
+  <p>As well as various <em>/proc</em> files described below, the namespaces API includes the following system calls:</p>
+  <dl class='dl-vertical'>
+    <dt><a href="../man2/clone.2.html"><strong>clone</strong>(2)</a></dt>
+    <dd>
+  <p>The <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> system call creates a new process. If the <em>flags</em> argument of the call specifies one or more of the <strong>CLONE_NEW*</strong> flags listed below, then new namespaces are created for each flag, and the child process is made a member of those namespaces. (This system call also implements a number of features unrelated to namespaces.)</p>
+    </dd>
+    <dt><a href="../man2/setns.2.html"><strong>setns</strong>(2)</a></dt>
+    <dd>
+  <p>The <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> system call allows the calling process to join an existing namespace. The namespace to join is specified via a file descriptor that refers to one of the <em>/proc/[pid]/ns</em> files described below.</p>
+    </dd>
+    <dt><a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a></dt>
+    <dd>
+  <p>The <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> system call moves the calling process to a new namespace. If the <em>flags</em> argument of the call specifies one or more of the <strong>CLONE_NEW*</strong> flags listed below, then new namespaces are created for each flag, and the calling process is made a member of those namespaces. (This system call also implements a number of features unrelated to namespaces.)</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Creation of new namespaces using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> and <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> in most cases requires the <strong>CAP_SYS_ADMIN</strong> capability. User namespaces are the exception: since Linux 3.8, no privilege is required to create a user namespace.</p>
+  <h3>The /proc/[pid]/ns/ directory</h3>
+<p>Each process has a <em>/proc/[pid]/ns/</em> subdirectory containing one entry for each namespace that supports being manipulated by <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>:</p>
+<p class='spacer'>
+
+<pre>$ <strong>ls -l /proc/$$/ns</strong>
+total 0
+lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 cgroup -&gt; cgroup:[4026531835]
+lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 ipc -&gt; ipc:[4026531839]
+lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 mnt -&gt; mnt:[4026531840]
+lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 net -&gt; net:[4026531969]
+lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 pid -&gt; pid:[4026531836]
+lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 user -&gt; user:[4026531837]
+lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 uts -&gt; uts:[4026531838]</pre>
+
+<p class='spacer'>
+
+<p>Bind mounting (see <a href="../man2/mount.2.html"><strong>mount</strong>(2)</a>) one of the files in this directory to somewhere else in the filesystem keeps the corresponding namespace of the process specified by <em>pid</em> alive even if all processes currently in the namespace terminate.</p>
+<p class='spacer'>
+
+<p>Opening one of the files in this directory (or a file that is bind mounted to one of these files) returns a file handle for the corresponding namespace of the process specified by <em>pid</em>. As long as this file descriptor remains open, the namespace will remain alive, even if all processes in the namespace terminate. The file descriptor can be passed to <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>In Linux 3.7 and earlier, these files were visible as hard links. Since Linux 3.8, they appear as symbolic links. If two processes are in the same namespace, then the inode numbers of their <em>/proc/[pid]/ns/xxx</em> symbolic links will be the same; an application can check this using the <em>stat.st_ino</em> field returned by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>. The content of this symbolic link is a string containing the namespace type and inode number as in the following example:</p>
+<p class='spacer'>
+
+<pre>$ <strong>readlink /proc/$$/ns/uts</strong>
+uts:[4026531838]</pre>
+
+<p class='spacer'>
+
+  <p>The symbolic links in this subdirectory are as follows:</p>
+  <dl class='dl-vertical'>
+    <dt><em>/proc/[pid]/ns/cgroup</em> (since Linux 4.6)</dt>
+    <dd>
+  <p>This file is a handle for the cgroup namespace of the process.</p>
+    </dd>
+    <dt><em>/proc/[pid]/ns/ipc</em> (since Linux 3.0)</dt>
+    <dd>
+  <p>This file is a handle for the IPC namespace of the process.</p>
+    </dd>
+    <dt><em>/proc/[pid]/ns/mnt</em> (since Linux 3.8)</dt>
+    <dd>
+  <p>This file is a handle for the mount namespace of the process.</p>
+    </dd>
+    <dt><em>/proc/[pid]/ns/net</em> (since Linux 3.0)</dt>
+    <dd>
+  <p>This file is a handle for the network namespace of the process.</p>
+    </dd>
+    <dt><em>/proc/[pid]/ns/pid</em> (since Linux 3.8)</dt>
+    <dd>
+  <p>This file is a handle for the PID namespace of the process.</p>
+    </dd>
+    <dt><em>/proc/[pid]/ns/user</em> (since Linux 3.8)</dt>
+    <dd>
+  <p>This file is a handle for the user namespace of the process.</p>
+    </dd>
+    <dt><em>/proc/[pid]/ns/uts</em> (since Linux 3.0)</dt>
+    <dd>
+  <p>This file is a handle for the UTS namespace of the process.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Permission to dereference or read (<a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a>) these symbolic links is governed by a ptrace access mode <strong>PTRACE_MODE_READ_FSCREDS</strong> check; see <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>.</p>
+  <h3>Cgroup namespaces (CLONE_NEWCGROUP)</h3>
+<p>See <a href="../man7/cgroup_namespaces.7.html"><strong>cgroup_namespaces</strong>(7)</a>.</p>
+  <h3>IPC namespaces (CLONE_NEWIPC)</h3>
+<p>IPC namespaces isolate certain IPC resources, namely, System V IPC objects (see <a href="../man7/svipc.7.html"><strong>svipc</strong>(7)</a>) and (since Linux 2.6.30) POSIX message queues (see <a href="../man7/mq_overview.7.html"><strong>mq_overview</strong>(7)</a>). The common characteristic of these IPC mechanisms is that IPC objects are identified by mechanisms other than filesystem pathnames.</p>
+<p class='spacer'>
+
+<p>Each IPC namespace has its own set of System V IPC identifiers and its own POSIX message queue filesystem. Objects created in an IPC namespace are visible to all other processes that are members of that namespace, but are not visible to processes in other IPC namespaces.</p>
+<p class='spacer'>
+
+  <p>The following <em>/proc</em> interfaces are distinct in each IPC namespace:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>The POSIX message queue interfaces in <em>/proc/sys/fs/mqueue</em>.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>The System V IPC interfaces in <em>/proc/sys/kernel</em>, namely: <em>msgmax</em>, <em>msgmnb</em>, <em>msgmni</em>, <em>sem</em>, <em>shmall</em>, <em>shmmax</em>, <em>shmmni</em>, and <em>shm_rmid_forced</em>.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>The System V IPC interfaces in <em>/proc/sysvipc</em>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>When an IPC namespace is destroyed (i.e., when the last process that is a member of the namespace terminates), all IPC objects in the namespace are automatically destroyed.</p>
+<p class='spacer'>
+
+<p>Use of IPC namespaces requires a kernel that is configured with the <strong>CONFIG_IPC_NS</strong> option.</p>
+  <h3>Network namespaces (CLONE_NEWNET)</h3>
+<p>Network namespaces provide isolation of the system resources associated with networking: network devices, IPv4 and IPv6 protocol stacks, IP routing tables, firewalls, the <em>/proc/net</em> directory, the <em>/sys/class/net</em> directory, port numbers (sockets), and so on. A physical network device can live in exactly one network namespace. A virtual network device ("veth") pair provides a pipe-like abstraction that can be used to create tunnels between network namespaces, and can be used to create a bridge to a physical network device in another namespace.</p>
+<p class='spacer'>
+
+<p>When a network namespace is freed (i.e., when the last process in the namespace terminates), its physical network devices are moved back to the initial network namespace (not to the parent of the process).</p>
+<p class='spacer'>
+
+<p>Use of network namespaces requires a kernel that is configured with the <strong>CONFIG_NET_NS</strong> option.</p>
+  <h3>Mount namespaces (CLONE_NEWNS)</h3>
+<p>Mount namespaces isolate the set of filesystem mount points, meaning that processes in different mount namespaces can have different views of the filesystem hierarchy. The set of mounts in a mount namespace is modified using <a href="../man2/mount.2.html"><strong>mount</strong>(2)</a> and <a href="../man2/umount.2.html"><strong>umount</strong>(2)</a>.</p>
+  <h3>PID namespaces (CLONE_NEWPID)</h3>
+<p>See <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a>.</p>
+  <h3>User namespaces (CLONE_NEWUSER)</h3>
+<p>See <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>.</p>
+  <h3>UTS namespaces (CLONE_NEWUTS)</h3>
+<p>UTS namespaces provide isolation of two system identifiers: the hostname and the NIS domain name. These identifiers are set using <a href="../man2/sethostname.2.html"><strong>sethostname</strong>(2)</a> and <a href="../man2/setdomainname.2.html"><strong>setdomainname</strong>(2)</a>, and can be retrieved using <a href="../man2/uname.2.html"><strong>uname</strong>(2)</a>, <a href="../man2/gethostname.2.html"><strong>gethostname</strong>(2)</a>, and <a href="../man2/getdomainname.2.html"><strong>getdomainname</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>Use of UTS namespaces requires a kernel that is configured with the <strong>CONFIG_UTS_NS</strong> option.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>Namespaces are a Linux-specific feature.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>See <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>lsns</strong>(1), <strong>nsenter</strong>(1), <strong>readlink</strong>(1), <strong>unshare</strong>(1), <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/cgroup_namespaces.7.html"><strong>cgroup_namespaces</strong>(7)</a>, <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>, <strong>switch_root</strong>(8)</p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

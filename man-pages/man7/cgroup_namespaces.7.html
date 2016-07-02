@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cgroup_namespaces - overview of Linux cgroup namespaces</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">cgroup_namespaces<small> (7)</small></h1>
+        <p class="lead">overview of Linux cgroup namespaces</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man7"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">cgroup_namespaces</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>For an overview of namespaces, see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>.</p>
+<p class='spacer'>
+
+<p>Cgroup namespaces virtualize the view of a process's cgroups (see <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a>) as seen via <em>/proc/[pid]/cgroup</em> and <em>/proc/[pid]/mountinfo</em>.</p>
+<p class='spacer'>
+
+<p>Each cgroup namespace has its own set of cgroup root directories, which are the base points for the relative locations displayed in <em>/proc/[pid]/cgroup</em>. When a process creates a new cgroup namespace using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWCGROUP</strong> flag, it enters a new cgroup namespace in which its current cgroups directories become the cgroup root directories of the new namespace. (This applies both for the cgroups version 1 hierarchies and the cgroups version 2 unified hierarchy.)</p>
+<p class='spacer'>
+
+<p>When viewing <em>/proc/[pid]/cgroup</em>, the pathname shown in the third field of each record will be relative to the reading process's cgroup root directory. If the cgroup directory of the target process lies outside the root directory of the reading process's cgroup namespace, then the pathname will show <em>../</em> entries for each ancestor level in the cgroup hierarchy.</p>
+<p class='spacer'>
+
+<p>The following shell session demonstrates the effect of creating a new cgroup namespace. First, (as superuser) we create a child cgroup in the <em>freezer</em> hierarchy, and put the shell into that cgroup:</p>
+<p class='spacer'>
+
+<pre># <strong>mkdir -p /sys/fs/cgroup/freezer/sub</strong>
+# <strong>echo $$</strong>                      # Show PID of this shell
+30655
+# <strong>sh -c 'echo 30655 &gt; /sys/fs/cgroup/sub'</strong>
+# <strong>cat /proc/self/cgroup | grep freezer</strong>
+7:freezer:/sub</pre>
+
+<p class='spacer'>
+
+<p>Next, we use <strong>unshare</strong>(1) to create a process running a new shell in new cgroup and mount namespaces:</p>
+<p class='spacer'>
+
+<pre># <strong>unshare -Cm bash</strong></pre>
+
+<p class='spacer'>
+
+<p>We then inspect the <em>/proc/[pid]/cgroup</em> files of, respectively, the new shell process started by the <strong>unshare</strong>(1) command, a process that is in the original cgroup namespace (<em>init</em>, with PID 1), and a process in a sibling cgroup:</p>
+<p class='spacer'>
+
+<pre>$ <strong>cat /proc/self/cgroup | grep freezer</strong>
+7:freezer:/
+$ <strong>cat /proc/1/cgroup | grep freezer</strong>
+7:freezer:/..
+$ <strong>cat /proc/20124/cgroup | grep freezer</strong>
+7:freezer:/../sub2</pre>
+
+<p class='spacer'>
+
+<p>However, when we look in <em>/proc/self/mountinfo</em> we see the following anomaly:</p>
+<p class='spacer'>
+
+<pre># <strong>cat /proc/self/mountinfo | grep freezer</strong>
+155 145 0:32 /.. /sys/fs/cgroup/freezer ...</pre>
+
+<p class='spacer'>
+
+<p>The fourth field of this file should show the directory in the cgroup filesystem which forms the root of this mount. Since by the definition of cgroup namespaces, the process's current freezer cgroup directory became its root freezer cgroup directory, we should see '/' in this field. The problem here is that we are seeing a mount entry for the cgroup filesystem corresponding to our initial shell process's cgroup namespace (whose cgroup filesystem is indeed rooted in the parent directory of <em>sub</em>). We need to remount the freezer cgroup filesystem inside this cgroup namespace, after which we see the expected results:</p>
+<p class='spacer'>
+
+<pre># <strong>mount --make-rslave /</strong>     # Don't propagate mount events
+                            # to other namespaces
+# <strong>umount /sys/fs/cgroup/freezer</strong>
+# <strong>mount -t cgroup -o freezer freezer /sys/fs/cgroup/freezer</strong>
+# <strong>cat /proc/self/mountinfo | grep freezer</strong>
+155 145 0:32 / /sys/fs/cgroup/freezer rw,relatime ...</pre>
+
+<p class='spacer'>
+
+<p>Use of cgroup namespaces requires a kernel that is configured with the <strong>CONFIG_CGROUPS</strong> option.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+  <p>Among the purposes served by the virtualization provided by cgroup namespaces are the following:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>It prevents information leaks whereby cgroup directory paths outside of a container would otherwise be visible to processes in the container. Such leakages could, for example, reveal information about the container framework to containerized applications.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>It eases tasks such as container migration. The virtualization provided by cgroup namespaces allows containers to be isolated from knowledge of the pathnames of ancestor cgroups. Without such isolation, the full cgroup pathnames (displayed in <em>/proc/self/cgroups</em>) would need to be replicated on the target system when migrating a container; those pathnames would also need to be unique, so that they don't conflict with other pathnames on the target system.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+      <p>It allows better confinement of containerized processes, because it is possible to mount the container's cgroup filesystems such that the container processes can't gain access to ancestor cgroup directories. Consider, for example, the following scenario:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+      <p>We have a cgroup directory, <em>/cg/1</em>, that is owned by user ID 9000.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>We have a process, <em>X</em>, also owned by user ID 9000, that is namespaced under the cgroup <em>/cg/1/2</em> (i.e., <em>X</em> was placed in a new cgroup namespace via <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWCGROUP</strong> flag).</p>
+        </dd>
+      </dl>
+    </dd>
+<p class='spacer'>
+
+  <p>In the absence of cgroup namespacing, because the cgroup directory <em>/cg/1</em> is owned (and writable) by UID 9000 and process <em>X</em> is also owned by user ID 9000, then process <em>X</em> would be able to modify the contents of cgroups files (i.e., change cgroup settings) not only in <em>/cg/1/2</em> but also in the ancestor cgroup directory <em>/cg/1</em>. Namespacing process <em>X</em> under the cgroup directory <em>/cg/1/2</em>, in combination with suitable mount operations for the cgroup filesystem (as shown above), prevents it modifying files in <em>/cg/1</em>, since it cannot even see the contents of that directory (or of further removed cgroup ancestor directories). Combined with correct enforcement of hierarchical limits, this prevents process <em>X</em> from escaping the limits imposed by ancestor cgroups.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>Namespaces are a Linux-specific feature.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>unshare</strong>(1), <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

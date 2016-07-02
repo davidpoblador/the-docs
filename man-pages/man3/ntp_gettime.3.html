@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ntp_gettime, ntp_gettimex - get time parameters (NTP daemon interface)</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">ntp_gettime<small> (3)</small></h1>
+        <p class="lead">get time parameters (NTP daemon interface)</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man3"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">ntp_gettime</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;sys/timex.h&gt;</strong>
+
+<strong>int ntp_gettime(struct ntptimeval *</strong><em>ntv</em><strong>);</strong>
+
+<strong>int ntp_gettimex(struct ntptimeval *</strong><em>ntv</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>Both of these APIs return information to the caller via the <em>ntv</em> argument, a structure of the following type:</p>
+<p class='spacer'>
+
+<pre>struct ntptimeval {
+    struct timeval time;        /* Current time */
+    long int maxerror;          /* Maximum error */
+    long int esterror;          /* Estimated error */
+    long int tai;               /* TAI offset */
+
+    /* Further padding bytes allowing for future expansion */
+};</pre>
+
+<p class='spacer'>
+
+  <p>The fields of this structure are as follows:</p>
+  <dl class='dl-vertical'>
+    <dt><em>time</em></dt>
+    <dd>
+  <p>The current time, expressed as a <em>timeval</em> structure:</p>
+<p class='spacer'>
+
+<pre>struct timeval {
+    time_t      tv_sec;   /* Seconds since the Epoch */
+    suseconds_t tv_usec;  /* Microseconds */
+};
+</pre>
+
+    </dd>
+    <dt><em>maxerror</em></dt>
+    <dd>
+  <p>Maximum error, in microseconds. This value can be initialized by <a href="../man3/ntp_adjtime.3.html"><strong>ntp_adjtime</strong>(3)</a>, and is increased periodically (on Linux: each second), but is clamped to an upper limit (the kernel constant <strong>NTP_PHASE_MAX</strong>, with a value of 16,000).</p>
+    </dd>
+    <dt><em>esterror</em></dt>
+    <dd>
+  <p>Estimated error, in microseconds. This value can be set via <a href="../man3/ntp_adjtime.3.html"><strong>ntp_adjtime</strong>(3)</a> to contain an estimate of the difference between the system clock and the true time. This value is not used inside the kernel.</p>
+    </dd>
+    <dt><em>tai</em></dt>
+    <dd>
+  <p>TAI (Atomic International Time) offset.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><strong>ntp_gettime</strong>() returns an <em>ntptimeval</em> structure in which the <em>time</em>, <em>maxerror</em>, and <em>esterror</em> fields are filled in.</p>
+<p class='spacer'>
+
+<p><strong>ntp_gettimex</strong>() performs the same task as <strong>ntp_gettime</strong>(), but also returns information in the <em>tai</em> field.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>The return values for <strong>ntp_gettime</strong>() and <strong>ntp_gettimex</strong>() are as for <a href="../man2/adjtimex.2.html"><strong>adjtimex</strong>(2)</a>. Given a correct pointer argument, these functions always succeed.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ATTRIBUTES</h2>
+        <div class="sectioncontent">
+
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
+<table class="table table-striped">
+<tr>
+<th>Interface</th>
+<th>Attribute</th>
+<th>Value</th></tr>
+
+<tr>
+<td><strong>ntp_gettime</strong>(),   <strong>ntp_gettimex</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe</td></tr>
+</table>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>ntp_gettime</strong>() function is available since glibc 2.1. The <strong>ntp_gettimex</strong>() function is available since glibc 2.12.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p><strong>ntp_gettime</strong>() is described in the NTP Kernel Application Program Interface. <strong>ntp_gettimex</strong>() is a GNU extension.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/adjtimex.2.html"><strong>adjtimex</strong>(2)</a> <a href="../man3/ntp_adjtime.3.html"><strong>ntp_adjtime</strong>(3)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a></p>
+<p class='spacer'>
+<a href="http://www.slac.stanford.edu/comp/unix/package/rtems/src/ssrlApps/ntpNanoclock/api.htm">http://www.slac.stanford.edu/comp/unix/package/rtems/src/ssrlApps/ntpNanoclock/api.htm</a>
+<p>NTP "Kernel Application Program Interface"</p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

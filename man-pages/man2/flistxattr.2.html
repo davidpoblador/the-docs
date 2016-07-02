@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>listxattr, llistxattr, flistxattr - list extended attribute names</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">flistxattr<small> (2)</small></h1>
+        <p class="lead">list extended attribute names</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">flistxattr</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;sys/types.h&gt;</strong>
+<strong>#include &lt;sys/xattr.h&gt;</strong>
+
+<strong>ssize_t listxattr(const char&nbsp;*</strong><em>path</em><strong>, char&nbsp;*</strong><em>list</em><strong>, size_t </strong><em>size</em><strong>);</strong>
+<strong>ssize_t llistxattr(const char&nbsp;*</strong><em>path</em><strong>, char&nbsp;*</strong><em>list</em><strong>, size_t </strong><em>size</em><strong>);</strong>
+<strong>ssize_t flistxattr(int </strong><em>fd</em><strong>, char&nbsp;*</strong><em>list</em><strong>, size_t </strong><em>size</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>Extended attributes are <em>name</em>:<em>value</em> pairs associated with inodes (files, directories, symbolic links, etc.). They are extensions to the normal attributes which are associated with all inodes in the system (i.e., the <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a> data). A complete overview of extended attributes concepts can be found in <a href="../man7/xattr.7.html"><strong>xattr</strong>(7)</a>.</p>
+<p class='spacer'>
+
+<p><strong>listxattr</strong>() retrieves the list of extended attribute names associated with the given <em>path</em> in the filesystem. The retrieved list is placed in <em>list</em>, a caller-allocated buffer whose size (in bytes) is specified in the argument <em>size</em>. The list is the set of (null-terminated) names, one after the other. Names of extended attributes to which the calling process does not have access may be omitted from the list. The length of the attribute name <em>list</em> is returned.</p>
+<p class='spacer'>
+
+<p><strong>llistxattr</strong>() is identical to <strong>listxattr</strong>(), except in the case of a symbolic link, where the list of names of extended attributes associated with the link itself is retrieved, not the file that it refers to.</p>
+<p class='spacer'>
+
+<p><strong>flistxattr</strong>() is identical to <strong>listxattr</strong>(), only the open file referred to by <em>fd</em> (as returned by <a href="../man2/open.2.html"><strong>open</strong>(2)</a>) is interrogated in place of <em>path</em>.</p>
+<p class='spacer'>
+
+<p>A single extended attribute <em>name</em> is a null-terminated string. The name includes a namespace prefix; there may be several, disjoint namespaces associated with an individual inode.</p>
+<p class='spacer'>
+
+<p>If <em>size</em> is specified as zero, these calls return the current size of the list of extended attribute names (and leave <em>list</em> unchanged). This can be used to determine the size of the buffer that should be supplied in a subsequent call. (But, bear in mind that there is a possibility that the set of extended attributes may change between the two calls, so that it is still necessary to check the return status from the second call.)</p>
+  <h3>Example</h3>
+    <p>The <em>list</em> of names is returned as an unordered array of null-terminated character strings (attribute names are separated by null bytes ('&#92;0')), like this:</p>
+<pre>
+user.name1&#92;0system.name1&#92;0user.name2&#92;0</pre>
+
+<p class='spacer'>
+
+    <p>Filesystems that implement POSIX ACLs using extended attributes might return a <em>list</em> like this:</p>
+<pre>
+system.posix_acl_access&#92;0system.posix_acl_default&#92;0</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, a nonnegative number is returned indicating the size of the extended attribute name list. On failure, -1 is returned and <em>errno</em> is set appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>E2BIG</strong></dt>
+    <dd>
+  <p>The size of the list of attribute names for this file exceeds the system-imposed limit. See BUGS.</p>
+    </dd>
+    <dt><strong>ENOTSUP</strong></dt>
+    <dd>
+  <p>Extended attributes are not supported by the filesystem, or are disabled.</p>
+    </dd>
+    <dt><strong>ERANGE</strong></dt>
+    <dd>
+  <p>The <em>size</em> of the <em>list</em> buffer is too small to hold the result.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>In addition, the errors documented in <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a> can also occur.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>These system calls have been available on Linux since kernel 2.4; glibc support is provided since version 2.3.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>These system calls are Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The following program demonstrates the usage of <strong>listxattr</strong>() and <a href="../man2/getxattr.2.html"><strong>getxattr</strong>(2)</a>. For the file whose pathname is provided as a command-line argument, it lists all extended file attributes and their values.</p>
+<p class='spacer'>
+
+<p>To keep the code simple, the program assumes that attribute keys and values are constant during the execution of the program. A production program should expect and handle changes during execution of the program. For example, the number of bytes required for attribute keys might increase between the two calls to <strong>listxattr</strong>(). An application could handle this possibility using a loop that retries the call (perhaps up to a predetermined maximum number of attempts) with a larger buffer each time it fails with the error <strong>ERANGE</strong>. Calls to <a href="../man2/getxattr.2.html"><strong>getxattr</strong>(2)</a> could be handled similarly.</p>
+<p class='spacer'>
+
+<p>The following output was recorded by first creating a file, setting some extended file attributes, and then listing the attributes with the example program.</p>
+  <h3>Example output</h3>
+<pre>$ <strong>touch /tmp/foo</strong>
+$ <strong>setfattr -n user.fred -v chocolate /tmp/foo</strong>
+$ <strong>setfattr -n user.frieda -v bar /tmp/foo</strong>
+$ <strong>setfattr -n user.empty /tmp/foo</strong>
+$ <strong>./listxattr /tmp/foo</strong>
+user.fred: chocolate
+user.frieda: bar
+user.empty: &lt;no value&gt;</pre>
+
+  <h3>Program source (listxattr.c)</h3>
+<pre>#include &lt;malloc.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/xattr.h&gt;
+
+int
+main(int argc, char *argv[])
+{
+    ssize_t buflen, keylen, vallen;
+    char *buf, *key, *val;
+
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s path&#92;n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    /*
+     * Determine the length of the buffer needed.
+     */
+    buflen = listxattr(argv[1], NULL, 0);
+    if (buflen == -1) {
+        perror("listxattr");
+        exit(EXIT_FAILURE);
+    }
+    if (buflen == 0) {
+        printf("%s has no attributes.&#92;n", argv[1]);
+        exit(EXIT_SUCCESS);
+    }
+
+    /*
+     * Allocate the buffer.
+     */
+    buf = malloc(buflen);
+    if (buf == NULL) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+
+    /*
+     * Copy the list of attribute keys to the buffer.
+     */
+    buflen = listxattr(argv[1], buf, buflen);
+    if (buflen == -1) {
+        perror("listxattr");
+        exit(EXIT_FAILURE);
+    }
+
+    /*
+     * Loop over the list of zero terminated strings with the
+     * attribute keys. Use the remaining buffer length to determine
+     * the end of the list.
+     */
+    key = buf;
+    while (buflen &gt; 0) {
+
+        /*
+         * Output attribute key.
+         */
+        printf("%s: ", key);
+
+        /*
+         * Determine length of the value.
+         */
+        vallen = getxattr(argv[1], key, NULL, 0);
+        if (vallen == -1)
+            perror("getxattr");
+
+        if (vallen &gt; 0) {
+
+            /*
+             * Allocate value buffer.
+             * One extra byte is needed to append 0x00.
+             */
+            val = malloc(vallen + 1);
+            if (val == NULL) {
+                perror("malloc");
+                exit(EXIT_FAILURE);
+            }
+
+            /*
+             * Copy value to buffer.
+             */
+            vallen = getxattr(argv[1], key, val, vallen);
+            if (vallen == -1)
+                perror("getxattr");
+            else {
+                /*
+                 * Output attribute value.
+                 */
+                val[vallen] = 0;
+                printf("%s", val);
+            }
+
+            free(val);
+        } else if (vallen == 0)
+            printf("&lt;no value&gt;");
+
+        printf("&#92;n");
+
+        /*
+         * Forward to next attribute key.
+         */
+        keylen = strlen(key) + 1;
+        buflen -= keylen;
+        key += keylen;
+    }
+
+    free(buf);
+    exit(EXIT_SUCCESS);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>As noted in <a href="../man7/xattr.7.html"><strong>xattr</strong>(7)</a>, the VFS imposes a limit of 64 kB on the size of the extended attribute name list returned by <strong>listxattr</strong>(7). If the total size of attribute names attached to a file exceeds this limit, it is no longer possible to retrieve the list of attribute names.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>getfattr</strong>(1), <strong>setfattr</strong>(1), <a href="../man2/getxattr.2.html"><strong>getxattr</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/removexattr.2.html"><strong>removexattr</strong>(2)</a>, <a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>, <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, <a href="../man7/symlink.7.html"><strong>symlink</strong>(7)</a>, <a href="../man7/xattr.7.html"><strong>xattr</strong>(7)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

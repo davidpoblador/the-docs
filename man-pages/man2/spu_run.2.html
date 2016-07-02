@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>spu_run - execute an SPU context</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">spu_run<small> (2)</small></h1>
+        <p class="lead">execute an SPU context</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">spu_run</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;sys/spu.h&gt;</strong>
+
+<strong>int spu_run(int </strong><em>fd</em><strong>, unsigned int *</strong><em>npc</em><strong>, unsigned int *</strong><em>event</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>spu_run</strong>() system call is used on PowerPC machines that implement the Cell Broadband Engine Architecture in order to access Synergistic Processor Units (SPUs). The <em>fd</em> argument is a file descriptor returned by <a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a> that refers to a specific SPU context. When the context gets scheduled to a physical SPU, it starts execution at the instruction pointer passed in <em>npc</em>.</p>
+<p class='spacer'>
+
+<p>Execution of SPU code happens synchronously, meaning that <strong>spu_run</strong>() blocks while the SPU is still running. If there is a need to execute SPU code in parallel with other code on either the main CPU or other SPUs, a new thread of execution must be created first (e.g., using <a href="../man3/pthread_create.3.html"><strong>pthread_create</strong>(3)</a>).</p>
+<p class='spacer'>
+
+<p>When <strong>spu_run</strong>() returns, the current value of the SPU program counter is written to <em>npc</em>, so successive calls to <strong>spu_run</strong>() can use the same <em>npc</em> pointer.</p>
+<p class='spacer'>
+
+<p>The <em>event</em> argument provides a buffer for an extended status code. If the SPU context was created with the <strong>SPU_CREATE_EVENTS_ENABLED</strong> flag, then this buffer is populated by the Linux kernel before <strong>spu_run</strong>() returns.</p>
+<p class='spacer'>
+
+  <p>The status code may be one (or more) of the following constants:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>SPE_EVENT_DMA_ALIGNMENT</strong></dt>
+    <dd>
+  <p>A DMA alignment error occurred.</p>
+    </dd>
+    <dt><strong>SPE_EVENT_INVALID_DMA</strong></dt>
+    <dd>
+  <p>An invalid MFC DMA command was attempted.</p>
+    </dd>
+    <dt><strong>SPE_EVENT_SPE_DATA_STORAGE</strong></dt>
+    <dd>
+  <p>A DMA storage error occurred.</p>
+    </dd>
+    <dt><strong>SPE_EVENT_SPE_ERROR</strong></dt>
+    <dd>
+  <p>An illegal instruction was executed.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>NULL is a valid value for the <em>event</em> argument. In this case, the events will not be reported to the calling process.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>spu_run</strong>() returns the value of the <em>spu_status</em> register. On error, it returns -1 and sets <em>errno</em> to one of the error codes listed below.</p>
+<p class='spacer'>
+
+  <p>The <em>spu_status</em> register value is a bit mask of status codes and optionally a 14-bit code returned from the <strong>stop-and-signal</strong> instruction on the SPU. The bit masks for the status codes are:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>0x02</strong></dt>
+    <dd>
+  <p>SPU was stopped by a <strong>stop-and-signal</strong> instruction.</p>
+    </dd>
+    <dt><strong>0x04</strong></dt>
+    <dd>
+  <p>SPU was stopped by a <strong>halt</strong> instruction.</p>
+    </dd>
+    <dt><strong>0x08</strong></dt>
+    <dd>
+  <p>SPU is waiting for a channel.</p>
+    </dd>
+    <dt><strong>0x10</strong></dt>
+    <dd>
+  <p>SPU is in single-step mode.</p>
+    </dd>
+    <dt><strong>0x20</strong></dt>
+    <dd>
+  <p>SPU has tried to execute an invalid instruction.</p>
+    </dd>
+    <dt><strong>0x40</strong></dt>
+    <dd>
+  <p>SPU has tried to access an invalid channel.</p>
+    </dd>
+    <dt><strong>0x3fff0000</strong></dt>
+    <dd>
+  <p>The bits masked with this value contain the code returned from a <strong>stop-and-signal</strong> instruction. These bits are valid only if the 0x02 bit is set.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If <strong>spu_run</strong>() has not returned an error, one or more bits among the lower eight ones are always set.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EBADF</strong></dt>
+    <dd>
+  <p><em>fd</em> is not a valid file descriptor.</p>
+    </dd>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p><em>npc</em> is not a valid pointer, or <em>event</em> is non-NULL and an invalid pointer.</p>
+    </dd>
+    <dt><strong>EINTR</strong></dt>
+    <dd>
+  <p>A signal occurred while <strong>spu_run</strong>() was in progress; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>. The <em>npc</em> value has been updated to the new program counter value if necessary.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>fd</em> is not a valid file descriptor returned from <a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a>.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>There was not enough memory available to handle a page fault resulting from a Memory Flow Controller (MFC) direct memory access.</p>
+    </dd>
+    <dt><strong>ENOSYS</strong></dt>
+    <dd>
+  <p>The functionality is not provided by the current system, because either the hardware does not provide SPUs or the spufs module is not loaded.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>spu_run</strong>() system call was added to Linux in kernel 2.6.16.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>This call is Linux-specific and implemented only by the PowerPC architecture. Programs using this system call are not portable.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>. Note however, that <strong>spu_run</strong>() is meant to be used from libraries that implement a more abstract interface to SPUs, not to be used from regular applications. See</p><a href="http://www.bsc.es/projects/deepcomputing/linuxoncell/">http://www.bsc.es/projects/deepcomputing/linuxoncell/</a>
+<p>for the recommended libraries.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The following is an example of running a simple, one-instruction SPU program with the <strong>spu_run</strong>() system call.</p>
+<p class='spacer'>
+
+<pre>#include &lt;stdlib.h&gt;
+#include &lt;stdint.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;fcntl.h&gt;
+
+#define handle_error(msg) &#92;
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+int main(void)
+{
+    int context, fd, spu_status;
+    uint32_t instruction, npc;
+
+    context = spu_create("/spu/example-context", 0, 0755);
+    if (context == -1)
+        handle_error("spu_create");
+
+    /* write a 'stop 0x1234' instruction to the SPU's
+     * local store memory
+     */
+    instruction = 0x00001234;
+
+    fd = open("/spu/example-context/mem", O_RDWR);
+    if (fd == -1)
+        handle_error("open");
+    write(fd, &instruction, sizeof(instruction));
+
+    /* set npc to the starting instruction address of the
+     * SPU program. Since we wrote the instruction at the
+     * start of the mem file, the entry point will be 0x0
+     */
+    npc = 0;
+
+    spu_status = spu_run(context, &npc, NULL);
+    if (spu_status == -1)
+        handle_error("open");
+
+    /* we should see a status code of 0x1234002:
+     *   0x00000002 (spu was stopped due to stop-and-signal)
+     * | 0x12340000 (the stop-and-signal code)
+     */
+    printf("SPU Status: 0x%08x&#92;n", spu_status);
+
+    exit(EXIT_SUCCESS);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/close.2.html"><strong>close</strong>(2)</a>, <a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/spufs.7.html"><strong>spufs</strong>(7)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

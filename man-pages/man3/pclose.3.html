@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>popen, pclose - pipe stream to or from a process</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pclose<small> (3)</small></h1>
+        <p class="lead">pipe stream to or from a process</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man3"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">pclose</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;stdio.h&gt;</strong>
+
+<strong>FILE *popen(const char *</strong><em>command</em><strong>, const char *</strong><em>type</em><strong>);</strong>
+
+<strong>int pclose(FILE *</strong><em>stream</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
+<p class='spacer'>
+
+  <p><strong>popen</strong>(), <strong>pclose</strong>(): _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;2</p>
+<pre>    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE || _SVID_SOURCE</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>popen</strong>() function opens a process by creating a pipe, forking, and invoking the shell. Since a pipe is by definition unidirectional, the <em>type</em> argument may specify only reading or writing, not both; the resulting stream is correspondingly read-only or write-only.</p>
+<p class='spacer'>
+
+<p>The <em>command</em> argument is a pointer to a null-terminated string containing a shell command line. This command is passed to <em>/bin/sh</em> using the <strong>-c</strong> flag; interpretation, if any, is performed by the shell.</p>
+<p class='spacer'>
+
+<p>The <em>type</em> argument is a pointer to a null-terminated string which must contain either the letter 'r' for reading or the letter 'w' for writing. Since glibc 2.9, this argument can additionally include the letter 'e', which causes the close-on-exec flag (<strong>FD_CLOEXEC</strong>) to be set on the underlying file descriptor; see the description of the <strong>O_CLOEXEC</strong> flag in <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for reasons why this may be useful.</p>
+<p class='spacer'>
+
+<p>The return value from <strong>popen</strong>() is a normal standard I/O stream in all respects save that it must be closed with <strong>pclose</strong>() rather than <a href="../man3/fclose.3.html"><strong>fclose</strong>(3)</a>. Writing to such a stream writes to the standard input of the command; the command's standard output is the same as that of the process that called <strong>popen</strong>(), unless this is altered by the command itself. Conversely, reading from the stream reads the command's standard output, and the command's standard input is the same as that of the process that called <strong>popen</strong>().</p>
+<p class='spacer'>
+
+<p>Note that output <strong>popen</strong>() streams are block buffered by default.</p>
+<p class='spacer'>
+
+<p>The <strong>pclose</strong>() function waits for the associated process to terminate and returns the exit status of the command as returned by <a href="../man2/wait4.2.html"><strong>wait4</strong>(2)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p><strong>popen</strong>(): on success, returns a pointer to an open stream that can be used to read or write to the pipe; if the <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> or <a href="../man2/pipe.2.html"><strong>pipe</strong>(2)</a> calls fail, or if the function cannot allocate memory, NULL is returned.</p>
+<p class='spacer'>
+
+<p><strong>pclose</strong>(): on success, returns the exit status of the command; if <a href="../man2/wait4.2.html"><strong>wait4</strong>(2)</a> returns an error, or some other error is detected, -1 is returned.</p>
+<p class='spacer'>
+
+<p>Both functions set <em>errno</em> to an appropriate value in the case of an error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>popen</strong>() function does not set <em>errno</em> if memory allocation fails. If the underlying <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> or <a href="../man2/pipe.2.html"><strong>pipe</strong>(2)</a> fails, <em>errno</em> is set appropriately. If the <em>type</em> argument is invalid, and this condition is detected, <em>errno</em> is set to <strong>EINVAL</strong>.</p>
+<p class='spacer'>
+
+<p>If <strong>pclose</strong>() cannot obtain the child status, <em>errno</em> is set to <strong>ECHILD</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ATTRIBUTES</h2>
+        <div class="sectioncontent">
+
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
+<table class="table table-striped">
+<tr>
+<th>Interface</th>
+<th>Attribute</th>
+<th>Value</th></tr>
+
+<tr>
+<td><strong>popen</strong>(),   <strong>pclose</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe</td></tr>
+</table>
+
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>POSIX.1-2001, POSIX.1-2008.</p>
+<p class='spacer'>
+
+<p>The 'e' value for <em>type</em> is a Linux extension.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>Since the standard input of a command opened for reading shares its seek offset with the process that called <strong>popen</strong>(), if the original process has done a buffered read, the command's input position may not be as expected. Similarly, the output from a command opened for writing may become intermingled with that of the original process. The latter can be avoided by calling <a href="../man3/fflush.3.html"><strong>fflush</strong>(3)</a> before <strong>popen</strong>().</p>
+<p class='spacer'>
+
+<p>Failure to execute the shell is indistinguishable from the shell's failure to execute command, or an immediate exit of the command. The only hint is an exit status of 127.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>sh</strong>(1), <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/pipe.2.html"><strong>pipe</strong>(2)</a>, <a href="../man2/wait4.2.html"><strong>wait4</strong>(2)</a>, <a href="../man3/fclose.3.html"><strong>fclose</strong>(3)</a>, <a href="../man3/fflush.3.html"><strong>fflush</strong>(3)</a>, <a href="../man3/fopen.3.html"><strong>fopen</strong>(3)</a>, <a href="../man3/stdio.3.html"><strong>stdio</strong>(3)</a>, <a href="../man3/system.3.html"><strong>system</strong>(3)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

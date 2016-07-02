@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='http://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction|shadow-multiple' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dup, dup2, dup3 - duplicate a file descriptor</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">dup<small> (2)</small></h1>
+        <p class="lead">duplicate a file descriptor</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href=".."><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="../man2"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href=""><span itemprop="title">dup</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;unistd.h&gt;</strong>
+
+<strong>int dup(int </strong><em>oldfd</em><strong>);</strong>
+<strong>int dup2(int </strong><em>oldfd</em><strong>, int </strong><em>newfd</em><strong>);</strong>
+
+<strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include &lt;fcntl.h&gt;</strong>              /* Obtain O_* constant definitions */
+<strong>#include &lt;unistd.h&gt;</strong>
+
+<strong>int dup3(int </strong><em>oldfd</em><strong>, int </strong><em>newfd</em><strong>, int </strong><em>flags</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>dup</strong>() system call creates a copy of the file descriptor <em>oldfd</em>, using the lowest-numbered unused file descriptor for the new descriptor.</p>
+<p class='spacer'>
+
+<p>After a successful return, the old and new file descriptors may be used interchangeably. They refer to the same open file description (see <a href="../man2/open.2.html"><strong>open</strong>(2)</a>) and thus share file offset and file status flags; for example, if the file offset is modified by using <a href="../man2/lseek.2.html"><strong>lseek</strong>(2)</a> on one of the file descriptors, the offset is also changed for the other.</p>
+<p class='spacer'>
+
+<p>The two file descriptors do not share file descriptor flags (the close-on-exec flag). The close-on-exec flag (<strong>FD_CLOEXEC</strong>; see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>) for the duplicate descriptor is off.</p>
+  <h3>dup2()</h3>
+<p>The <strong>dup2</strong>() system call performs the same task as <strong>dup</strong>(), but instead of using the lowest-numbered unused file descriptor, it uses the file descriptor number specified in <em>newfd</em>. If the file descriptor <em>newfd</em> was previously open, it is silently closed before being reused.</p>
+<p class='spacer'>
+
+<p>The steps of closing and reusing the file descriptor <em>newfd</em> are performed <em>atomically</em>. This is important, because trying to implement equivalent functionality using <a href="../man2/close.2.html"><strong>close</strong>(2)</a> and <strong>dup</strong>() would be subject to race conditions, whereby <em>newfd</em> might be reused between the two steps. Such reuse could happen because the main program is interrupted by a signal handler that allocates a file descriptor, or because a parallel thread allocates a file descriptor.</p>
+<p class='spacer'>
+
+  <p>Note the following points:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>If <em>oldfd</em> is not a valid file descriptor, then the call fails, and <em>newfd</em> is not closed.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>If <em>oldfd</em> is a valid file descriptor, and <em>newfd</em> has the same value as <em>oldfd</em>, then <strong>dup2</strong>() does nothing, and returns <em>newfd</em>.</p>
+    </dd>
+  </dl>
+  <h3>dup3()</h3>
+  <p><strong>dup3</strong>() is the same as <strong>dup2</strong>(), except that:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>The caller can force the close-on-exec flag to be set for the new file descriptor by specifying <strong>O_CLOEXEC</strong> in <em>flags</em>. See the description of the same flag in <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for reasons why this may be useful.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>If <em>oldfd</em> equals <em>newfd</em>, then <strong>dup3</strong>() fails with the error <strong>EINVAL</strong>.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, these system calls return the new file descriptor. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EBADF</strong></dt>
+    <dd>
+  <p><em>oldfd</em> isn't an open file descriptor.</p>
+    </dd>
+    <dt><strong>EBADF</strong></dt>
+    <dd>
+  <p><em>newfd</em> is out of the allowed range for file descriptors (see the discussion of <strong>RLIMIT_NOFILE</strong> in <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>).</p>
+    </dd>
+    <dt><strong>EBUSY</strong></dt>
+    <dd>
+  <p>(Linux only) This may be returned by <strong>dup2</strong>() or <strong>dup3</strong>() during a race condition with <a href="../man2/open.2.html"><strong>open</strong>(2)</a> and <strong>dup</strong>().</p>
+    </dd>
+    <dt><strong>EINTR</strong></dt>
+    <dd>
+  <p>The <strong>dup2</strong>() or <strong>dup3</strong>() call was interrupted by a signal; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>dup3</strong>()) <em>flags</em> contain an invalid value.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>dup3</strong>()) <em>oldfd</em> was equal to <em>newfd</em>.</p>
+    </dd>
+    <dt><strong>EMFILE</strong></dt>
+    <dd>
+  <p>The per-process limit on the number of open file descriptors has been reached (see the discussion of <strong>RLIMIT_NOFILE</strong> in <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>dup3</strong>() was added to Linux in version 2.6.27; glibc support is available starting with version 2.9.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p><strong>dup</strong>(), <strong>dup2</strong>(): POSIX.1-2001, POSIX.1-2008, SVr4, 4.3BSD.</p>
+<p class='spacer'>
+
+<p><strong>dup3</strong>() is Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>The error returned by <strong>dup2</strong>() is different from that returned by <strong>fcntl(</strong>..., <strong>F_DUPFD</strong>, ...<strong>)</strong> when <em>newfd</em> is out of range. On some systems, <strong>dup2</strong>() also sometimes returns <strong>EINVAL</strong> like <strong>F_DUPFD</strong>.</p>
+<p class='spacer'>
+
+<p>If <em>newfd</em> was open, any errors that would have been reported at <a href="../man2/close.2.html"><strong>close</strong>(2)</a> time are lost. If this is of concern, then&ndash;unless the program is single-threaded and does not allocate file descriptors in signal handlers&ndash;the correct approach is <em>not</em> to close <em>newfd</em> before calling <strong>dup2</strong>(), because of the race condition described above. Instead, code something like the following could be used:</p>
+<p class='spacer'>
+
+<pre>    /* Obtain a duplicate of 'newfd' that can subsequently
+       be used to check for close() errors; an EBADF error
+       means that 'newfd' was not open. */
+
+    tmpfd = dup(newfd);
+    if (tmpfd == -1 && errno != EBADF) {
+        /* Handle unexpected dup() error */
+    }
+
+    /* Atomically duplicate 'oldfd' on 'newfd' */
+
+    if (dup2(oldfd, newfd) == -1) {
+        /* Handle dup2() error */
+    }
+
+    /* Now check for close() errors on the file originally
+       referred to by 'newfd' */
+
+    if (tmpfd != -1) {
+        if (close(tmpfd) == -1) {
+            /* Handle errors from close */
+        }
+    }</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple" id="$section">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/close.2.html"><strong>close</strong>(2)</a>, <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a></p>
+        </div>
+      </section>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
