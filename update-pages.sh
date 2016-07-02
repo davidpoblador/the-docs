@@ -1,6 +1,6 @@
 #!/bin/sh
 
-rsync -a public_html/* dist/
+rsync -a public_html/ dist/
 cd dist
 git pull
 git add --all
