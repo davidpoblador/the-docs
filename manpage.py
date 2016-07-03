@@ -574,14 +574,17 @@ def unescape(t):
 
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
+    t = t.replace("\\0", "&nbsp;")
+
     t = t.replace("\%", "")
     t = t.replace("\:", "")
-    #t = t.replace("\}", "")
 
     t = t.replace("\\(bu", "&bull;")
 
-    t = t.replace("\`", "`")
-    t = t.replace("\&", " ")  # FIXME: Might need tweaking
+    t = t.replace("\`", "&#96;") # Backtick
+
+    t = t.replace("\&", " ")
+
     t = t.replace("\\\\", "&#92;")
 
     t = t.replace("\[char46]", "&#46;")
@@ -589,6 +592,8 @@ def unescape(t):
     t = t.replace("\\(en", "&ndash;")
 
     t = t.replace("\\(dq", "&quot;")
+    t = t.replace("\\(aq", "&apos;")
+
     t = t.replace("\\(+-", "&plusmn;")
 
     t = t.replace("\\(:A", "&Auml;")
@@ -602,15 +607,10 @@ def unescape(t):
     t = t.replace("\\.", ".")
     t = t.replace("\\(mc", "&micro;")
 
-    t = t.replace("\\0", "&nbsp;")
 
     t = t.replace("\\*(lq", "&ldquo;").replace("\\(lq", "&ldquo;")
     t = t.replace("\\*(rq", "&rdquo;").replace("\\(rq", "&rdquo;")
 
-    # FIXME: make fancy quotes
-    t = t.replace("\\(aq", "'")
-
-    #t = t.replace("\\*(dg", "(!)")
     t = t.replace("\\e", "&#92;")
     t = tagify(t)
 
