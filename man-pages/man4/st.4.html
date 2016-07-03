@@ -128,7 +128,7 @@ mknod -m 666 /dev/nst0a c 9 224</pre>
 <p>When a filemark is encountered while reading, the following happens. If there are data remaining in the buffer when the filemark is found, the buffered data is returned. The next read returns zero bytes. The following read returns data from the next file. The end of recorded data is signaled by returning zero bytes for two consecutive read calls. The third read returns an error.</p>
   <h3>Ioctls</h3>
 <p>The driver supports three <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> requests. Requests not recognized by the <strong>st</strong> driver are passed to the <strong>SCSI</strong> driver. The definitions below are from <em>/usr/include/linux/mtio.h</em>:</p>
-  <h3>MTIOCTOP \(em perform a tape operation</h3>
+  <h3>MTIOCTOP &ndash; perform a tape operation</h3>
 <p class='spacer'>
 
 <p>This request takes an argument of type <em>(struct mtop&nbsp;*)</em>. Not all drives support all operations. The driver returns an <strong>EIO</strong> error if the drive rejects an operation.</p>
@@ -376,7 +376,7 @@ ioctl(fd, MTIOCTOP, mt_cmd);</pre>
     <p>Starting from kernels 2.4.19 and 2.5.43, the driver supports a status bit which indicates whether the drive requests cleaning. The method used by the drive to return cleaning information is set using the <strong>MT_ST_SEL_CLN</strong> subcommand. If the value is zero, the cleaning bit is always zero. If the value is one, the TapeAlert data defined in the SCSI-3 standard is used (not yet implemented). Values 2-17 are reserved. If the lowest eight bits are &gt;= 18, bits from the extended sense data are used. The bits 9-16 specify a mask to select the bits to look at and the bits 17-23 specify the bit pattern to look for. If the bit pattern is zero, one or more bits under the mask indicate the cleaning request. If the pattern is nonzero, the pattern must match the masked sense data byte.</p>
       </dd>
     </dl>
-    <h3>MTIOCGET \(em get status</h3>
+    <h3>MTIOCGET &ndash; get status</h3>
     </dd>
   </dl>
 <p class='spacer'>
@@ -412,7 +412,7 @@ struct mtget {
     </dd>
     <dt><em>mt_gstat</em></dt>
     <dd>
-  <p>reports generic (device independent) status information. The header file defines macros for testing these status bits: <strong>GMT_EOF</strong>(<em>x</em>): The tape is positioned just after a filemark (always false after an <strong>MTSEEK</strong> operation). <strong>GMT_BOT</strong>(<em>x</em>): The tape is positioned at the beginning of the first file (always false after an <strong>MTSEEK</strong> operation). <strong>GMT_EOT</strong>(<em>x</em>): A tape operation has reached the physical End Of Tape. <strong>GMT_SM</strong>(<em>x</em>): The tape is currently positioned at a setmark (always false after an <strong>MTSEEK</strong> operation). <strong>GMT_EOD</strong>(<em>x</em>): The tape is positioned at the end of recorded data. <strong>GMT_WR_PROT</strong>(<em>x</em>): The drive is write-protected. For some drives this can also mean that the drive does not support writing on the current medium type. <strong>GMT_ONLINE</strong>(<em>x</em>): The last <a href="../man2/open.2.html"><strong>open</strong>(2)</a> found the drive with a tape in place and ready for operation. <strong>GMT_D_6250</strong>(<em>x</em>), <strong>GMT_D_1600</strong>(<em>x</em>), <strong>GMT_D_800</strong>(<em>x</em>): This &ldquo;generic&rdquo; status information reports the current density setting for 9-track \(12" tape drives only. <strong>GMT_DR_OPEN</strong>(<em>x</em>): The drive does not have a tape in place. <strong>GMT_IM_REP_EN</strong>(<em>x</em>): Immediate report mode. This bit is set if there are no guarantees that the data has been physically written to the tape when the write call returns. It is set zero only when the driver does not buffer data and the drive is set not to buffer data. <strong>GMT_CLN</strong>(<em>x</em>): The drive has requested cleaning. Implemented in kernels since 2.4.19 and 2.5.43.</p>
+  <p>reports generic (device independent) status information. The header file defines macros for testing these status bits: <strong>GMT_EOF</strong>(<em>x</em>): The tape is positioned just after a filemark (always false after an <strong>MTSEEK</strong> operation). <strong>GMT_BOT</strong>(<em>x</em>): The tape is positioned at the beginning of the first file (always false after an <strong>MTSEEK</strong> operation). <strong>GMT_EOT</strong>(<em>x</em>): A tape operation has reached the physical End Of Tape. <strong>GMT_SM</strong>(<em>x</em>): The tape is currently positioned at a setmark (always false after an <strong>MTSEEK</strong> operation). <strong>GMT_EOD</strong>(<em>x</em>): The tape is positioned at the end of recorded data. <strong>GMT_WR_PROT</strong>(<em>x</em>): The drive is write-protected. For some drives this can also mean that the drive does not support writing on the current medium type. <strong>GMT_ONLINE</strong>(<em>x</em>): The last <a href="../man2/open.2.html"><strong>open</strong>(2)</a> found the drive with a tape in place and ready for operation. <strong>GMT_D_6250</strong>(<em>x</em>), <strong>GMT_D_1600</strong>(<em>x</em>), <strong>GMT_D_800</strong>(<em>x</em>): This &ldquo;generic&rdquo; status information reports the current density setting for 9-track &frac12;" tape drives only. <strong>GMT_DR_OPEN</strong>(<em>x</em>): The drive does not have a tape in place. <strong>GMT_IM_REP_EN</strong>(<em>x</em>): Immediate report mode. This bit is set if there are no guarantees that the data has been physically written to the tape when the write call returns. It is set zero only when the driver does not buffer data and the drive is set not to buffer data. <strong>GMT_CLN</strong>(<em>x</em>): The drive has requested cleaning. Implemented in kernels since 2.4.19 and 2.5.43.</p>
     </dd>
     <dt><em>mt_erreg</em></dt>
     <dd>
@@ -427,7 +427,7 @@ struct mtget {
   <p>reports the block number (zero-based) within the current file. This value is set to -1 when the block number is unknown (e.g., after <strong>MTBSF</strong>, <strong>MTBSS</strong>, or <strong>MTSEEK</strong>).</p>
     </dd>
   </dl>
-  <h3>MTIOCPOS \(em get tape position</h3>
+  <h3>MTIOCPOS &ndash; get tape position</h3>
 <p class='spacer'>
 
 <p>This request takes an argument of type <em>"(struct mtpos&nbsp;*)"</em> and reports the drive's notion of the current tape block number, which is not the same as <em>mt_blkno</em> returned by <strong>MTIOCGET</strong>. This drive must be a SCSI-2 drive that supports the <strong>"READ POSITION"</strong> command (device-specific address) or a Tandberg-compatible SCSI-1 drive (Tandberg, Archive Viper, Wangtek, ... ).</p>
