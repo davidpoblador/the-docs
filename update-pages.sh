@@ -7,3 +7,4 @@ git add --all
 git commit -m 'Update pages to new version'
 git push
 cd ..
+git pull
