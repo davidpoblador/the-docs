@@ -70,10 +70,17 @@ class ManPage(object):
         self.style_macros = self.single_styles | self.compound_styles
         self.bullet_chars = {'(bu', '\(bu'}
 
-        # self.parse()
+        self.next_page = None
+        self.previous_page = None
 
     def set_pages(self, list_of_pages):
         self.list_of_pages = list_of_pages
+
+    def set_previous(self, manfile, description):
+        self.previous_page = (manfile, description)
+
+    def set_next(self, manfile, description):
+        self.next_page = (manfile, description)
 
     def process_spaced_lines(self, line):
         if (not line) or (not line.startswith(" ")):
@@ -382,7 +389,7 @@ class ManPage(object):
         if style in self.single_styles:
             return stylize(style, unescape(data))
         elif style in self.compound_styles:
-            data = unescape(data, strip_weird_tags = True)
+            data = unescape(data, strip_weird_tags=True)
             if " " not in data:
                 return stylize_odd_even(style, [data, ])
             else:
@@ -462,9 +469,27 @@ class ManPage(object):
                 content=''.join(content),
             )
 
+        section_contents = self.linkify(section_contents)
+
         header_tpl = load_template('header')
         base_tpl = load_template('base')
         breadcrumb_tpl = load_template('breadcrumb')
+
+        if self.next_page or self.previous_page:
+            links = ""
+            if self.previous_page:
+                links += "<li class=\"previous\"><a href=\"%s.html\"><span aria-hidden=\"true\">&larr;</span> %s: %s</a></li>" % (
+                    self.previous_page[0], self.previous_page[0], self.previous_page[1])
+            if self.next_page:
+                links += "<li class=\"next\"><a href=\"%s.html\">%s: %s <span aria-hidden=\"true\">&rarr;</span></a></li>" % (
+                    self.next_page[0], self.next_page[0], self.next_page[1])
+
+            pager_tpl = load_template('pager')
+            pager_contents = pager_tpl.safe_substitute(
+                links=links,
+            )
+
+            section_contents += pager_contents
 
         title, section = self.manpage_name.rsplit('.', 1)
         return base_tpl.safe_substitute(
@@ -482,7 +507,7 @@ class ManPage(object):
                 title=title,  # FIXME: Mess
                 subtitle=self.subtitle,
             ),
-            content=self.linkify(section_contents),
+            content=section_contents,
         )
 
 

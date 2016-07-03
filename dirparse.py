@@ -89,9 +89,10 @@ def main():
         except OSError:
             pass
 
+        previous = None
+        pages_to_process = []
         for page_file in sorted(page_files):
-            final_page = os.path.join(man_directory, page_file) + ".html"
-            print(" * Writing page: %s" % final_page)
+            print(" * Writing page: %s" % page_file)
 
             try:
                 next(list_of_manpages[page_file][1])
@@ -102,7 +103,19 @@ def main():
                 print(" * MP(%s): %s" % (mp, manfile, ))
                 continue
 
+            if previous:
+                list_of_manpages[page_file][0].set_previous(
+                    previous[0], previous[1])
+                list_of_manpages[previous[0]][0].set_next(
+                    page_file, pages[page_file][0])
+
+            previous = (page_file, pages[page_file][0])
             list_of_manpages[page_file][0].set_pages(list_of_pages)
+
+            pages_to_process.append(page_file)
+
+        for page_file in pages_to_process:
+            final_page = os.path.join(man_directory, page_file) + ".html"
             out = list_of_manpages[page_file][0].html()
             checksum = md5(out).hexdigest()
 
@@ -155,7 +168,13 @@ def main():
                 "\'"),
         )
 
-        f = open(os.path.join(root_html, base_src, directory, 'index.html'), 'w')
+        f = open(
+            os.path.join(
+                root_html,
+                base_src,
+                directory,
+                'index.html'),
+            'w')
         f.write(out)
         f.close()
 
