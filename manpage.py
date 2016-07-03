@@ -68,7 +68,6 @@ class ManPage(object):
             'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam'}
         self.macros_to_space = {'br', 'sp'}
         self.style_macros = self.single_styles | self.compound_styles
-        self.bullet_chars = {'(bu', '\(bu'}
 
         self.next_page = None
         self.previous_page = None
@@ -94,6 +93,7 @@ class ManPage(object):
     def parse(self):
         yield_subtitle = False
         for line in self.get_line():
+
             if self.redirect:
                 break
 
@@ -133,6 +133,12 @@ class ManPage(object):
         with open(self.filename) as fp:
             extra_line = None
             for line in fp:
+                comment_start = line.find("\\\"")
+                if comment_start in (0, 1):
+                    continue
+                elif comment_start > -1 and line[comment_start - 1] != "\\":
+                    line = line[0:comment_start]
+
                 line = line.rstrip()
 
                 if extra_line:
@@ -141,8 +147,11 @@ class ManPage(object):
 
                 if not line:
                     yield line
-                elif line[-1] == "\\" and line[0] in self.cc:
+                elif line[-1] == "\\" and (line[0] in self.cc or not self.in_pre):
                     extra_line = line[:-1]
+                    continue
+                elif line[-2:] == "\\c" and (line[0] in self.cc or not self.in_pre):
+                    extra_line = line[:-2]
                     continue
                 else:
                     yield entitize(line)
@@ -188,10 +197,7 @@ class ManPage(object):
         else:
             macro, data = line, None
 
-        if macro.startswith('\\"'):
-            # Comment
-            return
-        elif macro in self.macros_to_ignore:
+        if macro in self.macros_to_ignore:
             return
 
         if macro == "SH":
@@ -312,6 +318,7 @@ class ManPage(object):
             while cells:
                 out += "\n<tr>"
                 for cell in cells[0:columns]:
+                    cell = cell.replace("\\0", "")
                     if first:
                         out += "\n<th>%s</th>" % cell
                     else:
@@ -352,7 +359,8 @@ class ManPage(object):
             pass
         else:
             self.in_pre = False
-            self.add_text("\n<pre>%s</pre>\n" % '\n'.join(self.pre_buffer))
+            self.add_text("\n<pre>%s</pre>\n" %
+                          tagify('*NEWLINE*'.join(self.pre_buffer)))
             self.pre_buffer = []
             self.restore_state()
 
@@ -373,23 +381,21 @@ class ManPage(object):
     def process_li(self, data):
         if data:
             bullet = data.split()[0]
-            if bullet in self.bullet_chars:
-                bullet = '*'
 
             if not self.in_li:
                 self.save_state()
                 self.in_li = True
                 self.append_to_current_buffer("<dl class='dl-horizontal'>", 1)
-            self.append_to_current_buffer("<dt>%s</dt>" % bullet, 2)
+            self.append_to_current_buffer("<dt>%s</dt>" % unescape(bullet), 2)
             self.append_to_current_buffer("<dd>", 2)
         else:
             self.add_spacer()
 
     def add_style(self, style, data):
+        data = unescape(data)
         if style in self.single_styles:
-            return stylize(style, unescape(data))
+            return stylize(style, data)
         elif style in self.compound_styles:
-            data = unescape(data, strip_weird_tags=True)
             if " " not in data:
                 return stylize_odd_even(style, [data, ])
             else:
@@ -416,7 +422,7 @@ class ManPage(object):
 
     def add_subsection(self, data):
         self.flush_containers()
-        self.add_text("<h3>%s</h3>" % data, 2)
+        self.add_text("<h3>%s</h3>" % unescape(data), 2)
 
     def flush_containers(self):
         self.end_pre()
@@ -559,7 +565,7 @@ def stylize_odd_even(style, args):
     return buff
 
 
-def unescape(t, strip_weird_tags=False):
+def unescape(t):
     if not t:
         return t
 
@@ -568,9 +574,11 @@ def unescape(t, strip_weird_tags=False):
 
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
-    #t = t.replace("\%", "")
+    t = t.replace("\%", "")
     t = t.replace("\:", "")
     #t = t.replace("\}", "")
+
+    t = t.replace("\\(bu", "&bull;")
 
     t = t.replace("\`", "`")
     t = t.replace("\&", " ")  # FIXME: Might need tweaking
@@ -580,6 +588,22 @@ def unescape(t, strip_weird_tags=False):
     t = t.replace("\\(em", "&ndash;")
     t = t.replace("\\(en", "&ndash;")
 
+    t = t.replace("\\(dq", "&quot;")
+    t = t.replace("\\(+-", "&plusmn;")
+
+    t = t.replace("\\(:A", "&Auml;")
+
+    t = t.replace("\\('a", "&aacute;")
+    t = t.replace("\\(`a", "&agrave;")
+    t = t.replace("\\(:a", "&auml;")
+    t = t.replace("\\(^a", "&acirc;")
+
+    t = t.replace("\\(12", "&frac12;")
+    t = t.replace("\\.", ".")
+    t = t.replace("\\(mc", "&micro;")
+
+    t = t.replace("\\0", "&nbsp;")
+
     t = t.replace("\\*(lq", "&ldquo;").replace("\\(lq", "&ldquo;")
     t = t.replace("\\*(rq", "&rdquo;").replace("\\(rq", "&rdquo;")
 
@@ -587,8 +611,13 @@ def unescape(t, strip_weird_tags=False):
     t = t.replace("\\(aq", "'")
 
     #t = t.replace("\\*(dg", "(!)")
-    #t = t.replace("\\e", "\\")
+    t = t.replace("\\e", "&#92;")
+    t = tagify(t)
 
+    return t
+
+
+def tagify(t):
     # Fixme (when we have time dir_colors.5 shows why this needs fixing)
     t = re.sub(
         r'\\fI(.*?)\\f[PR]',
@@ -600,16 +629,17 @@ def unescape(t, strip_weird_tags=False):
         r'<strong>\1</strong>',
         t)
 
+    t = t.replace("\\fB", "")
+    t = t.replace("\\fI", "")
+    t = t.replace("\\fR", "")
+    t = t.replace("\\fP", "")
+
     # t = re.sub(
     # r'\\f\(CW(.*?)\\fP',
     # r'<strong>\1</strong>',
     # t)
 
-    if strip_weird_tags:
-        # FIXME: This is ugly (zdump is broken on BI)
-        t = t.replace("\\fB", "")
-        t = t.replace("\\fI", "")
-        t = t.replace("\\fR", "")
+    t = t.replace('*NEWLINE*', "\n")
 
     return t
 
