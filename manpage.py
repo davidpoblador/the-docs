@@ -250,7 +250,7 @@ class ManPage(object):
             pass
 
     def add_url(self, data):
-        self.add_text("<a href=\"%s\">%s</a>" % (data, data,))
+        self.add_content("<a href=\"%s\">%s</a>" % (data, data,))
 
     def add_content(self, data):
         if not self.sections:
