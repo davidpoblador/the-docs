@@ -64,7 +64,8 @@ class ManPage(object):
             self.manpage_name = os.path.basename(filename)
 
         self.macros_to_ignore = {
-            'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam'}
+            'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam',
+            'ne', 'UC', 'nr', 'ns', 'ds', 'na', 'DT', 'bp'}
         self.macros_to_space = {'br', 'sp'}
         self.style_macros = self.single_styles | self.compound_styles
 
@@ -580,6 +581,8 @@ def unescape(t):
 
     if "\\" not in t:
         return t
+
+    t = t.replace("\\*(dg", "(!)")
 
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
