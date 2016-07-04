@@ -164,7 +164,7 @@ def main(source_dir):
                 description=pages[page_file][0],
             )
 
-            item_url = base_url + base_src + "/" + directory + "/" + name + ".html"
+            item_url = base_url + base_src + "/" + directory + "/" + name + "." + section + ".html"
             sitemap_items += sitemap_url_item_tpl.substitute(url=item_url)
         else:
             item_url = base_url + base_src + "/" + directory + "/"
