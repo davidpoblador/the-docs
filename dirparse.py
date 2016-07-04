@@ -36,10 +36,12 @@ def main():
     mandirpages = defaultdict(set)
     pages = defaultdict()
 
+    manpage_parent_url = base_url + base_src
+
     for manfile in list_of_manfiles:
         print("Processing man page %s ..." % (manfile, ))
         try:
-            manpage = ManPage(manfile)
+            manpage = ManPage(manfile, base_url=manpage_parent_url)
             g = manpage.parse()
 
             redirect, subtitle = next(g)
@@ -49,7 +51,10 @@ def main():
                 print(
                     " * Page %s has a redirection to %s..." %
                     (manfile, redirection))
-                manpage = ManPage(redirection, redirected_from=manfile)
+                manpage = ManPage(
+                    redirection,
+                    base_url=manpage_parent_url,
+                    redirected_from=manfile)
                 g = manpage.parse()
 
                 redirect, subtitle = next(g)

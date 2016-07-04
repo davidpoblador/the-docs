@@ -31,7 +31,7 @@ class ManPage(object):
         'man0': "ERROR. Section 0",
     }
 
-    def __init__(self, filename, redirected_from=False):
+    def __init__(self, filename, redirected_from=False, base_url=""):
         self.filename = filename
 
         self.subtitle = ""
@@ -71,6 +71,7 @@ class ManPage(object):
 
         self.next_page = None
         self.previous_page = None
+        self.base_url = base_url
 
     def set_pages(self, list_of_pages):
         self.list_of_pages = list_of_pages
@@ -499,10 +500,12 @@ class ManPage(object):
             # TODO: Fix canonical, nav, breadcrumb
             canonical="",
             nav="",
-            breadcrumb=breadcrumb_tpl.safe_substitute(
+            breadcrumb=breadcrumb_tpl.substitute(
                 section=section,
                 section_name=self.SECTIONS["man" + section],
                 manpage=title,
+                base_url=self.base_url,
+                page=self.manpage_name,
             ),
             title="%s - %s" % (self.title, self.subtitle, ),
             header=header_tpl.safe_substitute(
