@@ -12,7 +12,7 @@ from hashlib import md5
 import marshal
 
 root_html = "public_html/"
-base_host = "http://localhost:8000/"
+base_url = "https://www.carta.tech/"
 
 # FIXME: Horrible hack
 SECTIONS = {
@@ -131,18 +131,25 @@ def main():
 
     del(checksums)
 
-    # Directory Indexes
+    # Directory Indexes & Sitemaps
     for directory, page_files in list(mandirpages.items()):
-        print(" * Generating indexes for %s" % directory)
-        content = "<dl class=\"dl-vertical\">"
-        for page_file in sorted(page_files):
-            desc = pages[page_file][0]
-            term = "<a href=\"%s.html\">%s</a>" % (
-                page_file, format_name(page_file), )
-            content += "<dt>%s</dt>" % (term, )
-            content += "<dd>%s</dd>" % (desc, )
+        print(" * Generating indexes and sitemaps for %s" % directory)
 
-        content += "</dl>"
+        section_item_tpl = load_template('section-index-item')
+        section_index_tpl = load_template('section-index')
+
+        section_items = ""
+        for page_file in sorted(page_files):
+            name, section = page_file.rsplit('.', 1)
+
+            section_items += section_item_tpl.substitute(
+                link=page_file,
+                name=name,
+                section=section,
+                description=pages[page_file][0],
+            )
+
+        content = section_index_tpl.substitute(items=section_items)
 
         base_tpl = load_template('base')
         header_tpl = load_template('header')
@@ -201,11 +208,6 @@ def main():
 
 def get_redirection_file(src, manpage_redirect):
     return os.path.join(src, *manpage_redirect)
-
-
-def format_name(manpage):
-    base, section = manpage.rsplit('.', 1)
-    return "<strong>%s</strong>(%s)" % (base, section, )
 
 
 def load_template(template):
