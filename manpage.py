@@ -533,6 +533,7 @@ def toargs(data):
     def tokenize():
         lexer = shlex.shlex(data, posix=True)
         lexer.commenters = ''
+        lexer.quotes = "\""
         lexer.whitespace_split = True
         return list(lexer)
 
