@@ -132,13 +132,14 @@ def main():
     del(checksums)
 
     # Directory Indexes & Sitemaps
+    sitemap_urls = []
     for directory, page_files in list(mandirpages.items()):
         print(" * Generating indexes and sitemaps for %s" % directory)
 
         section_item_tpl = load_template('section-index-item')
-        section_index_tpl = load_template('section-index')
+        sitemap_url_item_tpl = load_template('sitemap-url')
 
-        section_items = ""
+        section_items, sitemap_items = ("", "")
         for page_file in sorted(page_files):
             name, section = page_file.rsplit('.', 1)
 
@@ -149,7 +150,23 @@ def main():
                 description=pages[page_file][0],
             )
 
+            item_url = base_url + base_src + "/" + directory + "/" + name + ".html"
+            sitemap_items += sitemap_url_item_tpl.substitute(url=item_url)
+
+        section_index_tpl = load_template('section-index')
         section_content = section_index_tpl.substitute(items=section_items)
+
+        sitemap_tpl = load_template('sitemap')
+        sitemap = sitemap_tpl.substitute(urlset=sitemap_items)
+
+        sitemap_path = os.path.join(
+            root_html, base_src, directory, "sitemap.xml")
+        f = open(sitemap_path, 'w')
+        f.write(sitemap)
+        f.close()
+
+        sitemap_url = base_url + base_src + "/" + directory + "/" + "sitemap.xml"
+        sitemap_urls.append(sitemap_url)
 
         base_tpl = load_template('base')
         header_tpl = load_template('header')
@@ -184,6 +201,20 @@ def main():
             'w')
         f.write(out)
         f.close()
+
+    sitemap_index_url_tpl = load_template('sitemap-index-url')
+    sitemap_index_content = ""
+    for sitemap_url in sitemap_urls:
+        sitemap_index_content += sitemap_index_url_tpl.substitute(
+            url=sitemap_url)
+
+    sitemap_index_tpl = load_template('sitemap-index')
+    sitemap_index_content = sitemap_index_tpl.substitute(
+        sitemaps=sitemap_index_content)
+
+    f = open("%s/sitemap.xml" % (os.path.join(root_html, base_src), ), 'w')
+    f.write(sitemap_index_content)
+    f.close()
 
     # Generate base index
     base_tpl = load_template('base')
