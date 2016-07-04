@@ -394,12 +394,9 @@ class ManPage(object):
     def add_style(self, style, data):
         data = unescape(data)
         if style in self.single_styles:
-            return stylize(style, data)
+            return stylize(style, ' '.join(toargs(data)))
         elif style in self.compound_styles:
-            if " " not in data:
-                return stylize_odd_even(style, [data, ])
-            else:
-                return stylize_odd_even(style, toargs(data))
+            return stylize_odd_even(style, toargs(data))
 
     def set_header(self, data):
         headers = shlex.split(data)
@@ -531,19 +528,20 @@ style_trans = {
 
 @lru_cache(maxsize=100000)
 def toargs(data):
-    if ("'" not in data) and ("\"" not in data):
-        args = data.split()
-    else:
+    def tokenize():
+        lexer = shlex.shlex(data, posix=True)
+        lexer.quotes = '"'
+        lexer.whitespace_split = True
+        return list(lexer)
+
+    try:
+        args = tokenize()
+    except:
+        data += "\""
         try:
-            args = shlex.split(data)
+            args = tokenize()
         except:
-            try:
-                args = shlex.split(data + "\"")
-            except:
-                try:
-                    args = shlex.split(data + "'")
-                except:
-                    raise
+            raise
 
     return args
 
@@ -581,7 +579,7 @@ def unescape(t):
 
     t = t.replace("\\(bu", "&bull;")
 
-    t = t.replace("\`", "&#96;") # Backtick
+    t = t.replace("\`", "&#96;")  # Backtick
 
     t = t.replace("\&", " ")
 
@@ -606,7 +604,6 @@ def unescape(t):
     t = t.replace("\\(12", "&frac12;")
     t = t.replace("\\.", ".")
     t = t.replace("\\(mc", "&micro;")
-
 
     t = t.replace("\\*(lq", "&ldquo;").replace("\\(lq", "&ldquo;")
     t = t.replace("\\*(rq", "&rdquo;").replace("\\(rq", "&rdquo;")
