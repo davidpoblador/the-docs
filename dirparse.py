@@ -286,8 +286,14 @@ if __name__ == '__main__':
         "source_dir",
         help="the directory you want to use as source")
     parser.add_argument("--log-level", help="choose log level")
-    parser.add_argument("--missing-links", help="choose the amount of broken links to display", type = int)
-    parser.add_argument("--missing-parsers", help="choose the amount of missing parsers to display", type = int)
+    parser.add_argument(
+        "--missing-links",
+        help="choose the amount of broken links to display",
+        type=int)
+    parser.add_argument(
+        "--missing-parsers",
+        help="choose the amount of missing parsers to display",
+        type=int)
     args = parser.parse_args()
 
     if args.log_level:

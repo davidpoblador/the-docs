@@ -598,7 +598,6 @@ def unescape(t):
 
     t = t.replace("\{", "{")
 
-
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
     t = t.replace("\\0", "&nbsp;")
