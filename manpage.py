@@ -532,7 +532,7 @@ style_trans = {
 def toargs(data):
     def tokenize():
         lexer = shlex.shlex(data, posix=True)
-        lexer.quotes = '"'
+        lexer.commenters = ''
         lexer.whitespace_split = True
         return list(lexer)
 
