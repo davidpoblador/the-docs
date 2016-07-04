@@ -149,7 +149,7 @@ def main():
                 description=pages[page_file][0],
             )
 
-        content = section_index_tpl.substitute(items=section_items)
+        section_content = section_index_tpl.substitute(items=section_items)
 
         base_tpl = load_template('base')
         header_tpl = load_template('header')
@@ -169,7 +169,7 @@ def main():
             breadcrumb=breadcrumb_tpl.substitute(
                 section_name=full_section,
                 section=numeric_section),
-            content=content,
+            content=section_content,
             metadescription=full_section.replace(
                 "\"",
                 "\'"),
