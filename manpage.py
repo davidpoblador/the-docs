@@ -11,6 +11,7 @@ try:
     import re2 as re
 except ImportError:
     pass
+import logging
 
 
 class ManPage(object):
@@ -655,7 +656,16 @@ class MissingParser(Exception):
     pass
 
 if __name__ == '__main__':
-    manpage = ManPage(sys.argv[1])
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("manpage", help="the manpage to process")
+    parser.add_argument("--log-level", help="choose log level")
+    args = parser.parse_args()
+
+    if args.log_level:
+        getattr(logging, args.log_level.upper())
+
+    manpage = ManPage(args.manpage)
     g = manpage.parse()
 
     try:

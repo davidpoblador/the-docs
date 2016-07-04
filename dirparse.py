@@ -29,19 +29,9 @@ SECTIONS = {
 }
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("source_dir", help="the directory you want to use as source")
-    parser.add_argument("--log-level", help="choose log level")
-    args = parser.parse_args()
-
-    if args.log_level:
-        getattr(logging, args.log_level.upper())
-
-    src = args.source_dir
-
-    list_of_manfiles = list(glob.iglob("%s/man?/*.?" % src))
-    base_src = os.path.basename(src)
+def main(source_dir):
+    list_of_manfiles = list(glob.iglob("%s/man?/*.?" % source_dir))
+    base_src = os.path.basename(source_dir)
     list_of_manpages = dict()
     mandirpages = defaultdict(set)
     pages = defaultdict()
@@ -57,7 +47,7 @@ def main():
             redirect, subtitle = next(g)
 
             while redirect:
-                redirection = get_redirection_file(src, redirect)
+                redirection = get_redirection_file(source_dir, redirect)
                 print(
                     " * Page %s has a redirection to %s..." %
                     (manfile, redirection))
@@ -269,7 +259,18 @@ def load_template(template):
 if __name__ == '__main__':
     import time
     start_time = time.time()
-    main()
-    elapsed = time.time() - start_time
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "source_dir",
+        help="the directory you want to use as source")
+    parser.add_argument("--log-level", help="choose log level")
+    args = parser.parse_args()
+
+    if args.log_level:
+        getattr(logging, args.log_level.upper())
+
+    main(args.source_dir)
+
+    elapsed = time.time() - start_time
     print(("--- %s seconds ---" % (elapsed)))
