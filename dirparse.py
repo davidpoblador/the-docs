@@ -193,6 +193,7 @@ def main():
                 subtitle=""),
             breadcrumb=breadcrumb_tpl.substitute(
                 section_name=full_section,
+                base_url=manpage_parent_url,
                 section=numeric_section),
             content=section_content,
             metadescription=full_section.replace(
