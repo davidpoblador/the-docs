@@ -232,7 +232,7 @@
 
 <p class='spacer'>
 
-<p>This mapping tells us that the range starting at user ID 0 in this namespace maps to a range starting at 0 in the (nonexistent) parent namespace, and the length of the range is the largest 32-bit unsigned integer. This leaves 4294967295 (the 32-bit signed -1 value) unmapped. This is deliberate: <em>"(uid_t)&nbsp;-1"</em> is used in several interfaces (e.g., <a href="../man2/setreuid.2.html"><strong>setreuid</strong>(2)</a>) as a way to specify "no user ID". Leaving <em>"(uid_t)&nbsp;-1"</em> unmapped and unusable guarantees that there will be no confusion when using these interfaces.</p>
+<p>This mapping tells us that the range starting at user ID 0 in this namespace maps to a range starting at 0 in the (nonexistent) parent namespace, and the length of the range is the largest 32-bit unsigned integer. This leaves 4294967295 (the 32-bit signed -1 value) unmapped. This is deliberate: <em>(uid_t)&nbsp;-1</em> is used in several interfaces (e.g., <a href="../man2/setreuid.2.html"><strong>setreuid</strong>(2)</a>) as a way to specify "no user ID". Leaving <em>(uid_t)&nbsp;-1</em> unmapped and unusable guarantees that there will be no confusion when using these interfaces.</p>
   <h3>Defining user and group ID mappings: writing to uid_map and gid_map</h3>
 <p class='spacer'>
 
@@ -471,7 +471,7 @@ bash$ <strong>ps ax</strong>
 #include &lt;errno.h&gt;
 
 /* A simple error-handling function: print an error message based
-   on the value in 'errno' and terminate the calling process */
+   on the value in &apos;errno&apos; and terminate the calling process */
 
 #define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); &#92;
                         } while (0)
@@ -500,8 +500,8 @@ usage(char *pname)
     fpe("-U          New user namespace&#92;n");
     fpe("-M uid_map  Specify UID map for user namespace&#92;n");
     fpe("-G gid_map  Specify GID map for user namespace&#92;n");
-    fpe("-z          Map user's UID and GID to 0 in user namespace&#92;n");
-    fpe("            (equivalent to: -M '0 &lt;uid&gt; 1' -G '0 &lt;gid&gt; 1')&#92;n");
+    fpe("-z          Map user&apos;s UID and GID to 0 in user namespace&#92;n");
+    fpe("            (equivalent to: -M &apos;0 &lt;uid&gt; 1&apos; -G &apos;0 &lt;gid&gt; 1&apos;)&#92;n");
     fpe("-v          Display verbose messages&#92;n");
     fpe("&#92;n");
     fpe("If -z, -M, or -G is specified, -U is required.&#92;n");
@@ -519,8 +519,8 @@ usage(char *pname)
     exit(EXIT_FAILURE);
 }
 
-/* Update the mapping file 'map_file', with the value provided in
-   'mapping', a string that defines a UID or GID mapping. A UID or
+/* Update the mapping file &apos;map_file&apos;, with the value provided in
+   &apos;mapping&apos;, a string that defines a UID or GID mapping. A UID or
    GID mapping consists of one or more newline-delimited records
    of the form:
 
@@ -535,14 +535,14 @@ static void
 update_map(char *mapping, char *map_file)
 {
     int fd, j;
-    size_t map_len;     /* Length of 'mapping' */
+    size_t map_len;     /* Length of &apos;mapping&apos; */
 
     /* Replace commas in mapping string with newlines */
 
     map_len = strlen(mapping);
     for (j = 0; j &lt; map_len; j++)
-        if (mapping[j] == ',')
-            mapping[j] = '&#92;n';
+        if (mapping[j] == &apos;,&apos;)
+            mapping[j] = &apos;&#92;n&apos;;
 
     fd = open(map_file, O_RDWR);
     if (fd == -1) {
@@ -561,10 +561,10 @@ update_map(char *mapping, char *map_file)
 }
 
 /* Linux 3.19 made a change in the handling of <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> and the
-   'gid_map' file to address a security issue. The issue allowed
+   &apos;gid_map&apos; file to address a security issue. The issue allowed
    *unprivileged* users to employ user namespaces in order to drop
    The upshot of the 3.19 changes is that in order to update the
-   'gid_maps' file, use of the setgroups() system call in this
+   &apos;gid_maps&apos; file, use of the setgroups() system call in this
    user namespace must first be disabled by writing "deny" to one of
    the /proc/PID/setgroups files for this namespace.  That is the
    purpose of the following function. */
@@ -581,11 +581,11 @@ proc_setgroups_write(pid_t child_pid, char *str)
     fd = open(setgroups_path, O_RDWR);
     if (fd == -1) {
 
-        /* We may be on a system that doesn't support
-           /proc/PID/setgroups. In that case, the file won't exist,
-           and the system won't impose the restrictions that Linux 3.19
-           added. That's fine: we don't need to do anything in order
-           to permit 'gid_map' to be updated.
+        /* We may be on a system that doesn&apos;t support
+           /proc/PID/setgroups. In that case, the file won&apos;t exist,
+           and the system won&apos;t impose the restrictions that Linux 3.19
+           added. That&apos;s fine: we don&apos;t need to do anything in order
+           to permit &apos;gid_map&apos; to be updated.
 
            However, if the error from open() was something other than
            the ENOENT error that is expected for that case,  let the
@@ -633,7 +633,7 @@ childFunc(void *arg)
 
 #define STACK_SIZE (1024 * 1024)
 
-static char child_stack[STACK_SIZE];    /* Space for child's stack */
+static char child_stack[STACK_SIZE];    /* Space for child&apos;s stack */
 
 int
 main(int argc, char *argv[])
@@ -646,11 +646,11 @@ main(int argc, char *argv[])
     char map_buf[MAP_BUF_SIZE];
     char map_path[PATH_MAX];
 
-    /* Parse command-line options. The initial '+' character in
+    /* Parse command-line options. The initial &apos;+&apos; character in
        the final getopt() argument prevents GNU-style permutation
-       of command-line options. That's useful, since sometimes
-       the 'command' to be executed by this program itself
-       has command-line options. We don't want getopt() to treat
+       of command-line options. That&apos;s useful, since sometimes
+       the &apos;command&apos; to be executed by this program itself
+       has command-line options. We don&apos;t want getopt() to treat
        those as options to this program. */
 
     flags = 0;
@@ -660,16 +660,16 @@ main(int argc, char *argv[])
     map_zero = 0;
     while ((opt = getopt(argc, argv, "+imnpuUM:G:zv")) != -1) {
         switch (opt) {
-        case 'i': flags |= CLONE_NEWIPC;        break;
-        case 'm': flags |= CLONE_NEWNS;         break;
-        case 'n': flags |= CLONE_NEWNET;        break;
-        case 'p': flags |= CLONE_NEWPID;        break;
-        case 'u': flags |= CLONE_NEWUTS;        break;
-        case 'v': verbose = 1;                  break;
-        case 'z': map_zero = 1;                 break;
-        case 'M': uid_map = optarg;             break;
-        case 'G': gid_map = optarg;             break;
-        case 'U': flags |= CLONE_NEWUSER;       break;
+        case &apos;i&apos;: flags |= CLONE_NEWIPC;        break;
+        case &apos;m&apos;: flags |= CLONE_NEWNS;         break;
+        case &apos;n&apos;: flags |= CLONE_NEWNET;        break;
+        case &apos;p&apos;: flags |= CLONE_NEWPID;        break;
+        case &apos;u&apos;: flags |= CLONE_NEWUTS;        break;
+        case &apos;v&apos;: verbose = 1;                  break;
+        case &apos;z&apos;: map_zero = 1;                 break;
+        case &apos;M&apos;: uid_map = optarg;             break;
+        case &apos;G&apos;: gid_map = optarg;             break;
+        case &apos;U&apos;: flags |= CLONE_NEWUSER;       break;
         default:  usage(argv[0]);
         }
     }
@@ -687,11 +687,11 @@ main(int argc, char *argv[])
        ensure that the parent sets the UID and GID maps before the child
        calls execve(). This ensures that the child maintains its
        capabilities during the execve() in the common case where we
-       want to map the child's effective user ID to 0 in the new user
+       want to map the child&apos;s effective user ID to 0 in the new user
        namespace. Without this synchronization, the child would lose
        its capabilities if it performed an execve() with nonzero
        user IDs (see the <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a> man page for details of the
-       transformation of a process's capabilities during execve()). */
+       transformation of a process&apos;s capabilities during execve()). */
 
     if (pipe(args.pipe_fd) == -1)
         errExit("pipe");
