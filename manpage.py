@@ -41,6 +41,7 @@ class ManPage(object):
         self.capture_name_section = False
 
         self.preserve_next_line = False
+        self.in_if = False
         self.in_dl = False
         self.in_li = False
         self.in_pre = False
@@ -110,6 +111,10 @@ class ManPage(object):
             if not line:
                 if self.sections:
                     self.add_spacer()
+            elif self.in_if:
+                if "}" in line:
+                    self.in_if = False
+                continue
             elif line[0] in self.cc:
                 self.blank_line = False
                 self.parse_macro(line[1:])
@@ -199,6 +204,13 @@ class ManPage(object):
             macro, data = line.split(None, 1)
         else:
             macro, data = line, None
+
+        if macro in {'if', 'ie', 'el'}:
+            data = unescape(data)
+            if "{" in data:
+                self.in_if = True
+
+            return
 
         if macro in self.macros_to_ignore:
             return
@@ -583,6 +595,9 @@ def unescape(t):
         return t
 
     t = t.replace("\\*(dg", "(!)")
+
+    t = t.replace("\{", "{")
+
 
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
