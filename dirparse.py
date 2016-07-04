@@ -2,7 +2,6 @@
 
 from manpage import ManPage
 from manpage import MissingParser
-import sys
 import glob
 import os.path
 import os
@@ -10,6 +9,8 @@ from collections import defaultdict
 from string import Template
 from hashlib import md5
 import marshal
+import argparse
+import logging
 
 root_html = "public_html/"
 base_url = "https://www.carta.tech/"
@@ -29,7 +30,16 @@ SECTIONS = {
 
 
 def main():
-    _, src = sys.argv
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source_dir", help="the directory you want to use as source")
+    parser.add_argument("--log-level", help="choose log level")
+    args = parser.parse_args()
+
+    if args.log_level:
+        getattr(logging, args.log_level.upper())
+
+    src = args.source_dir
+
     list_of_manfiles = list(glob.iglob("%s/man?/*.?" % src))
     base_src = os.path.basename(src)
     list_of_manpages = dict()
