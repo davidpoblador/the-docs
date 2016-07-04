@@ -72,6 +72,8 @@ class ManPage(object):
         self.previous_page = None
         self.base_url = base_url
 
+        self.broken_links = set()
+
     def set_pages(self, list_of_pages):
         self.list_of_pages = list_of_pages
 
@@ -455,10 +457,16 @@ class ManPage(object):
         if page in self.list_of_pages:
             out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
                 section, manpage, section, out, )
+        else:
+            self.broken_links.add(page)
+
         return out
 
     def linkify(self, text):
-        return linkifier.sub(self.repl, text)
+        if self.list_of_pages:
+            return linkifier.sub(self.repl, text)
+        else:
+            return text
 
     def html(self):
         if self.redirect:

@@ -5,7 +5,7 @@ from manpage import MissingParser
 import glob
 import os.path
 import os
-from collections import defaultdict
+from collections import defaultdict, Counter
 from string import Template
 from hashlib import md5
 import marshal
@@ -14,6 +14,8 @@ import logging
 
 root_html = "public_html/"
 base_url = "https://www.carta.tech/"
+number_missing_links = 10
+number_missing_parsers = 10
 
 # FIXME: Horrible hack
 SECTIONS = {
@@ -38,8 +40,9 @@ def main(source_dir):
 
     manpage_parent_url = base_url + base_src
 
+    missing_parsers = Counter()
     for manfile in list_of_manfiles:
-        print("Processing man page %s ..." % (manfile, ))
+        logging.debug("Processing man page %s ..." % (manfile, ))
         try:
             manpage = ManPage(manfile, base_url=manpage_parent_url)
             g = manpage.parse()
@@ -48,7 +51,7 @@ def main(source_dir):
 
             while redirect:
                 redirection = get_redirection_file(source_dir, redirect)
-                print(
+                logging.debug(
                     " * Page %s has a redirection to %s..." %
                     (manfile, redirection))
                 manpage = ManPage(
@@ -61,10 +64,11 @@ def main(source_dir):
 
         except MissingParser as e:
             mp = str(e).split(" ", 2)[1]
-            print(" * MP(%s): %s" % (mp, manfile, ))
+            logging.warning(" * Missing Parser (%s): %s" % (mp, manfile, ))
+            missing_parsers[mp] += 1
             continue
         except:
-            print(" * ERR: %s" % (manfile, ))
+            logging.error(" * ERR: %s" % (manfile, ))
             raise
 
         basename = os.path.basename(manfile)
@@ -87,6 +91,7 @@ def main(source_dir):
 
     # Write and Linkify
     list_of_pages = set(pages.keys())
+    missing_links = Counter()
     for directory, page_files in list(mandirpages.items()):
         man_directory = os.path.join(root_html, base_src, directory)
         try:
@@ -97,7 +102,7 @@ def main(source_dir):
         previous = None
         pages_to_process = []
         for page_file in sorted(page_files):
-            print(" * Writing page: %s" % page_file)
+            logging.debug(" * Writing page: %s" % page_file)
 
             try:
                 next(list_of_manpages[page_file][1])
@@ -105,7 +110,10 @@ def main(source_dir):
                 pass
             except MissingParser as e:
                 mp = str(e).split(" ", 2)[1]
-                print(" * MP(%s): %s" % (mp, manfile, ))
+                logging.warning(
+                    " * Missing Parser (%s): %s" %
+                    (mp, list_of_manpages[page_file][0].filename, ))
+                missing_parsers[mp] += 1
                 continue
 
             if previous:
@@ -122,6 +130,7 @@ def main(source_dir):
         for page_file in pages_to_process:
             final_page = os.path.join(man_directory, page_file) + ".html"
             out = list_of_manpages[page_file][0].html()
+            missing_links.update(list_of_manpages[page_file][0].broken_links)
             checksum = md5(out).hexdigest()
 
             if checksum != checksums.get(final_page, None):
@@ -139,7 +148,7 @@ def main(source_dir):
     # Directory Indexes & Sitemaps
     sitemap_urls = []
     for directory, page_files in list(mandirpages.items()):
-        print(" * Generating indexes and sitemaps for %s" % directory)
+        logging.debug(" * Generating indexes and sitemaps for %s" % directory)
 
         section_item_tpl = load_template('section-index-item')
         sitemap_url_item_tpl = load_template('sitemap-url')
@@ -245,6 +254,18 @@ def main(source_dir):
     f.write(index)
     f.close()
 
+    missing_links = ' '.join(
+        ["%s:%s" % (k, v) for k, v in missing_links.most_common(
+            number_missing_links)])
+    logging.info("Top %s Missing Links: %s" %
+                 (number_missing_links, missing_links))
+
+    missing_parsers = ' '.join(
+        ["%s:%s" % (k, v) for k, v in missing_parsers.most_common(
+            number_missing_parsers)])
+    logging.info("Top %s Missing Parsers: %s" %
+                 (number_missing_parsers, missing_parsers))
+
 
 def get_redirection_file(src, manpage_redirect):
     return os.path.join(src, *manpage_redirect)
@@ -268,9 +289,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.log_level:
-        getattr(logging, args.log_level.upper())
+        log_level = getattr(logging, args.log_level.upper())
+        logging.basicConfig(level=log_level)
 
     main(args.source_dir)
 
     elapsed = time.time() - start_time
-    print(("--- %s seconds ---" % (elapsed)))
+    logging.info("--- Total time: %s seconds ---" % (elapsed, ))
