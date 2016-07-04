@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-import sys
 import shlex
-import pprint
 from string import Template
 import os
 from repoze.lru import lru_cache
