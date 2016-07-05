@@ -4,11 +4,10 @@ import dirparse
 import logging
 from utils.fetcher import DebianManpageFetcher
 
-manpage_directory = "src/man-pages"
-
+manpage_source = "src"
 
 def main():
-    parser = dirparse.ManDirectoryParser(manpage_directory)
+    parser = dirparse.ManDirectoryParser(manpage_source)
     parser.parse_directory()
 
     packages_to_ignore = set()
