@@ -424,6 +424,7 @@ class ManPage(object):
         }
 
     def add_section(self, data):
+        data = ' '.join(shlex.split(data))
         self.flush_containers()
         if data == 'NAME':
             self.capture_name_section = True
@@ -435,6 +436,7 @@ class ManPage(object):
             self.sections.append([data, None])
 
     def add_subsection(self, data):
+        data = ' '.join(shlex.split(data))
         self.flush_containers()
         self.add_text("<h3>%s</h3>" % unescape(data), 2)
 
