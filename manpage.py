@@ -11,6 +11,8 @@ except ImportError:
     pass
 import logging
 
+package_directory = os.path.dirname(os.path.abspath(__file__))
+
 
 class ManPage(object):
     cc = ("'", ".")
