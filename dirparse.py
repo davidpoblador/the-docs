@@ -9,7 +9,6 @@ from collections import defaultdict, Counter
 from string import Template
 from hashlib import md5
 import marshal
-import argparse
 import logging
 
 root_html = "public_html/"
@@ -295,7 +294,7 @@ def load_template(template):
     return out
 
 if __name__ == '__main__':
-    import time
+    import time, argparse
     start_time = time.time()
 
     parser = argparse.ArgumentParser()
