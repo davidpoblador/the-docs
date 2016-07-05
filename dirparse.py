@@ -28,6 +28,7 @@ SECTIONS = {
     'man0': "ERROR. Section 0",
 }
 
+
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
 
@@ -65,7 +66,8 @@ class ManDirectoryParser(object):
                 redirect, subtitle = next(g)
 
                 while redirect:
-                    redirection = get_redirection_file(redirection_base_dir, redirect)
+                    redirection = get_redirection_file(
+                        redirection_base_dir, redirect)
                     logging.debug(
                         " * Page %s has a redirection to %s..." %
                         (manfile, redirection))
@@ -91,7 +93,7 @@ class ManDirectoryParser(object):
                     raise
             except:
                 logging.error(" * ERR: %s" % (manfile, ))
-                raise
+                continue
 
             mandirpages[manbasedir].add(basename)
             pages[basename] = (subtitle, manbasedir, package)
@@ -135,7 +137,9 @@ class ManDirectoryParser(object):
                     missing_parsers[mp] += 1
                     continue
                 except:
-                    raise
+                    logging.error(" * ERR: %s" %
+                                  (list_of_manpages[page_file][0].filename, ))
+                    continue
 
                 if previous:
                     list_of_manpages[page_file][0].set_previous(
