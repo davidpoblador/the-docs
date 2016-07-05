@@ -236,7 +236,7 @@ def main(source_dir):
 
     # Generate base index
     base_tpl = load_template('base')
-    index_tpl = load_template('index-contents')
+    index_tpl = load_template('index-manpage')
 
     index = base_tpl.safe_substitute(
         # FIXME: Naming templates should be better
