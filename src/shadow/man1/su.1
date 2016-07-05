@@ -1,0 +1,325 @@
+'\" t
+.\"     Title: su
+.\"    Author: Julianne Frances Haugh
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 19.11.2015
+.\"    Manual: Dienstprogramme f\(:ur Benutzer
+.\"    Source: shadow-utils 4.2
+.\"  Language: German
+.\"
+.TH "SU" "1" "19.11.2015" "shadow\-utils 4\&.2" "Dienstprogramme f\(:ur Benutzer"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+su \- \(:andert die Benutzer\-ID oder wechselt zu Root
+.SH "\(:UBERSICHT"
+.HP \w'\fBsu\fR\ 'u
+\fBsu\fR [\fIOptionen\fR] [\fIBenutzername\fR]
+.SH "BESCHREIBUNG"
+.PP
+Der Befehl
+\fBsu\fR
+dient dazu, w\(:ahrend einer Sitzung ein anderer Benutzer zu werden\&. Wenn
+\fBsu\fR
+ohne
+\fBusername\fR
+aufgerufen wird, wechselt es standardm\(:a\(ssig zu Root\&. Zus\(:atzlich kann das Argument
+\fB\-\fR
+angegeben werden\&. Damit wird eine Umgebung zur Verf\(:ugung gestellt, die der entspricht, die der Benutzer nach einer direkten Anmeldung erwartet\&.
+.PP
+Zus\(:atzliche Argumente k\(:onnen nach dem Benutzernamen angegeben werden\&. In diesem Fall werden sie an die Anmelde\-Shell des Benutzers weitergereicht\&. Insbesondere f\(:uhrt das Argument
+\fB\-c\fR
+dazu, dass das n\(:achste Argument von den meisten Interpretatoren als Befehl behandelt wird\&. Dieser Befehl wird von der Shell ausgef\(:uhrt, die in
+/etc/passwd
+f\(:ur den Zielbenutzer angegeben ist\&.
+.PP
+Sie k\(:onnen das Argument
+\fB\-\-\fR
+verwenden, um Optionen f\(:ur
+\fBsu\fR
+von Argumenten f\(:ur die Shell zu trennen\&.
+.PP
+Der Benutzer wird gegebenenfalls nach einem Passwort gefragt\&. Ung\(:ultige Passworteingaben werden eine Fehlermeldung erzeugen\&. Sowohl erfolgreiche als auch misslungene Versuche werden protokolliert, um Missbrauch des Systems zu entdecken\&.
+.PP
+Die aktuelle Umgebung wird an die neue Shell \(:ubergeben\&. Der Wert von
+\fB$PATH\fR
+wird f\(:ur normale Benutzer auf
+/bin:/usr/bin
+gesetzt, f\(:ur Root auf
+/sbin:/bin:/usr/sbin:/usr/bin\&. Dieses Verhalten kann durch die Definition von
+\fBENV_PATH\fR
+und
+\fBENV_SUPATH\fR
+in
+/etc/login\&.defs
+ge\(:andert werden\&.
+.PP
+Eine Subsystem\-Anmeldung wird durch einen \(Fc*\(Fo als erstes Zeichen der Anmelde\-Shell gekennzeichnet\&. Das angegebene Home\-Verzeichnis wird als Wurzel f\(:ur das Dateisystem verwendet, auf welchem der Benutzer tats\(:achlich angemeldet ist\&.
+.SH "OPTIONEN"
+.PP
+Die Optionen, die vom Befehl
+\fBsu\fR
+unterst\(:utzt werden, sind:
+.PP
+\fB\-c\fR, \fB\-\-command\fR\ \&\fIBEFEHL\fR
+.RS 4
+gibt einen Befehl an, der von der Shell mittels ihrer Option
+\fB\-c\fR
+ausgef\(:uhrt wird
+.sp
+Der ausgef\(:uhrte Befehl hat kein ihn steuerndes Terminal\&. Mit dieser Option k\(:onnen keine interaktiven Programme, die ein sie steuerndes TTY ben\(:otigen, ausgef\(:uhrt werden\&.
+.RE
+.PP
+\fB\-\fR, \fB\-l\fR, \fB\-\-login\fR
+.RS 4
+Eine Umgebung wird zur Verf\(:ugung gestellt, die der entspricht, die der Benutzer nach einer direkten Anmeldung erwartet\&.
+.sp
+When
+\fB\-\fR
+is used, it must be specified before any
+\fBusername\fR\&. For portability it is recommended to use it as last option, before any
+\fBusername\fR\&. The other forms (\fB\-l\fR
+and
+\fB\-\-login\fR) do not have this restriction\&.
+.RE
+.PP
+\fB\-s\fR, \fB\-\-shell\fR\ \&\fISHELL\fR
+.RS 4
+die Shell, die gestartet wird
+.sp
+Die aufgerufene Shell wird bestimmt durch (h\(:ochste Priorit\(:at zuerst):
+.PP
+.RS 4
+die Shell, die mit \-\-shell angegeben wurde
+.RE
+.PP
+.RS 4
+Falls
+\fB\-\-preserve\-environment\fR
+verwendet wird, die Shell, die durch die Umgebungsvariable
+\fB$SHELL\fR
+festgelegt wird\&.
+.RE
+.PP
+.RS 4
+die Shell, die in
+/etc/passwd
+f\(:ur den Zielbenutzer angegeben ist
+.RE
+.PP
+.RS 4
+/bin/sh, falls durch die obigen Methoden keine Shell gefunden werden kann
+.RE
+.sp
+Falls der Zielbenutzer eine beschr\(:ankte Shell hat (d\&.h\&. das Feld f\(:ur die Shell im Eintrag des Benutzers in
+/etc/passwd
+ist nicht in
+/etc/shells) aufgef\(:uhrt), werden die Option
+\fB\-\-shell\fR
+und die Umgebungsvariable
+\fB$SHELL\fR
+nicht beachtet, sofern
+\fBsu\fR
+nicht von Root aufgerufen wird\&.
+.RE
+.PP
+\fB\-m\fR, \fB\-p\fR, \fB\-\-preserve\-environment\fR
+.RS 4
+Erh\(:alt die aktuelle Umgebung mit Ausnahme von:
+.PP
+\fB$PATH\fR
+.RS 4
+auf den Ausgangswert entsprechend der Optionen
+\fBENV_PATH\fR
+oder
+\fBENV_SUPATH\fR
+in
+/etc/login\&.defs
+zur\(:ucksetzen (siehe unten);
+.RE
+.PP
+\fB$IFS\fR
+.RS 4
+auf
+\(Bq<space><tab><newline>\(lq
+zur\(:ucksetzen, falls es ver\(:andert wurde
+.RE
+.sp
+Falls der Zielbenutzer eine beschr\(:ankte Shell besitzt, hat diese Option keinen Effekt (sofern
+\fBsu\fR
+nicht von Root aufgerufen wird)\&.
+.sp
+Beachten Sie, dass Folgendes das Standardverhalten f\(:ur die Umgebung ist:
+.PP
+.RS 4
+Die Umgebungsvariablen
+\fB$HOME\fR,
+\fB$SHELL\fR,
+\fB$USER\fR,
+\fB$LOGNAME\fR,
+\fB$PATH\fR
+und
+\fB$IFS\fR
+werden zur\(:uckgesetzt\&.
+.RE
+.PP
+.RS 4
+Falls nicht
+\fB\-\-login\fR
+verwendet wurde, wird die Umgebung mit der Ausnahme der genannten Variablen kopiert\&.
+.RE
+.PP
+.RS 4
+Falls
+\fB\-\-login\fR
+verwendet wurde, werden die Variablen
+\fB$TERM\fR,
+\fB$COLORTERM\fR,
+\fB$DISPLAY\fR
+und
+\fB$XAUTHORITY\fR
+\(:ubernommen, wenn ihnen ein Wert zugewiesen wurde\&.
+.RE
+.PP
+.RS 4
+Andere Umgebungen k\(:onnen auch durch PAM\-Module eingerichtet werden\&.
+.RE
+.RE
+.SH "WARNUNGEN"
+.PP
+Diese Version von
+\fBsu\fR
+hat viele Kompilierungsoptionen\&. Deren N\(:utzlichkeit h\(:angt von den Anforderungen der jeweiligen Umgebung ab\&.
+.SH "KONFIGURATION"
+.PP
+Die folgenden Konfigurationsvariablen in
+/etc/login\&.defs
+beeinflussen das Verhalten dieses Werkzeugs:
+.PP
+\fBCONSOLE_GROUPS\fR (Zeichenkette)
+.RS 4
+Liste von Gruppen, deren Mitglied der Benutzer wird, wenn der sich auf der Konsole anmeldet, die mit dem Parameter CONSOLE festgelegt wird\&. Standardm\(:a\(ssig ist die Liste leer\&.
+
+Seien Sie vorsichtig\&. Benutzer k\(:onnen dauerhaft Zugang zu den Gruppen erlangen, auch wenn sie nicht auf der Konsole angemeldet sind\&.
+.RE
+.PP
+\fBDEFAULT_HOME\fR (boolesch)
+.RS 4
+Legt fest, ob ein Login erlaubt wird, wenn mit cd nicht in das Home\-Verzeichnis gewechselt werden kann\&. Standardm\(:a\(ssig wird dies nicht zugelassen\&.
+.sp
+Falls auf
+\fIyes\fR
+gesetzt, wird der Benutzer mit dem Wurzelverzeichnis (/) angemeldet, wenn mit cd nicht in sein Home\-Verzeichnis gewechselt werden kann\&.
+.RE
+.PP
+\fBENV_PATH\fR (Zeichenkette)
+.RS 4
+Wenn gesetzt, wird damit die Umgebungsvariable PATH definiert, wenn sich ein normaler Benutzer anmeldet\&. Der Wert ist eine Liste, deren Eintr\(:age durch Doppelpunkte getrennt sind (zum Beispiel
+\fI/bin:/usr/bin\fR)\&. Ihr kann ein
+\fIPATH=\fR
+vorangestellt werden\&. Der Standardwert ist
+\fIPATH=/bin:/usr/bin\fR\&.
+.RE
+.PP
+\fBENV_SUPATH\fR (Zeichenkette)
+.RS 4
+Wenn gesetzt, wird damit die Umgebungsvariable PATH definiert, wenn sich der Superuser anmeldet\&. Der Wert ist eine Liste, deren Eintr\(:age durch Doppelpunkte getrennt sind (zum Beispiel
+\fI/sbin:/bin:/usr/sbin:/usr/bin\fR)\&. Ihr kann ein
+\fIPATH=\fR
+vorangestellt werden\&. Der Standardwert ist
+\fIPATH=/sbin:/bin:/usr/sbin:/usr/bin\fR\&.
+.RE
+.PP
+\fBSULOG_FILE\fR (Zeichenkette)
+.RS 4
+Wenn angegeben, wird jeder Aufruf von su in dieser Datei protokolliert\&.
+.RE
+.PP
+\fBSU_NAME\fR (Zeichenkette)
+.RS 4
+Damit kann die Anzeige des Namens des Befehls festgelegt werden, wenn \(Fcsu \-\(Fo ausgef\(:uhrt wird\&. Wenn beispielsweise dies auf \(Fcsu\(Fo gesetzt wurde, zeigt \(Fcps\(Fo den Befehl als \(Fc\-su\(Fo an\&. Wenn es dagegen nicht vergeben wurde, wird \(Fcps\(Fo den Namen der Shell anzeigen, die ausgef\(:uhrt wird, also etwa \(Fc\-sh\(Fo\&.
+.RE
+.PP
+\fBSYSLOG_SU_ENAB\fR (boolesch)
+.RS 4
+aktiviert das Protokollieren der Aktivit\(:aten von
+\fBsu\fR
+in \(Fcsyslog\(Fo neben der Protokollierung in der sulog\-Datei
+.RE
+.SH "DATEIEN"
+.PP
+/etc/passwd
+.RS 4
+Informationen zu den Benutzerkonten
+.RE
+.PP
+/etc/shadow
+.RS 4
+verschl\(:usselte Informationen zu den Benutzerkonten
+.RE
+.PP
+/etc/login\&.defs
+.RS 4
+Konfiguration der Shadow\-Passwort\-Werkzeugsammlung
+.RE
+.SH "R\(:UCKGABEWERTE"
+.PP
+Wenn
+\fBsu\fR
+erfolgreich ausgef\(:uhrt wird, gibt es den R\(:uckgabewert des mit ihm ausgef\(:uhrten Befehls zur\(:uck\&.
+.PP
+Wenn dieser Befehl mit einem Signal beendet wurde, gibt
+\fBsu\fR
+die Nummer des Signals plus 128 zur\(:uck\&.
+.PP
+Wenn
+\fBsu\fR
+den Befehl mit kill beenden musste (weil er der Aufforderung, sich zu beenden, nicht rechtzeitig nachgekommen ist), gibt es 255 zur\(:uck\&.
+.PP
+Einige R\(:uckgabewerte von
+\fBsu\fR
+sind unabh\(:angig von dem ausgef\(:uhrten Befehl:
+.PP
+\fI0\fR
+.RS 4
+Erfolg (nur bei
+\fB\-\-help\fR)
+.RE
+.PP
+\fI1\fR
+.RS 4
+System\- oder Anmeldefehler
+.RE
+.PP
+\fI126\fR
+.RS 4
+Der angegebene Befehl konnte nicht gefunden werden\&.
+.RE
+.PP
+\fI127\fR
+.RS 4
+Der angegebene Befehl konnte nicht ausgef\(:uhrt werden\&.
+.RE
+.SH "SIEHE AUCH"
+.PP
+\fBlogin\fR(1),
+\fBlogin.defs\fR(5),
+\fBsg\fR(1),
+\fBsh\fR(1)\&.
