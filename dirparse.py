@@ -320,6 +320,16 @@ class ManDirectoryParser(object):
             if page in self.missing_links:
                 del self.missing_links[page]
 
+        try:
+            ignore_page_file = open('ignore_page_file.dat', 'rb')
+            pages_to_ignore = marshal.load(ignore_page_file)
+            ignore_page_file.close()
+            for page in pages_to_ignore:
+                if page in self.missing_links:
+                    del self.missing_links[page]
+        except IOError:
+            pass
+
     def get_missing_links(self):
         return self.missing_links.most_common(self.number_missing_links)
 
