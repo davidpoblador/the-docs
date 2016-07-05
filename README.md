@@ -32,6 +32,7 @@ It is recommended to use [virtualenv](https://virtualenv.pypa.io/en/stable/) or 
     
 Another step should be getting the sources for the man pages. For this task to be easier, the `fetch-man-pages.sh` script is provided:
 
+    cd utils
     ./fetch-man-pages.sh
     
 ### Create your local virtual machine
