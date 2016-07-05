@@ -40,6 +40,7 @@ class ManDirectoryParser(object):
         self.number_missing_links = 10
 
         self.pages_with_missing_parsers = set()
+        self.pages_with_errors = set()
 
     def parse_directory(self):
         list_of_manfiles = list(glob.iglob("%s/*/man?/*.?" % self.source_dir))
@@ -81,18 +82,18 @@ class ManDirectoryParser(object):
 
             except MissingParser as e:
                 mp = str(e).split(" ", 2)[1]
-                self.pages_with_missing_parsers.add(os.path.basename(manfile))
+                self.pages_with_missing_parsers.add(basename)
                 logging.warning(" * Missing Parser (%s): %s" % (mp, manfile, ))
                 missing_parsers[mp] += 1
                 continue
             except IOError:
                 if redirect:
                     self.missing_links[redirect[0]] += 1
-                    continue
-                else:
-                    raise
+                self.pages_with_errors.add(basename)
+                continue
             except:
                 logging.error(" * ERR: %s" % (manfile, ))
+                self.pages_with_errors.add(basename)
                 continue
 
             mandirpages[manbasedir].add(basename)
@@ -137,6 +138,7 @@ class ManDirectoryParser(object):
                     missing_parsers[mp] += 1
                     continue
                 except:
+                    self.pages_with_errors.add(os.path.basename(page_file))
                     logging.error(" * ERR: %s" %
                                   (list_of_manpages[page_file][0].filename, ))
                     continue
@@ -311,6 +313,10 @@ class ManDirectoryParser(object):
 
     def fix_missing_links(self):
         for page in self.pages_with_missing_parsers:
+            if page in self.missing_links:
+                del self.missing_links[page]
+
+        for page in self.pages_with_errors:
             if page in self.missing_links:
                 del self.missing_links[page]
 
