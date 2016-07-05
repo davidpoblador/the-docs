@@ -250,15 +250,15 @@ def main(source_dir):
         content=index_tpl.substitute(),
     )
 
-    f = open("%s/index.html" % root_html, 'w')
+    f = open("%s/index.html" % (os.path.join(root_html, base_src), ), 'w')
     f.write(index)
     f.close()
 
     index_tpl = load_template('index-contents')
     index = base_tpl.safe_substitute(
         # FIXME: Naming templates should be better
-        metadescription="Carta.tech - The home for open documentation",
-        title="Carta.tech - The home for open documentation",
+        metadescription="Carta.tech: The home for open documentation",
+        title="Carta.tech: The home for open documentation",
         # FIXME: Remove nav
         nav="",
         canonical="",
@@ -267,9 +267,10 @@ def main(source_dir):
         content=index_tpl.substitute(),
     )
 
-    f = open("%s/index.html" % (os.path.join(root_html, base_src), ), 'w')
+    f = open("%s/index.html" % root_html, 'w')
     f.write(index)
     f.close()
+
     missing_links = ' '.join(
         ["%s:%s" % (k, v) for k, v in missing_links.most_common(
             number_missing_links)])
