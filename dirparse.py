@@ -83,6 +83,12 @@ class ManDirectoryParser(object):
                 logging.warning(" * Missing Parser (%s): %s" % (mp, manfile, ))
                 missing_parsers[mp] += 1
                 continue
+            except IOError:
+                if redirect:
+                    self.missing_links[redirect[0]] += 1
+                    continue
+                else:
+                    raise
             except:
                 logging.error(" * ERR: %s" % (manfile, ))
                 raise
@@ -128,6 +134,8 @@ class ManDirectoryParser(object):
                         (mp, list_of_manpages[page_file][0].filename, ))
                     missing_parsers[mp] += 1
                     continue
+                except:
+                    raise
 
                 if previous:
                     list_of_manpages[page_file][0].set_previous(
