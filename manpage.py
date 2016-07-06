@@ -217,9 +217,13 @@ class ManPage(object):
             return
 
         if macro == "SH":
+            if not data:
+                return
             self.add_section(data)
             return
         elif macro == "SS":
+            if not data:
+                return
             self.add_subsection(data)
             return
         elif macro in {'so'}:
