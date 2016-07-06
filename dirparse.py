@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from manpage import ManPage
-from manpage import MissingParser
+from manpage import MissingParser, NotSupportedFormat, RedirectedPage
 import glob
 import os
 from collections import defaultdict, Counter
@@ -14,6 +14,9 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 root_html = os.path.join(package_directory, "public_html")
 base_url = "https://www.carta.tech/"
+
+# To skip
+broken_files = {'shadowconfig.8'}
 
 # FIXME: Horrible hack
 SECTIONS = {
@@ -59,47 +62,65 @@ class ManDirectoryParser(object):
             package = os.path.split(os.path.split(dstdir)[0])[1]
             redirection_base_dir = os.path.split(dstdir)[0]
 
-            logging.debug("Processing man page %s ..." % (manfile, ))
+            if basename in broken_files:
+                continue
+
+            first_pass = True
             try:
-                manpage = ManPage(manfile, base_url=manpage_parent_url)
-                g = manpage.parse()
+                while (first_pass or manpage.redirect):
+                    if first_pass:
+                        logging.debug(
+                            "Processing man page %s ..." %
+                            (manfile, ))
+                        manpage = ManPage(manfile, base_url=manpage_parent_url)
+                        first_pass = False
+                    else:
+                        redirection = get_redirection_file(
+                            redirection_base_dir, manpage.redirect)
+                        logging.debug(
+                            " * Page %s has a redirection to %s. Processing..." %
+                            (manfile, redirection))
+                        manpage = ManPage(
+                            redirection,
+                            base_url=manpage_parent_url,
+                            redirected_from=manfile)
 
-                redirect, subtitle = next(g)
-
-                while redirect:
-                    redirection = get_redirection_file(
-                        redirection_base_dir, redirect)
-                    logging.debug(
-                        " * Page %s has a redirection to %s..." %
-                        (manfile, redirection))
-                    manpage = ManPage(
-                        redirection,
-                        base_url=manpage_parent_url,
-                        redirected_from=manfile)
-                    g = manpage.parse()
-
-                    redirect, subtitle = next(g)
+                    try:
+                        manpage.parse_header()
+                    except NotSupportedFormat:
+                        logging.error(
+                            " * ERR (not supported format): %s" %
+                            (manfile, ))
+                        self.pages_with_errors.add(basename)
+                        continue
+                    except RedirectedPage:
+                        pass
+                    else:
+                        manpage.parse_title()
+                        subtitle = manpage.subtitle
 
             except MissingParser as e:
                 mp = str(e).split(" ", 2)[1]
                 self.pages_with_missing_parsers.add(basename)
-                logging.warning(" * Missing Parser (%s): %s" % (mp, manfile, ))
+                logging.warning(
+                    " * Missing Parser (%s) (PS: %s): %s" %
+                    (mp, manpage.parsing_state, manfile, ))
                 missing_parsers[mp] += 1
                 continue
             except IOError:
-                if redirect:
-                    self.missing_links[redirect[0]] += 1
+                if manpage.redirect:
+                    self.missing_links[manpage.redirect[0]] += 1
                 self.pages_with_errors.add(basename)
                 continue
-            except:
-                logging.error(" * ERR: %s" % (manfile, ))
-                self.pages_with_errors.add(basename)
-                continue
+            # except:
+            #    logging.error(" * ERR: %s" % (manfile, ))
+            #    self.pages_with_errors.add(basename)
+            #    continue
 
             mandirpages[manbasedir].add(basename)
             pages[basename] = (subtitle, manbasedir, package)
 
-            list_of_manpages[basename] = [manpage, g]
+            list_of_manpages[basename] = manpage
 
         del(list_of_manfiles)
 
@@ -125,40 +146,43 @@ class ManDirectoryParser(object):
                 logging.debug(" * Writing page: %s" % page_file)
 
                 try:
-                    next(list_of_manpages[page_file][1])
-                except StopIteration:
-                    pass
+                    list_of_manpages[page_file].parse_body()
                 except MissingParser as e:
                     mp = str(e).split(" ", 2)[1]
                     self.pages_with_missing_parsers.add(
                         os.path.basename(page_file))
                     logging.warning(
-                        " * Missing Parser (%s): %s" %
-                        (mp, list_of_manpages[page_file][0].filename, ))
+                        " * Missing Parser (%s) (PS: %s): %s" %
+                        (mp, list_of_manpages[page_file].parsing_state,
+                         list_of_manpages[page_file].filename,))
                     missing_parsers[mp] += 1
+                    mandirpages[directory].remove(page_file)
+                    list_of_pages.remove(page_file)
                     continue
                 except:
                     self.pages_with_errors.add(os.path.basename(page_file))
                     logging.error(" * ERR: %s" %
-                                  (list_of_manpages[page_file][0].filename, ))
+                                  (list_of_manpages[page_file].filename, ))
+                    mandirpages[directory].remove(page_file)
+                    list_of_pages.remove(page_file)
                     continue
 
                 if previous:
-                    list_of_manpages[page_file][0].set_previous(
+                    list_of_manpages[page_file].set_previous(
                         previous[0], previous[1])
-                    list_of_manpages[previous[0]][0].set_next(
+                    list_of_manpages[previous[0]].set_next(
                         page_file, pages[page_file][0])
 
                 previous = (page_file, pages[page_file][0])
-                list_of_manpages[page_file][0].set_pages(list_of_pages)
+                list_of_manpages[page_file].set_pages(list_of_pages)
 
                 pages_to_process.append(page_file)
 
             for page_file in pages_to_process:
                 final_page = os.path.join(man_directory, page_file) + ".html"
-                out = list_of_manpages[page_file][0].html()
+                out = list_of_manpages[page_file].html()
                 self.missing_links.update(
-                    list_of_manpages[page_file][0].broken_links)
+                    list_of_manpages[page_file].broken_links)
                 checksum = md5(out).hexdigest()
 
                 if checksum != checksums.get(final_page, None):

@@ -10,8 +10,178 @@ try:
 except ImportError:
     pass
 import logging
+import itertools
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
+
+
+class MacroParser(object):
+
+    macros_to_ignore = {
+        'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam',
+        'ne', 'UC', 'nr', 'ns', 'ds', 'na', 'DT', 'bp',
+        'nr', 'll', 'c2'}
+
+    def __init__(self, line, manpage):
+        self.data = line.data
+        self.macro = line.macro
+        self.comment = line.comment
+        self.manpage = manpage
+
+    def process(self):
+        getattr(self, "p_%s" % self.macro, self.default)()
+
+    def p_Dd(self):
+        raise NotSupportedFormat
+
+    def p_ig(self):
+        self.manpage.skip_until({'..', '.end'})
+
+    def p_de(self):
+        self.manpage.skip_until({'..'})
+
+    def p_if(self):
+        if "{" in self.data:
+            self.manpage.skip_until_contains('}')
+
+    p_ie = p_if
+    p_el = p_if
+
+    def default(self):
+        if not self.macro:
+            self.process_text()
+        elif self.macro not in self.macros_to_ignore:
+            self.missing_parser()
+
+    def process_text(self):  # FIXME: Rewrite in body
+        pass
+
+    def missing_parser(self):
+        raise MissingParser("MACRO %s : %s" % (self.macro, self.data, ))
+
+
+class TitleMacroParser(MacroParser):
+
+    def __bool__(self):
+        return bool(self.comment)
+
+    __nonzero__ = __bool__
+
+    def p_SH(self):
+        if self.joined_data == "NAME":
+            self.manpage.line_iterator, tmp_iter = itertools.tee(
+                self.manpage.line_iterator)
+
+            c = 0
+            name_section = []
+            for name_section_line in tmp_iter:
+                if name_section_line.macro == "SH":
+                    break
+
+                name_section.append(unescape(name_section_line))
+                c += 1
+
+            del(tmp_iter)
+            self.manpage.line_iterator = itertools.islice(
+                self.manpage.line_iterator, c, None)
+
+            self.extract_title(name_section)
+            self.manpage.set_state(ManPageStates.BODY)
+        else:
+            raise
+
+    @property
+    def joined_data(self):
+        return ' '.join(toargs(self.data))
+
+    def extract_title(self, title_buffer):
+        self.manpage.title, self.manpage.subtitle = map(
+            str.strip, " ".join(title_buffer).split('-', 1))
+
+
+class HeaderMacroParser(MacroParser):
+
+    def __bool__(self):
+        if self.comment or not self.macro:
+            return False
+        else:
+            return True
+
+    __nonzero__ = __bool__
+
+    def p_TH(self):
+        self.manpage.set_header(self.data)
+        self.manpage.set_state(ManPageStates.TITLE)
+
+    def p_so(self):
+        self.manpage._redirect = self.data.split("/")
+        raise RedirectedPage(
+            "Page %s redirects to %s" %
+            (self.manpage.filename, "/".join(self.manpage.redirect)))
+
+    def process(self):
+        if self:
+            super(HeaderMacroParser, self).process()
+
+
+class Line(str):
+
+    def __new__(cls, string):
+        return str.__new__(cls, entitize(string.rstrip()))
+
+
+class LineParser(Line):
+    _empty = False
+    _macro = None
+    _data = None
+    _comment = False
+
+    def __init__(self, line):
+        super(LineParser, self).__init__(line)
+
+        if self:
+            if self.startswith("."):
+                chunks = self[1:].split(None, 1)
+                if chunks:
+                    self._macro = chunks[0]
+                    if len(chunks) == 2:
+                        self._data = chunks[1]
+
+                    self._comment = (self.macro == "\\\"")
+            else:
+                self._data = self
+
+    @property
+    def macro(self):
+        return self._macro
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def comment(self):
+        return self._comment
+
+    @property
+    def extra(self):
+        if not self.macro:
+            return False
+        if self[-1] == "\\":
+            return self[:-1]
+        elif self[-2:] == "\\c":
+            return self[:-2]
+        else:
+            return False
+
+
+class ManPageStates(object):
+    HEADER, TITLE, BODY = range(3)
+
+    parser = {
+        HEADER: HeaderMacroParser,
+        TITLE: TitleMacroParser,
+    }
 
 
 class ManPage(object):
@@ -32,6 +202,76 @@ class ManPage(object):
         'man0': "ERROR. Section 0",
     }
 
+    def parse(self):
+        self.parse_header()
+        self.parse_title()
+        self.parse_body()
+
+    def skip_until(self, items):
+        # Make more idiomatic
+        for line in self.line_iterator:
+            if line in items:
+                break
+
+    def skip_until_contains(self, item):
+        # Make more idiomatic
+        for line in self.line_iterator:
+            if item in line:
+                break
+
+    def parse_title(self):
+        self.must_have_state(ManPageStates.TITLE)
+
+        for line in self.line_iterator:
+            self.state_parser()(line, self).process()
+
+            if not self.is_state(ManPageStates.TITLE):
+                break
+
+    def parse_header(self):
+        self.must_have_state(ManPageStates.HEADER)
+
+        for line in self.line_iterator:
+            self.state_parser()(line, self).process()
+
+            if not self.is_state(ManPageStates.HEADER):
+                break
+
+    def state_parser(self):
+        return ManPageStates.parser[self.parsing_state]
+
+    def must_have_state(self, state):
+        if not self.is_state(state):
+            raise UnexpectedState(self.parsing_state)
+
+    def is_state(self, state):
+        return (self.parsing_state == state)
+
+    def set_state(self, state):
+        self.parsing_state = state
+
+    def line(self):
+        with open(self.filename) as fp:
+            extra_line = False
+            for line in fp:
+                comment_start = line.find("\\\"")
+                if comment_start in (0, 1):
+                    continue
+                elif comment_start > -1 and line[comment_start - 1] != "\\":
+                    line = line[0:comment_start]
+
+                if extra_line:
+                    line = " ".join((extra_line, line,))
+                    extra_line = False
+
+                parsed_line = LineParser(line)
+
+                if parsed_line.extra:
+                    extra_line = parsed_line.extra
+                    continue
+
+                yield parsed_line
+
     def __init__(self, filename, redirected_from=False, base_url=""):
         self.filename = filename
 
@@ -39,8 +279,6 @@ class ManPage(object):
 
         self.sections = []
         self.current_buffer = None
-
-        self.capture_name_section = False
 
         self.preserve_next_line = False
         self.in_if = False
@@ -56,8 +294,6 @@ class ManPage(object):
 
         self.state = []
         self.depth = 0
-
-        self.redirect = []
 
         self.list_of_pages = set()
 
@@ -78,6 +314,10 @@ class ManPage(object):
 
         self.broken_links = set()
 
+        # New stuff
+        self.set_state(ManPageStates.HEADER)
+        self.line_iterator = iter(self.line())
+
     def set_pages(self, list_of_pages):
         self.list_of_pages = list_of_pages
 
@@ -96,33 +336,30 @@ class ManPage(object):
                     self.spaced_lines_buffer))
             self.spaced_lines_buffer = []
 
-    def parse(self):
-        yield_subtitle = False
-        for line in self.get_line():
-            if self.redirect:
-                break
+    def parse_body(self):
+        if not self.is_state(ManPageStates.BODY):
+            raise UnexpectedState(self.parsing_state)
 
-            if not yield_subtitle and self.subtitle:
-                yield_subtitle = True
-                yield self.redirect, self.subtitle
+        for line in self.line_iterator:
+            if line.comment:
+                continue
+            # if self.redirect:
+            #    break
 
             if self.spaced_lines_buffer:
                 self.process_spaced_lines(line)
 
             if not line:
-                if self.sections:
-                    self.add_spacer()
+                self.add_spacer()
             elif self.in_if:
                 if "}" in line:
                     self.in_if = False
                 continue
-            elif line[0] in self.cc:
+            elif line.macro:
                 self.blank_line = False
                 self.parse_macro(line[1:])
             elif self.in_table:
                 self.table_buffer.append(unescape(line))
-            elif self.capture_name_section:
-                self.name_section_buffer.append(unescape(line))
             elif line.startswith(" ") and not self.in_pre:
                 self.blank_line = False
                 self.spaced_lines_buffer.append(unescape(line))
@@ -132,11 +369,15 @@ class ManPage(object):
         else:
             self.flush_current_section()
 
-        if self.redirect:
-            yield self.redirect, None
+        # if self.redirect:
+        #    yield self.redirect, None
 
-    def process_redirect(self, data):
-        self.redirect = data.split("/")
+    @property
+    def redirect(self):
+        try:
+            return self._redirect
+        except:
+            return False
 
     def get_line(self):
         with open(self.filename) as fp:
@@ -226,9 +467,6 @@ class ManPage(object):
                 return
             self.add_subsection(data)
             return
-        elif macro in {'so'}:
-            self.process_redirect(data)
-            return
 
         if macro in self.style_macros:
             if data:
@@ -271,7 +509,7 @@ class ManPage(object):
             self.restore_state()
         elif macro == 'UR':
             self.add_url(data)
-        elif macro == 'MT': # Fixme: process MT and ME properly
+        elif macro == 'MT':  # Fixme: process MT and ME properly
             self.add_mailto(data)
         elif macro == 'ME':
             # End mail
@@ -433,7 +671,7 @@ class ManPage(object):
             return stylize_odd_even(style, toargs(data))
 
     def set_header(self, data):
-        headers = shlex.split(data)
+        headers = toargs(data)
 
         self.header = {
             "title": headers[0],
@@ -443,14 +681,8 @@ class ManPage(object):
     def add_section(self, data):
         data = ' '.join(shlex.split(data))
         self.flush_containers()
-        if data == 'NAME':
-            self.capture_name_section = True
-            self.name_section_buffer = []
-            # FIXME: Time to parse name
-            pass
-        else:
-            self.flush_current_section()
-            self.sections.append([data, None])
+        self.flush_current_section()
+        self.sections.append([data, None])
 
     def add_subsection(self, data):
         data = ' '.join(shlex.split(data))
@@ -463,11 +695,6 @@ class ManPage(object):
         self.flush_li()
 
     def flush_current_section(self):
-        if self.capture_name_section:
-            self.extract_title()
-            del self.name_section_buffer
-            self.capture_name_section = False
-
         if self.content_buffer:
             self.flush_paragraph()
 
@@ -475,11 +702,6 @@ class ManPage(object):
             self.sections[-1][1] = self.current_buffer
 
         self.current_buffer = []
-
-    def extract_title(self):
-        title, subtitle = " ".join(self.name_section_buffer).split('-', 1)
-        self.title = title.strip()
-        self.subtitle = subtitle.strip()
 
     def repl(self, m):
         manpage = m.groupdict()['page']
@@ -503,9 +725,6 @@ class ManPage(object):
             return text
 
     def html(self):
-        if self.redirect:
-            return "REDIRECTION %s" % self.redirect
-
         section_tpl = load_template('section')
         section_contents = ""
         for title, content in self.sections:
@@ -703,6 +922,18 @@ linkifier = re.compile(
 class MissingParser(Exception):
     pass
 
+
+class UnexpectedState(Exception):
+    pass
+
+
+class RedirectedPage(Exception):
+    pass
+
+
+class NotSupportedFormat(Exception):
+    pass
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -714,12 +945,9 @@ if __name__ == '__main__':
         getattr(logging, args.log_level.upper())
 
     manpage = ManPage(args.manpage)
-    g = manpage.parse()
-
     try:
-        while True:
-            next(g)
-    except StopIteration:
-        pass
-
-    print(manpage.html())
+        manpage.parse()
+    except RedirectedPage:
+        print "Page %s contains a redirection to %s" % (manpage.filename, manpage.redirect[1])
+    else:
+        print(manpage.html())
