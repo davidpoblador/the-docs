@@ -276,6 +276,12 @@ class ManPage(object):
         elif macro == 'ME':
             # End mail
             pass
+        elif macro == 'SM':
+            # FIXME: Make font smaller
+            self.add_content(data)
+            pass
+        elif not macro:
+            pass
         else:
             raise MissingParser("MACRO %s : %s" % (macro, data, ))
             pass
