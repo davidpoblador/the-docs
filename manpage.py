@@ -99,7 +99,6 @@ class ManPage(object):
     def parse(self):
         yield_subtitle = False
         for line in self.get_line():
-
             if self.redirect:
                 break
 
@@ -618,6 +617,9 @@ def unescape(t):
     t = t.replace("\\\\", "&#92;")
 
     t = t.replace("\[char46]", "&#46;")
+
+    t = t.replace("\\(co", "&copy;")
+
     t = t.replace("\\(em", "&ndash;")
     t = t.replace("\\(en", "&ndash;")
 
