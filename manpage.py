@@ -271,8 +271,11 @@ class ManPage(object):
             self.restore_state()
         elif macro == 'UR':
             self.add_url(data)
-        elif macro == 'MT':
+        elif macro == 'MT': # Fixme: process MT and ME properly
             self.add_mailto(data)
+        elif macro == 'ME':
+            # End mail
+            pass
         else:
             raise MissingParser("MACRO %s : %s" % (macro, data, ))
             pass
