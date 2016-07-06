@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>filefrag - report on file fragmentation</title>
+  <title>blkdiscard - discard sectors on a device</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -31,8 +31,8 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">filefrag<small> (8)</small></h1>
-        <p class="lead">report on file fragmentation</p>
+        <h1 class="font-effect-destruction">blkdiscard<small> (8)</small></h1>
+        <p class="lead">discard sectors on a device</p>
       </div>
 
     <ol class="breadcrumb">
@@ -43,7 +43,7 @@
 		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
 	</li>
 	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/filefrag.8.html"><span itemprop="title">filefrag</span></a>
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/blkdiscard.8.html"><span itemprop="title">blkdiscard</span></a>
 	</li>
 </ol>
     
@@ -51,7 +51,7 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<p><strong>filefrag</strong> [ <strong>-b</strong><em>blocksize</em> ] [ <strong>-BeksvxX</strong> ] [ <em>files...</em> ]</p>
+<p><strong>blkdiscard</strong> [<strong>-o</strong> <em>offset</em>] [<strong>-l</strong> <em>length</em>] [<strong>-s</strong>] [<strong>-v</strong>] <em>device</em></p>
         </div>
       </section>
 
@@ -59,10 +59,16 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 
-<p><strong>filefrag</strong> reports on how badly fragmented a particular file might be.  It makes allowances for indirect blocks for ext2 and ext3 filesystems, but can be used on files for any filesystem.</p>
+<p><strong>blkdiscard</strong> is used to discard device sectors.  This is useful for solid-state drivers (SSDs) and thinly-provisioned storage.  Unlike <a href="../man8/fstrim.8.html"><strong>fstrim</strong>(8)</a><strong>,</strong> this command is used directly on the block device.</p>
 <p class='spacer'>
 
-<p>The <strong>filefrag</strong> program initially attempts to get the extent information using FIEMAP ioctl which is more efficient and faster. If FIEMAP is not supported then filefrag will fall back to using FIBMAP.</p>
+<p>By default, <strong>blkdiscard</strong> will discard all blocks on the device.  Options may be used to modify this behavior based on range or size, as explained below.</p>
+<p class='spacer'>
+
+<p>The <em>device</em> argument is the pathname of the block device.</p>
+<p class='spacer'>
+
+<p><strong>WARNING: All data in the discarded region on the device will be lost!</strong></p>
         </div>
       </section>
 
@@ -70,38 +76,31 @@
         <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
         <div class="sectioncontent">
 
+  <p>The <em>offset</em> and <em>length</em> arguments may be followed by the multiplicative suffixes KiB (=1024), MiB (=1024*1024), and so on for GiB, TiB, PiB, EiB, ZiB and YiB (the "iB" is optional, e.g., "K" has the same meaning as "KiB") or the suffixes KB (=1000), MB (=1000*1000), and so on for GB, TB, PB, EB, ZB and YB.</p>
   <dl class='dl-vertical'>
-    <dt><strong>-B</strong></dt>
+    <dt><strong>-o</strong>,<strong> --offset offset</strong></dt>
     <dd>
-  <p>Force the use of the older FIBMAP ioctl instead of the FIEMAP ioctl for testing purposes.</p>
+  <p>Byte offset into the device from which to start discarding.  The provided value will be aligned to the device sector size.  The default value is zero.</p>
     </dd>
-    <dt><strong>-b</strong><em>blocksize</em></dt>
+    <dt><strong>-l</strong>,<strong> --length length</strong></dt>
     <dd>
-  <p>Use <em>blocksize</em> in bytes for output instead of the filesystem blocksize. For compatibility with earlier versions of <strong>filefrag</strong>, if <em>blocksize</em> is unspecified it defaults to 1024 bytes.</p>
+  <p>The number of bytes to discard (counting from the starting point).  The provided value will be aligned to the device sector size.  If the specified value extends past the end of the device, <strong>blkdiscard</strong> will stop at the device size boundary.  The default value extends to the end of the device.</p>
     </dd>
-    <dt><strong>-e</strong></dt>
+    <dt><strong>-s</strong>,<strong> --secure</strong></dt>
     <dd>
-  <p>Print output in extent format, even for block-mapped files.</p>
+  <p>Perform a secure discard.  A secure discard is the same as a regular discard except that all copies of the discarded blocks that were possibly created by garbage collection must also be erased.  This requires support from the device.</p>
     </dd>
-    <dt><strong>-k</strong></dt>
+    <dt><strong>-v</strong>,<strong> --verbose</strong></dt>
     <dd>
-  <p>Use 1024-byte blocksize for output (identical to '-b 1024').</p>
+  <p>Display the aligned values of <em>offset</em> and <em>length</em>.</p>
     </dd>
-    <dt><strong>-s</strong></dt>
+    <dt><strong>-V</strong>,<strong> --version</strong></dt>
     <dd>
-  <p>Sync the file before requesting the mapping.</p>
+  <p>Display version information and exit.</p>
     </dd>
-    <dt><strong>-v</strong></dt>
+    <dt><strong>-h</strong>,<strong> --help</strong></dt>
     <dd>
-  <p>Be verbose when checking for file fragmentation.</p>
-    </dd>
-    <dt><strong>-x</strong></dt>
-    <dd>
-  <p>Display mapping of extended attributes.</p>
-    </dd>
-    <dt><strong>-X</strong></dt>
-    <dd>
-  <p>Display extent block numbers in hexadecimal format.</p>
+  <p>Display help text and exit.</p>
     </dd>
   </dl>
         </div>
@@ -111,12 +110,28 @@
         <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
 
-<p><strong>filefrag</strong> was written by Theodore Ts'o &lt;tytso@mit.edu&gt;.</p>
+<p><a href="mailto:lczerner@redhat.com">lczerner@redhat.com</a> Lukas Czerner</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man8/fstrim.8.html"><strong>fstrim</strong>(8)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
+        <div class="sectioncontent">
+
+<p>The blkdiscard command is part of the util-linux package and is available <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-  <li class="previous"><a href="fdisk.8.html"><span aria-hidden="true">&larr;</span> fdisk.8: manipulate disk partition table</a></li><li class="next"><a href="findfs.8.html">findfs.8: find a filesystem by label or UUID <span aria-hidden="true">&rarr;</span></a></li>
+  <li class="previous"><a href="badblocks.8.html"><span aria-hidden="true">&larr;</span> badblocks.8: search a device for bad blocks</a></li><li class="next"><a href="blkid.8.html">blkid.8: locate/print block device attributes <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
   </div>

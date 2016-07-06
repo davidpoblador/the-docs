@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>filefrag - report on file fragmentation</title>
+  <title>findfs - find a filesystem by label or UUID</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -31,8 +31,8 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">filefrag<small> (8)</small></h1>
-        <p class="lead">report on file fragmentation</p>
+        <h1 class="font-effect-destruction">findfs<small> (8)</small></h1>
+        <p class="lead">find a filesystem by label or UUID</p>
       </div>
 
     <ol class="breadcrumb">
@@ -43,7 +43,7 @@
 		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
 	</li>
 	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/filefrag.8.html"><span itemprop="title">filefrag</span></a>
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/findfs.8.html"><span itemprop="title">findfs</span></a>
 	</li>
 </ol>
     
@@ -51,7 +51,7 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<p><strong>filefrag</strong> [ <strong>-b</strong><em>blocksize</em> ] [ <strong>-BeksvxX</strong> ] [ <em>files...</em> ]</p>
+<p><strong>findfs</strong> <strong>NAME=</strong><em>value</em></p>
         </div>
       </section>
 
@@ -59,51 +59,69 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 
-<p><strong>filefrag</strong> reports on how badly fragmented a particular file might be.  It makes allowances for indirect blocks for ext2 and ext3 filesystems, but can be used on files for any filesystem.</p>
+  <p><strong>findfs</strong> will search the block devices in the system looking for a filesystem or partition with specified tag. The currently supported tags are:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>LABEL=&lt;label&gt;</strong></dt>
+    <dd>
+  <p>Specifies filesystem label.</p>
+    </dd>
+    <dt><strong>UUID=&lt;uuid&gt;</strong></dt>
+    <dd>
+  <p>Specifies filesystem UUID.</p>
+    </dd>
+    <dt><strong>PARTUUID=&lt;uuid&gt;</strong></dt>
+    <dd>
+  <p>Specifies partition UUID. This partition identifier is supported for example for GUID  Partition  Table (GPT) partition tables.</p>
+    </dd>
+    <dt><strong>PARTLABEL=&lt;label&gt;</strong></dt>
+    <dd>
+  <p>Specifies partition label (name). The partition labels are supported for example for GUID Partition Table (GPT) or MAC partition tables.</p>
+    </dd>
+  </dl>
 <p class='spacer'>
 
-<p>The <strong>filefrag</strong> program initially attempts to get the extent information using FIEMAP ioctl which is more efficient and faster. If FIEMAP is not supported then filefrag will fall back to using FIBMAP.</p>
+<p>If the filesystem or partition is found, the device name will be printed on stdout.</p>
+<p class='spacer'>
+
+  <p>The complete overview about filesystems and partitions you can get for example by</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p><strong>lsblk --fs</strong></p>
+<p class='spacer'>
+
+  <p><strong>partx --show &lt;disk&gt;</strong></p>
+<p class='spacer'>
+
+  <p><strong>blkid</strong></p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p class='spacer'>
+
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <h2 class="font-effect-shadow-multiple">EXIT STATUS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>-B</strong></dt>
-    <dd>
-  <p>Force the use of the older FIBMAP ioctl instead of the FIEMAP ioctl for testing purposes.</p>
-    </dd>
-    <dt><strong>-b</strong><em>blocksize</em></dt>
-    <dd>
-  <p>Use <em>blocksize</em> in bytes for output instead of the filesystem blocksize. For compatibility with earlier versions of <strong>filefrag</strong>, if <em>blocksize</em> is unspecified it defaults to 1024 bytes.</p>
-    </dd>
-    <dt><strong>-e</strong></dt>
-    <dd>
-  <p>Print output in extent format, even for block-mapped files.</p>
-    </dd>
-    <dt><strong>-k</strong></dt>
-    <dd>
-  <p>Use 1024-byte blocksize for output (identical to '-b 1024').</p>
-    </dd>
-    <dt><strong>-s</strong></dt>
-    <dd>
-  <p>Sync the file before requesting the mapping.</p>
-    </dd>
-    <dt><strong>-v</strong></dt>
-    <dd>
-  <p>Be verbose when checking for file fragmentation.</p>
-    </dd>
-    <dt><strong>-x</strong></dt>
-    <dd>
-  <p>Display mapping of extended attributes.</p>
-    </dd>
-    <dt><strong>-X</strong></dt>
-    <dd>
-  <p>Display extent block numbers in hexadecimal format.</p>
-    </dd>
-  </dl>
+    <dl class='dl-vertical'>
+      <dt><strong>0</strong></dt>
+      <dd>
+    <p>success</p>
+      </dd>
+      <dt><strong>1</strong></dt>
+      <dd>
+    <p>label or uuid cannot be found</p>
+      </dd>
+      <dt><strong>2</strong></dt>
+      <dd>
+    <p>usage error, wrong number of arguments or unknown option</p>
+      </dd>
+    </dl>
         </div>
       </section>
 
@@ -111,12 +129,41 @@
         <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
 
-<p><strong>filefrag</strong> was written by Theodore Ts'o &lt;tytso@mit.edu&gt;.</p>
+<p><strong>findfs</strong> was originally written by <a href="mailto:tytso@mit.edu">tytso@mit.edu</a> Theodore Ts'o and re-written for the util-linux package by <a href="mailto:kzak@redhat.com">kzak@redhat.com</a> Karel Zak</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ENVIRONMENT</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-horizontal'>
+    <dt>LIBBLKID_DEBUG=0xffff</dt>
+    <dd>
+  <p>enables debug output.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man8/blkid.8.html"><strong>blkid</strong>(8)</a>, <a href="../man8/lsblk.8.html"><strong>lsblk</strong>(8)</a>, <a href="../man8/partx.8.html"><strong>partx</strong>(8)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
+        <div class="sectioncontent">
+
+<p>The findfs command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-  <li class="previous"><a href="fdisk.8.html"><span aria-hidden="true">&larr;</span> fdisk.8: manipulate disk partition table</a></li><li class="next"><a href="findfs.8.html">findfs.8: find a filesystem by label or UUID <span aria-hidden="true">&rarr;</span></a></li>
+  <li class="previous"><a href="filefrag.8.html"><span aria-hidden="true">&larr;</span> filefrag.8: report on file fragmentation</a></li><li class="next"><a href="findmnt.8.html">findmnt.8: find a filesystem <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
   </div>

@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>iconvconfig - create iconv module configuration cache</title>
+  <title>setarch - change reported architecture in new program environment and set personality flags</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -31,8 +31,8 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">iconvconfig<small> (8)</small></h1>
-        <p class="lead">create iconv module configuration cache</p>
+        <h1 class="font-effect-destruction">i386<small> (8)</small></h1>
+        <p class="lead">change reported architecture in new program environment and set personality flags</p>
       </div>
 
     <ol class="breadcrumb">
@@ -43,7 +43,7 @@
 		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
 	</li>
 	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/iconvconfig.8.html"><span itemprop="title">iconvconfig</span></a>
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/i386.8.html"><span itemprop="title">i386</span></a>
 	</li>
 </ol>
     
@@ -51,7 +51,10 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<p><strong>iconvconfig</strong> [<em>options</em>] [<em>directory</em>]...</p>
+<p><strong>setarch</strong> <em>arch</em> [options] [<em>program</em> [<em>arguments</em>]]</p>
+<p class='spacer'>
+
+<p><strong>setarch</strong> <strong>--list</strong>|<strong>-h</strong>|<strong>-V</strong></p>
         </div>
       </section>
 
@@ -59,13 +62,7 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 
-<p>The <a href="../man3/iconv.3.html"><strong>iconv</strong>(3)</a> function internally uses <em>gconv</em> modules to convert to and from a character set. A configuration file is used to determine the needed modules for a conversion. Loading and parsing such a configuration file would slow down programs that use <a href="../man3/iconv.3.html"><strong>iconv</strong>(3)</a>, so a caching mechanism is employed.</p>
-<p class='spacer'>
-
-<p>The <strong>iconvconfig</strong> program reads iconv module configuration files and writes a fast-loading gconv module configuration cache file.</p>
-<p class='spacer'>
-
-<p>In addition to the system provided gconv modules, the user can specify custom gconv module directories with the environment variable <strong>GCONV_PATH</strong>. However, iconv module configuration caching is used only when the environment variable <strong>GCONV_PATH</strong> is not set.</p>
+<p><strong>setarch</strong> currently only affects the output of <strong>uname -m</strong>. For example, on an AMD64 system, running 'setarch i386 program' will cause 'program' to see <em>i686</em> instead of <em>x86_64</em> as the machine type.  It also allows to set various personality options. The default <strong>program</strong> is /bin/sh.</p>
         </div>
       </section>
 
@@ -74,73 +71,109 @@
         <div class="sectioncontent">
 
   <dl class='dl-vertical'>
-    <dt><strong>--nostdlib</strong></dt>
+    <dt><strong>--list</strong></dt>
     <dd>
-  <p>Do not search the system default gconv directory, only the directories provided on the command line.</p>
+  <p>List the architectures that can be set.</p>
     </dd>
-    <dt><strong>-o</strong><em> outputfile</em><strong>, --output=</strong><em>outputfile</em></dt>
+    <dt><strong>--uname-2.6</strong></dt>
     <dd>
-  <p>Use <em>outputfile</em> for output instead of the system default cache location.</p>
+  <p>Causes the program to see a kernel version number beginning with 2.6.</p>
     </dd>
-    <dt><strong>--prefix=</strong><em>pathname</em></dt>
+    <dt><strong>-v</strong>,<strong> --verbose</strong></dt>
     <dd>
-  <p>Set the prefix to be prepended to the system pathnames. See FILES, below. By default, the prefix is empty. Setting the prefix to <em>foo</em>, the gconv module configuration would be read from <em>foo/usr/lib/gconv/gconv-modules</em> and the cache would be written to <em>foo/usr/lib/gconv/gconv-modules.cache</em>.</p>
+  <p>Be verbose.</p>
     </dd>
-    <dt><strong>-?</strong>, <strong>--help</strong></dt>
+    <dt><strong>-3</strong>, <strong>--3gb</strong></dt>
     <dd>
-  <p>Print a usage summary and exit.</p>
+  <p>Specifies that processes should use a maximum of 3GB of address space on systems where it is supported (ADDR_LIMIT_3GB).</p>
     </dd>
-    <dt><strong>--usage</strong></dt>
+    <dt><strong>--4gb</strong></dt>
     <dd>
-  <p>Print a short usage summary and exit.</p>
+  <p>Ignored (for backward compatibility only).</p>
     </dd>
-    <dt><strong>-V</strong>, <strong>--version</strong></dt>
+    <dt><strong>-B</strong>, <strong>--32bit</strong></dt>
     <dd>
-  <p>Print the version number, license, and disclaimer of warranty for <strong>iconv</strong>.</p>
+  <p>Turns on ADDR_LIMIT_32BIT.</p>
+    </dd>
+    <dt><strong>-F</strong>, <strong>--fdpic-funcptrs</strong></dt>
+    <dd>
+  <p>Userspace function pointers point to descriptors (turns on FDPIC_FUNCPTRS).</p>
+    </dd>
+    <dt><strong>-I</strong>, <strong>--short-inode</strong></dt>
+    <dd>
+  <p>Turns on SHORT_INODE.</p>
+    </dd>
+    <dt><strong>-L</strong>, <strong>--addr-compat-layout</strong></dt>
+    <dd>
+  <p>Changes the way virtual memory is allocated (turns on the ADDR_COMPAT_LAYOUT).</p>
+    </dd>
+    <dt><strong>-R</strong>, <strong>--addr-no-randomize</strong></dt>
+    <dd>
+  <p>Disables randomization of the virtual address space (turns on ADDR_NO_RANDOMIZE).</p>
+    </dd>
+    <dt><strong>-S</strong>, <strong>--whole-seconds</strong></dt>
+    <dd>
+  <p>Turns on WHOLE_SECONDS.</p>
+    </dd>
+    <dt><strong>-T</strong>, <strong>--sticky-timeouts</strong></dt>
+    <dd>
+  <p>Turns on STICKY_TIMEOUTS.</p>
+    </dd>
+    <dt><strong>-X</strong>, <strong>--read-implies-exec</strong></dt>
+    <dd>
+  <p>Turns on READ_IMPLIES_EXEC.</p>
+    </dd>
+    <dt><strong>-Z</strong>, <strong>--mmap-page-zero</strong></dt>
+    <dd>
+  <p>Turns on MMAP_PAGE_ZERO.</p>
+    </dd>
+    <dt><strong>-V</strong>,<strong> --version</strong></dt>
+    <dd>
+  <p>Display version information and exit.</p>
+    </dd>
+    <dt><strong>-h</strong>,<strong> --help</strong></dt>
+    <dd>
+  <p>Display help text and exit.</p>
     </dd>
   </dl>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">EXIT STATUS</h2>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
         <div class="sectioncontent">
 
-<p>Zero on success, non-zero on errors.</p>
+<p>setarch ppc32 rpmbuild --target=ppc --rebuild foo.src.rpm</p>
+<p class='spacer'>
+
+<p>setarch ppc32 -v -vL3 rpmbuild --target=ppc --rebuild bar.src.rpm</p>
+<p class='spacer'>
+
+<p>setarch ppc32 --32bit rpmbuild --target=ppc --rebuild foo.src.rpm</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><em>/usr/lib/gconv</em></dt>
-    <dd>
-  <p>Usual default gconv module path.</p>
-    </dd>
-    <dt><em>/usr/lib/gconv/gconv-modules</em></dt>
-    <dd>
-  <p>Usual system default gconv module configuration file.</p>
-    </dd>
-    <dt><em>/usr/lib/gconv/gconv-modules.cache</em></dt>
-    <dd>
-  <p>Usual system gconv module configuration cache.</p>
-    </dd>
-  </dl>
+<p><a href="mailto:sopwith@redhat.com">sopwith@redhat.com</a> Elliot Lee</p>
+<p class='spacer'>
+
+<p><a href="mailto:jnovy@redhat.com">jnovy@redhat.com</a> Jindrich Novy</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
         <div class="sectioncontent">
 
-<p><a href="../man1/iconv.1.html"><strong>iconv</strong>(1)</a>, <a href="../man3/iconv.3.html"><strong>iconv</strong>(3)</a></p>
+<p>The setarch command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-  <li class="previous"><a href="i386.8.html"><span aria-hidden="true">&larr;</span> i386.8: change reported architecture in new program environment and set personality flags</a></li><li class="next"><a href="ifconfig.8.html">ifconfig.8: Konfiguration einer Netzwerkskarte <span aria-hidden="true">&rarr;</span></a></li>
+  <li class="previous"><a href="hwclock.8.html"><span aria-hidden="true">&larr;</span> hwclock.8: query or set the hardware clock (RTC)</a></li><li class="next"><a href="iconvconfig.8.html">iconvconfig.8: create iconv module configuration cache <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
   </div>

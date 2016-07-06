@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>term - format of compiled term file.</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">term<small> (5)</small></h1>
+        <p class="lead">format of compiled term file.</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/term.5.html"><span itemprop="title">term</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>term</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+  <h3>STORAGE LOCATION</h3>
+  <p>Compiled terminfo descriptions are placed under the directory <strong>\*d</strong>. Two configurations are supported (when building the ncurses libraries):</p>
+  <dl class='dl-vertical'>
+    <dt><strong>directory tree</strong></dt>
+    <dd>
+  <p>A two-level scheme is used to avoid a linear search of a huge \s-1UNIX\s+1 system directory: <strong>\*d/c/name</strong> where <em>name</em> is the name of the terminal, and <em>c</em> is the first character of <em>name</em>. Thus, <em>act4</em> can be found in the file <strong>\*d/a/act4</strong>. Synonyms for the same terminal are implemented by multiple links to the same compiled file.</p>
+    </dd>
+    <dt><strong>hashed database</strong></dt>
+    <dd>
+  <p>Using Berkeley database, two types of records are stored: the terminfo data in the same format as stored in a directory tree with the terminfo's primary name as a key, and records containing only aliases pointing to the primary name.</p>
+<p class='spacer'>
+
+  <p>If built to write hashed databases, ncurses can still read terminfo databases organized as a directory tree, but cannot write entries into the directory tree. It can write (or rewrite) entries in the hashed database.</p>
+<p class='spacer'>
+
+  <p>ncurses distinguishes the two cases in the TERMINFO and TERMINFO_DIRS environment variable by assuming a directory tree for entries that correspond to an existing directory, and hashed database otherwise.</p>
+    </dd>
+  </dl>
+  <h3>STORAGE FORMAT</h3>
+<p>The format has been chosen so that it will be the same on all hardware. An 8 or more bit byte is assumed, but no assumptions about byte ordering or sign extension are made.</p>
+<p class='spacer'>
+
+<p>The compiled file is created with the <strong>tic</strong> program, and read by the routine <em>setupterm</em>. The file is divided into six parts: the header, terminal names, boolean flags, numbers, strings, and string table.</p>
+<p class='spacer'>
+
+    <p>The header section begins the file. This section contains six short integers in the format described below. These integers are</p>
+    <dl class='dl-vertical'>
+      <dt>(1) the magic number (octal 0432);</dt>
+      <dd>
+      </dd>
+      <dt>(2) the size, in bytes, of the names section;</dt>
+      <dd>
+      </dd>
+      <dt>(3) the number of bytes in the boolean section;</dt>
+      <dd>
+      </dd>
+      <dt>(4) the number of short integers in the numbers section;</dt>
+      <dd>
+      </dd>
+      <dt>(5) the number of offsets (short integers) in the strings section;</dt>
+      <dd>
+      </dd>
+      <dt>(6) the size, in bytes, of the string table.</dt>
+      <dd>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<p>Short integers are stored in two 8-bit bytes. The first byte contains the least significant 8 bits of the value, and the second byte contains the most significant 8 bits. (Thus, the value represented is 256*second+first.) The value -1 is represented by the two bytes 0377, 0377; other negative values are illegal. This value generally means that the corresponding capability is missing from this terminal. Note that this format corresponds to the hardware of the \s-1VAX\s+1 and \s-1PDP\s+1-11 (that is, little-endian machines). Machines where this does not correspond to the hardware must read the integers as two bytes and compute the little-endian value.</p>
+<p class='spacer'>
+
+<p>The terminal names section comes next. It contains the first line of the terminfo description, listing the various names for the terminal, separated by the `|' character. The section is terminated with an \s-1ASCII NUL\s+1 character.</p>
+<p class='spacer'>
+
+<p>The boolean flags have one byte for each flag. This byte is either 0 or 1 as the flag is present or absent. The capabilities are in the same order as the file &lt;term.h&gt;.</p>
+<p class='spacer'>
+
+<p>Between the boolean section and the number section, a null byte will be inserted, if necessary, to ensure that the number section begins on an even byte (this is a relic of the PDP-11's word-addressed architecture, originally designed in to avoid IOT traps induced by addressing a word on an odd byte boundary). All short integers are aligned on a short word boundary.</p>
+<p class='spacer'>
+
+<p>The numbers section is similar to the flags section. Each capability takes up two bytes, and is stored as a little-endian short integer. If the value represented is -1, the capability is taken to be missing.</p>
+<p class='spacer'>
+
+<p>The strings section is also similar. Each capability is stored as a short integer, in the format above. A value of -1 means the capability is missing. Otherwise, the value is taken as an offset from the beginning of the string table. Special characters in ^X or &#92;c notation are stored in their interpreted form, not the printing representation. Padding information $&lt;nn&gt; and parameter information %x are stored intact in uninterpreted form.</p>
+<p class='spacer'>
+
+<p>The final section is the string table. It contains all the values of string capabilities referenced in the string section. Each string is null terminated.</p>
+  <h3>EXTENDED STORAGE FORMAT</h3>
+<p>The previous section describes the conventional terminfo binary format. With some minor variations of the offsets (see PORTABILITY), the same binary format is used in all modern UNIX systems. Each system uses a predefined set of boolean, number or string capabilities.</p>
+<p class='spacer'>
+
+<p>The ncurses libraries and applications support extended terminfo binary format, allowing users to define capabilities which are loaded at runtime.  This extension is made possible by using the fact that the other implementations stop reading the terminfo data when they have reached the end of the size given in the header. ncurses checks the size, and if it exceeds that due to the predefined data, continues to parse according to its own scheme.</p>
+<p class='spacer'>
+
+    <p>First, it reads the extended header (5 short integers):</p>
+    <dl class='dl-horizontal'>
+      <dt>(1)</dt>
+      <dd>
+    <p>count of extended boolean capabilities</p>
+      </dd>
+      <dt>(2)</dt>
+      <dd>
+    <p>count of extended numeric capabilities</p>
+      </dd>
+      <dt>(3)</dt>
+      <dd>
+    <p>count of extended string capabilities</p>
+      </dd>
+      <dt>(4)</dt>
+      <dd>
+    <p>size of the extended string table in bytes.</p>
+      </dd>
+      <dt>(5)</dt>
+      <dd>
+    <p>last offset of the extended string table in bytes.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<p>Using the counts and sizes, ncurses allocates arrays and reads data for the extended capabilties in the same order as the header information.</p>
+<p class='spacer'>
+
+<p>The extended string table contains values for string capabilities. After the end of these values, it contains the names for each of the extended capabilities in order, e.g., booleans, then numbers and finally strings.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">PORTABILITY</h2>
+        <div class="sectioncontent">
+
+<p>Note that it is possible for <em>setupterm</em> to expect a different set of capabilities than are actually present in the file. Either the database may have been updated since <em>setupterm</em> has been recompiled (resulting in extra unrecognized entries in the file) or the program may have been recompiled more recently than the database was updated (resulting in missing entries). The routine <em>setupterm</em> must be prepared for both possibilities - this is why the numbers and sizes are included. Also, new capabilities must always be added at the end of the lists of boolean, number, and string capabilities.</p>
+<p class='spacer'>
+
+<p>Despite the consistent use of little-endian for numbers and the otherwise self-describing format, it is not wise to count on portability of binary terminfo entries between commercial UNIX versions.  The problem is that there are at least three versions of terminfo (under HP-UX, AIX, and OSF/1) which diverged from System V terminfo after SVr1, and have added extension capabilities to the string table that (in the binary format) collide with System V and XSI Curses extensions.  See <strong>terminfo</strong>(\*n) for detailed discussion of terminfo source compatibility issues.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+  <p>As an example, here is a hex dump of the description for the Lear-Siegler ADM-3, a popular though rather stupid early terminal:</p>
+<pre>
+adm3a|lsi adm3a,
+        am,
+        cols#80, lines#24,
+        bel=^G, clear=&nbsp;32$&lt;1&gt;, cr=^M, cub1=^H, cud1=^J,
+        cuf1=^L, cup=&#92;E=%p1%{32}%+%c%p2%{32}%+%c, cuu1=^K,
+        home=^^, ind=^J,
+
+\s-20000  1a 01 10 00 02 00 03 00  82 00 31 00 61 64 6d 33  ........ ..1.adm3
+0010  61 7c 6c 73 69 20 61 64  6d 33 61 00 00 01 50 00  a|lsi ad m3a...P.
+0020  ff ff 18 00 ff ff 00 00  02 00 ff ff ff ff 04 00  ........ ........
+0030  ff ff ff ff ff ff ff ff  0a 00 25 00 27 00 ff ff  ........ ..%.'...
+0040  29 00 ff ff ff ff 2b 00  ff ff 2d 00 ff ff ff ff  ).....+. ..-.....
+0050  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+0060  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+0070  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+0080  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+0090  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+00a0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+00b0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+00c0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+00d0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+00e0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+00f0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+0100  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+0110  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  ........ ........
+0120  ff ff ff ff ff ff 2f 00  07 00 0d 00 1a 24 3c 31  ....../. .....$&lt;1
+0130  3e 00 1b 3d 25 70 31 25  7b 33 32 7d 25 2b 25 63  &gt;..=%p1% {32}%+%c
+0140  25 70 32 25 7b 33 32 7d  25 2b 25 63 00 0a 00 1e  %p2%{32} %+%c....
+0150  00 08 00 0c 00 0b 00 0a  00                       ........ .\s+2</pre>
+
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">LIMITS</h2>
+        <div class="sectioncontent">
+
+<p>Some limitations: total compiled entries cannot exceed 4096 bytes. The name field cannot exceed 128 bytes.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+<p>\*d/*/*	compiled terminal capability data base</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>ncurses</strong>(3NCURSES), <strong>terminfo</strong>(\*n).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+
+<p>Thomas E. Dickey</p>
+<p class='spacer'>
+
+<p>extended terminfo format for ncurses 5.0</p>
+<p class='spacer'>
+
+<p>hashed database support for ncurses 5.6</p>
+<p class='spacer'>
+
+<p>Eric S. Raymond</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="subuid.5.html"><span aria-hidden="true">&larr;</span> subuid.5: the subordinate uid file</a></li><li class="next"><a href="termcap.5.html">termcap.5: terminal capability database <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
