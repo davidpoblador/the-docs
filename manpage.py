@@ -271,12 +271,17 @@ class ManPage(object):
             self.restore_state()
         elif macro == 'UR':
             self.add_url(data)
+        elif macro == 'MT':
+            self.add_mailto(data)
         else:
             raise MissingParser("MACRO %s : %s" % (macro, data, ))
             pass
 
     def add_url(self, data):
         self.add_content("<a href=\"%s\">%s</a>" % (data, data,))
+
+    def add_mailto(self, data):
+        self.add_content("<a href=\"mailto:%s\">%s</a>" % (data, data,))
 
     def add_content(self, data):
         if not self.sections:
