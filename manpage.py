@@ -20,7 +20,7 @@ class MacroParser(object):
     macros_to_ignore = {
         'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam',
         'ne', 'UC', 'nr', 'ns', 'ds', 'na', 'DT', 'bp',
-        'nr', 'll', 'c2'}
+        'nr', 'll', 'c2', 'ps'}
 
     def __init__(self, line, manpage):
         self.data = line.data
@@ -165,11 +165,11 @@ class LineParser(Line):
 
     @property
     def extra(self):
-        if not self.macro:
+        if not self:
             return False
-        if self[-1] == "\\":
+        elif self[-1] == "\\":
             return self[:-1]
-        elif self[-2:] == "\\c":
+        elif len(self) > 1 and self[-2:] == "\\c":
             return self[:-2]
         else:
             return False
@@ -266,7 +266,7 @@ class ManPage(object):
 
                 parsed_line = LineParser(line)
 
-                if parsed_line.extra:
+                if parsed_line.extra and ((not self.in_pre) or parsed_line.macro):
                     extra_line = parsed_line.extra
                     continue
 
@@ -300,9 +300,6 @@ class ManPage(object):
         else:
             self.manpage_name = os.path.basename(filename)
 
-        self.macros_to_ignore = {
-            'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam',
-            'ne', 'UC', 'nr', 'ns', 'ds', 'na', 'DT', 'bp'}
         self.macros_to_space = {'br', 'sp'}
         self.style_macros = self.single_styles | self.compound_styles
 
@@ -338,6 +335,8 @@ class ManPage(object):
         for line in self.line_iterator:
             if line.comment:
                 continue
+
+            print 
 
             if self.spaced_lines_buffer:
                 self.process_spaced_lines(line)
@@ -445,7 +444,7 @@ class ManPage(object):
 
             return
 
-        if macro in self.macros_to_ignore:
+        if macro in MacroParser.macros_to_ignore:
             return
 
         if macro == "SH":
