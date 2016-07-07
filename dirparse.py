@@ -54,16 +54,13 @@ class ManDirectoryParser(object):
         pages = defaultdict()
 
         shutil.rmtree(os.path.join(root_html, base_src), ignore_errors=True)
-
         manpage_parent_url = base_url + base_src
 
         missing_parsers = Counter()
         for manfile in list_of_manfiles:
             page_directory, basename = os.path.split(manfile)
-            section_directory = os.path.basename(page_directory)
-            redirection_base_dir, package_name = os.path.split(
-                os.path.dirname(page_directory))
-            redirection_base_dir = os.path.join(redirection_base_dir, base_src)
+            redirection_base_dir, section_directory = os.path.split(page_directory)
+            package_name = os.path.basename(redirection_base_dir)
 
             if basename in broken_files:
                 continue
