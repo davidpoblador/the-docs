@@ -189,6 +189,8 @@ class ManPage(object):
     single_styles = {'B', 'I'}
     compound_styles = {'IR', 'RI', 'BR', 'RB', 'BI', 'IB'}
 
+    pages_to_link = set()
+
     # FIXME: Horrible hack
     SECTIONS = {
         'man1': "Executable programs or shell commands",
@@ -295,8 +297,6 @@ class ManPage(object):
         self.state = []
         self.depth = 0
 
-        self.list_of_pages = set()
-
         if redirected_from:
             self.manpage_name = os.path.basename(redirected_from)
         else:
@@ -317,9 +317,6 @@ class ManPage(object):
         # New stuff
         self.set_state(ManPageStates.HEADER)
         self.line_iterator = iter(self.line())
-
-    def set_pages(self, list_of_pages):
-        self.list_of_pages = list_of_pages
 
     def set_previous(self, manfile, description):
         self.previous_page = (manfile, description)
@@ -343,8 +340,6 @@ class ManPage(object):
         for line in self.line_iterator:
             if line.comment:
                 continue
-            # if self.redirect:
-            #    break
 
             if self.spaced_lines_buffer:
                 self.process_spaced_lines(line)
@@ -368,9 +363,6 @@ class ManPage(object):
                 self.add_content(line)
         else:
             self.flush_current_section()
-
-        # if self.redirect:
-        #    yield self.redirect, None
 
     @property
     def redirect(self):
@@ -421,11 +413,12 @@ class ManPage(object):
         self.in_li = False
 
     def restore_state(self):
-        self.flush_dl()
-        self.flush_li()
+        if self.state:
+            self.flush_dl()
+            self.flush_li()
 
-        self.in_dl, self.in_li = self.state.pop(-1)
-        self.depth -= 1
+            self.in_dl, self.in_li = self.state.pop(-1)
+            self.depth -= 1
 
     def flush_dl(self):
         if self.in_dl:
@@ -710,7 +703,7 @@ class ManPage(object):
 
         out = "<strong>%s</strong>(%s)" % (manpage, section, )
 
-        if page in self.list_of_pages:
+        if page in self.pages_to_link:
             out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
                 section, manpage, section, out, )
         else:
@@ -719,7 +712,7 @@ class ManPage(object):
         return out
 
     def linkify(self, text):
-        if self.list_of_pages:
+        if self.pages_to_link:
             return linkifier.sub(self.repl, text)
         else:
             return text

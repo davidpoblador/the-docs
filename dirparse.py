@@ -9,6 +9,7 @@ from string import Template
 from hashlib import md5
 import marshal
 import logging
+import shutil
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,19 +49,20 @@ class ManDirectoryParser(object):
     def parse_directory(self):
         list_of_manfiles = list(glob.iglob("%s/*/man?/*.?" % self.source_dir))
         base_src = "man-pages"
-        list_of_manpages = dict()
+        manpage_instances = dict()
         mandirpages = defaultdict(set)
         pages = defaultdict()
+
+        shutil.rmtree(os.path.join(root_html, base_src), ignore_errors=True)
 
         manpage_parent_url = base_url + base_src
 
         missing_parsers = Counter()
         for manfile in list_of_manfiles:
-            basename = os.path.basename(manfile)
-            dstdir = os.path.dirname(manfile)
-            manbasedir = os.path.basename(dstdir)
-            package = os.path.split(os.path.split(dstdir)[0])[1]
-            redirection_base_dir = os.path.split(dstdir)[0]
+            page_directory, basename = os.path.split(manfile)
+            section_directory = os.path.basename(page_directory)
+            redirection_base_dir, package_name = os.path.split(
+                os.path.dirname(page_directory))
 
             if basename in broken_files:
                 continue
@@ -106,30 +108,29 @@ class ManDirectoryParser(object):
                     " * Missing Parser (%s) (PS: %s): %s" %
                     (mp, manpage.parsing_state, manfile, ))
                 missing_parsers[mp] += 1
+                self.pages_with_errors.add(basename)
                 continue
             except IOError:
                 if manpage.redirect:
                     self.missing_links[manpage.redirect[0]] += 1
                 self.pages_with_errors.add(basename)
                 continue
-            # except:
-            #    logging.error(" * ERR: %s" % (manfile, ))
-            #    self.pages_with_errors.add(basename)
-            #    continue
 
-            mandirpages[manbasedir].add(basename)
-            pages[basename] = (subtitle, manbasedir, package)
+            mandirpages[section_directory].add(basename)
+            pages[basename] = (subtitle, section_directory, package_name)
 
-            list_of_manpages[basename] = manpage
+            manpage_instances[basename] = manpage
 
         del(list_of_manfiles)
 
-        try:
-            checksum_file = open('checksums.dat', 'rb')
-            checksums = marshal.load(checksum_file)
-            checksum_file.close()
-        except IOError:
-            checksums = {}
+        # try:
+        #    checksum_file = open('checksums.dat', 'rb')
+        #    checksums = marshal.load(checksum_file)
+        #    checksum_file.close()
+        # except IOError:
+        #    checksums = {}
+
+        checksums = {}
 
         # Write and Linkify
         list_of_pages = set(pages.keys())
@@ -146,50 +147,53 @@ class ManDirectoryParser(object):
                 logging.debug(" * Writing page: %s" % page_file)
 
                 try:
-                    list_of_manpages[page_file].parse_body()
+                    manpage_instances[page_file].parse_body()
                 except MissingParser as e:
                     mp = str(e).split(" ", 2)[1]
                     self.pages_with_missing_parsers.add(
                         os.path.basename(page_file))
                     logging.warning(
                         " * Missing Parser (%s) (PS: %s): %s" %
-                        (mp, list_of_manpages[page_file].parsing_state,
-                         list_of_manpages[page_file].filename,))
+                        (mp, manpage_instances[page_file].parsing_state,
+                         manpage_instances[page_file].filename,))
                     missing_parsers[mp] += 1
                     mandirpages[directory].remove(page_file)
-                    list_of_pages.remove(page_file)
                     continue
                 except:
                     self.pages_with_errors.add(os.path.basename(page_file))
                     logging.error(" * ERR: %s" %
-                                  (list_of_manpages[page_file].filename, ))
+                                  (manpage_instances[page_file].filename, ))
                     mandirpages[directory].remove(page_file)
-                    list_of_pages.remove(page_file)
                     continue
 
                 if previous:
-                    list_of_manpages[page_file].set_previous(
+                    manpage_instances[page_file].set_previous(
                         previous[0], previous[1])
-                    list_of_manpages[previous[0]].set_next(
+                    manpage_instances[previous[0]].set_next(
                         page_file, pages[page_file][0])
 
                 previous = (page_file, pages[page_file][0])
-                list_of_manpages[page_file].set_pages(list_of_pages)
 
-                pages_to_process.append(page_file)
+                pages_to_process.append((man_directory, page_file))
 
-            for page_file in pages_to_process:
-                final_page = os.path.join(man_directory, page_file) + ".html"
-                out = list_of_manpages[page_file].html()
-                self.missing_links.update(
-                    list_of_manpages[page_file].broken_links)
-                checksum = md5(out).hexdigest()
+        for page in self.pages_with_errors:
+            if page in list_of_pages:
+                list_of_pages.remove(page)
 
-                if checksum != checksums.get(final_page, None):
-                    checksums[final_page] = checksum
-                    file = open(final_page, "w")
-                    file.write(out)
-                    file.close()
+        ManPage.pages_to_link = list_of_pages
+
+        for man_directory, page_file in pages_to_process:
+            final_page = os.path.join(man_directory, page_file) + ".html"
+            out = manpage_instances[page_file].html()
+            self.missing_links.update(
+                manpage_instances[page_file].broken_links)
+            checksum = md5(out).hexdigest()
+
+            if checksum != checksums.get(final_page, None):
+                checksums[final_page] = checksum
+                file = open(final_page, "w")
+                file.write(out)
+                file.close()
 
         checksum_file = open('checksums.dat', 'wb')
         marshal.dump(checksums, checksum_file)
@@ -336,10 +340,12 @@ class ManDirectoryParser(object):
         self.fix_missing_links()
 
     def fix_missing_links(self):
+        # FIXME: Use Comprehension
         for page in self.pages_with_missing_parsers:
             if page in self.missing_links:
                 del self.missing_links[page]
 
+        # FIXME: Use Comprehension
         for page in self.pages_with_errors:
             if page in self.missing_links:
                 del self.missing_links[page]
