@@ -63,6 +63,7 @@ class ManDirectoryParser(object):
             section_directory = os.path.basename(page_directory)
             redirection_base_dir, package_name = os.path.split(
                 os.path.dirname(page_directory))
+            redirection_base_dir = os.path.join(redirection_base_dir, base_src)
 
             if basename in broken_files:
                 continue
@@ -96,7 +97,7 @@ class ManDirectoryParser(object):
                         self.pages_with_errors.add(basename)
                         continue
                     except RedirectedPage:
-                        pass
+                        continue
                     else:
                         manpage.parse_title()
                         subtitle = manpage.subtitle
@@ -123,6 +124,7 @@ class ManDirectoryParser(object):
 
         del(list_of_manfiles)
 
+        # FIXME:
         # try:
         #    checksum_file = open('checksums.dat', 'rb')
         #    checksums = marshal.load(checksum_file)
@@ -134,6 +136,7 @@ class ManDirectoryParser(object):
 
         # Write and Linkify
         list_of_pages = set(pages.keys())
+        pages_to_process = []
         for directory, page_files in list(mandirpages.items()):
             man_directory = os.path.join(root_html, base_src, directory)
             try:
@@ -142,7 +145,6 @@ class ManDirectoryParser(object):
                 pass
 
             previous = None
-            pages_to_process = []
             for page_file in sorted(page_files):
                 logging.debug(" * Writing page: %s" % page_file)
 
@@ -180,11 +182,10 @@ class ManDirectoryParser(object):
             if page in list_of_pages:
                 list_of_pages.remove(page)
 
-        ManPage.pages_to_link = list_of_pages
-
         for man_directory, page_file in pages_to_process:
             final_page = os.path.join(man_directory, page_file) + ".html"
-            out = manpage_instances[page_file].html()
+            out = manpage_instances[page_file].html(
+                pages_to_link=list_of_pages)
             self.missing_links.update(
                 manpage_instances[page_file].broken_links)
             checksum = md5(out).hexdigest()

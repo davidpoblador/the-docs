@@ -189,8 +189,6 @@ class ManPage(object):
     single_styles = {'B', 'I'}
     compound_styles = {'IR', 'RI', 'BR', 'RB', 'BI', 'IB'}
 
-    pages_to_link = set()
-
     # FIXME: Horrible hack
     SECTIONS = {
         'man1': "Executable programs or shell commands",
@@ -696,28 +694,28 @@ class ManPage(object):
 
         self.current_buffer = []
 
-    def repl(self, m):
-        manpage = m.groupdict()['page']
-        section = m.groupdict()['section']
-        page = '.'.join([manpage, section])
+    def linkify(self, text, pages_to_link=set()):
+        def repl(m):
+            manpage = m.groupdict()['page']
+            section = m.groupdict()['section']
+            page = '.'.join([manpage, section])
 
-        out = "<strong>%s</strong>(%s)" % (manpage, section, )
+            out = "<strong>%s</strong>(%s)" % (manpage, section, )
 
-        if page in self.pages_to_link:
-            out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
-                section, manpage, section, out, )
-        else:
-            self.broken_links.add(page)
+            if page in pages_to_link:
+                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
+                    section, manpage, section, out, )
+            else:
+                self.broken_links.add(page)
 
-        return out
+            return out
 
-    def linkify(self, text):
-        if self.pages_to_link:
-            return linkifier.sub(self.repl, text)
+        if pages_to_link:
+            return linkifier.sub(repl, text)
         else:
             return text
 
-    def html(self):
+    def html(self, pages_to_link=set()):
         section_tpl = load_template('section')
         section_contents = ""
         for title, content in self.sections:
@@ -726,7 +724,7 @@ class ManPage(object):
                 content=''.join(content),
             )
 
-        section_contents = self.linkify(section_contents)
+        section_contents = self.linkify(section_contents, pages_to_link)
 
         header_tpl = load_template('header')
         base_tpl = load_template('base')
