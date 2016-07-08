@@ -1,37 +1,34 @@
-.TH IFCONFIG 8 "2007-12-02" "net\-tools" "Handbuch f\(:ur Linuxprogrammierer"
+.TH IFCONFIG 8 "2007-12-02" "net\-tools" "Linux Programmer's Manual"
 .SH NAME
-ifconfig \- Konfiguration einer Netzwerkskarte
+ifconfig \- configure a network interface
 .SH SYNOPSIS
-.B "ifconfig [Schnittstelle]"
+.B "ifconfig [-v] [-a] [-s] [interface]"
 .br
-.B "ifconfig Schnittstelle [AF-Typ] Optionen | Adresse ..."
-.SH BESCHREIBUNG
+.B "ifconfig [-v] interface [aftype] options | address ..."
+.SH DESCRIPTION
 .B Ifconfig
-wird benutzt um kernel-residente Netzwerksschnittstellen zu konfigurieren.
-Es wird zur Systemstartzeit verwendet, um die Schnittstellen nach Notwendigkeit
-zu initialisieren.  Danach wird es \(:ublicherweise nur zur Fehlersuche oder
-zur Verfeinerung der Systemkonfiguration verwendet.
+is used to configure the kernel-resident network interfaces.  It is
+used at boot time to set up interfaces as necessary.  After that, it
+is usually only needed when debugging or when system tuning is needed.
 .LP
-Wenn keine Argumente angegeben werden, dann zeigt
+If no arguments are given,
 .B ifconfig
-den Zustand der Augenblicklich aktiven Netzwerksschnittstellen.
-Wird ein einzelne
-.BR Schnittstelle nargument
-angegeben, so zeigt es nur den Zustand der angegebenen Netzwerksschnittstelle
-an.  Wird ein einzelne
+displays the status of the currently active interfaces.  If
+a single
+.B interface
+argument is given, it displays the status of the given interface
+only; if a single
 .B \-a
-Option angegeben, zeigt es den Zustand aller Schnittstellen an, selbst wenn
-diese inaktiviert sind.  Ansonsten konfiguriert
-.B ifconfig
-eine Schnittstelle.
+argument is given, it displays the status of all interfaces, even
+those that are down.  Otherwise, it configures an interface.
 
-.SH Adressfamilien
-Wird das erste Argument hinter dem Schnittstellennamen als der Name einer
-unterst\(:utzten Adressfamilie erkannt, so wird diese Adressfamilie dazu
-benutzt um alle Protokolladressen zu dekodieren und darzustellen.  Zur
-Zeit werden u.A. folgende Adressfamilien unterst\(:utzt.
+.SH Address Families
+If the first argument after the interface name is recognized as
+the name of a supported address family, that address family is
+used for decoding and displaying all protocol addresses.  Currently
+supported address families include
 .B inet
-(TCP/IP, standard), 
+(TCP/IP, default), 
 .B inet6
 (IPv6),
 .B ax25
@@ -42,118 +39,129 @@ Zeit werden u.A. folgende Adressfamilien unterst\(:utzt.
 (Novell IPX) and
 .B netrom
 (AMPR Packet radio).
-.SH OPTIONEN
+.SH OPTIONS
 .TP
-.B Schnittstelle
-Der Name einer Netzwerksschnittstelle.  Dies ist \(:ublicherweise ein Treiber
-gefolgt von einer laufenden Nummer, z.B. eth0 f\(:ur die erste
-Ethernetschnittstelle
+.B -a
+display all interfaces which are currently available, even if down
+.TP
+.B -s
+display a short list (like netstat \-i)
+.TP
+.B -v
+be more verbose for some error conditions
+.TP
+.B interface
+The name of the interface.  This is usually a driver name followed by
+a unit number, for example
+.B eth0
+for the first Ethernet interface. If your kernel supports alias interfaces,
+you can specify them with 
+.B eth0:0
+for the first alias of eth0. You can use them to assign a second address. To
+delete an alias interface use
+.BR "ifconfig eth0:0 down" .
+Note: for every scope (i.e. same net with address/netmask combination) all
+aliases are deleted, if you delete the first (primary).
 .TP
 .B up
-Diese Flagge aktiviert die Schnittstelle.  Sie wird implizit gesetzt, wenn
-eine Adresse einer Schnittstelle zugewiesen wird.
+This flag causes the interface to be activated.  It is implicitly
+specified if an address is assigned to the interface.
 .TP
 .B down
-Durch diese Flagge wird der Treiber f\(:ur die Schnittstelle deaktiviert.
+This flag causes the driver for this interface to be shut down.
 .TP
 .B "[\-]arp"
-Schaltet das ARP-Protokoll auf dieser Schnittstelle ein oder aus.
+Enable or disable the use of the ARP protocol on this interface.
 .TP
 .B "[\-]promisc"
-Ein-/Ausschalten des
+Enable or disable the
 .B promiscuous
-Modus der Schnittstelle.  Ist er eingeschaltet, so werden alle Pakete vom
-Netzwerk empfangen unabh\(:angig davon ob sie an die Schnittstelle adressiert
-sind.
+mode of the interface.  If selected, all packets on the network will
+be received by the interface.
 .TP
 .B "[\-]allmulti"
-Ein-/Ausschalten des
+Enable or disable 
 .B all-multicast
-Modus.  Ist er eingeschaltet, so werden alle Multicastpakete vom Netzwerk
-empfangen unabh\(:angig davon, ob sie an die Schnittstelle adressiert sind
-oder nicht.
+mode.  If selected, all multicast packets on the network will be
+received by the interface.
 .TP
 .B "metric N"
-Dieses Argument setzt den Metrik-Wert f\(:ur die Schnittstelle auf N.
+This parameter sets the interface metric.
 .TP
 .B "mtu N"
-Dieses Argument setzt die Maximum Transfer Unit (MTU) der Schnittstelle,
-das ist das gr\(:o\(sste Paket, dass gesendet werden kann.
+This parameter sets the Maximum Transfer Unit (MTU) of an interface.
 .TP
 .B "dstaddr addr"
-Setzt die IP-Adresse der Gegenseite f\(:ur Punkt-zu-Punkt-Verbinungen wie z.B.
-PPP.  Dieses Schl\(:usselwort ist \(:uberholt; statt dessen sollte das
+Set the remote IP address for a point-to-point link (such as
+PPP).  This keyword is now obsolete; use the
 .B pointopoint
-Schl\(:usselwort verwendet werden.
+keyword instead.
 .TP
-.B "netmask Adr"
-Setzt die IP Netzwerksmaske f\(:ur diese Schnittstelle.  Die Voreinstellung
-ist abh\(:angig von der IP-Adresse der Schnittstelle die Maske f\(:ur ein
-Klasse A, B oder C Netzwerk, kann aber auf jeden beliebigen Wert gesetzt
-werden.
+.B "netmask addr"
+Set the IP network mask for this interface.  This value defaults to the
+usual class A, B or C network mask (as derived from the interface IP
+address), but it can be set to any value.
 .TP
-.B "add Adr/Prefixl\(:ange"
-F\(:ugt der Schnittstelle eine IPv6-Adresse zu.
+.B "add addr/prefixlen"
+Add an IPv6 address to an interface. 
 .TP
 .B "del addr/prefixlen"
-Entfernt eine IPv6-Adresse von der Schnittstelle.
+Remove an IPv6 address from an interface.
 .TP
 .B "tunnel aa.bb.cc.dd"
-Erzeugt ein neues SIT (IPv6-in-IPv4) Ger\(:at, das Pakete zum angegebenen
-Ziel tunnelt.
+Create a new SIT (IPv6-in-IPv4) device, tunnelling to the given destination.
 .TP
 .B "irq addr"
-Setzt die Interruptleitung, die von diesem Ger\(:at benutzt wird.  Nicht alle
-Ger\(:ate koennen ihre Interruptkonfiguration dynamisch \(:andern.
+Set the interrupt line used by this device.  Not all devices can
+dynamically change their IRQ setting.
 .TP
-.B "io_addr Adr"
-Setzt die I/O-Basisadresse f\(:ur dieses Ger\(:at.
+.B "io_addr addr"
+Set the start address in I/O space for this device. 
 .TP
-.B "mem_start Adr"
-Setzt die Startadresse f\(:ur shared memory der von diesem Ger\(:at benutzt
-wird.  Dies wird nur von wenigen Ger\(:aten ben\(:otigt.
+.B "mem_start addr"
+Set the start address for shared memory used by this device.  Only a
+few devices need this.
 .TP
-.B "media Typ"
-Setzt den physikalischen Anschluss oder den Mediumstyp, der vom Ger\(:at
-verwendet wird.  Nicht alle Ger\(:ate k\(:onnen diese Einstellung \(:andern,
-und bei denjenigen, bei denen dies m\(:oglich ist, variieren die
-unterst\(:utzten Werte.  Typische Werte f\(:ur
-.B Typ
-sind
+.B "media type"
+Set the physical port or medium type to be used by the device.  Not
+all devices can change this setting, and those that can vary in what
+values they support.  Typical values for
+.B type
+are 
 .B 10base2
 (thin Ethernet),
 .B 10baseT
 (twisted-pair 10Mbps Ethernet),
 .B AUI 
-(Externer Transceiver) und so weiter.  Der spezielle Mediumstyp
+(external transceiver) and so on.  The special medium type of
 .B auto
-kann benutzt werden, damit der Treiber automatischen den Typ des Mediums
-erkennt.  Wiederum unterst\(:utzen dies nicht alle Treiber.
+can be used to tell the driver to auto-sense the media.  Again, not
+all drivers can do this.
 .TP
-.B "[\-]broadcast [Adr]"
-Wird das Adressargument gegeben, so wird die Protokolladresse f\(:ur Broadcast
-f\(:ur diese Schnittstelle gesetzt.  Ansonsten wird die
+.B "[\-]broadcast [addr]"
+If the address argument is given, set the protocol broadcast
+address for this interface.  Otherwise, set (or clear) the
 .B IFF_BROADCAST
-Flagge f\(:ur diese Schnittstelle gesetzt bzw. gel\(:oscht.
+flag for the interface.
 .TP
-.B "[\-]pointopoint [Adr]"
-Dieses Schl\(:usselwort aktiviert den
-.B Punkt-zu-Punkt
-Modus einer Schnittstelle.  Das bedeutet, da\(ss eine Verbindung zwischen zwei
-Maschine direkt ist ohne da\(ss weitere Maschinen mith\(:oren.
+.B "[\-]pointopoint [addr]"
+This keyword enables the
+.B point-to-point
+mode of an interface, meaning that it is a direct link between two
+machines with nobody else listening on it.
 .br
-Wird auch ein Adressargument gegeben, so wird die Protokolladrsse auf der
-Gegenseite der Verbindung gesetzt, genau wie beim jetzt \(:uberholten
+If the address argument is also given, set the protocol address of
+the other side of the link, just like the obsolete
 .B dstaddr
-Schl\(:usselwort.  Ansonsten wird die
+keyword does.  Otherwise, set or clear the
 .B IFF_POINTOPOINT
-Flagge f\(:ur die Schnittstelle gesetzt bzw. gel\(:oscht.
+flag for the interface. 
 .TP
-.B hw Klasse Adresse
-Setzt die Hardwareadresse dieser Schnittstelle, wenn der Ger\(:atetreiber
-diese Operation unterst\(:utzt.  Das Schl\(:usselwort mu\(ss vom Namen der
-Hardwareklasse und der ASCII-Darstellung der Hardwareadresse gefolgt werden.
-Zur Zeit werden unter anderem folgende Hardwareklassen unterst\(:utzt:
+.B hw class address
+Set the hardware address of this interface, if the device driver
+supports this operation.  The keyword must be followed by the
+name of the hardware class and the printable ASCII equivalent of
+the hardware address.  Hardware classes currently supported include
 .B ether
 (Ethernet),
 .B ax25
@@ -164,43 +172,58 @@ and
 (AMPR NET/ROM).
 .TP
 .B multicast
-Setzt die Multicastflagge der Schnittstelle.  Dies sollte im Normalfall nicht
-ben\(:otigt werden, da die Treiber die Flagge selbst setzen.
+Set the multicast flag on the interface. This should not normally be needed
+as the drivers set the flag correctly themselves.
 .TP
-.B Adresse
-Die IP-Adresse, die der Schnittstelle zugewiesen wird.
+.B address
+The IP address to be assigned to this interface.
 .TP
-.B txqueuelen L\(:ange
-Setzt die L\(:ange der Sendewarteschlange des Ger\(:ats.  Es kann n\(:utzlich
-sein, diesen Wert auf eine kleinen Wert f\(:ur langsame Ger\(:ate mit hoher
-Paketlaufzeit (Modems, ISDN) zu setzen um zu verhindern, da\(ss schnelle
-Gro\(ss\(:ubertragungen interaktiven Verkehr wie Telnet zu sehr st\(:oren.
-.SH BEMERKUNGEN
-Seit Kernel Version 2.2 gibt es keine expliziten Statistiken f\(:ur
-Schnittstellenaliase mehr.  Die Statistiken f\(:ur die Originaladresse werden
-mit allen Aliasen auf das gleiche Ger\(:at geteilt.  Um Statistiken per
-Adresse zu erhalten sollte explizite EIntr\(:age f\(:ur die Adresse mit dem
-.BR ipchains(8)
-Kommando gemacht werden.
-
-.SH DATEIEN
+.B txqueuelen length
+Set the length of the transmit queue of the device. It is useful to set this
+to small values for slower devices with a high latency (modem links, ISDN)
+to prevent fast bulk transfers from disturbing interactive traffic like
+telnet too much. 
+.SH NOTES
+Since kernel release 2.2 there are no explicit interface statistics for
+alias interfaces anymore. The statistics printed for the original address
+are shared with all alias addresses on the same device. If you want per-address
+statistics you should add explicit accounting
+rules for the address using the 
+.BR ipchains (8)
+or
+.BR iptables (8)
+command.
+.LP
+Since net\-tools 1.60\-4 ifconfig is printing byte counters and human readable
+counters with IEC 60027-2 units. So 1 KiB are 2^10 byte. Note, the numbers 
+are truncated to one decimal (which can by quite a large error if you 
+consider 0.1 PiB is 112.589.990.684.262 bytes :)
+.LP
+Interrupt problems with Ethernet device drivers fail with EAGAIN
+.I (SIOCSIIFLAGS: Resource temporarily unavailable)
+it is most likely a interrupt conflict. See
+.I http://www.scyld.com/expert/irq\-conflict.html
+for more information.
+.SH FILES
 .I /proc/net/socket 
 .br
 .I /proc/net/dev
 .br
 .I /proc/net/if_inet6
-.SH FEHLER
-W\(:ahrend AppleTalk DDP und IPX Adressen angezeigt werden, k\(:onnen sie mit
-diesem Kommando nicht ge\(:andert werden.
-.SH SIEHE AUCH
+.SH BUGS
+While appletalk DDP and IPX addresses will be displayed they cannot be
+altered by this command.
+.SH SEE ALSO
 route(8), netstat(8), arp(8), rarp(8), ipchains(8), iptables(8), ifup(8), interfaces(5).
-.SH AUTOREN
+.br
+http://physics.nist.gov/cuu/Units/binary.html - Prefixes for binary multiples
+.SH AUTHORS
 Fred N. van Kempen, <waltje@uwalt.nl.mugnet.org>
 .br
 Alan Cox, <Alan.Cox@linux.org>
 .br
 Phil Blundell, <Philip.Blundell@pobox.com>
 .br
-Andi Kleen, 
-.SH \(:Ubersetzung
-Ralf B\(:achle <ralf@gnu.org>
+Andi Kleen
+.br
+Bernd Eckenfels, <net\-tools@lina.inka.de>

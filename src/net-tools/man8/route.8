@@ -1,6 +1,6 @@
-.TH ROUTE 8 "2007-12-02" "net\-tools" "Handbuch f\(:ur Linuxprogrammierer"
+.TH ROUTE 8 "2007-12-02" "net\-tools" "Linux Programmer's Manual"
 .SH NAME
-route \- Anzeigen der IP-Routen-Tabelle
+route \- show / manipulate the IP routing table
 .SH SYNOPSIS
 .B route
 .RB [ \-CFvnee ]
@@ -8,10 +8,10 @@ route \- Anzeigen der IP-Routen-Tabelle
 .B route 
 .RB [ \-v ]
 .RB [ \-A
-Addressfamilie] 
+family] 
 .B add 
 .RB [ \-net | \-host ] 
-Ziel
+target 
 .RB [ netmask 
 Nm] 
 .RB [ gw 
@@ -29,322 +29,301 @@ I]
 .RB [ dyn ] 
 .RB [ reinstate ] 
 .RB [[ dev ] 
-Schnittstelle]
+If]
 .TP
 .B route 
 .RB [ \-v ] 
 .RB [ \-A
-Adressfamilie]
+family]
 .B del 
 .RB [ \-net | \-host ] 
-Ziel
+target 
 .RB [ gw 
-Router] 
+Gw] 
 .RB [ netmask 
 Nm] 
 .RB [ metric 
 N] 
 .RB [[ dev ]
-Schnittstelle]
+If]
 .TP
 .B route 
 .RB [ \-V ] 
 .RB [ \-\-version ]
 .RB [ \-h ]
 .RB [ \-\-help ]
-.SH BESCHREIBUNG
+.SH DESCRIPTION
 .B Route
-wird zum \(:Andern der IP-Routing-Tabelle der Kernels verwendet.  Seine
-prim\(:are Verwendung ist statische Routen f\(:ur bestimmte Rechner oder
-Netzwerke \(:uber eine Schnittstelle einzutragen, nachdem diese mit dem
-Programm
+manipulates the kernel's IP routing tables.  Its primary use is to set
+up static routes to specific hosts or networks via an interface after
+it has been configured with the
 .BR ifconfig (8)
-konfiguriert wurde.
+program.
 
-.SH OPTIONEN
-.TP
-.B \-v
-schaltet ausf\(:uhrliche Ausgaben an.
+When the
+.B add
+or
+.B del
+options are used,
+.B route
+modifies the routing tables.  Without these options,
+.B route
+displays the current contents of the routing tables.
 
+.SH OPTIONS
 .TP
-.B \-A Adressfamilie
-Benutzt die angegebene Adresse, z.B. inet oder inet6.
-
-.TP
-.B \-n
-zeigt numerische Adressen an, d.h. es wird nicht mehr versucht IP-Adressen
-in symbolische Hostnamen umzuwandeln.  Dies kann z.B. n\(:utzlich sein, wenn
-der Nameserver nicht mehr erreichbar ist, z.B. weil keine Route existiert.
-
-.TP
-.B \-e
-Schaltet das Ausgabeformat von
-.BR netstat (8)
-f\(:ur die Anzeige der Routentabelle an.
-.B \-ee 
-gibt eine sehr lange Zeile mit allen Routenparametern aus der Routentabelle
-aus.
-
-.TP
-.B \-net
-Das
-.B Ziel
-ist ein Netzwerk.
-
-.TP
-.B \-host
-daS
-.B Ziel
-ist ein Rechner
+.B \-A family
+use the specified address family (eg `inet'; use `route \-\-help' for a full 
+list).
 
 .TP 
 .B \-F
-Zeit die FIB Routentabelle des Kerns an.  Das Ausgabeformat kann mit den
-Optionen
-.B \-e
-and
-.B \-ee
-ge\(:andert werden.
-
+operate on the kernel's FIB (Forwarding Information Base) routing
+table. 
+This is the default.
 .TP 
 .B \-C
-zeigt den Routencache des Kernels an.
+operate on the kernel's routing cache.
+
+.TP
+.B \-v
+select verbose operation.
+.TP
+.B \-n
+show numerical addresses instead of trying to determine symbolic host
+names. This is useful if you are trying to determine why the route to your
+nameserver has vanished.
+.TP
+.B \-e
+use
+.BR netstat (8)\-format
+for displaying the routing table.
+.B \-ee 
+will generate a very long line with all parameters from the routing table.
 
 .TP
 .B del
-L\(:oescht eine Route.
-
+delete a route.
 .TP 
 .B add 
-f\(:ugt eine Route zu.
-
+add a new route.
 .TP
-.B Ziel
-Das Zielnetzwerk oder \(hySystem.  Die Angabe von sowohl IP-Adressen in Form
-von dezimalen durch Punkt getrennten Quadrupeln als auch Rechner\(hy und
-Netznamen ist zul\(:assig.
-
+.B target
+the destination network or host. You can provide IP addresses in dotted
+decimal or host/network names.
 .TP
-.B netmask Nm
-\(:andert die Netzwerksmaske der Route, die zugef\(:ugt werden soll.
-
+.B \-net
+the
+.B target
+is a network.
 .TP
-.B gw Router
-Alle IP-Pakete f\(:ur das Zielnetzwerk / \(hySystem werden zum angegebenen
-Router weitergeleitet.
-
-.B ANMERKUNG:
-Das angegebene Ziel mu\(ss zuerst erreichbar sein.  \(:Ublicherweise bedeutet
-das, das zuerst eine statische Route zum Router eingetragen werden.  Wird
-die Adresse einer lokalen Schnittstelle angegeben, so wird sie benutzt um
-zu entscheiden zu welcher Schnittstelle die Pakete weitergeleitet werden.
-Dieses Merkmal dient der Kompatibilit\(:at mit BSD.
-
+.B \-host
+the
+.B target 
+is a host.
+.TP
+.B netmask NM
+when adding a network route, the netmask to be used.
+.TP
+.B gw GW
+route packets via a gateway.
+.B NOTE:
+The specified gateway must be reachable first. This usually means that
+you have to set up a static route to the gateway beforehand. If you specify
+the address of one of your local interfaces, it will be used to decide about
+the interface to which the packets should be routed to. This is a BSDism
+compatibility hack.
 .TP
 .B metric M
-Setzt das Metric-Feld der Routentabelle, das von Routend\(:amonen verwendet
-wird, auf M.
-
+set the metric field in the routing table (used by routing daemons) to M.
 .TP 
 .B mss M
-Setzt den MSS-Wert (Maximum Segment Size) f\(:ur TCP-Verbindungen \(:uber
-diese Route auf M bytes.  Diese Einstellung kann verwendet werden um eine
-kleinere MTU zu erzwingen, wenn
-Path MTU Discovery nicht funktioniert (normalerweise weil ein Firewall
-dazwischen ist der ICMP Fragmentation Needed blockt). Die Standardeinstellung
-ist die MTU des Netzwerkinterfaces minus Headers oder eine kleinere falls 
-bekannt.
-
-
-
+set the TCP Maximum Segment Size (MSS) for connections over this route
+to M bytes. 
+The default is the device MTU minus headers, or a lower MTU when path mtu 
+discovery occurred. This setting can be used to force smaller TCP packets on the
+other end when path mtu discovery does not work (usually because of
+misconfigured firewalls that block ICMP Fragmentation Needed)
 .TP 
 .B window W 
-Setzt das TCP-Fenster f\(:ur Verbindungen \(:uber diese Route auf W bytes.
-Dies wird \(:ublicherweise nur auf AX.25-Netzwerken und mit Treibern, die
-Probleme mit aufeinanderfolgenden Paketen haben, benutzt.
-
+set the TCP window size for connections over this route to W
+bytes. This is typically only used on AX.25 networks and with drivers
+unable to handle back to back frames.
 .TP
-.B irtt A
-Setzt die Anf\(:angliche Paketumlaufzeit (IRTT, Initial Round Trip Time)
-f\(:ur TCP-Verbindungen auf A millisekunden.  Erlaubte Werte sind im Bereich
-von 1-12000 Milisekunden.  Dies wird \(:ublicherweise nur auf AX.25
-Netzwerken benutzt.  Wenn ausgelassen, dann wird der Standardwert aus
-RFC1122 von 300ms benutzt.
-
+.B irtt I
+set the initial round trip time (irtt) for TCP connections over this
+route to I milliseconds (1-12000). This is typically only used on
+AX.25 networks. If omitted the RFC 1122 default of 300ms is used.
 .TP
 .B reject
-Installiert eine Blockaderoute, die im Abbruch der Suche nach einer Route
-resultiert.  Dies wird zum Beispiel benutzt um Netzwerke auszumaskieren,
-bevor die Standardroute verwendet wird.  Dieses Merkmal ist NICHT zur
-Verwendung als Firewall gedacht.
-
+install a blocking route, which will force a route lookup to fail.
+This is for example used to mask out networks before using the default
+route.  This is NOT for firewalling.
 .TP
 .B mod, dyn, reinstate
-Installiert eine dynamische oder modifizierte Route.  Beide Flaggen werden im
-allgemeinen nur von Routend\(:amonen verwendet und dienen im
-.BR route (8)
-Kommando nur zu diagnostischen Zwecken.
-
+install a dynamic or modified route. These flags are for diagnostic
+purposes, and are generally only set by routing daemons.
 .TP
-.B dev Schnittstelle
-Erzwingt, da\(ss die Route mit der angegebenen Schnittstelle assoziiert wird.
-Ansonsten w\(:urde der Kern selbstst\(:andig versuchen, die Schnittstelle
-durch \(:Uberpr\(:ufung bereits existierender Routen,
-Schnittstellenspezifikationen und der Stelle, zu der die Route zugef\(:ugt
-wird.  In den meisten normalen Netzwerken wird dies nicht ben\(:otigt.
+.B dev If
+force the route to be associated with the specified device, as the
+kernel will otherwise try to determine the device on its own (by
+checking already existing routes and device specifications, and where
+the route is added to). In most normal networks you won't need this.
 
-Wird als letzte Option
-.B dev Schnittstelle
-angegeben, so kann das Schl\(:usselwort
+If 
+.B dev If
+is the last option on the command line, the word 
 .B dev
-ausgelassen werden, da es Standardwert ist.  Ansonsten ist die Reihenfolge
-der Optionen (metric, netmask, gw und dev), die die Route ver\(:andern, egal.
+may be omitted, as it's the default. Otherwise the order of the route
+modifiers (metric - netmask - gw - dev) doesn't matter.
 
-.SH BEISPIELE
+.SH EXAMPLES
 .TP
-.B route add \-net 127.0.0.0
-erzeugt die normale Loopbackroute mit der Netzmaske 255.0.0.0 (Netzwerk Klasse
-A, ermittelt aus der Zieladresse) und assoziert sie mit der Schnittstelle lo
-unter der Annahme, da\(ss dieses Ger\(:at vorher mit
-.BR ifconfig (8)
-konfiguriert wurde. 
+.B route add \-net 127.0.0.0 netmask 255.0.0.0 dev lo
+adds the normal loopback entry, using netmask 255.0.0.0 and associated with the 
+"lo" device (assuming this device was previously set up correctly with
+.BR ifconfig (8)). 
 
 .TP 
 .B route add \-net 192.56.76.0 netmask 255.255.255.0 dev eth0
-Legt eine Route zum Netzwerk 192.56.76.x \(:uber eth0 an.  Die Angabe der
-Klasse C Netzmaske ist in diesem Fall nicht n\(:otig, 192.* Klasse C
-IP-Adressen sind.  Das Wort dev darf in diesem Fall ausgelassen werden.
+adds a route to the local network 192.56.76.x via 
+"eth0".  The word "dev" can be omitted here. 
+
+.TP
+.B route del default
+deletes the current default route, which is labeled "default" or 0.0.0.0
+in the destination field of the current routing table.
 
 .TP
 .B route add default gw mango\-gw
-legt eine Standardroute, d.h. eine Route die verwendet wird, wenn keine andere
-Route passt, an.  Alle Pakete \(:uber diese Route werden \(:uber mango\-gw
-weitergeleitet.  Die Schnittstelle, die tats\(:achlich f\(:ur diese Route
-verwendet wird, h\(:angt davon ab, wie mango\-gw erreicht werden kann.  Zuvor
-mu\(ss mango\-gw bereits \(:uber eine andere Route erreicht werden k\(:onnen.
+adds a default route (which will be used if no other route matches).
+All packets using this route will be gatewayed through "mango\-gw". The
+device which will actually be used for that route depends on how we
+can reach "mango\-gw" - the static route to "mango\-gw" will have to be
+set up before. 
 
 .TP
 .B route add ipx4 sl0
-Legt eine Route zum Rechner ipx4 \(:uber die SLIP-Schnittstelle an.  Dabei
-wird angenommen da\(ss ipx4 der SLIP-Rechner auf der Gegenseite ist.
+Adds the route to the "ipx4" host via the SLIP interface (assuming that
+"ipx4" is the SLIP host).
 
 .TP
 .B route add \-net 192.57.66.0 netmask 255.255.255.0 gw ipx4
-Dieses Kommando sorgt daf\(:ur, dass das Netz 192.57.66.x \(:uber die
-obige Route \(:uber die SLIP-Schnittstelle weitergeleitet wird.
+This command adds the net "192.57.66.x" to be gatewayed through the former
+route to the SLIP interface.
 
 .TP
-.B route add 224.0.0.0 netmask 240.0.0.0 dev eth0
-Dieses etwas obscure Beispiel wird hier dokumentiert, um zu zeigen, wie
-Multicastrouten angelegt werden.  Durch diese Route werden alle Pakete der
-Klasse D (Multicast) \(:uber eth0 weitergeleitet.  Diese die korrekte
-Konfiguration f\(:ur einen Kern mit Multicast-Unterst\(:utzung.
+.B route add \-net 224.0.0.0 netmask 240.0.0.0 dev eth0
+This is an obscure one documented so people know how to do it. This sets
+all of the class D (multicast) IP routes to go via "eth0". This is the
+correct normal configuration line with a multicasting kernel. 
 
 .TP
-.B route add 10.0.0.0 netmask 255.0.0.0 reject
-Dies installiert eine zur\(:uckweisende Route f\(:ur das private Netzwerk
-10.x.x.x.
+.B route add \-net 10.0.0.0 netmask 255.0.0.0 reject
+This installs a rejecting route for the private network "10.x.x.x."
 
 .LP
-.SH AUSGABE
-Die Ausgabe der Kernelroutentabelle besteht aus folgenden Spalten
+.SH OUTPUT
+The output of the kernel routing table is organized in the following columns
 .TP
-.B Ziel
-Das Zielnetzwerk oder \(hySystem.
+.B Destination     
+The destination network or destination host.
 .TP
-.B Router
-Die Adresse des weiterleitenden Routers oder "*", wenn keine gesetzt ist.
+.B Gateway
+The gateway address or '*' if none set.
 .TP
 .B Genmask         
-Die Netzmaske f\(:ur das Zielnetz; '255.255.255.255' f\(:ur eine einzeles
-Zielsystem und '0.0.0.0' f\(:ur die Standardroute (.
-.BR default ).
+The netmask for the destination net; '255.255.255.255' for a host destination
+and '0.0.0.0' for the 
+.B default
+route.
 .TP
-.B Flaggen
-M\(:ogliche Flaggen sind
+.B Flags 
+Possible flags include
 .br
 .B U
-Route ist aktiviert (
+(route is
 .BR up )
 .br
 .B H
-Ziel ist ein einzelner
-.BR Rechner
+(target is a
+.BR host )
 .br
 .B G
-Benutzt einen Router als
-.BR gateway
+(use
+.BR gateway )
 .br
 .B R
-modifiziert eine Route bei dynamischem Routen
+.RB ( reinstate
+route for dynamic routing)
 .br
 .B D
-Route ist dynamisch von einem daemon oder redirect-Paket erzeugt worden.
+.RB ( dynamically
+installed by daemon or redirect)
 .br
 .B M
-modified von einem Routend\(:amon oder redirekt-Paket.
+.RB ( modified
+from routing daemon or redirect)
+.br
+.B A
+(installed by
+.BR addrconf )
+.br
+.B C
+.RB ( cache
+entry)
 .br
 .B !
-.RB ( zur\(:uckweisende Route)
+.RB ( reject
+route)
 .TP
 .B Metric 
-Der Abstand zum Ziel, d.h. \(:ublicherweise die Anzahl der Zwischenrouter.
-Dieser Wert wird von aktuellen Kernen nicht verwendet, kann aber u.U.
-von Routend\(:amonen ben\(:otigt werden.
+The 'distance' to the target (usually counted in hops). It is not used by
+recent kernels, but may be needed by routing daemons.
 .TP
 .B Ref    
-Anzahl der Referenzen auf diese Route.  Wird vom Linux Kern nicht benutzt.
+Number of references to this route. (Not used in the Linux kernel.)
 .TP
-.B Benutzer
-Zahl der Suchvorg\(:ange nach dieser Route.  Abh\(:angig von \-F und \-C
-werden entweder fehlgeschlagene Suchen im Cache (\-F) oder Cache-Treffer (\-C)
+.B Use
 Count of lookups for the route.  Depending on the use of \-F and \-C this will
 be either route cache misses (\-F) or hits (\-C).
 .TP
-.B Schnittstelle
-Schnittstelle auf die Pakete f\(:ur diese Route geleitet werden.
+.B Iface
+Interface to which packets for this route will be sent.
 .TP
 .B MSS 
-Maximale Segmentgr\(:o\(sse f\(:ur TCP-Verbindungen \(:uber diese Route.
+Default maximum segment size for TCP connections over this route.
 .TP
-.B Fenster
-Voreinstellung f\(:ur die Fenstergr\(:o\(sse von Verbindungen \(:uber diese
-Route.
+.B Window  
+Default window size for TCP connections over this route.
 .TP
 .B irtt
-Anf\(:angliche Paketumlaufszeit (IRTT, Initial Round Trip Time).  Der Kern
-benutzt diesen Wert um die bestm\(:oglichen Parameter f\(:ur das
-TCP-Protokoll abzusch\(:atzen ohne m\(:oglicherweise auf eventuell langsame
-Antworten warten zu m\(:ussen.
+Initial RTT (Round Trip Time). The kernel uses this to guess about the best
+TCP protocol parameters without waiting on (possibly slow) answers.
 .TP
 .B HH (cached only)
-Die Anzahl der ARP-Eintr\(:age und gecachten Routen, die den Hardware-
-headercache der gecachten Route referenzieren.  Die ist \-1 wenn keine
-Hardwareadresse nicht f\(:ur den Eintrag der gecachten Route
-ben\(:otigt wird, z.B. f\(:ur lo.
+The number of ARP entries and cached routes that refer to the hardware
+header cache for the cached route. This will be \-1 if a hardware
+address is not needed for the interface of the cached route (e.g. lo).
 .TP
-.B Arp (nur gecachet)
-Nur wenn die Hardwareadresse f\(:ur die gecachte Route aktuell ist.
+.B Arp (cached only)
+Whether or not the hardware address for the cached route is up to date.
 .LP
-.SH DATEIEN
+.SH FILES
 .I /proc/net/ipv6_route
 .br
 .I /proc/net/route
 .br
 .I /proc/net/rt_cache
 .LP
-.SH SIEHE AUCH
+.SH SEE ALSO
 .I ifconfig(8), netstat(8), arp(8), rarp(8)
 .LP
-.SH GESCHICHTE
+.SH HISTORY
 .B Route
-f\(:ur Linux wurde urspr\(:unglich von Fred N. van Kempen geschrieben
-(waltje@uwalt.nl.mugnet.org) und dann von Johannes Stille und Linus Torvalds
-f\(:ur pl15.  Alan Cox hat die mss und window Optionen f\(:ur Linux 1.1.22
-zugef\(:ugt.  Bernd Eckenfels hat schlie\(sslich die Unterst\(:utzung f\(:ur
-irtt beigesteuert und den Code mit dem von Netstat vereinigt.
-.SH AUTOREN
-.B Route
-wird zur Zeit von Phil Blundel <Philip.Blundell@pobox.com> und Bernd Eckenfels <net-tools@lina.inka.de> gewartet.
-.SH \(:Ubersetzung
-Ralf B\(:achle <ralf@gnu.org>
+for Linux was originally written by Fred N.  van Kempen,
+<waltje@uwalt.nl.mugnet.org> and then modified by Johannes Stille and
+Linus Torvalds for pl15. Alan Cox added the mss and window options for
+Linux 1.1.22. irtt support and merged with netstat from Bernd Eckenfels.
+.SH AUTHOR
+Currently maintained by Phil Blundell <Philip.Blundell@pobox.com> and Bernd Eckenfels <net-tools@lina.inka.de>.
