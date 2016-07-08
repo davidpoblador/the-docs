@@ -160,8 +160,8 @@ class ManDirectoryParser(object):
                     continue
                 except:
                     self.pages_with_errors.add(os.path.basename(page_file))
-                    logging.error(" * ERR: %s" %
-                                  (manpage_instances[page_file].filename, ))
+                    logging.error(" * ERR %s: %s" %
+                                  (page_file, manpage_instances[page_file].filename, ))
                     mandirpages[directory].remove(page_file)
                     continue
 
