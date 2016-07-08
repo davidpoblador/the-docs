@@ -1,0 +1,427 @@
+.TH SA 8 "1997 August 19"
+.SH NAME
+sa \-  summarizes accounting information
+.SH SYNOPSIS
+.hy 0
+.na
+.TP
+.B sa
+[
+.B \-a
+|
+.B \-\-list-all-names
+]
+.br
+[
+.B \-b
+|
+.B \-\-sort-sys-user-div-calls 
+]
+.br
+[
+.B \-c
+|
+.B \-\-percentages
+]
+[
+.B \-d
+|
+.B \-\-sort-avio
+]
+.br
+[
+.B \-D
+|
+.B \-\-sort-tio
+]
+[
+.B \-f
+|
+.B \-\-not-interactive
+]
+.br
+[
+.B \-i
+|
+.B \-\-dont-read-summary-file
+]
+.br
+[
+.B \-j
+|
+.B \-\-print-seconds
+]
+[
+.B \-k
+|
+.B \-\-sort-cpu-avmem
+]
+.br
+[
+.B \-K
+|
+.B \-\-sort-ksec
+]
+[
+.B \-l
+|
+.B \-\-separate-times
+]
+.br
+[
+.B \-m
+|
+.B \-\-user-summary
+]
+[
+.B \-n
+|
+.B \-\-sort-num-calls
+]
+.br
+[
+.B \-p
+|
+.B \-\-show-paging
+]
+[
+.B \-P
+|
+.B \-\-show-paging-avg
+]
+.br
+[
+.B \-r
+|
+.B \-\-reverse-sort
+]
+[
+.B \-s
+|
+.B \-\-merge
+]
+.br
+[
+.B \-t
+|
+.B \-\-print-ratio
+]
+[
+.B \-u
+|
+.B \-\-print-users
+]
+.br
+[
+.BI \-v " num"
+|
+.BI \-\-threshold " num"
+]
+[
+.B \-\-sort-real-time
+]
+.br
+[
+.B \-\-debug
+]
+[
+.B \-V
+|
+.B \-\-version
+]
+[
+.B \-h
+|
+.B \-\-help 
+]
+.br
+[
+.BI "\-\-other-usracct-file " filename
+]
+[
+.BI \-\-ahz " hz"
+]
+.br
+[
+.BI "\-\-other-savacct-file " filename
+]
+.br
+[
+[
+.B "\-\-other-acct-file " 
+]
+.I filename
+]
+.SH DESCRIPTION
+.LP
+.B sa
+summarizes information about previously executed commands as
+recorded in the 
+.I acct
+file.  In addition, it condenses this data into a summary file named
+.I savacct
+which contains the number of times the command was called and the system 
+resources used.  The information can also be summarized on a per-user 
+basis; 
+.B sa
+will save this information into a file named
+.I usracct.
+.LP
+If no arguments are specified, 
+.B sa 
+will print information about all of the commands in the 
+.I acct
+file.  
+.LP
+If called with a file name as the last argument, 
+.B sa 
+will use that file instead of the system's default
+.I acct
+file.
+.LP
+By default, 
+.B sa 
+will sort the output by sum of user and system time.  
+If command names have unprintable characters, or are only called once, 
+.B sa 
+will sort them into a group called `***other'.
+If more than one sorting option is specified, the list will
+be sorted by the one specified last on the command line.
+.LP
+The output fields are labeled as follows:
+.TP
+.I cpu
+ sum of system and user time in cpu minutes
+.TP
+.I re
+ "elapsed time" in minutes
+.TP
+.I k
+ cpu-time averaged core usage, in 1k units
+.TP
+.I avio
+ average number of I/O operations per execution
+.TP
+.I tio
+ total number of I/O operations
+.TP
+.I k*sec
+ cpu storage integral (kilo-core seconds)
+.TP
+.I u
+ user cpu time in cpu seconds
+.TP
+.I s
+ system time in cpu seconds
+.LP
+Note that these column titles do not appear in the first row of the
+table, but after each numeric entry (as units of measurement) in every
+row.  For example, you might see `79.29re', meaning 79.29 cpu seconds
+of "real time".
+.LP
+An asterisk will appear after the name of commands that forked but didn't call 
+.B exec.
+.LP
+GNU 
+.B sa
+takes care to implement a number of features not found in other versions.
+For example, most versions of 
+.B sa 
+don't pay attention to flags like `\-\-print-seconds' and 
+`\-\-sort-num-calls' when printing out commands when combined with 
+the `\-\-user-summary' or `\-\-print-users' flags.  GNU 
+.B sa 
+pays attention to these flags if they are applicable.
+Also, MIPS'
+.B sa
+stores the average memory use as a short rather than a double, resulting
+in some round-off errors.  GNU 
+.B sa 
+uses double the whole way through.
+.SH OPTIONS
+.LP
+The availability of these program options depends on your operating
+system.  In specific, the members that appear in the
+.B struct acct
+of your system's process accounting header file (usually 
+.I acct.h
+) determine which flags will be present.  For example, if your system's
+.B struct acct
+doesn't have the `ac_mem' field, the installed
+version of
+.B sa
+will not support the `\-\-sort-cpu-avmem', `\-\-sort-ksec', `\-k', or
+`\-K' options.
+.LP
+In short, all of these flags may not be available on your machine.
+.TP
+.PD 0
+.B \-a, \-\-list-all-names
+Force 
+.B sa 
+not to sort those command names with unprintable characters and those 
+used only once into the 
+.I ***other
+group.
+.TP
+.B \-b, \-\-sort-sys-user-div-calls
+Sort the output by the sum of user and system time divided by the
+number of calls.
+.TP
+.B \-c, \-\-percentages
+Print percentages of total time for the command's user, system,
+and real time values.
+.TP
+.B \-d, \-\-sort-avio
+Sort the output by the average number of disk I/O operations.
+.TP
+.B \-D, \-\-sort-tio
+Print and sort the output by the total number of disk I/O operations.
+.TP
+.B \-f, \-\-not-interactive
+When using the `\-\-threshold' option, assume that all answers to
+interactive queries will be affirmative.
+.TP
+.B \-i, \-\-dont-read-summary-file
+Don't read the information in the system's default
+.I savacct
+file.
+.TP
+.B \-j, \-\-print-seconds
+Instead of printing total minutes for each category, print seconds per call.
+.TP
+.B \-k, \-\-sort-cpu-avmem
+Sort the output by cpu time average memory usage.
+.TP
+.B \-K, \-\-sort-ksec
+Print and sort the output by the cpu-storage integral.
+.TP
+.B \-l, \-\-separate-times
+Print separate columns for system and user time; usually the two
+are added together and listed as `cpu'.
+.TP
+.B \-m, \-\-user-summary
+Print the number of processes and number of CPU minutes on a
+per-user basis.
+.TP
+.B \-n, \-\-sort-num-calls
+Sort the output by the number of calls.  This is the default sorting method.
+.TP
+.B \-p, \-\-show-paging
+Print the number of minor and major pagefaults and swaps.
+.TP
+.B \-P, \-\-show-paging-avg
+Print the number of minor and major pagefaults and swaps divided by
+the number of calls.
+.TP
+.B \-r, \-\-reverse-sort
+Sort output items in reverse order.
+.TP
+.B \-s, \-\-merge
+Merge the summarized accounting data into the summary files
+.I savacct
+and
+.I usracct.
+.TP
+.B \-t, \-\-print-ratio
+For each entry, print the ratio of real time to the sum of system
+and user times.  If the sum of system and user times is too small
+to report--the sum is zero--`*ignore*' will appear in this field.
+.TP
+.B \-u, \-\-print-users
+For each command in the accounting file, print the userid and
+command name.  After printing all entries, quit.  *Note*: this flag
+supersedes all others.
+.TP
+.BI \-v " num " \-\-threshold " num"
+Print commands which were executed 
+.I num 
+times or fewer and await a
+reply from the terminal.  If the response begins with `y', add the
+command to the `**junk**' group.
+.TP 
+.B \-\-separate-forks
+It really doesn't make any sense to me that the stock version of
+.B sa 
+separates statistics for a particular executable depending on
+whether or not that command forked.  Therefore, GNU 
+.B sa 
+lumps this information together unless this option is specified.
+.TP
+.BI \-\-ahz " hz"
+Use this flag to tell the program what
+.B AHZ
+should be (in hertz).  This option is useful if you are trying to view
+an
+.I acct
+file created on another machine which has the same byte order and file
+format as your current machine, but has a different value for
+.B AHZ.
+.TP
+.B \-\-debug
+Print verbose internal information.
+.TP
+.B \-V, \-\-version
+Print the version number of
+.B sa.
+.TP
+.B \-h, \-\-help
+Prints the usage string and default locations of system files to
+standard output and exits.
+.TP
+.BI \-\-sort-real-time
+Sort the output by the "real time" field.
+.TP
+.BI \-\-other-usracct-file " filename"
+Write summaries by user ID to 
+.I filename
+rather than the system's default
+.I usracct
+file.
+.TP
+.BI \-\-other-savacct-file " filename"
+Write summaries by command name to 
+.I filename
+rather than the system's default
+.I SAVACCT
+file.
+.TP
+.BI \-\-other-file " filename"
+Read from the file 
+.I filename 
+instead of the system's default
+.I ACCT
+file.
+.SH FILES
+.TP
+.I acct
+The raw system wide process accounting file. See
+.BR acct (5)
+(or
+.BR pacct (5))
+for further details.
+.TP
+.I savacct
+A summary of system process accounting sorted by command.
+.TP
+.I usracct
+A summary of system process accounting sorted by user ID.
+.RE
+.LP
+
+.SH BUGS
+There is not yet a wide experience base for comparing the output of GNU
+.B sa 
+with versions of
+.B sa
+in many other systems.  The problem is that the data files grow big in a short
+time and therefore require a lot of disk space.
+.LP
+
+.SH AUTHOR
+The GNU accounting utilities were written by Noel Cragg
+<noel@gnu.ai.mit.edu>. The man page was adapted from the accounting
+texinfo page by Susan Kleinmann <sgk@sgk.tiac.net>.
+.SH "SEE ALSO"
+.BR acct (5),
+.BR ac (1)
