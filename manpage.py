@@ -757,7 +757,7 @@ class ManPage(object):
                 base_url=self.base_url,
                 page=self.manpage_name,
             ),
-            title="%s - %s" % (self.title, self.subtitle, ),
+            title="%s - %s" % (title, self.subtitle, ),
             header=header_tpl.safe_substitute(
                 section=section,
                 title=title,  # FIXME: Mess
