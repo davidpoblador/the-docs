@@ -858,6 +858,7 @@ def unescape(t):
 
     t = t.replace("\\(dq", "&quot;")
     t = t.replace("\\(aq", "&apos;")
+    t = t.replace("\\*(Aq", "&apos;")
 
     t = t.replace("\\(+-", "&plusmn;")
 
