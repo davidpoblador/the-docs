@@ -642,7 +642,7 @@ class ManPage(object):
 
     def process_li(self, data):
         if data:
-            bullet = data.split()[0]
+            bullet = toargs(data)[0]
 
             if not self.in_li:
                 self.save_state()
