@@ -2,12 +2,12 @@
 .\"     Title: shadow
 .\"    Author: Julianne Frances Haugh
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 19.11.2015
-.\"    Manual: Dateiformate und -konvertierung
+.\"      Date: 11/19/2015
+.\"    Manual: File Formats and Conversions
 .\"    Source: shadow-utils 4.2
-.\"  Language: German
+.\"  Language: English
 .\"
-.TH "SHADOW" "5" "19.11.2015" "shadow\-utils 4\&.2" "Dateiformate und \-konvertieru"
+.TH "SHADOW" "5" "11/19/2015" "shadow\-utils 4\&.2" "File Formats and Conversions"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,115 +28,114 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-shadow \- Shadow\-Passwortdatei
-.SH "BESCHREIBUNG"
+shadow \- shadowed password file
+.SH "DESCRIPTION"
 .PP
 shadow
-ist eine Datei, welche die Passwortinformationen f\(:ur die Konten des Systems und fakultativ Informationen zum Verfall der Passw\(:orter enth\(:alt\&.
+is a file which contains the password information for the system\*(Aqs accounts and optional aging information\&.
 .PP
-Um die Sicherheit der Passw\(:orter zu gew\(:ahrleisten, darf diese Datei nicht f\(:ur normale Benutzer lesbar sein\&.
+This file must not be readable by regular users if password security is to be maintained\&.
 .PP
-Jede Zeile dieser Datei enth\(:alt folgende neun Felder, die durch Doppelpunkt (\(Bq:\(lq) getrennt werden:
+Each line of this file contains 9 fields, separated by colons (\(lq:\(rq), in the following order:
 .PP
-\fBAnmeldename\fR
+\fBlogin name\fR
 .RS 4
-Dabei muss es sich um eine g\(:ultigen Kontonamen handeln, der auf dem System existiert\&.
+It must be a valid account name, which exist on the system\&.
 .RE
 .PP
-\fBverschl\(:usseltes Passwort\fR
+\fBencrypted password\fR
 .RS 4
-Sie sollten in
+Refer to
 \fBcrypt\fR(3)
-nachsehen, wenn Sie mehr \(:uber die Bedeutung dieser Zeichenkette wissen wollen\&.
+for details on how this string is interpreted\&.
 .sp
-Wenn das Passwortfeld eine Zeichenkette enth\(:alt, die kein zul\(:assiges Ergebnis von
-\fBcrypt\fR(3)
-ist, z\&.B\&. ! oder *, kann sich der Benutzer nicht mit einem Unix\-Passwort anmelden; eine Anmeldung auf anderem Wege wird dadurch nicht verhindert\&.
+If the password field contains some string that is not a valid result of
+\fBcrypt\fR(3), for instance ! or *, the user will not be able to use a unix password to log in (but the user may log in the system by other means)\&.
 .sp
-Dieses Feld kann leer bleiben\&. In diesem Fall kann sich der angegebene Benutzer ohne Passwort anmelden\&. M\(:oglicherweise verweigern Anwendungen, welche die Datei
+This field may be empty, in which case no passwords are required to authenticate as the specified login name\&. However, some applications which read the
 /etc/shadow
-auswerten, dennoch den Zugang, wenn das Passwortfeld leer ist\&.
+file may decide not to permit any access at all if the password field is empty\&.
 .sp
-Ein Passwortfeld, das mit einem Ausrufezeichen beginnt, f\(:uhrt dazu, dass das Passwort gesperrt ist\&. Die \(:ubrigen Zeichen sind das Passwort vor der Sperrung\&.
+A password field which starts with a exclamation mark means that the password is locked\&. The remaining characters on the line represent the password field before the password was locked\&.
 .RE
 .PP
-\fBDatum, an dem das Passwort das letzte Mal ge\(:andert wurde\fR
+\fBdate of last password change\fR
 .RS 4
-Das Datum, als das Passwort das letzte Mal ge\(:andert wurde, wird als Anzahl der Tage seit dem 1\&. Januar 1970 ausgedr\(:uckt\&.
+The date of the last password change, expressed as the number of days since Jan 1, 1970\&.
 .sp
-Dem Wert 0 kommt eine besondere Bedeutung zu: Der Benutzer sollte sein Passwort bei der n\(:achsten Anmeldung \(:andern\&.
+The value 0 has a special meaning, which is that the user should change her pasword the next time she will log in the system\&.
 .sp
-Ein leeres Feld bedeutet, dass das Altern des Passworts abgeschaltet ist\&.
+An empty field means that password aging features are disabled\&.
 .RE
 .PP
-\fBMindestalter des Passworts\fR
+\fBminimum password age\fR
 .RS 4
-Das Mindestalter des Passworts ist die Anzahl von Tagen, die ein Benutzer warten muss, bevor er sein Passwort wieder \(:andern darf\&.
+The minimum password age is the number of days the user will have to wait before she will be allowed to change her password again\&.
 .sp
-Eine leeres Feld oder der Wert 0 bedeuten, dass es kein Mindestalter eines Passworts gibt\&.
+An empty field and value 0 mean that there are no minimum password age\&.
 .RE
 .PP
-\fBH\(:ochstalter des Passworts\fR
+\fBmaximum password age\fR
 .RS 4
-Das H\(:ochstalter des Passworts ist die Anzahl von Tagen, nach welcher der Benutzer sein Passwort \(:andern muss\&.
+The maximum password age is the number of days after which the user will have to change her password\&.
 .sp
-Auch nach Ablauf dieser Anzahl von Tagen bleibt das Passwort g\(:ultig\&. Der Benutzer wird bei der n\(:achsten Anmeldung aufgefordert, sein Passwort zu \(:andern\&.
+After this number of days is elapsed, the password may still be valid\&. The user should be asked to change her password the next time she will log in\&.
 .sp
-Ein leeres Feld bedeutet, dass es kein H\(:ochstalter f\(:ur das Passwort, keine Vorwarnung und keine Dauer der Unt\(:atigkeit (siehe unten) gibt\&.
+An empty field means that there are no maximum password age, no password warning period, and no password inactivity period (see below)\&.
 .sp
-Wenn das H\(:ochstalter niedriger als das Mindestalter eines Passworts ist, kann ein Benutzer sein Passwort nicht \(:andern\&.
+If the maximum password age is lower than the minimum password age, the user cannot change her password\&.
 .RE
 .PP
-\fBPasswortvorwarndauer\fR
+\fBpassword warning period\fR
 .RS 4
-Die Anzahl von Tagen, w\(:ahrend welcher der Benutzer vorgewarnt wird, bevor sein Passwort abl\(:auft (siehe das H\(:ochstalter des Passworts)\&.
+The number of days before a password is going to expire (see the maximum password age above) during which the user should be warned\&.
 .sp
-Ein leeres Feld oder der Wert 0 bedeutet, dass es keine Vorwarnung gibt\&.
+An empty field and value 0 mean that there are no password warning period\&.
 .RE
 .PP
-\fBDauer der fehlenden Verwendung des Passworts\fR
+\fBpassword inactivity period\fR
 .RS 4
-Die Anzahl von Tagen, f\(:ur die ein Benutzer sein Passwort, nachdem es abgelaufen ist (vergleiche oben das H\(:ochstalter des Passworts), noch verwenden kann (und w\(:ahrend des n\(:achsten Logins \(:andern muss)\&.
+The number of days after a password has expired (see the maximum password age above) during which the password should still be accepted (and the user should update her password during the next login)\&.
 .sp
-Nachdem das Passwort abgelaufen ist und auch die Dauer der Unt\(:atigkeit verstrichen ist, kann sich der Benutzer mit seinem Passwort nicht mehr anmelden\&. Er muss sich dann an den Administrator wenden\&.
+After expiration of the password and this expiration period is elapsed, no login is possible using the current user\*(Aqs password\&. The user should contact her administrator\&.
 .sp
-Ein leeres Feld bedeutet, dass es keine H\(:ochstdauer zwischen Ablauf des Passworts und erneuter Anmeldung des Benutzers gibt\&.
+An empty field means that there are no enforcement of an inactivity period\&.
 .RE
 .PP
-\fBDatum des Verfalls des Kontos\fR
+\fBaccount expiration date\fR
 .RS 4
-Das Datum, an dem das Konto verf\(:allt, wird als Anzahl der Tage seit dem 1\&. Januar 1970 ausgedr\(:uckt\&.
+The date of expiration of the account, expressed as the number of days since Jan 1, 1970\&.
 .sp
-Beachten Sie, dass der Verfall eines Kontos sich von dem Ablaufen eines Passworts unterscheidet\&. Im ersteren Fall kann sich der Benutzer nicht mehr anmelden\&. Im letzteren Fall kann sich der Benutzer nur nicht mehr mit seinem (alten) Passwort anmelden\&.
+Note that an account expiration differs from a password expiration\&. In case of an acount expiration, the user shall not be allowed to login\&. In case of a password expiration, the user is not allowed to login using her password\&.
 .sp
-Ein leeren Feld bedeutet, dass das Konto nicht verfallen wird\&.
+An empty field means that the account will never expire\&.
 .sp
-Der Wert 0 sollte nicht verwendet werden, weil er sowohl bedeuten kann, dass das Konto nicht verf\(:allt als auch, dass das Konto bereits am 1\&. Januar 1970 verfallen ist\&.
+The value 0 should not be used as it is interpreted as either an account with no expiration, or as an expiration on Jan 1, 1970\&.
 .RE
 .PP
-\fBreserviertes Feld\fR
+\fBreserved field\fR
 .RS 4
-Dieses Feld ist f\(:ur zuk\(:unftigen Gebrauch reserviert\&.
+This field is reserved for future use\&.
 .RE
-.SH "DATEIEN"
+.SH "FILES"
 .PP
 /etc/passwd
 .RS 4
-Informationen zu den Benutzerkonten
+User account information\&.
 .RE
 .PP
 /etc/shadow
 .RS 4
-verschl\(:usselte Informationen zu den Benutzerkonten
+Secure user account information\&.
 .RE
 .PP
 /etc/shadow\-
 .RS 4
-Sicherungskopie von /etc/shadow
+Backup file for /etc/shadow\&.
 .sp
-Beachten Sie, dass diese Datei von Werkzeugen der Shadow\-Werkzeugsammlung verwendet wird, aber nicht von allen sonstigen Programmen zur Benutzer\- und Passwortverwaltung\&.
+Note that this file is used by the tools of the shadow toolsuite, but not by all user and password management tools\&.
 .RE
-.SH "SIEHE AUCH"
+.SH "SEE ALSO"
 .PP
 \fBchage\fR(1),
 \fBlogin\fR(1),

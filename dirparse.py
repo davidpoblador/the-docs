@@ -17,7 +17,7 @@ root_html = os.path.join(package_directory, "public_html")
 base_url = "https://www.carta.tech/"
 
 # To skip
-broken_files = {'shadowconfig.8'}
+broken_files = set()
 
 # FIXME: Horrible hack
 SECTIONS = {
