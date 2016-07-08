@@ -344,8 +344,6 @@ class ManPage(object):
             if line.comment:
                 continue
 
-            print 
-
             if self.spaced_lines_buffer:
                 self.process_spaced_lines(line)
 
