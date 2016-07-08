@@ -20,7 +20,7 @@ class MacroParser(object):
     macros_to_ignore = {
         'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam',
         'ne', 'UC', 'nr', 'ns', 'ds', 'na', 'DT', 'bp',
-        'nr', 'll', 'c2', 'ps'}
+        'nr', 'll', 'c2', 'ps', 'ta'}
 
     def __init__(self, line, manpage):
         self.data = line.data
