@@ -80,7 +80,7 @@ class DebianManpageFetcher(object):
         data_file = debfile.DebFile(tmpfile).data
 
         for file in data_file:
-            if file.startswith("./usr/share/man"):
+            if file.startswith("./usr/share/man/man"):
                 file_contents = data_file.get_file(file)
 
                 if file_contents:
