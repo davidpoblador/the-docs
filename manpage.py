@@ -845,7 +845,7 @@ def unescape(t):
 
     t = t.replace("\`", "&#96;")  # Backtick
 
-    t = t.replace("\&", " ")
+    t = t.replace("\&", "")
 
     t = t.replace("\\\\", "&#92;")
 
