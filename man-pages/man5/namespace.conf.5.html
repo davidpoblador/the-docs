@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>namespace.conf - the namespace configuration file</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">namespace.conf<small> (5)</small></h1>
+        <p class="lead">the namespace configuration file</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/namespace.conf.5.html"><span itemprop="title">namespace.conf</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The <em>pam_namespace.so</em> module allows setup of private namespaces with polyinstantiated directories. Directories can be polyinstantiated based on user name or, in the case of SELinux, user name, sensitivity level or complete security context. If an executable script /etc/security/namespace.init exists, it is used to initialize the namespace every time an instance directory is set up and mounted. The script receives the polyinstantiated directory path and the instance directory path as its arguments.</p>
+<p class='spacer'>
+
+<p>The /etc/security/namespace.conf file specifies which directories are polyinstantiated, how they are polyinstantiated, how instance directories would be named, and any users for whom polyinstantiation would not be performed.</p>
+<p class='spacer'>
+
+<p>When someone logs in, the file namespace.conf is scanned. Comments are marked by <em>#</em> characters. Each non comment line represents one polyinstantiated directory. The fields are separated by spaces but can be quoted by <em>"</em> characters also escape sequences <em>&#92;b</em>, <em>&#92;n</em>, and <em>&#92;t</em> are recognized. The fields are as follows:</p>
+<p class='spacer'>
+
+<p><em>polydir</em><em>instance_prefix</em><em>method</em><em>list_of_uids</em></p>
+<p class='spacer'>
+
+<p>The first field, <em>polydir</em>, is the absolute pathname of the directory to polyinstantiate. The special string <em>$HOME</em> is replaced with the user&apos;s home directory, and <em>$USER</em> with the username. This field cannot be blank.</p>
+<p class='spacer'>
+
+<p>The second field, <em>instance_prefix</em> is the string prefix used to build the pathname for the instantiation of &lt;polydir&gt;. Depending on the polyinstantiation <em>method</em> it is then appended with "instance differentiation string" to generate the final instance directory path. This directory is created if it did not exist already, and is then bind mounted on the &lt;polydir&gt; to provide an instance of &lt;polydir&gt; based on the &lt;method&gt; column. The special string <em>$HOME</em> is replaced with the user&apos;s home directory, and <em>$USER</em> with the username. This field cannot be blank.</p>
+<p class='spacer'>
+
+<p>The third field, <em>method</em>, is the method used for polyinstantiation. It can take these values; "user" for polyinstantiation based on user name, "level" for polyinstantiation based on process MLS level and user name, "context" for polyinstantiation based on process security context and user name, "tmpfs" for mounting tmpfs filesystem as an instance dir, and "tmpdir" for creating temporary directory as an instance dir which is removed when the user&apos;s session is closed. Methods "context" and "level" are only available with SELinux. This field cannot be blank.</p>
+<p class='spacer'>
+
+<p>The fourth field, <em>list_of_uids</em>, is a comma separated list of user names for whom the polyinstantiation is not performed. If left blank, polyinstantiation will be performed for all users. If the list is preceded with a single "~" character, polyinstantiation is performed only for users in the list.</p>
+<p class='spacer'>
+
+<p>The <em>method</em> field can contain also following optional flags separated by <em>:</em> characters.</p>
+<p class='spacer'>
+
+<p><em>create</em>=<em>mode</em>,<em>owner</em>,<em>group</em> - create the polyinstantiated directory. The mode, owner and group parameters are optional. The default for mode is determined by umask, the default owner is the user whose session is opened, the default group is the primary group of the user.</p>
+<p class='spacer'>
+
+<p><em>iscript</em>=<em>path</em> - path to the instance directory init script. The base directory for relative paths is /etc/security/namespace.d.</p>
+<p class='spacer'>
+
+<p><em>noinit</em> - instance directory init script will not be executed.</p>
+<p class='spacer'>
+
+<p><em>shared</em> - the instance directories for "context" and "level" methods will not contain the user name and will be shared among all users.</p>
+<p class='spacer'>
+
+<p><em>mntopts</em>=<em>value</em> - value of this flag is passed to the mount call when the tmpfs mount is done. It allows for example the specification of the maximum size of the tmpfs instance that is created by the mount call. See <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a> for details.</p>
+<p class='spacer'>
+
+<p>The directory where polyinstantiated instances are to be created, must exist and must have, by default, the mode of 0000. The requirement that the instance parent be of mode 0000 can be overridden with the command line option <em>ignore_instance_parent_mode</em></p>
+<p class='spacer'>
+
+<p>In case of context or level polyinstantiation the SELinux context which is used for polyinstantiation is the context used for executing a new process as obtained by getexeccon. This context must be set by the calling application or pam_selinux.so module. If this context is not set the polyinstatiation will be based just on user name.</p>
+<p class='spacer'>
+
+<p>The "instance differentiation string" is &lt;user name&gt; for "user" method and &lt;user name&gt;_&lt;raw directory context&gt; for "context" and "level" methods. If the whole string is too long the end of it is replaced with md5sum of itself. Also when command line option <em>gen_hash</em> is used the whole string is replaced with md5sum of itself.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>These are some example lines which might be specified in /etc/security/namespace.conf.</p>
+<p class='spacer'>
+
+<pre>      # The following three lines will polyinstantiate /tmp,
+      # /var/tmp and user&apos;s home directories. /tmp and /var/tmp
+      # will be polyinstantiated based on the security level
+      # as well as user name, whereas home directory will be
+      # polyinstantiated based on the full security context and user name.
+      # Polyinstantiation will not be performed for user root
+      # and adm for directories /tmp and /var/tmp, whereas home
+      # directories will be polyinstantiated for all users.
+      #
+      # Note that instance directories do not have to reside inside
+      # the polyinstantiated directory. In the examples below,
+      # instances of /tmp will be created in /tmp-inst directory,
+      # where as instances of /var/tmp and users home directories
+      # will reside within the directories that are being
+      # polyinstantiated.
+      #
+      /tmp     /tmp-inst/               level      root,adm
+      /var/tmp /var/tmp/tmp-inst/   	level      root,adm
+      $HOME    $HOME/$USER.inst/inst- context
+</pre>
+
+<p class='spacer'>
+
+<p>For the &lt;service&gt;s you need polyinstantiation (login for example) put the following line in /etc/pam.d/&lt;service&gt; as the last line for session group:</p>
+<p class='spacer'>
+
+<p>session required pam_namespace.so [arguments]</p>
+<p class='spacer'>
+
+<p>This module also depends on pam_selinux.so setting the context.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><a href="../man8/pam_namespace.8.html"><strong>pam_namespace</strong>(8)</a>, <strong>pam.d</strong>(5), <strong>pam</strong>(7)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The namespace.conf manual page was written by Janak Desai &lt;janak@us.ibm.com&gt;. More features added by Tomas Mraz &lt;tmraz@redhat.com&gt;.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="named.conf.5.html"><span aria-hidden="true">&larr;</span> named.conf.5: configuration file for named</a></li><li class="next"><a href="networks.5.html">networks.5: network name information <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
