@@ -95,8 +95,16 @@ class TitleMacroParser(MacroParser):
         return ' '.join(toargs(self.data))
 
     def extract_title(self, title_buffer):
-        self.manpage.title, self.manpage.subtitle = map(
-            str.strip, " ".join(title_buffer).split('-', 1))
+        try:
+            self.manpage.title, self.manpage.subtitle = map(
+                str.strip, " ".join(title_buffer).split(' - ', 1))
+        except:
+            try:
+                self.manpage.title, self.manpage.subtitle = map(
+                    str.strip, " ".join(title_buffer).split(' -- ', 1))
+            except:
+                self.manpage.title, self.manpage.subtitle = map(
+                    str.strip, " ".join(title_buffer).split('-', 1))
 
 
 class HeaderMacroParser(MacroParser):
