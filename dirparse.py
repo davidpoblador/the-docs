@@ -6,7 +6,6 @@ import glob
 import os
 from collections import defaultdict, Counter
 from string import Template
-from hashlib import md5
 import marshal
 import logging
 import shutil
@@ -66,7 +65,7 @@ class ManDirectoryParser(object):
     def get_pages(self):
         for page, v in self.pages.iteritems():
             if 'errors' not in v and 'missing-parser' not in v:
-                yield (v['instance'], v['final-page'])
+                yield v['instance']
 
     def get_pages_without_errors(self):
         manpages = set()
@@ -166,13 +165,6 @@ class ManDirectoryParser(object):
                 cp['errors'] = True
                 raise
 
-        try:
-            checksum_file = open('checksums.dat', 'rb')
-            checksums = marshal.load(checksum_file)
-            checksum_file.close()
-        except IOError:
-            checksums = {}
-
         found_pages = self.get_pages_without_errors()
         for directory, page_files in self.get_dir_pages().iteritems():
             man_directory = os.path.join(base_manpage_dir, directory)
@@ -192,22 +184,9 @@ class ManDirectoryParser(object):
 
                 previous = (page, d['subtitle'])
 
-        for mp, full_path in self.get_pages():
+        for mp in self.get_pages():
             out = mp.html(pages_to_link=found_pages)
             self.missing_links.update(mp.broken_links)
-            checksum = md5(out).hexdigest()
-
-            if checksum != checksums.get(full_path, None):
-                checksums[full_path] = checksum
-                file = open(full_path, "w")
-                file.write(out)
-                file.close()
-
-        checksum_file = open('checksums.dat', 'wb')
-        marshal.dump(checksums, checksum_file)
-        checksum_file.close()
-
-        del(checksums)
 
         # Directory Indexes & Sitemaps
         sm_urls = []
