@@ -521,7 +521,10 @@ class ManPage(object):
             pass
 
     def add_url(self, data):
-        self.add_content("<a href=\"%s\">%s</a>" % (data, data,))
+        if re.match("[^@]+@[^@]+\.[^@]+", data):
+            self.add_content("<a href=\"mailto:%s\">%s</a>" % (data, data,))
+        else:
+            self.add_content("<a href=\"%s\">%s</a>" % (data, data,))
 
     def add_mailto(self, data):
         self.add_content("<a href=\"mailto:%s\">%s</a>" % (data, data,))
