@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>lslocks - list local system locks</title>
+  <title>chcpu - configure CPUs</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -31,8 +31,8 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">lslocks<small> (8)</small></h1>
-        <p class="lead">list local system locks</p>
+        <h1 class="font-effect-destruction">chcpu<small> (8)</small></h1>
+        <p class="lead">configure CPUs</p>
       </div>
 
     <ol class="breadcrumb">
@@ -43,7 +43,7 @@
 		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
 	</li>
 	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/lslocks.8.html"><span itemprop="title">lslocks</span></a>
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/chcpu.8.html"><span itemprop="title">chcpu</span></a>
 	</li>
 </ol>
     
@@ -51,9 +51,13 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<p><strong>lslocks</strong> [<strong>options</strong>]</p>
+<p><strong>chcpu</strong> <strong>-c</strong>|<strong>-d</strong>|<strong>-e</strong>|<strong>-g</strong> <em>cpu-list</em></p>
 <p class='spacer'>
 
+<p><strong>chcpu -p</strong> <em>mode</em></p>
+<p class='spacer'>
+
+<p><strong>chcpu</strong> <strong>-r</strong>|<strong>-h</strong>|<strong>-V</strong></p>
         </div>
       </section>
 
@@ -61,9 +65,10 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 
-<p><strong>lslocks</strong> lists information about all the currently held file locks in a Linux system.</p>
+<p><strong>chcpu</strong> can modify the state of CPUs.  It can enable or disable CPUs, scan for new CPUs, change the CPU dispatching <em>mode</em> of the underlying hypervisor, and request CPUs from the hypervisor (configure) or return CPUs to the hypervisor (deconfigure).</p>
 <p class='spacer'>
 
+<p>Some options have a <em>cpu-list</em> argument.  Use this argument to specify a comma-separated list of CPUs.  The list can contain individual CPU addresses or ranges of addresses.  For example, <strong>0,5,7,9-11</strong> makes the command applicable to the CPUs with the addresses 0, 5, 7, 9, 10, and 11.</p>
         </div>
       </section>
 
@@ -72,32 +77,47 @@
         <div class="sectioncontent">
 
   <dl class='dl-vertical'>
+    <dt><strong>-c</strong>,<strong> --configure </strong><em>cpu-list</em></dt>
+    <dd>
+  <p>Configure the specified CPUs.  Configuring a CPU means that the hypervisor takes a CPU from the CPU pool and assigns it to the virtual hardware on which your kernel runs.</p>
+    </dd>
+    <dt><strong>-d</strong>,<strong> --disable </strong><em>cpu-list</em></dt>
+    <dd>
+  <p>Disable the specified CPUs.  Disabling a CPU means that the kernel sets it offline.</p>
+    </dd>
+    <dt><strong>-e</strong>,<strong> --enable </strong><em>cpu-list</em></dt>
+    <dd>
+  <p>Enable the specified CPUs.  Enabling a CPU means that the kernel sets it online.  A CPU must be configured, see <strong>-c</strong>, before it can be enabled.</p>
+    </dd>
+    <dt><strong>-g</strong>,<strong> --deconfigure </strong><em>cpu-list</em></dt>
+    <dd>
+  <p>Deconfigure the specified CPUs.  Deconfiguring a CPU means that the hypervisor removes the CPU from the virtual hardware on which the Linux instance runs and returns it to the CPU pool.  A CPU must be offline, see <strong>-d</strong>, before it can be deconfigured.</p>
+    </dd>
+    <dt><strong>-p</strong>,<strong> --dispatch </strong><em>mode</em></dt>
+    <dd>
+      <p>Set the CPU dispatching <em>mode</em> (polarization).  This option has an effect only if your hardware architecture and hypervisor support CPU polarization.  Available <em>modes</em> are:</p>
+      <dl class='dl-vertical'>
+        <dt><strong>horizontal</strong></dt>
+        <dd>
+      <p>The workload is spread across all available CPUs.</p>
+        </dd>
+        <dt><strong>vertical</strong></dt>
+        <dd>
+      <p>The workload is concentrated on few CPUs.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><strong>-r</strong>,<strong> --rescan</strong></dt>
+    <dd>
+  <p>Trigger a rescan of CPUs.  After a rescan, the Linux kernel recognizes the new CPUs.  Use this option on systems that do not automatically detect newly attached CPUs.</p>
+    </dd>
+    <dt><strong>-V</strong>,<strong> --version</strong></dt>
+    <dd>
+  <p>Display version information and exit.</p>
+    </dd>
     <dt><strong>-h</strong>,<strong> --help</strong></dt>
     <dd>
   <p>Display help text and exit.</p>
-    </dd>
-    <dt><strong>-n</strong>,<strong> --noheadings</strong></dt>
-    <dd>
-  <p>Do not print a header line.</p>
-    </dd>
-    <dt><strong>-o</strong>,<strong> --output </strong><em>list</em></dt>
-    <dd>
-  <p>Specify which output columns to print.  Use <strong>--help</strong> to get a list of all supported columns.</p>
-<p class='spacer'>
-
-  <p>The default list of columns may be extended if <em>list</em> is specified in the format <em>+list</em> (e.g. <strong>lslocks -o +BLOCKER</strong>).</p>
-    </dd>
-    <dt><strong>-p</strong>,<strong> --pid </strong><em>pid</em></dt>
-    <dd>
-  <p>Display only the locks held by the process with this <em>pid</em>.</p>
-    </dd>
-    <dt><strong>-r</strong>,<strong> --raw</strong></dt>
-    <dd>
-  <p>Use the raw output format.</p>
-    </dd>
-    <dt><strong>-u</strong>,<strong> --notruncate</strong></dt>
-    <dd>
-  <p>Do not truncate text in columns.</p>
 <p class='spacer'>
 
     </dd>
@@ -106,92 +126,40 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">OUTPUT</h2>
+        <h2 class="font-effect-shadow-multiple">RETURN CODES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-horizontal'>
-    <dt>COMMAND</dt>
+  <p><strong>chcpu</strong> has the following return codes:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>0</strong></dt>
     <dd>
-  <p>The command name of the process holding the lock.</p>
-<p class='spacer'>
-
+  <p>success</p>
     </dd>
-    <dt>PID</dt>
+    <dt><strong>1</strong></dt>
     <dd>
-  <p>The process ID of the process which holds the lock.</p>
-<p class='spacer'>
-
+  <p>failure</p>
     </dd>
-    <dt>TYPE</dt>
+    <dt><strong>64</strong></dt>
     <dd>
-  <p>The type of lock; can be FLOCK (created with <a href="../man2/flock.2.html"><strong>flock</strong>(2)</a>) or POSIX (created with <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> and <a href="../man3/lockf.3.html"><strong>lockf</strong>(3)</a>).</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>SIZE</dt>
-    <dd>
-  <p>Size of the locked file.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>MODE</dt>
-    <dd>
-  <p>The lock's access permissions (read, write).  If the process is blocked and waiting for the lock, then the mode is postfixed with an '*' (asterisk).</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>M</dt>
-    <dd>
-  <p>Whether the lock is mandatory; 0 means no (meaning the lock is only advisory), 1 means yes. (See <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>).</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>START</dt>
-    <dd>
-  <p>Relative byte offset of the lock.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>END</dt>
-    <dd>
-  <p>Ending offset of the lock.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>PATH</dt>
-    <dd>
-  <p>Full path of the lock.  If none is found, or there are no permissions to read the path, it will fall back to the device's mountpoint.  The path might be truncated; use <strong>--notruncate</strong> to get the full path.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>BLOCKER</dt>
-    <dd>
-  <p>The PID of the process which blocks the lock.</p>
-<p class='spacer'>
-
+  <p>partial success</p>
     </dd>
   </dl>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
 
-<pre>The lslocks command is meant to replace the <strong>lslk</strong>(8) command, originally written by
-Victor A. Abell &lt;abe@purdue.edu&gt; and unmaintained since 2001.</pre>
-
-<p class='spacer'>
-
+<p><a href="mailto:heiko.carstens@de.ibm.com">heiko.carstens@de.ibm.com</a> Heiko Carstens</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <h2 class="font-effect-shadow-multiple">COPYRIGHT</h2>
         <div class="sectioncontent">
 
-<pre>Davidlohr Bueso &lt;dave@gnu.org&gt;</pre>
-
+<p>Copyright IBM Corp. 2011</p>
 <p class='spacer'>
 
         </div>
@@ -201,9 +169,7 @@ Victor A. Abell &lt;abe@purdue.edu&gt; and unmaintained since 2001.</pre>
         <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
         <div class="sectioncontent">
 
-<p><strong>flock</strong>(1), <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <strong>lockf</strong>(2)</p>
-<p class='spacer'>
-
+<p><a href="../man1/lscpu.1.html"><strong>lscpu</strong>(1)</a></p>
         </div>
       </section>
 
@@ -211,12 +177,12 @@ Victor A. Abell &lt;abe@purdue.edu&gt; and unmaintained since 2001.</pre>
         <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
         <div class="sectioncontent">
 
-<p>The lslocks command is part of the util-linux package and is available from ftp://ftp.kernel.org/pub/linux/utils/util-linux/.</p>
+<p>The chcpu command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-  <li class="previous"><a href="lsblk.8.html"><span aria-hidden="true">&larr;</span> lsblk.8: list block devices</a></li><li class="next"><a href="mii-tool.8.html">mii-tool.8: view, manipulate media-independent interface status <span aria-hidden="true">&rarr;</span></a></li>
+  <li class="previous"><a href="cfdisk.8.html"><span aria-hidden="true">&larr;</span> cfdisk.8: display or manipulate a disk partition table</a></li><li class="next"><a href="chgpasswd.8.html">chgpasswd.8: update group passwords in batch mode <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
   </div>
