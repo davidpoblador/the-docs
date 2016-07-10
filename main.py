@@ -21,8 +21,8 @@ def main():
 
     packages_to_ignore = set()
     for page, _ in parser.get_missing_links():
-        fetcher = DebianManpageFetcher(
-            page, packages_to_ignore=packages_to_ignore)
+        fetcher = DebianManpageFetcher(page,
+                                       packages_to_ignore=packages_to_ignore)
         if fetcher.fetch():
             packages_to_ignore.add(fetcher.package)
         else:
@@ -31,6 +31,7 @@ def main():
     ignore_page_file = open('ignore_page_file.dat', 'wb')
     marshal.dump(pages_to_ignore, ignore_page_file)
     ignore_page_file.close()
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

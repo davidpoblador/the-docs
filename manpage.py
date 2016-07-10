@@ -17,9 +17,9 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 class MacroParser(object):
     macros_to_ignore = {
-        'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam',
-        'ne', 'UC', 'nr', 'ns', 'ds', 'na', 'DT', 'bp',
-        'nr', 'll', 'c2', 'ps', 'ta'}
+        'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam', 'ne', 'UC', 'nr',
+        'ns', 'ds', 'na', 'DT', 'bp', 'nr', 'll', 'c2', 'ps', 'ta'
+    }
 
     def __init__(self, line, manpage):
         self.data = line.data
@@ -56,11 +56,11 @@ class MacroParser(object):
         pass
 
     def missing_parser(self):
-        raise MissingParser("MACRO %s : %s" % (self.macro, self.data, ))
+        raise MissingParser("MACRO %s : %s" % (self.macro,
+                                               self.data, ))
 
 
 class TitleMacroParser(MacroParser):
-
     def __bool__(self):
         return bool(self.comment)
 
@@ -80,7 +80,7 @@ class TitleMacroParser(MacroParser):
                 name_section.append(unescape(name_section_line))
                 c += 1
 
-            del(tmp_iter)
+            del (tmp_iter)
             self.manpage.line_iterator = itertools.islice(
                 self.manpage.line_iterator, c, None)
 
@@ -107,7 +107,6 @@ class TitleMacroParser(MacroParser):
 
 
 class HeaderMacroParser(MacroParser):
-
     def __bool__(self):
         if self.comment or not self.macro:
             return False
@@ -127,7 +126,8 @@ class HeaderMacroParser(MacroParser):
         else:
             base_dir, page = chunks
 
-        self.manpage._redirect = (base_dir, page,)
+        self.manpage._redirect = (base_dir,
+                                  page, )
 
         raise RedirectedPage(
             "Page %s redirects to %s" %
@@ -139,7 +139,6 @@ class HeaderMacroParser(MacroParser):
 
 
 class Line(str):
-
     def __new__(cls, string):
         return str.__new__(cls, entitize(string.rstrip()))
 
@@ -275,15 +274,15 @@ class ManPage(object):
                     line = line[0:comment_start]
 
                 if extra_line:
-                    line = " ".join((extra_line, line,))
+                    line = " ".join((extra_line,
+                                     line, ))
                     extra_line = False
 
                 parsed_line = LineParser(line)
 
-                if parsed_line.extra and(
-                    ((self.is_state(ManPageStates.BODY) and not self.in_pre)
-                     or parsed_line.macro) or self.is_state(
-                        ManPageStates.TITLE)):
+                if parsed_line.extra and (
+                    ((self.is_state(ManPageStates.BODY) and not self.in_pre) or
+                     parsed_line.macro) or self.is_state(ManPageStates.TITLE)):
                     extra_line = parsed_line.extra
                     continue
 
@@ -327,10 +326,8 @@ class ManPage(object):
     def process_spaced_lines(self, line):
         if (not line) or (not line.startswith(" ")):
             self.blank_line = False
-            self.add_text(
-                "\n<pre>%s</pre>\n" %
-                '\n'.join(
-                    self.spaced_lines_buffer))
+            self.add_text("\n<pre>%s</pre>\n" %
+                          '\n'.join(self.spaced_lines_buffer))
             self.spaced_lines_buffer = []
 
     def parse_body(self):
@@ -398,15 +395,18 @@ class ManPage(object):
                 line = line.rstrip()
 
                 if extra_line:
-                    line = "%s %s" % (extra_line, line,)
+                    line = "%s %s" % (extra_line,
+                                      line, )
                     extra_line = None
 
                 if not line:
                     yield line
-                elif line[-1] == "\\" and (line[0] in self.cc or not self.in_pre):
+                elif line[-1] == "\\" and (line[0] in self.cc or
+                                           not self.in_pre):
                     extra_line = line[:-1]
                     continue
-                elif line[-2:] == "\\c" and (line[0] in self.cc or not self.in_pre):
+                elif line[-2:] == "\\c" and (line[0] in self.cc or
+                                             not self.in_pre):
                     extra_line = line[:-2]
                     continue
                 else:
@@ -420,7 +420,8 @@ class ManPage(object):
             self.add_text("\n<p class='spacer'>\n")
 
     def save_state(self):
-        self.state.append((self.in_dl, self.in_li,))
+        self.state.append((self.in_dl,
+                           self.in_li, ))
         self.depth += 1
 
         self.in_dl = False
@@ -532,17 +533,21 @@ class ManPage(object):
         elif not macro:
             pass
         else:
-            raise MissingParser("MACRO %s : %s" % (macro, data, ))
+            raise MissingParser("MACRO %s : %s" % (macro,
+                                                   data, ))
             pass
 
     def add_url(self, data):
         if re.match("[^@]+@[^@]+\.[^@]+", data):
-            self.add_content("<a href=\"mailto:%s\">%s</a>" % (data, data,))
+            self.add_content("<a href=\"mailto:%s\">%s</a>" % (data,
+                                                               data, ))
         else:
-            self.add_content("<a href=\"%s\">%s</a>" % (data, data,))
+            self.add_content("<a href=\"%s\">%s</a>" % (data,
+                                                        data, ))
 
     def add_mailto(self, data):
-        self.add_content("<a href=\"mailto:%s\">%s</a>" % (data, data,))
+        self.add_content("<a href=\"mailto:%s\">%s</a>" % (data,
+                                                           data, ))
 
     def add_content(self, data):
         if not self.sections:
@@ -723,11 +728,14 @@ class ManPage(object):
             section = m.groupdict()['section']
             page = '.'.join([manpage, section])
 
-            out = "<strong>%s</strong>(%s)" % (manpage, section, )
+            out = "<strong>%s</strong>(%s)" % (manpage,
+                                               section, )
 
             if page in pages_to_link:
-                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (
-                    section, manpage, section, out, )
+                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
+                                                                  manpage,
+                                                                  section,
+                                                                  out, )
             else:
                 self.broken_links.add(page)
 
@@ -744,8 +752,7 @@ class ManPage(object):
         for title, content in self.sections:
             section_contents += section_tpl.safe_substitute(
                 title=title,
-                content=''.join(content),
-            )
+                content=''.join(content), )
 
         section_contents = self.linkify(section_contents, pages_to_link)
 
@@ -757,15 +764,14 @@ class ManPage(object):
             links = ""
             if self.previous_page:
                 links += "<li class=\"previous\"><a href=\"%s.html\"><span aria-hidden=\"true\">&larr;</span> %s: %s</a></li>" % (
-                    self.previous_page[0], self.previous_page[0], self.previous_page[1])
+                    self.previous_page[0], self.previous_page[0],
+                    self.previous_page[1])
             if self.next_page:
                 links += "<li class=\"next\"><a href=\"%s.html\">%s: %s <span aria-hidden=\"true\">&rarr;</span></a></li>" % (
                     self.next_page[0], self.next_page[0], self.next_page[1])
 
             pager_tpl = load_template('pager')
-            pager_contents = pager_tpl.safe_substitute(
-                links=links,
-            )
+            pager_contents = pager_tpl.safe_substitute(links=links, )
 
             section_contents += pager_contents
 
@@ -796,6 +802,7 @@ def load_template(template):
     out = Template(''.join(fp.readlines()))
     fp.close()
     return out
+
 
 style_trans = {
     'I': 'em',
@@ -828,7 +835,9 @@ def stylize(style, text):
     if style == 'R':
         return text
     else:
-        return "<%s>%s</%s>" % (style_trans[style], text, style_trans[style], )
+        return "<%s>%s</%s>" % (style_trans[style],
+                                text,
+                                style_trans[style], )
 
 
 def stylize_odd_even(style, args):
@@ -902,15 +911,9 @@ def unescape(t):
 
 def tagify(t):
     # Fixme (when we have time dir_colors.5 shows why this needs fixing)
-    t = re.sub(
-        r'\\fI(.*?)\\f[PR]',
-        r'<em>\1</em>',
-        t)
+    t = re.sub(r'\\fI(.*?)\\f[PR]', r'<em>\1</em>', t)
 
-    t = re.sub(
-        r'\\fB(.*?)\\f[PR]',
-        r'<strong>\1</strong>',
-        t)
+    t = re.sub(r'\\fB(.*?)\\f[PR]', r'<strong>\1</strong>', t)
 
     t = t.replace("\\fB", "")
     t = t.replace("\\fI", "")
@@ -929,6 +932,7 @@ def tagify(t):
 
 def entitize(line):
     return line.replace("<", "&lt;").replace(">", "&gt;")
+
 
 linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
@@ -949,6 +953,7 @@ class RedirectedPage(Exception):
 class NotSupportedFormat(Exception):
     pass
 
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -963,6 +968,7 @@ if __name__ == '__main__':
     try:
         manpage.parse()
     except RedirectedPage:
-        print "Page %s contains a redirection to %s" % (manpage.filename, manpage.redirect[1])
+        print "Page %s contains a redirection to %s" % (manpage.filename,
+                                                        manpage.redirect[1])
     else:
         print(manpage.html())
