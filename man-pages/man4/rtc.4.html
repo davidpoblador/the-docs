@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rtc - real-time clock</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">rtc<small> (4)</small></h1>
+        <p class="lead">real-time clock</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man4/"><span itemprop="title">Special files</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man4/rtc.4.html"><span itemprop="title">rtc</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;linux/rtc.h&gt;</p>
+<p class='spacer'>
+
+<p><strong>int ioctl(</strong><em>fd</em><strong>, RTC_</strong><em>request</em><strong>, </strong><em>param</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>This is the interface to drivers for real-time clocks (RTCs).</p>
+<p class='spacer'>
+
+<p>Most computers have one or more hardware clocks which record the current "wall clock" time. These are called "Real Time Clocks" (RTCs). One of these usually has battery backup power so that it tracks the time even while the computer is turned off. RTCs often provide alarms and other interrupts.</p>
+<p class='spacer'>
+
+<p>All i386 PCs, and ACPI-based systems, have an RTC that is compatible with the Motorola MC146818 chip on the original PC/AT. Today such an RTC is usually integrated into the mainboard's chipset (south bridge), and uses a replaceable coin-sized backup battery.</p>
+<p class='spacer'>
+
+<p>Non-PC systems, such as embedded systems built around system-on-chip processors, use other implementations. They usually won't offer the same functionality as the RTC from a PC/AT.</p>
+  <h3>RTC vs system clock</h3>
+<p>RTCs should not be confused with the system clock, which is a software clock maintained by the kernel and used to implement <a href="../man2/gettimeofday.2.html"><strong>gettimeofday</strong>(2)</a> and <a href="../man2/time.2.html"><strong>time</strong>(2)</a>, as well as setting timestamps on files, and so on. The system clock reports seconds and microseconds since a start point, defined to be the POSIX Epoch: 1970-01-01 00:00:00 +0000 (UTC). (One common implementation counts timer interrupts, once per "jiffy", at a frequency of 100, 250, or 1000 Hz.) That is, it is supposed to report wall clock time, which RTCs also do.</p>
+<p class='spacer'>
+
+<p>A key difference between an RTC and the system clock is that RTCs run even when the system is in a low power state (including "off"), and the system clock can't. Until it is initialized, the system clock can only report time since system boot ... not since the POSIX Epoch. So at boot time, and after resuming from a system low power state, the system clock will often be set to the current wall clock time using an RTC. Systems without an RTC need to set the system clock using another clock, maybe across the network or by entering that data manually.</p>
+  <h3>RTC functionality</h3>
+<p>RTCs can be read and written with <a href="../man8/hwclock.8.html"><strong>hwclock</strong>(8)</a>, or directly with the ioctl requests listed below.</p>
+<p class='spacer'>
+
+  <p>Besides tracking the date and time, many RTCs can also generate interrupts</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>on every clock update (i.e., once per second);</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>at periodic intervals with a frequency that can be set to any power-of-2 multiple in the range 2 Hz to 8192 Hz;</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>on reaching a previously specified alarm time.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Each of those interrupt sources can be enabled or disabled separately. On many systems, the alarm interrupt can be configured as a system wakeup event, which can resume the system from a low power state such as Suspend-to-RAM (STR, called S3 in ACPI systems), Hibernation (called S4 in ACPI systems), or even "off" (called S5 in ACPI systems). On some systems, the battery backed RTC can't issue interrupts, but another one can.</p>
+<p class='spacer'>
+
+<p>The <em>/dev/rtc</em> (or <em>/dev/rtc0</em>, <em>/dev/rtc1</em>, etc.) device can be opened only once (until it is closed) and it is read-only. On <a href="../man2/read.2.html"><strong>read</strong>(2)</a> and <a href="../man2/select.2.html"><strong>select</strong>(2)</a> the calling process is blocked until the next interrupt from that RTC is received. Following the interrupt, the process can read a long integer, of which the least significant byte contains a bit mask encoding the types of interrupt that occurred, while the remaining 3 bytes contain the number of interrupts since the last <a href="../man2/read.2.html"><strong>read</strong>(2)</a>.</p>
+  <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> interface</h3>
+  <p>The following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> requests are defined on file descriptors connected to RTC devices:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>RTC_RD_TIME</strong></dt>
+    <dd>
+  <p>Returns this RTC's time in the following structure:</p>
+<p class='spacer'>
+
+<pre>struct rtc_time {
+    int tm_sec;
+    int tm_min;
+    int tm_hour;
+    int tm_mday;
+    int tm_mon;
+    int tm_year;
+    int tm_wday;     /* unused */
+    int tm_yday;     /* unused */
+    int tm_isdst;    /* unused */
+};</pre>
+
+<p class='spacer'>
+
+  <p>The fields in this structure have the same meaning and ranges as for the <em>tm</em> structure described in <a href="../man3/gmtime.3.html"><strong>gmtime</strong>(3)</a>. A pointer to this structure should be passed as the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument.</p>
+    </dd>
+    <dt><strong>RTC_SET_TIME</strong></dt>
+    <dd>
+  <p>Sets this RTC's time to the time specified by the <em>rtc_time</em> structure pointed to by the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument. To set the RTC's time the process must be privileged (i.e., have the <strong>CAP_SYS_TIME</strong> capability).</p>
+    </dd>
+    <dt><strong>RTC_ALM_READ</strong>, <strong>RTC_ALM_SET</strong></dt>
+    <dd>
+  <p>Read and set the alarm time, for RTCs that support alarms. The alarm interrupt must be separately enabled or disabled using the <strong>RTC_AIE_ON</strong>, <strong>RTC_AIE_OFF</strong> requests. The third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument is a pointer to an <em>rtc_time</em> structure. Only the <em>tm_sec</em>, <em>tm_min</em>, and <em>tm_hour</em> fields of this structure are used.</p>
+    </dd>
+    <dt><strong>RTC_IRQP_READ</strong>, <strong>RTC_IRQP_SET</strong></dt>
+    <dd>
+  <p>Read and set the frequency for periodic interrupts, for RTCs that support periodic interrupts. The periodic interrupt must be separately enabled or disabled using the <strong>RTC_PIE_ON</strong>, <strong>RTC_PIE_OFF</strong> requests. The third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument is an <em>unsigned long&nbsp;*</em> or an <em>unsigned long</em>, respectively. The value is the frequency in interrupts per second. The set of allowable frequencies is the multiples of two in the range 2 to 8192. Only a privileged process (i.e., one having the <strong>CAP_SYS_RESOURCE</strong> capability) can set frequencies above the value specified in <em>/proc/sys/dev/rtc/max-user-freq</em>. (This file contains the value 64 by default.)</p>
+    </dd>
+    <dt><strong>RTC_AIE_ON</strong>, <strong>RTC_AIE_OFF</strong></dt>
+    <dd>
+  <p>Enable or disable the alarm interrupt, for RTCs that support alarms. The third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument is ignored.</p>
+    </dd>
+    <dt><strong>RTC_UIE_ON</strong>, <strong>RTC_UIE_OFF</strong></dt>
+    <dd>
+  <p>Enable or disable the interrupt on every clock update, for RTCs that support this once-per-second interrupt. The third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument is ignored.</p>
+    </dd>
+    <dt><strong>RTC_PIE_ON</strong>, <strong>RTC_PIE_OFF</strong></dt>
+    <dd>
+  <p>Enable or disable the periodic interrupt, for RTCs that support these periodic interrupts. The third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument is ignored. Only a privileged process (i.e., one having the <strong>CAP_SYS_RESOURCE</strong> capability) can enable the periodic interrupt if the frequency is currently set above the value specified in <em>/proc/sys/dev/rtc/max-user-freq</em>.</p>
+    </dd>
+    <dt><strong>RTC_EPOCH_READ</strong>, <strong>RTC_EPOCH_SET</strong></dt>
+    <dd>
+  <p>Many RTCs encode the year in an 8-bit register which is either interpreted as an 8-bit binary number or as a BCD number. In both cases, the number is interpreted relative to this RTC's Epoch. The RTC's Epoch is initialized to 1900 on most systems but on Alpha and MIPS it might also be initialized to 1952, 1980, or 2000, depending on the value of an RTC register for the year. With some RTCs, these operations can be used to read or to set the RTC's Epoch, respectively. The third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument is a <em>unsigned long&nbsp;*</em> or a <em>unsigned long</em>, respectively, and the value returned (or assigned) is the Epoch. To set the RTC's Epoch the process must be privileged (i.e., have the <strong>CAP_SYS_TIME</strong> capability).</p>
+    </dd>
+    <dt><strong>RTC_WKALM_RD</strong>, <strong>RTC_WKALM_SET</strong></dt>
+    <dd>
+  <p>Some RTCs support a more powerful alarm interface, using these ioctls to read or write the RTC's alarm time (respectively) with this structure:</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<pre>struct rtc_wkalrm {
+    unsigned char enabled;
+    unsigned char pending;
+    struct rtc_time time;
+};</pre>
+
+<p class='spacer'>
+
+<p>The <em>enabled</em> flag is used to enable or disable the alarm interrupt, or to read its current status; when using these calls, <strong>RTC_AIE_ON</strong> and <strong>RTC_AIE_OFF</strong> are not used. The <em>pending</em> flag is used by <strong>RTC_WKALM_RD</strong> to report a pending interrupt (so it's mostly useless on Linux, except when talking to the RTC managed by EFI firmware). The <em>time</em> field is as used with <strong>RTC_ALM_READ</strong> and <strong>RTC_ALM_SET</strong> except that the <em>tm_mday</em>, <em>tm_mon</em>, and <em>tm_year</em> fields are also valid. A pointer to this structure should be passed as the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+<p><em>/dev/rtc</em>,  <em>/dev/rtc0</em>,  <em>/dev/rtc1</em>,  etc: RTC special character device files.</p>
+<p class='spacer'>
+
+<p><em>/proc/driver/rtc</em>: status of the (first) RTC.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>When the kernel's system time is synchronized with an external reference using <a href="../man2/adjtimex.2.html"><strong>adjtimex</strong>(2)</a> it will update a designated RTC periodically every 11 minutes. To do so, the kernel has to briefly turn off periodic interrupts; this might affect programs using that RTC.</p>
+<p class='spacer'>
+
+<p>An RTC's Epoch has nothing to do with the POSIX Epoch which is used only for the system clock.</p>
+<p class='spacer'>
+
+<p>If the year according to the RTC's Epoch and the year register is less than 1970 it is assumed to be 100 years later, that is, between 2000 and 2069.</p>
+<p class='spacer'>
+
+<p>Some RTCs support "wildcard" values in alarm fields, to support scenarios like periodic alarms at fifteen minutes after every hour, or on the first day of each month. Such usage is nonportable; portable user-space code expects only a single alarm interrupt, and will either disable or reinitialize the alarm after receiving it.</p>
+<p class='spacer'>
+
+<p>Some RTCs support periodic interrupts with periods that are multiples of a second rather than fractions of a second; multiple alarms; programmable output clock signals; nonvolatile memory; and other hardware capabilities that are not currently exposed by this API.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man1/date.1.html"><strong>date</strong>(1)</a>, <a href="../man2/adjtimex.2.html"><strong>adjtimex</strong>(2)</a>, <a href="../man2/gettimeofday.2.html"><strong>gettimeofday</strong>(2)</a>, <a href="../man2/settimeofday.2.html"><strong>settimeofday</strong>(2)</a>, <a href="../man2/stime.2.html"><strong>stime</strong>(2)</a>, <a href="../man2/time.2.html"><strong>time</strong>(2)</a>, <a href="../man3/gmtime.3.html"><strong>gmtime</strong>(3)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a>, <a href="../man8/hwclock.8.html"><strong>hwclock</strong>(8)</a></p>
+<p class='spacer'>
+
+<p><em>Documentation/rtc.txt</em> in the Linux kernel source tree</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="random.4.html"><span aria-hidden="true">&larr;</span> random.4: kernel random number source devices</a></li><li class="next"><a href="sd.4.html">sd.4: driver for SCSI disk drives <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

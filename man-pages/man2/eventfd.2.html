@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>eventfd - create a file descriptor for event notification</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">eventfd<small> (2)</small></h1>
+        <p class="lead">create a file descriptor for event notification</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/eventfd.2.html"><span itemprop="title">eventfd</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/eventfd.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>int eventfd(unsigned int </strong><em>initval</em><strong>, int </strong><em>flags</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>eventfd</strong>() creates an "eventfd object" that can be used as an event wait/notify mechanism by user-space applications, and by the kernel to notify user-space applications of events. The object contains an unsigned 64-bit integer (<em>uint64_t</em>) counter that is maintained by the kernel. This counter is initialized with the value specified in the argument <em>initval</em>.</p>
+<p class='spacer'>
+
+  <p>The following values may be bitwise ORed in <em>flags</em> to change the behavior of <strong>eventfd</strong>():</p>
+  <dl class='dl-vertical'>
+    <dt><strong>EFD_CLOEXEC</strong> (since Linux 2.6.27)</dt>
+    <dd>
+  <p>Set the close-on-exec (<strong>FD_CLOEXEC</strong>) flag on the new file descriptor. See the description of the <strong>O_CLOEXEC</strong> flag in <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for reasons why this may be useful.</p>
+    </dd>
+    <dt><strong>EFD_NONBLOCK</strong> (since Linux 2.6.27)</dt>
+    <dd>
+  <p>Set the <strong>O_NONBLOCK</strong> file status flag on the new open file description. Using this flag saves extra calls to <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> to achieve the same result.</p>
+    </dd>
+    <dt><strong>EFD_SEMAPHORE</strong> (since Linux 2.6.30)</dt>
+    <dd>
+  <p>Provide semaphore-like semantics for reads from the new file descriptor. See below.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>In Linux up to version 2.6.26, the <em>flags</em> argument is unused, and must be specified as zero.</p>
+<p class='spacer'>
+
+  <p>As its return value, <strong>eventfd</strong>() returns a new file descriptor that can be used to refer to the eventfd object. The following operations can be performed on the file descriptor:</p>
+  <dl class='dl-vertical'>
+    <dt><a href="../man2/read.2.html"><strong>read</strong>(2)</a></dt>
+    <dd>
+  <p>Each successful <a href="../man2/read.2.html"><strong>read</strong>(2)</a> returns an 8-byte integer. A <a href="../man2/read.2.html"><strong>read</strong>(2)</a> will fail with the error <strong>EINVAL</strong> if the size of the supplied buffer is less than 8 bytes.</p>
+<p class='spacer'>
+
+  <p>The value returned by <a href="../man2/read.2.html"><strong>read</strong>(2)</a> is in host byte order&ndash;that is, the native byte order for integers on the host machine.</p>
+<p class='spacer'>
+
+      <p>The semantics of <a href="../man2/read.2.html"><strong>read</strong>(2)</a> depend on whether the eventfd counter currently has a nonzero value and whether the <strong>EFD_SEMAPHORE</strong> flag was specified when creating the eventfd file descriptor:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+      <p>If <strong>EFD_SEMAPHORE</strong> was not specified and the eventfd counter has a nonzero value, then a <a href="../man2/read.2.html"><strong>read</strong>(2)</a> returns 8 bytes containing that value, and the counter's value is reset to zero.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>If <strong>EFD_SEMAPHORE</strong> was specified and the eventfd counter has a nonzero value, then a <a href="../man2/read.2.html"><strong>read</strong>(2)</a> returns 8 bytes containing the value 1, and the counter's value is decremented by 1.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>If the eventfd counter is zero at the time of the call to <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, then the call either blocks until the counter becomes nonzero (at which time, the <a href="../man2/read.2.html"><strong>read</strong>(2)</a> proceeds as described above) or fails with the error <strong>EAGAIN</strong> if the file descriptor has been made nonblocking.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><a href="../man2/write.2.html"><strong>write</strong>(2)</a></dt>
+    <dd>
+  <p>A <a href="../man2/write.2.html"><strong>write</strong>(2)</a> call adds the 8-byte integer value supplied in its buffer to the counter. The maximum value that may be stored in the counter is the largest unsigned 64-bit value minus 1 (i.e., 0xfffffffffffffffe). If the addition would cause the counter's value to exceed the maximum, then the <a href="../man2/write.2.html"><strong>write</strong>(2)</a> either blocks until a <a href="../man2/read.2.html"><strong>read</strong>(2)</a> is performed on the file descriptor, or fails with the error <strong>EAGAIN</strong> if the file descriptor has been made nonblocking.</p>
+<p class='spacer'>
+
+  <p>A <a href="../man2/write.2.html"><strong>write</strong>(2)</a> will fail with the error <strong>EINVAL</strong> if the size of the supplied buffer is less than 8 bytes, or if an attempt is made to write the value 0xffffffffffffffff.</p>
+    </dd>
+    <dt><a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a> (and similar)</dt>
+    <dd>
+      <p>The returned file descriptor supports <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> (and analogously <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>) and <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, as follows:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+      <p>The file descriptor is readable (the <a href="../man2/select.2.html"><strong>select</strong>(2)</a> <em>readfds</em> argument; the <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> <strong>POLLIN</strong> flag) if the counter has a value greater than 0.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>The file descriptor is writable (the <a href="../man2/select.2.html"><strong>select</strong>(2)</a> <em>writefds</em> argument; the <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> <strong>POLLOUT</strong> flag) if it is possible to write a value of at least "1" without blocking.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>If an overflow of the counter value was detected, then <a href="../man2/select.2.html"><strong>select</strong>(2)</a> indicates the file descriptor as being both readable and writable, and <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> returns a <strong>POLLERR</strong> event. As noted above, <a href="../man2/write.2.html"><strong>write</strong>(2)</a> can never overflow the counter. However an overflow can occur if 2^64 eventfd "signal posts" were performed by the KAIO subsystem (theoretically possible, but practically unlikely). If an overflow has occurred, then <a href="../man2/read.2.html"><strong>read</strong>(2)</a> will return that maximum <em>uint64_t</em> value (i.e., 0xffffffffffffffff).</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+  <p>The eventfd file descriptor also supports the other file-descriptor multiplexing APIs: <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a> and <a href="../man2/ppoll.2.html"><strong>ppoll</strong>(2)</a>.</p>
+    </dd>
+    <dt><a href="../man2/close.2.html"><strong>close</strong>(2)</a></dt>
+    <dd>
+  <p>When the file descriptor is no longer required it should be closed. When all file descriptors associated with the same eventfd object have been closed, the resources for object are freed by the kernel.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>A copy of the file descriptor created by <strong>eventfd</strong>() is inherited by the child produced by <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>. The duplicate file descriptor is associated with the same eventfd object. File descriptors created by <strong>eventfd</strong>() are preserved across <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, unless the close-on-exec flag has been set.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>eventfd</strong>() returns a new eventfd file descriptor. On error, -1 is returned and <em>errno</em> is set to indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>An unsupported value was specified in <em>flags</em>.</p>
+    </dd>
+    <dt><strong>EMFILE</strong></dt>
+    <dd>
+  <p>The per-process limit on the number of open file descriptors has been reached.</p>
+    </dd>
+    <dt><strong>ENFILE</strong></dt>
+    <dd>
+  <p>The system-wide limit on the total number of open files has been reached.</p>
+    </dd>
+    <dt><strong>ENODEV</strong></dt>
+    <dd>
+  <p>Could not mount (internal) anonymous inode device.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>There was insufficient memory to create a new eventfd file descriptor.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>eventfd</strong>() is available on Linux since kernel 2.6.22. Working support is provided in glibc since version 2.8. The <strong>eventfd2</strong>() system call (see NOTES) is available on Linux since kernel 2.6.27. Since version 2.9, the glibc <strong>eventfd</strong>() wrapper will employ the <strong>eventfd2</strong>() system call, if it is supported by the kernel.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
+        <div class="sectioncontent">
+
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
+<table class="table table-striped">
+<tr>
+<th>Interface</th>
+<th>Attribute</th>
+<th>Value</th></tr>
+
+<tr>
+<td><strong>eventfd</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe</td></tr>
+</table>
+
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p><strong>eventfd</strong>() and <strong>eventfd2</strong>() are Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Applications can use an eventfd file descriptor instead of a pipe (see <a href="../man2/pipe.2.html"><strong>pipe</strong>(2)</a>) in all cases where a pipe is used simply to signal events. The kernel overhead of an eventfd file descriptor is much lower than that of a pipe, and only one file descriptor is required (versus the two required for a pipe).</p>
+<p class='spacer'>
+
+<p>When used in the kernel, an eventfd file descriptor can provide a bridge from kernel to user space, allowing, for example, functionalities like KAIO (kernel AIO) to signal to a file descriptor that some operation is complete.</p>
+<p class='spacer'>
+
+<p>A key point about an eventfd file descriptor is that it can be monitored just like any other file descriptor using <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, or <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>. This means that an application can simultaneously monitor the readiness of "traditional" files and the readiness of other kernel mechanisms that support the eventfd interface. (Without the <strong>eventfd</strong>() interface, these mechanisms could not be multiplexed via <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, or <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>.)</p>
+<p class='spacer'>
+
+<p>The current value of an eventfd counter can be viewed via the entry for the corresponding file descriptor in the process's <em>/proc/[pid]/fdinfo</em> directory. See <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> for further details.</p>
+  <h3>C library/kernel differences</h3>
+<p>There are two underlying Linux system calls: <strong>eventfd</strong>() and the more recent <strong>eventfd2</strong>(). The former system call does not implement a <em>flags</em> argument. The latter system call implements the <em>flags</em> values described above. The glibc wrapper function will use <strong>eventfd2</strong>() where it is available.</p>
+  <h3>Additional glibc features</h3>
+  <p>The GNU C library defines an additional type, and two functions that attempt to abstract some of the details of reading and writing on an eventfd file descriptor:</p>
+<pre>
+typedef uint64_t eventfd_t;
+
+int eventfd_read(int fd, eventfd_t *value);
+int eventfd_write(int fd, eventfd_t value);</pre>
+
+<p class='spacer'>
+
+<p>The functions perform the read and write operations on an eventfd file descriptor, returning 0 if the correct number of bytes was transferred, or -1 otherwise.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The following program creates an eventfd file descriptor and then forks to create a child process. While the parent briefly sleeps, the child writes each of the integers supplied in the program's command-line arguments to the eventfd file descriptor. When the parent has finished sleeping, it reads from the eventfd file descriptor.</p>
+<p class='spacer'>
+
+  <p>The following shell session shows a sample run of the program:</p>
+<pre>
+$<strong> ./a.out 1 2 4 7 14</strong>
+Child writing 1 to efd
+Child writing 2 to efd
+Child writing 4 to efd
+Child writing 7 to efd
+Child writing 14 to efd
+Child completed write loop
+Parent about to read
+Parent read 28 (0x1c) from efd</pre>
+
+  <h3>Program source</h3>
+  <p></p>
+<pre>#include &lt;sys/eventfd.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;             /* Definition of uint64_t */
+
+#define handle_error(msg) &#92;
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+int
+main(int argc, char *argv[])
+{
+    int efd, j;
+    uint64_t u;
+    ssize_t s;
+
+    if (argc &lt; 2) {
+        fprintf(stderr, "Usage: %s &lt;num&gt;...&#92;n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    efd = eventfd(0, 0);
+    if (efd == -1)
+        handle_error("eventfd");
+
+    switch (fork()) {
+    case 0:
+        for (j = 1; j &lt; argc; j++) {
+            printf("Child writing %s to efd&#92;n", argv[j]);
+            u = strtoull(argv[j], NULL, 0);
+                    /* strtoull() allows various bases */
+            s = write(efd, &u, sizeof(uint64_t));
+            if (s != sizeof(uint64_t))
+                handle_error("write");
+        }
+        printf("Child completed write loop&#92;n");
+
+        exit(EXIT_SUCCESS);
+
+    default:
+        <strong>sleep</strong>(2);
+
+        printf("Parent about to read&#92;n");
+        s = read(efd, &u, sizeof(uint64_t));
+        if (s != sizeof(uint64_t))
+            handle_error("read");
+        printf("Parent read %llu (0x%llx) from efd&#92;n",
+                (unsigned long long) u, (unsigned long long) u);
+        exit(EXIT_SUCCESS);
+
+    case -1:
+        handle_error("fork");
+    }
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/futex.2.html"><strong>futex</strong>(2)</a>, <a href="../man2/pipe.2.html"><strong>pipe</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/signalfd.2.html"><strong>signalfd</strong>(2)</a>, <a href="../man2/timerfd_create.2.html"><strong>timerfd_create</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>, <a href="../man7/sem_overview.7.html"><strong>sem_overview</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="epoll_wait.2.html"><span aria-hidden="true">&larr;</span> epoll_wait.2: wait for an I/O event on an epoll file descriptor</a></li><li class="next"><a href="eventfd2.2.html">eventfd2.2: create a file descriptor for event notification <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

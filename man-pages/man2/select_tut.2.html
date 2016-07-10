@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>select_tut - synchronous I/O multiplexing</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">select_tut<small> (2)</small></h1>
+        <p class="lead">synchronous I/O multiplexing</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/select_tut.2.html"><span itemprop="title">select_tut</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre>/* According to POSIX.1-2001, POSIX.1-2008 */
+
+<strong>#include &lt;sys/select.h&gt;</strong>
+
+/* According to earlier standards */
+
+<strong>#include &lt;sys/time.h&gt;</strong>
+
+<strong>#include &lt;sys/types.h&gt;</strong>
+
+<strong>#include &lt;unistd.h&gt;</strong>
+
+<strong>int select(int </strong><em>nfds</em><strong>, fd_set *</strong><em>readfds</em><strong>, fd_set *</strong><em>writefds</em><strong>,</strong>
+<strong>           fd_set *</strong><em>exceptfds</em><strong>, struct timeval *</strong><em>utimeout</em><strong>);</strong>
+
+<strong>void FD_CLR(int </strong><em>fd</em><strong>, fd_set *</strong><em>set</em><strong>);</strong>
+
+<strong>int  FD_ISSET(int </strong><em>fd</em><strong>, fd_set *</strong><em>set</em><strong>);</strong>
+
+<strong>void FD_SET(int </strong><em>fd</em><strong>, fd_set *</strong><em>set</em><strong>);</strong>
+
+<strong>void FD_ZERO(fd_set *</strong><em>set</em><strong>);</strong>
+
+<strong>#include &lt;sys/select.h&gt;</strong>
+
+<strong>int pselect(int </strong><em>nfds</em><strong>, fd_set *</strong><em>readfds</em><strong>, fd_set *</strong><em>writefds</em><strong>,</strong>
+<strong>            fd_set *</strong><em>exceptfds</em><strong>, const struct timespec *</strong><em>ntimeout</em><strong>,</strong>
+<strong>            const sigset_t *</strong><em>sigmask</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
+<p class='spacer'>
+
+<p><strong>pselect</strong>(): _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>select</strong>() (or <strong>pselect</strong>()) is used to efficiently monitor multiple file descriptors, to see if any of them is, or becomes, "ready"; that is, to see whether I/O becomes possible, or an "exceptional condition" has occurred on any of the file descriptors.</p>
+<p class='spacer'>
+
+<p>Its principal arguments are three "sets" of file descriptors: <em>readfds</em>, <em>writefds</em>, and <em>exceptfds</em>. Each set is declared as type <em>fd_set</em>, and its contents can be manipulated with the macros <strong>FD_CLR</strong>(), <strong>FD_ISSET</strong>(), <strong>FD_SET</strong>(), and <strong>FD_ZERO</strong>(). A newly declared set should first be cleared using <strong>FD_ZERO</strong>(). <strong>select</strong>() modifies the contents of the sets according to the rules described below; after calling <strong>select</strong>() you can test if a file descriptor is still present in a set with the <strong>FD_ISSET</strong>() macro. <strong>FD_ISSET</strong>() returns nonzero if a specified file descriptor is present in a set and zero if it is not. <strong>FD_CLR</strong>() removes a file descriptor from a set.</p>
+  <h3>Arguments</h3>
+  <dl class='dl-vertical'>
+    <dt><em>readfds</em></dt>
+    <dd>
+  <p>This set is watched to see if data is available for reading from any of its file descriptors. After <strong>select</strong>() has returned, <em>readfds</em> will be cleared of all file descriptors except for those that are immediately available for reading.</p>
+    </dd>
+    <dt><em>writefds</em></dt>
+    <dd>
+  <p>This set is watched to see if there is space to write data to any of its file descriptors. After <strong>select</strong>() has returned, <em>writefds</em> will be cleared of all file descriptors except for those that are immediately available for writing.</p>
+    </dd>
+    <dt><em>exceptfds</em></dt>
+    <dd>
+  <p>This set is watched for "exceptional conditions". In practice, only one such exceptional condition is common: the availability of <em>out-of-band</em> (OOB) data for reading from a TCP socket. See <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/send.2.html"><strong>send</strong>(2)</a>, and <a href="../man7/tcp.7.html"><strong>tcp</strong>(7)</a> for more details about OOB data. (One other less common case where <a href="../man2/select.2.html"><strong>select</strong>(2)</a> indicates an exceptional condition occurs with pseudoterminals in packet mode; see <a href="../man4/tty_ioctl.4.html"><strong>tty_ioctl</strong>(4)</a>.) After <strong>select</strong>() has returned, <em>exceptfds</em> will be cleared of all file descriptors except for those for which an exceptional condition has occurred.</p>
+    </dd>
+    <dt><em>nfds</em></dt>
+    <dd>
+  <p>This is an integer one more than the maximum of any file descriptor in any of the sets. In other words, while adding file descriptors to each of the sets, you must calculate the maximum integer value of all of them, then increment this value by one, and then pass this as <em>nfds</em>.</p>
+    </dd>
+    <dt><em>utimeout</em></dt>
+    <dd>
+  <p>This is the longest time <strong>select</strong>() may wait before returning, even if nothing interesting happened. If this value is passed as NULL, then <strong>select</strong>() blocks indefinitely waiting for a file descriptor to become ready. <em>utimeout</em> can be set to zero seconds, which causes <strong>select</strong>() to return immediately, with information about the readiness of file descriptors at the time of the call. The structure <em>struct timeval</em> is defined as:</p>
+<p class='spacer'>
+
+<pre>struct timeval {
+    time_t tv_sec;    /* seconds */
+    long tv_usec;     /* microseconds */
+};</pre>
+
+    </dd>
+    <dt><em>ntimeout</em></dt>
+    <dd>
+  <p>This argument for <strong>pselect</strong>() has the same meaning as <em>utimeout</em>, but <em>struct timespec</em> has nanosecond precision as follows:</p>
+<p class='spacer'>
+
+<pre>struct timespec {
+    long tv_sec;    /* seconds */
+    long tv_nsec;   /* nanoseconds */
+};</pre>
+
+    </dd>
+    <dt><em>sigmask</em></dt>
+    <dd>
+  <p>This argument holds a set of signals that the kernel should unblock (i.e., remove from the signal mask of the calling thread), while the caller is blocked inside the <strong>pselect</strong>() call (see <a href="../man3/sigaddset.3.html"><strong>sigaddset</strong>(3)</a> and <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>). It may be NULL, in which case the call does not modify the signal mask on entry and exit to the function. In this case, <strong>pselect</strong>() will then behave just like <strong>select</strong>().</p>
+    </dd>
+  </dl>
+  <h3>Combining signal and data events</h3>
+<p><strong>pselect</strong>() is useful if you are waiting for a signal as well as for file descriptor(s) to become ready for I/O. Programs that receive signals normally use the signal handler only to raise a global flag. The global flag will indicate that the event must be processed in the main loop of the program. A signal will cause the <strong>select</strong>() (or <strong>pselect</strong>()) call to return with <em>errno</em> set to <strong>EINTR</strong>. This behavior is essential so that signals can be processed in the main loop of the program, otherwise <strong>select</strong>() would block indefinitely. Now, somewhere in the main loop will be a conditional to check the global flag. So we must ask: what if a signal arrives after the conditional, but before the <strong>select</strong>() call? The answer is that <strong>select</strong>() would block indefinitely, even though an event is actually pending. This race condition is solved by the <strong>pselect</strong>() call. This call can be used to set the signal mask to a set of signals that are to be received only within the <strong>pselect</strong>() call. For instance, let us say that the event in question was the exit of a child process. Before the start of the main loop, we would block <strong>SIGCHLD</strong> using <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>. Our <strong>pselect</strong>() call would enable <strong>SIGCHLD</strong> by using an empty signal mask. Our program would look like:</p>
+<p class='spacer'>
+
+<pre>static volatile sig_atomic_t got_SIGCHLD = 0;
+
+static void
+child_sig_handler(int sig)
+{
+    got_SIGCHLD = 1;
+}
+
+int
+main(int argc, char *argv[])
+{
+    sigset_t sigmask, empty_mask;
+    struct sigaction sa;
+    fd_set readfds, writefds, exceptfds;
+    int r;
+
+    sigemptyset(&sigmask);
+    sigaddset(&sigmask, SIGCHLD);
+    if (sigprocmask(SIG_BLOCK, &sigmask, NULL) == -1) {
+        perror("sigprocmask");
+        exit(EXIT_FAILURE);
+    }
+
+    sa.sa_flags = 0;
+    sa.sa_handler = child_sig_handler;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
+
+    sigemptyset(&empty_mask);
+
+    for (;;) {          /* main loop */
+        /* Initialize readfds, writefds, and exceptfds
+           before the pselect() call. (Code omitted.) */
+
+        r = pselect(nfds, &readfds, &writefds, &exceptfds,
+                    NULL, &empty_mask);
+        if (r == -1 && errno != EINTR) {
+            /* Handle error */
+        }
+
+        if (got_SIGCHLD) {
+            got_SIGCHLD = 0;
+
+            /* Handle signalled event here; e.g., wait() for all
+               terminated children. (Code omitted.) */
+        }
+
+        /* main body of program */
+    }
+}</pre>
+
+  <h3>Practical</h3>
+<p>So what is the point of <strong>select</strong>()? Can't I just read and write to my file descriptors whenever I want? The point of <strong>select</strong>() is that it watches multiple descriptors at the same time and properly puts the process to sleep if there is no activity. UNIX programmers often find themselves in a position where they have to handle I/O from more than one file descriptor where the data flow may be intermittent. If you were to merely create a sequence of <a href="../man2/read.2.html"><strong>read</strong>(2)</a> and <a href="../man2/write.2.html"><strong>write</strong>(2)</a> calls, you would find that one of your calls may block waiting for data from/to a file descriptor, while another file descriptor is unused though ready for I/O. <strong>select</strong>() efficiently copes with this situation.</p>
+  <h3>Select law</h3>
+  <p>Many people who try to use <strong>select</strong>() come across behavior that is difficult to understand and produces nonportable or borderline results. For instance, the above program is carefully written not to block at any point, even though it does not set its file descriptors to nonblocking mode. It is easy to introduce subtle errors that will remove the advantage of using <strong>select</strong>(), so here is a list of essentials to watch for when using <strong>select</strong>().</p>
+  <dl class='dl-horizontal'>
+    <dt>1.</dt>
+    <dd>
+  <p>You should always try to use <strong>select</strong>() without a timeout. Your program should have nothing to do if there is no data available. Code that depends on timeouts is not usually portable and is difficult to debug.</p>
+    </dd>
+    <dt>2.</dt>
+    <dd>
+  <p>The value <em>nfds</em> must be properly calculated for efficiency as explained above.</p>
+    </dd>
+    <dt>3.</dt>
+    <dd>
+  <p>No file descriptor must be added to any set if you do not intend to check its result after the <strong>select</strong>() call, and respond appropriately. See next rule.</p>
+    </dd>
+    <dt>4.</dt>
+    <dd>
+  <p>After <strong>select</strong>() returns, all file descriptors in all sets should be checked to see if they are ready.</p>
+    </dd>
+    <dt>5.</dt>
+    <dd>
+  <p>The functions <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man2/send.2.html"><strong>send</strong>(2)</a> do <em>not</em> necessarily read/write the full amount of data that you have requested. If they do read/write the full amount, it's because you have a low traffic load and a fast stream. This is not always going to be the case. You should cope with the case of your functions managing to send or receive only a single byte.</p>
+    </dd>
+    <dt>6.</dt>
+    <dd>
+  <p>Never read/write only in single bytes at a time unless you are really sure that you have a small amount of data to process. It is extremely inefficient not to read/write as much data as you can buffer each time. The buffers in the example below are 1024 bytes although they could easily be made larger.</p>
+    </dd>
+    <dt>7.</dt>
+    <dd>
+  <p>The functions <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man2/send.2.html"><strong>send</strong>(2)</a> as well as the <strong>select</strong>() call can return -1 with <em>errno</em> set to <strong>EINTR</strong>, or with <em>errno</em> set to <strong>EAGAIN</strong> (<strong>EWOULDBLOCK</strong>). These results must be properly managed (not done properly above). If your program is not going to receive any signals, then it is unlikely you will get <strong>EINTR</strong>. If your program does not set nonblocking I/O, you will not get <strong>EAGAIN</strong>.</p>
+    </dd>
+    <dt>8.</dt>
+    <dd>
+  <p>Never call <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, or <a href="../man2/send.2.html"><strong>send</strong>(2)</a> with a buffer length of zero.</p>
+    </dd>
+    <dt>9.</dt>
+    <dd>
+  <p>If the functions <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man2/send.2.html"><strong>send</strong>(2)</a> fail with errors other than those listed in <strong>7.</strong>, or one of the input functions returns 0, indicating end of file, then you should <em>not</em> pass that file descriptor to <strong>select</strong>() again. In the example below, I close the file descriptor immediately, and then set it to -1 to prevent it being included in a set.</p>
+    </dd>
+    <dt>10.</dt>
+    <dd>
+  <p>The timeout value must be initialized with each new call to <strong>select</strong>(), since some operating systems modify the structure. <strong>pselect</strong>() however does not modify its timeout structure.</p>
+    </dd>
+    <dt>11.</dt>
+    <dd>
+  <p>Since <strong>select</strong>() modifies its file descriptor sets, if the call is being used in a loop, then the sets must be reinitialized before each call.</p>
+    </dd>
+  </dl>
+  <h3>Usleep emulation</h3>
+<p>On systems that do not have a <a href="../man3/usleep.3.html"><strong>usleep</strong>(3)</a> function, you can call <strong>select</strong>() with a finite timeout and no file descriptors as follows:</p>
+<p class='spacer'>
+
+<pre>    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 200000;  /* 0.2 seconds */
+    select(0, NULL, NULL, NULL, &tv);</pre>
+
+<p class='spacer'>
+
+<p>This is guaranteed to work only on UNIX systems, however.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>select</strong>() returns the total number of file descriptors still present in the file descriptor sets.</p>
+<p class='spacer'>
+
+<p>If <strong>select</strong>() timed out, then the return value will be zero. The file descriptors set should be all empty (but may not be on some systems).</p>
+<p class='spacer'>
+
+<p>A return value of -1 indicates an error, with <em>errno</em> being set appropriately. In the case of an error, the contents of the returned sets and the <em>struct timeout</em> contents are undefined and should not be used. <strong>pselect</strong>() however never modifies <em>ntimeout</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Generally speaking, all operating systems that support sockets also support <strong>select</strong>(). <strong>select</strong>() can be used to solve many problems in a portable and efficient way that naive programmers try to solve in a more complicated manner using threads, forking, IPCs, signals, memory sharing, and so on.</p>
+<p class='spacer'>
+
+<p>The <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> system call has the same functionality as <strong>select</strong>(), and is somewhat more efficient when monitoring sparse file descriptor sets. It is nowadays widely available, but historically was less portable than <strong>select</strong>().</p>
+<p class='spacer'>
+
+<p>The Linux-specific <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a> API provides an interface that is more efficient than <a href="../man2/select.2.html"><strong>select</strong>(2)</a> and <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> when monitoring large numbers of file descriptors.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>Here is an example that better demonstrates the true utility of <strong>select</strong>(). The listing below is a TCP forwarding program that forwards from one TCP port to another.</p>
+<p class='spacer'>
+
+<pre>#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/time.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;string.h&gt;
+#include &lt;signal.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;arpa/inet.h&gt;
+#include &lt;errno.h&gt;
+
+static int forward_port;
+
+#undef max
+#define max(x,y) ((x) &gt; (y) ? (x) : (y))
+
+static int
+listen_socket(int listen_port)
+{
+    struct sockaddr_in addr;
+    int lfd;
+    int yes;
+
+    lfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (lfd == -1) {
+        perror("socket");
+        return -1;
+    }
+
+    yes = 1;
+    if (setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR,
+            &yes, sizeof(yes)) == -1) {
+        perror("setsockopt");
+        close(lfd);
+        return -1;
+    }
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_port = htons(listen_port);
+    addr.sin_family = AF_INET;
+    if (bind(lfd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
+        perror("bind");
+        close(lfd);
+        return -1;
+    }
+
+    printf("accepting connections on port %d&#92;n", listen_port);
+    listen(lfd, 10);
+    return lfd;
+}
+
+static int
+connect_socket(int connect_port, char *address)
+{
+    struct sockaddr_in addr;
+    int cfd;
+
+    cfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (cfd == -1) {
+        perror("socket");
+        close(cfd);
+        return -1;
+    }
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_port = htons(connect_port);
+    addr.sin_family = AF_INET;
+
+    if (!inet_aton(address, (struct in_addr *) &addr.sin_addr.s_addr)) {
+        perror("bad IP address format");
+        close(cfd);
+        return -1;
+    }
+
+    if (connect(cfd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
+        perror("connect()");
+        shutdown(cfd, SHUT_RDWR);
+        close(cfd);
+        return -1;
+    }
+    return cfd;
+}
+
+#define SHUT_FD1 do {                                &#92;
+                     if (fd1 &gt;= 0) {                 &#92;
+                         shutdown(fd1, SHUT_RDWR);   &#92;
+                         close(fd1);                 &#92;
+                         fd1 = -1;                   &#92;
+                     }                               &#92;
+                 } while (0)
+
+#define SHUT_FD2 do {                                &#92;
+                     if (fd2 &gt;= 0) {                 &#92;
+                         shutdown(fd2, SHUT_RDWR);   &#92;
+                         close(fd2);                 &#92;
+                         fd2 = -1;                   &#92;
+                     }                               &#92;
+                 } while (0)
+
+#define BUF_SIZE 1024
+
+int
+main(int argc, char *argv[])
+{
+    int h;
+    int fd1 = -1, fd2 = -1;
+    char buf1[BUF_SIZE], buf2[BUF_SIZE];
+    int buf1_avail, buf1_written;
+    int buf2_avail, buf2_written;
+
+    if (argc != 4) {
+        fprintf(stderr, "Usage&#92;n&#92;tfwd &lt;listen-port&gt; "
+                 "&lt;forward-to-port&gt; &lt;forward-to-ip-address&gt;&#92;n");
+        exit(EXIT_FAILURE);
+    }
+
+    signal(SIGPIPE, SIG_IGN);
+
+    forward_port = atoi(argv[2]);
+
+    h = listen_socket(atoi(argv[1]));
+    if (h == -1)
+        exit(EXIT_FAILURE);
+
+    for (;;) {
+        int ready, nfds = 0;
+	ssize_t nbytes;
+        fd_set readfds, writefds, exceptfds;
+
+        FD_ZERO(&readfds);
+        FD_ZERO(&writefds);
+        FD_ZERO(&exceptfds);
+        FD_SET(h, &readfds);
+        nfds = max(nfds, h);
+        if (fd1 &gt; 0 && buf1_avail &lt; BUF_SIZE) {
+            FD_SET(fd1, &readfds);
+            nfds = max(nfds, fd1);
+        }
+        if (fd2 &gt; 0 && buf2_avail &lt; BUF_SIZE) {
+            FD_SET(fd2, &readfds);
+            nfds = max(nfds, fd2);
+        }
+        if (fd1 &gt; 0 && buf2_avail - buf2_written &gt; 0) {
+            FD_SET(fd1, &writefds);
+            nfds = max(nfds, fd1);
+        }
+        if (fd2 &gt; 0 && buf1_avail - buf1_written &gt; 0) {
+            FD_SET(fd2, &writefds);
+            nfds = max(nfds, fd2);
+        }
+        if (fd1 &gt; 0) {
+            FD_SET(fd1, &exceptfds);
+            nfds = max(nfds, fd1);
+        }
+        if (fd2 &gt; 0) {
+            FD_SET(fd2, &exceptfds);
+            nfds = max(nfds, fd2);
+        }
+
+        ready = select(nfds + 1, &readfds, &writefds, &exceptfds, NULL);
+
+        if (ready == -1 && errno == EINTR)
+            continue;
+
+        if (ready == -1) {
+            perror("select()");
+            exit(EXIT_FAILURE);
+        }
+
+        if (FD_ISSET(h, &readfds)) {
+            socklen_t addrlen;
+            struct sockaddr_in client_addr;
+	    int fd;
+
+	    addrlen = sizeof(client_addr);
+            memset(&client_addr, 0, addrlen);
+            fd = accept(h, (struct sockaddr *) &client_addr, &addrlen);
+            if (fd == -1) {
+                perror("accept()");
+            } else {
+                SHUT_FD1;
+                SHUT_FD2;
+                buf1_avail = buf1_written = 0;
+                buf2_avail = buf2_written = 0;
+                fd1 = fd;
+                fd2 = connect_socket(forward_port, argv[3]);
+                if (fd2 == -1)
+                    SHUT_FD1;
+                else
+                    printf("connect from %s&#92;n",
+                            inet_ntoa(client_addr.sin_addr));
+            }
+        }
+
+        /* NB: read OOB data before normal reads */
+
+        if (fd1 &gt; 0 && FD_ISSET(fd1, &exceptfds)) {
+            char c;
+
+            nbytes = recv(fd1, &c, 1, MSG_OOB);
+            if (nbytes &lt; 1)
+                SHUT_FD1;
+            else
+                send(fd2, &c, 1, MSG_OOB);
+        }
+        if (fd2 &gt; 0 && FD_ISSET(fd2, &exceptfds)) {
+            char c;
+
+            nbytes = recv(fd2, &c, 1, MSG_OOB);
+            if (nbytes &lt; 1)
+                SHUT_FD2;
+            else
+                send(fd1, &c, 1, MSG_OOB);
+        }
+        if (fd1 &gt; 0 && FD_ISSET(fd1, &readfds)) {
+            nbytes = read(fd1, buf1 + buf1_avail,
+                      BUF_SIZE - buf1_avail);
+            if (nbytes &lt; 1)
+                SHUT_FD1;
+            else
+                buf1_avail += nbytes;
+        }
+        if (fd2 &gt; 0 && FD_ISSET(fd2, &readfds)) {
+            nbytes = read(fd2, buf2 + buf2_avail,
+                      BUF_SIZE - buf2_avail);
+            if (nbytes &lt; 1)
+                SHUT_FD2;
+            else
+                buf2_avail += nbytes;
+        }
+        if (fd1 &gt; 0 && FD_ISSET(fd1, &writefds)) {
+            nbytes = write(fd1, buf2 + buf2_written,
+                       buf2_avail - buf2_written);
+            if (nbytes &lt; 1)
+                SHUT_FD1;
+            else
+                buf2_written += nbytes;
+        }
+        if (fd2 &gt; 0 && FD_ISSET(fd2, &writefds)) {
+            nbytes = write(fd2, buf1 + buf1_written,
+                       buf1_avail - buf1_written);
+            if (nbytes &lt; 1)
+                SHUT_FD2;
+            else
+                buf1_written += nbytes;
+        }
+
+        /* Check if write data has caught read data */
+
+        if (buf1_written == buf1_avail)
+            buf1_written = buf1_avail = 0;
+        if (buf2_written == buf2_avail)
+            buf2_written = buf2_avail = 0;
+
+        /* One side has closed the connection, keep
+           writing to the other side until empty */
+
+        if (fd1 &lt; 0 && buf1_avail - buf1_written == 0)
+            SHUT_FD2;
+        if (fd2 &lt; 0 && buf2_avail - buf2_written == 0)
+            SHUT_FD1;
+    }
+    exit(EXIT_SUCCESS);
+}</pre>
+
+<p class='spacer'>
+
+<p>The above program properly forwards most kinds of TCP connections including OOB signal data transmitted by <strong>telnet</strong> servers. It handles the tricky problem of having data flow in both directions simultaneously. You might think it more efficient to use a <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> call and devote a thread to each stream. This becomes more tricky than you might suspect. Another idea is to set nonblocking I/O using <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>. This also has its problems because you end up using inefficient timeouts.</p>
+<p class='spacer'>
+
+<p>The program does not handle more than one simultaneous connection at a time, although it could easily be extended to do this with a linked list of buffers&ndash;one for each connection. At the moment, new connections cause the current connection to be dropped.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>, <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a>, <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/send.2.html"><strong>send</strong>(2)</a>, <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, <a href="../man3/sigaddset.3.html"><strong>sigaddset</strong>(3)</a>, <a href="../man3/sigdelset.3.html"><strong>sigdelset</strong>(3)</a>, <a href="../man3/sigemptyset.3.html"><strong>sigemptyset</strong>(3)</a>, <a href="../man3/sigfillset.3.html"><strong>sigfillset</strong>(3)</a>, <a href="../man3/sigismember.3.html"><strong>sigismember</strong>(3)</a>, <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="select.2.html"><span aria-hidden="true">&larr;</span> select.2: synchronous I/O multiplexing</a></li><li class="next"><a href="semctl.2.html">semctl.2: System V semaphore control operations <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

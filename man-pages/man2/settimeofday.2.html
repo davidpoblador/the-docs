@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>settimeofday - get / set time</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">settimeofday<small> (2)</small></h1>
+        <p class="lead">get / set time</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/settimeofday.2.html"><span itemprop="title">settimeofday</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;sys/time.h&gt;</strong>
+
+<strong>int gettimeofday(struct timeval *</strong><em>tv</em><strong>, struct timezone *</strong><em>tz</em><strong>);</strong>
+
+<strong>int settimeofday(const struct timeval *</strong><em>tv</em><strong>, const struct timezone *</strong><em>tz</em><strong>);</strong>
+</pre>
+
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
+<p class='spacer'>
+
+<p><strong>settimeofday</strong>():</p>
+<pre>    Since glibc 2.19:
+        _DEFAULT_SOURCE
+    Glibc 2.19 and earlier:
+        _BSD_SOURCE</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The functions <strong>gettimeofday</strong>() and <strong>settimeofday</strong>() can get and set the time as well as a timezone. The <em>tv</em> argument is a <em>struct timeval</em> (as specified in <em>&lt;sys/time.h&gt;</em>):</p>
+<p class='spacer'>
+
+<pre>struct timeval {
+    time_t      tv_sec;     /* seconds */
+    suseconds_t tv_usec;    /* microseconds */
+};</pre>
+
+<p class='spacer'>
+
+<p>and gives the number of seconds and microseconds since the Epoch (see <a href="../man2/time.2.html"><strong>time</strong>(2)</a>). The <em>tz</em> argument is a <em>struct timezone</em>:</p>
+<p class='spacer'>
+
+<pre>struct timezone {
+    int tz_minuteswest;     /* minutes west of Greenwich */
+    int tz_dsttime;         /* type of DST correction */
+};</pre>
+
+<p class='spacer'>
+
+<p>If either <em>tv</em> or <em>tz</em> is NULL, the corresponding structure is not set or returned. (However, compilation warnings will result if <em>tv</em> is NULL.)</p>
+<p class='spacer'>
+
+<p>The use of the <em>timezone</em> structure is obsolete; the <em>tz</em> argument should normally be specified as NULL. (See NOTES below.)</p>
+<p class='spacer'>
+
+<p>Under Linux, there are some peculiar "warp clock" semantics associated with the <strong>settimeofday</strong>() system call if on the very first call (after booting) that has a non-NULL <em>tz</em> argument, the <em>tv</em> argument is NULL and the <em>tz_minuteswest</em> field is nonzero. (The <em>tz_dsttime</em> field should be zero for this case.) In such a case it is assumed that the CMOS clock is on local time, and that it has to be incremented by this amount to get UTC system time. No doubt it is a bad idea to use this feature.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p><strong>gettimeofday</strong>() and <strong>settimeofday</strong>() return 0 for success, or -1 for failure (in which case <em>errno</em> is set appropriately).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>One of <em>tv</em> or <em>tz</em> pointed outside the accessible address space.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>Timezone (or something else) is invalid.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>The calling process has insufficient privilege to call <strong>settimeofday</strong>(); under Linux the <strong>CAP_SYS_TIME</strong> capability is required.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>SVr4, 4.3BSD. POSIX.1-2001 describes <strong>gettimeofday</strong>() but not <strong>settimeofday</strong>(). POSIX.1-2008 marks <strong>gettimeofday</strong>() as obsolete, recommending the use of <a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a> instead.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>The time returned by <strong>gettimeofday</strong>() <em>is</em> affected by discontinuous jumps in the system time (e.g., if the system administrator manually changes the system time). If you need a monotonically increasing clock, see <a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>Macros for operating on <em>timeval</em> structures are described in <a href="../man3/timeradd.3.html"><strong>timeradd</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p>Traditionally, the fields of <em>struct timeval</em> were of type <em>long</em>.</p>
+  <h3>The tz_dsttime field</h3>
+<p>On a non-Linux kernel, with glibc, the <em>tz_dsttime</em> field of <em>struct timezone</em> will be set to a nonzero value by <strong>gettimeofday</strong>() if the current timezone has ever had or will have a daylight saving rule applied. In this sense it exactly mirrors the meaning of <a href="../man3/daylight.3.html"><strong>daylight</strong>(3)</a> for the current zone. On Linux, with glibc, the setting of the <em>tz_dsttime</em> field of <em>struct timezone</em> has never been used by <strong>settimeofday</strong>() or <strong>gettimeofday</strong>(). Thus, the following is purely of historical interest.</p>
+<p class='spacer'>
+
+  <p>On old systems, the field <em>tz_dsttime</em> contains a symbolic constant (values are given below) that indicates in which part of the year Daylight Saving Time is in force. (Note: this value is constant throughout the year: it does not indicate that DST is in force, it just selects an algorithm.) The daylight saving time algorithms defined are as follows:</p>
+<pre>
+<strong>DST_NONE</strong>     /* not on DST */
+
+<strong>DST_USA</strong>      /* USA style DST */
+
+<strong>DST_AUST</strong>     /* Australian style DST */
+
+<strong>DST_WET</strong>      /* Western European DST */
+
+<strong>DST_MET</strong>      /* Middle European DST */
+
+<strong>DST_EET</strong>      /* Eastern European DST */
+
+<strong>DST_CAN</strong>      /* Canada */
+
+<strong>DST_GB</strong>       /* Great Britain and Eire */
+
+<strong>DST_RUM</strong>      /* Romania */
+
+<strong>DST_TUR</strong>      /* Turkey */
+
+<strong>DST_AUSTALT</strong>  /* Australian style with shift in 1986 */</pre>
+
+<p class='spacer'>
+
+<p>Of course it turned out that the period in which Daylight Saving Time is in force cannot be given by a simple algorithm, one per country; indeed, this period is determined by unpredictable political decisions. So this method of representing timezones has been abandoned.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man1/date.1.html"><strong>date</strong>(1)</a>, <a href="../man2/adjtimex.2.html"><strong>adjtimex</strong>(2)</a>, <a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>, <a href="../man2/time.2.html"><strong>time</strong>(2)</a>, <a href="../man3/ctime.3.html"><strong>ctime</strong>(3)</a>, <a href="../man3/ftime.3.html"><strong>ftime</strong>(3)</a>, <a href="../man3/timeradd.3.html"><strong>timeradd</strong>(3)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a>, <a href="../man7/vdso.7.html"><strong>vdso</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="setsockopt.2.html"><span aria-hidden="true">&larr;</span> setsockopt.2: get and set options on sockets</a></li><li class="next"><a href="setuid.2.html">setuid.2: set user identity <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
