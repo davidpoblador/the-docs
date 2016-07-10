@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pipe - create pipe</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pipe<small> (2)</small></h1>
+        <p class="lead">create pipe</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/pipe.2.html"><span itemprop="title">pipe</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;unistd.h&gt;</strong>
+
+<strong>int pipe(int </strong><em>pipefd</em><strong>[2]);</strong>
+
+<strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include &lt;fcntl.h&gt;</strong>              /* Obtain O_* constant definitions */
+<strong>#include &lt;unistd.h&gt;</strong>
+
+<strong>int pipe2(int </strong><em>pipefd</em><strong>[2], int </strong><em>flags</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>pipe</strong>() creates a pipe, a unidirectional data channel that can be used for interprocess communication. The array <em>pipefd</em> is used to return two file descriptors referring to the ends of the pipe. <em>pipefd[0]</em> refers to the read end of the pipe. <em>pipefd[1]</em> refers to the write end of the pipe. Data written to the write end of the pipe is buffered by the kernel until it is read from the read end of the pipe. For further details, see <a href="../man7/pipe.7.html"><strong>pipe</strong>(7)</a>.</p>
+<p class='spacer'>
+
+  <p>If <em>flags</em> is 0, then <strong>pipe2</strong>() is the same as <strong>pipe</strong>(). The following values can be bitwise ORed in <em>flags</em> to obtain different behavior:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>O_CLOEXEC</strong></dt>
+    <dd>
+  <p>Set the close-on-exec (<strong>FD_CLOEXEC</strong>) flag on the two new file descriptors. See the description of the same flag in <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for reasons why this may be useful.</p>
+    </dd>
+    <dt><strong>O_DIRECT</strong> (since Linux 3.4)</dt>
+    <dd>
+      <p>Create a pipe that performs I/O in "packet" mode. Each <a href="../man2/write.2.html"><strong>write</strong>(2)</a> to the pipe is dealt with as a separate packet, and <a href="../man2/read.2.html"><strong>read</strong>(2)</a>s from the pipe will read one packet at a time. Note the following points:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+      <p>Writes of greater than <strong>PIPE_BUF</strong> bytes (see <a href="../man7/pipe.7.html"><strong>pipe</strong>(7)</a>) will be split into multiple packets. The constant <strong>PIPE_BUF</strong> is defined in <em>&lt;limits.h&gt;</em>.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>If a <a href="../man2/read.2.html"><strong>read</strong>(2)</a> specifies a buffer size that is smaller than the next packet, then the requested number of bytes are read, and the excess bytes in the packet are discarded. Specifying a buffer size of <strong>PIPE_BUF</strong> will be sufficient to read the largest possible packets (see the previous point).</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>Zero-length packets are not supported. (A <a href="../man2/read.2.html"><strong>read</strong>(2)</a> that specifies a buffer size of zero is a no-op, and returns 0.)</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+  <p>Older kernels that do not support this flag will indicate this via an <strong>EINVAL</strong> error.</p>
+    </dd>
+    <dt><strong>O_NONBLOCK</strong></dt>
+    <dd>
+  <p>Set the <strong>O_NONBLOCK</strong> file status flag on the two new open file descriptions. Using this flag saves extra calls to <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> to achieve the same result.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+<p class='spacer'>
+
+<p>On Linux (and other systems), <strong>pipe</strong>() does not modify <em>pipefd</em> on failure. A requirement standardizing this behavior was added in POSIX.1-2016. The Linux-specific <strong>pipe2</strong>() system call likewise does not modify <em>pipefd</em> on failure.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p><em>pipefd</em> is not valid.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>(<strong>pipe2</strong>()) Invalid value in <em>flags</em>.</p>
+    </dd>
+    <dt><strong>EMFILE</strong></dt>
+    <dd>
+  <p>The per-process limit on the number of open file descriptors has been reached.</p>
+    </dd>
+    <dt><strong>ENFILE</strong></dt>
+    <dd>
+  <p>The system-wide limit on the total number of open files has been reached.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>pipe2</strong>() was added to Linux in version 2.6.27; glibc support is available starting with version 2.9.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p><strong>pipe</strong>(): POSIX.1-2001, POSIX.1-2008.</p>
+<p class='spacer'>
+
+<p><strong>pipe2</strong>() is Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The following program creates a pipe, and then <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>s to create a child process; the child inherits a duplicate set of file descriptors that refer to the same pipe. After the <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, each process closes the file descriptors that it doesn't need for the pipe (see <a href="../man7/pipe.7.html"><strong>pipe</strong>(7)</a>). The parent then writes the string contained in the program's command-line argument to the pipe, and the child reads this string a byte at a time from the pipe and echoes it on standard output.</p>
+  <h3>Program source</h3>
+<pre>#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;string.h&gt;
+
+int
+main(int argc, char *argv[])
+{
+    int pipefd[2];
+    pid_t cpid;
+    char buf;
+
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s &lt;string&gt;&#92;n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    if (pipe(pipefd) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
+
+    cpid = fork();
+    if (cpid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    if (cpid == 0) {    /* Child reads from pipe */
+        close(pipefd[1]);          /* Close unused write end */
+
+        while (read(pipefd[0], &buf, 1) &gt; 0)
+            write(STDOUT_FILENO, &buf, 1);
+
+        write(STDOUT_FILENO, "&#92;n", 1);
+        close(pipefd[0]);
+        _exit(EXIT_SUCCESS);
+
+    } else {            /* Parent writes argv[1] to pipe */
+        close(pipefd[0]);          /* Close unused read end */
+        write(pipefd[1], argv[1], strlen(argv[1]));
+        close(pipefd[1]);          /* Reader will see EOF */
+        wait(NULL);                /* Wait for child */
+        exit(EXIT_SUCCESS);
+    }
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/socketpair.2.html"><strong>socketpair</strong>(2)</a>, <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, <a href="../man3/popen.3.html"><strong>popen</strong>(3)</a>, <a href="../man7/pipe.7.html"><strong>pipe</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="phys.2.html"><span aria-hidden="true">&larr;</span> phys.2: unimplemented system calls</a></li><li class="next"><a href="pipe2.2.html">pipe2.2: create pipe <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

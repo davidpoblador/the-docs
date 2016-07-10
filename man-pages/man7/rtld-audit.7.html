@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rtld-audit - auditing API for the dynamic linker</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">rtld-audit<small> (7)</small></h1>
+        <p class="lead">auditing API for the dynamic linker</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/rtld-audit.7.html"><span itemprop="title">rtld-audit</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */</p>
+<p class='spacer'>
+
+<p><strong>#include &lt;link.h&gt;</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The GNU dynamic linker (run-time linker) provides an auditing API that allows an application to be notified when various dynamic linking events occur. This API is very similar to the auditing interface provided by the Solaris run-time linker. The necessary constants and prototypes are defined by including <em>&lt;link.h&gt;</em>.</p>
+<p class='spacer'>
+
+<p>To use this interface, the programmer creates a shared library that implements a standard set of function names. Not all of the functions need to be implemented: in most cases, if the programmer is not interested in a particular class of auditing event, then no implementation needs to be provided for the corresponding auditing function.</p>
+<p class='spacer'>
+
+<p>To employ the auditing interface, the environment variable <strong>LD_AUDIT</strong> must be defined to contain a colon-separated list of shared libraries, each of which can implement (parts of) the auditing API. When an auditable event occurs, the corresponding function is invoked in each library, in the order that the libraries are listed.</p>
+  <h3>la_version()</h3>
+  <p></p>
+<pre><strong>unsigned int la_version(unsigned int </strong><em>version</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>This is the only function that <em>must</em> be defined by an auditing library: it performs the initial handshake between the dynamic linker and the auditing library. When invoking this function, the dynamic linker passes, in <em>version</em>, the highest version of the auditing interface that the linker supports. If necessary, the auditing library can check that this version is sufficient for its requirements.</p>
+<p class='spacer'>
+
+<p>As its function result, this function should return the version of the auditing interface that this auditing library expects to use (returning <em>version</em> is acceptable). If the returned value is 0, or a version that is greater than that supported by the dynamic linker, then the audit library is ignored.</p>
+  <h3>la_objsearch()</h3>
+  <p></p>
+<pre><strong>char *la_objsearch(const char *</strong><em>name</em><strong>, uintptr_t *</strong><em>cookie</em><strong>,</strong>
+<strong>                   unsigned int </strong><em>flag</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+  <p>The dynamic linker invokes this function to inform the auditing library that it is about to search for a shared object. The <em>name</em> argument is the filename or pathname that is to be searched for. <em>cookie</em> identifies the shared object that initiated the search. <em>flag</em> is set to one of the following values:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>LA_SER_ORIG</strong></dt>
+    <dd>
+  <p>This is the original name that is being searched for. Typically, this name comes from an ELF <strong>DT_NEEDED</strong> entry, or is the <em>filename</em> argument given to <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a>.</p>
+    </dd>
+    <dt><strong>LA_SER_LIBPATH</strong></dt>
+    <dd>
+  <p><em>name</em> was created using a directory specified in <strong>LD_LIBRARY_PATH</strong>.</p>
+    </dd>
+    <dt><strong>LA_SER_RUNPATH</strong></dt>
+    <dd>
+  <p><em>name</em> was created using a directory specified in an ELF <strong>DT_RPATH</strong> or <strong>DT_RUNPATH</strong> list.</p>
+    </dd>
+    <dt><strong>LA_SER_CONFIG</strong></dt>
+    <dd>
+  <p><em>name</em> was found via the <a href="../man8/ldconfig.8.html"><strong>ldconfig</strong>(8)</a> cache (<em>/etc/ld.so.cache</em>).</p>
+    </dd>
+    <dt><strong>LA_SER_DEFAULT</strong></dt>
+    <dd>
+  <p><em>name</em> was found via a search of one of the default directories.</p>
+    </dd>
+    <dt><strong>LA_SER_SECURE</strong></dt>
+    <dd>
+  <p><em>name</em> is specific to a secure object (unused on Linux).</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>As its function result, <strong>la_objsearch</strong>() returns the pathname that the dynamic linker should use for further processing. If NULL is returned, then this pathname is ignored for further processing. If this audit library simply intends to monitor search paths, then <em>name</em> should be returned.</p>
+  <h3>la_activity()</h3>
+  <p></p>
+<pre><strong>void la_activity( uintptr_t *</strong><em>cookie</em><strong>, unsigned int flag</strong><em>);</em></pre>
+
+<p class='spacer'>
+
+  <p>The dynamic linker calls this function to inform the auditing library that link-map activity is occurring. <em>cookie</em> identifies the object at the head of the link map. When the dynamic linker invokes this function, <em>flag</em> is set to one of the following values:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>LA_ACT_ADD</strong></dt>
+    <dd>
+  <p>New objects are being added to the link map.</p>
+    </dd>
+    <dt><strong>LA_ACT_DELETE</strong></dt>
+    <dd>
+  <p>Objects are being removed from the link map.</p>
+    </dd>
+    <dt><strong>LA_ACT_CONSISTENT</strong></dt>
+    <dd>
+  <p>Link-map activity has been completed: the map is once again consistent.</p>
+    </dd>
+  </dl>
+  <h3>la_objopen()</h3>
+  <p></p>
+<pre><strong>unsigned int la_objopen(struct link_map *</strong><em>map</em><strong>, Lmid_t </strong><em>lmid</em><strong>,</strong>
+<strong>                        uintptr_t *</strong><em>cookie</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+  <p>The dynamic linker calls this function when a new shared object is loaded. The <em>map</em> argument is a pointer to a link-map structure that describes the object. The <em>lmid</em> field has one of the following values</p>
+  <dl class='dl-vertical'>
+    <dt><strong>LM_ID_BASE</strong></dt>
+    <dd>
+  <p>Link map is part of the initial namespace.</p>
+    </dd>
+    <dt><strong>LM_ID_NEWLM</strong></dt>
+    <dd>
+  <p>Link map is part of a new namespace requested via <a href="../man3/dlmopen.3.html"><strong>dlmopen</strong>(3)</a>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><em>cookie</em> is a pointer to an identifier for this object. The identifier is provided to later calls to functions in the auditing library in order to identify this object. This identifier is initialized to point to object's link map, but the audit library can change the identifier to some other value that it may prefer to use to identify the object.</p>
+<p class='spacer'>
+
+  <p>As its return value, <strong>la_objopen</strong>() returns a bit mask created by ORing zero or more of the following constants, which allow the auditing library to select the objects to be monitored by <strong>la_symbind*</strong>():</p>
+  <dl class='dl-vertical'>
+    <dt><strong>LA_FLG_BINDTO</strong></dt>
+    <dd>
+  <p>Audit symbol bindings to this object.</p>
+    </dd>
+    <dt><strong>LA_FLG_BINDFROM</strong></dt>
+    <dd>
+  <p>Audit symbol bindings from this object.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>A return value of 0 from <strong>la_objopen</strong>() indicates that no symbol bindings should be audited for this object.</p>
+  <h3>la_objclose()</h3>
+  <p></p>
+<pre><strong>unsigned int la_objclose(uintptr_t *</strong><em>cookie</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>The dynamic linker invokes this function after any finalization code for the object has been executed, before the object is unloaded. The <em>cookie</em> argument is the identifier obtained from a previous invocation of <strong>la_objopen</strong>().</p>
+<p class='spacer'>
+
+<p>In the current implementation, the value returned by <strong>la_objclose</strong>() is ignored.</p>
+  <h3>la_preinit()</h3>
+  <p></p>
+<pre><strong>void la_preinit(uintptr_t *</strong><em>cookie</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>The dynamic linker invokes this function after all shared objects have been loaded, before control is passed to the application (i.e., before calling <em>main</em>()). Note that <em>main</em>() may still later dynamically load objects using <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a>.</p>
+  <h3>la_symbind*()</h3>
+  <p></p>
+<pre><strong>uintptr_t la_symbind32(Elf32_Sym *</strong><em>sym</em><strong>, unsigned int </strong><em>ndx</em><strong>,</strong>
+<strong>                       uintptr_t *</strong><em>refcook</em><strong>, uintptr_t *</strong><em>defcook</em><strong>,</strong>
+<strong>                       unsigned int *</strong><em>flags</em><strong>, const char *</strong><em>symname</em><strong>);</strong>
+<strong>uintptr_t la_symbind64(Elf64_Sym *</strong><em>sym</em><strong>, unsigned int </strong><em>ndx</em><strong>,</strong>
+<strong>                       uintptr_t *</strong><em>refcook</em><strong>, uintptr_t *</strong><em>defcook</em><strong>,</strong>
+<strong>                       unsigned int *</strong><em>flags</em><strong>, const char *</strong><em>symname</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>The dynamic linker invokes one of these functions when a symbol binding occurs between two shared objects that have been marked for auditing notification by <strong>la_objopen</strong>(). The <strong>la_symbind32</strong>() function is employed on 32-bit platforms; the <strong>la_symbind64</strong>() function is employed on 64-bit platforms.</p>
+<p class='spacer'>
+
+<p>The <em>sym</em> argument is a pointer to a structure that provides information about the symbol being bound. The structure definition is shown in <em>&lt;elf.h&gt;</em>. Among the fields of this structure, <em>st_value</em> indicates the address to which the symbol is bound.</p>
+<p class='spacer'>
+
+<p>The <em>ndx</em> argument gives the index of the symbol in the symbol table of the bound shared object.</p>
+<p class='spacer'>
+
+<p>The <em>refcook</em> argument identifies the shared object that is making the symbol reference; this is the same identifier that is provided to the <strong>la_objopen</strong>() function that returned <strong>LA_FLG_BINDFROM</strong>. The <em>defcook</em> argument identifies the shared object that defines the referenced symbol; this is the same identifier that is provided to the <strong>la_objopen</strong>() function that returned <strong>LA_FLG_BINDTO</strong>.</p>
+<p class='spacer'>
+
+<p>The <em>symname</em> argument points a string containing the name of the symbol.</p>
+<p class='spacer'>
+
+  <p>The <em>flags</em> argument is a bit mask that both provides information about the symbol and can be used to modify further auditing of this PLT (Procedure Linkage Table) entry. The dynamic linker may supply the following bit values in this argument:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>LA_SYMB_DLSYM</strong></dt>
+    <dd>
+  <p>The binding resulted from a call to <a href="../man3/dlsym.3.html"><strong>dlsym</strong>(3)</a>.</p>
+    </dd>
+    <dt><strong>LA_SYMB_ALTVALUE</strong></dt>
+    <dd>
+  <p>A previous <strong>la_symbind*</strong>() call returned an alternate value for this symbol.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>By default, if the auditing library implements <strong>la_pltenter</strong>() and <strong>la_pltexit</strong>() functions (see below), then these functions are invoked, after <strong>la_symbind</strong>(), for PLT entries, each time the symbol is referenced. The following flags can be ORed into <em>*flags</em> to change this default behavior:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>LA_SYMB_NOPLTENTER</strong></dt>
+    <dd>
+  <p>Don't call <strong>la_pltenter</strong>() for this symbol.</p>
+    </dd>
+    <dt><strong>LA_SYMB_NOPLTEXIT</strong></dt>
+    <dd>
+  <p>Don't call <strong>la_pltexit</strong>() for this symbol.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The return value of <strong>la_symbind32</strong>() and <strong>la_symbind64</strong>() is the address to which control should be passed after the function returns. If the auditing library is simply monitoring symbol bindings, then it should return <em>sym-&gt;st_value</em>. A different value may be returned if the library wishes to direct control to an alternate location.</p>
+  <h3>la_pltenter()</h3>
+  <p>The precise name and argument types for this function depend on the hardware platform. (The appropriate definition is supplied by <em>&lt;link.h&gt;</em>.) Here is the definition for x86-32:</p>
+<pre>
+<strong>Elf32_Addr la_i86_gnu_pltenter(Elf32_Sym *</strong><em>sym</em><strong>, unsigned int </strong><em>ndx</em><strong>,</strong>
+<strong>                 uintptr_t *</strong><em>refcook</em><strong>, uintptr_t *</strong><em>defcook</em><strong>,</strong>
+<strong>                 La_i86_regs *</strong><em>regs</em><strong>, unsigned int *</strong><em>flags</em><strong>,</strong>
+<strong>                 const char *</strong><em>symname</em><strong>, long int *</strong><em>framesizep</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>This function is invoked just before a PLT entry is called, between two shared objects that have been marked for binding notification.</p>
+<p class='spacer'>
+
+<p>The <em>sym</em>, <em>ndx</em>, <em>refcook</em>, <em>defcook</em>, and <em>symname</em> are as for <strong>la_symbind*</strong>().</p>
+<p class='spacer'>
+
+<p>The <em>regs</em> argument points to a structure (defined in <em>&lt;link.h&gt;</em>) containing the values of registers to be used for the call to this PLT entry.</p>
+<p class='spacer'>
+
+<p>The <em>flags</em> argument points to a bit mask that conveys information about, and can be used to modify subsequent auditing of, this PLT entry, as for <strong>la_symbind*</strong>().</p>
+<p class='spacer'>
+
+<p>The <em>framesizep</em> argument points to a <em>long&nbsp;int</em> buffer that can be used to explicitly set the frame size used for the call to this PLT entry. If different <strong>la_pltenter</strong>() invocations for this symbol return different values, then the maximum returned value is used. The <strong>la_pltexit</strong>() function is called only if this buffer is explicitly set to a suitable value.</p>
+<p class='spacer'>
+
+<p>The return value of <strong>la_pltenter</strong>() is as for <strong>la_symbind*</strong>().</p>
+  <h3>la_pltexit()</h3>
+  <p>The precise name and argument types for this function depend on the hardware platform. (The appropriate definition is supplied by <em>&lt;link.h&gt;</em>.) Here is the definition for x86-32:</p>
+<pre>
+<strong>unsigned int la_i86_gnu_pltexit(Elf32_Sym *</strong><em>sym</em><strong>, unsigned int </strong><em>ndx</em><strong>,</strong>
+<strong>                 uintptr_t *</strong><em>refcook</em><strong>, uintptr_t *</strong><em>defcook</em><strong>,</strong>
+<strong>                 const La_i86_regs *</strong><em>inregs</em><strong>, La_i86_retval *</strong><em>outregs</em><strong>,</strong>
+<strong>                 const char *</strong><em>symname</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p>This function is called when a PLT entry, made between two shared objects that have been marked for binding notification, returns. The function is called just before control returns to the caller of the PLT entry.</p>
+<p class='spacer'>
+
+<p>The <em>sym</em>, <em>ndx</em>, <em>refcook</em>, <em>defcook</em>, and <em>symname</em> are as for <strong>la_symbind*</strong>().</p>
+<p class='spacer'>
+
+<p>The <em>inregs</em> argument points to a structure (defined in <em>&lt;link.h&gt;</em>) containing the values of registers used for the call to this PLT entry. The <em>outregs</em> argument points to a structure (defined in <em>&lt;link.h&gt;</em>) containing return values for the call to this PLT entry. These values can be modified by the caller, and the changes will be visible to the caller of the PLT entry.</p>
+<p class='spacer'>
+
+<p>In the current GNU implementation, the return value of <strong>la_pltexit</strong>() is ignored.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>This API is nonstandard, but very similar to the Solaris API, described in the Solaris <em>Linker and Libraries Guide</em>, in the chapter <em>Runtime Linker Auditing Interface</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+  <p>Note the following differences from the Solaris dynamic linker auditing API:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>The Solaris <strong>la_objfilter</strong>() interface is not supported by the GNU implementation.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>The Solaris <strong>la_symbind32</strong>() and <strong>la_pltexit</strong>() functions do not provide a <em>symname</em> argument.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>The Solaris <strong>la_pltexit</strong>() function does not provide <em>inregs</em> and <em>outregs</em> arguments (but does provide a <em>retval</em> argument with the function return value).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>In glibc versions up to and include 2.9, specifying more than one audit library in <strong>LD_AUDIT</strong> results in a run-time crash. This is reportedly fixed in glibc 2.10.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<pre>#include &lt;link.h&gt;
+#include &lt;stdio.h&gt;
+
+unsigned int
+la_version(unsigned int version)
+{
+    printf("la_version(): %d&#92;n", version);
+
+    return version;
+}
+
+char *
+la_objsearch(const char *name, uintptr_t *cookie, unsigned int flag)
+{
+    printf("la_objsearch(): name = %s; cookie = %p", name, cookie);
+    printf("; flag = %s&#92;n",
+            (flag == LA_SER_ORIG) ?    "LA_SER_ORIG" :
+            (flag == LA_SER_LIBPATH) ? "LA_SER_LIBPATH" :
+            (flag == LA_SER_RUNPATH) ? "LA_SER_RUNPATH" :
+            (flag == LA_SER_DEFAULT) ? "LA_SER_DEFAULT" :
+            (flag == LA_SER_CONFIG) ?  "LA_SER_CONFIG" :
+            (flag == LA_SER_SECURE) ?  "LA_SER_SECURE" :
+            "???");
+
+    return name;
+}
+
+void
+la_activity (uintptr_t *cookie, unsigned int flag)
+{
+    printf("la_activity(): cookie = %p; flag = %s&#92;n", cookie,
+            (flag == LA_ACT_CONSISTENT) ? "LA_ACT_CONSISTENT" :
+            (flag == LA_ACT_ADD) ?        "LA_ACT_ADD" :
+            (flag == LA_ACT_DELETE) ?     "LA_ACT_DELETE" :
+            "???");
+}
+
+unsigned int
+la_objopen(struct link_map *map, Lmid_t lmid, uintptr_t *cookie)
+{
+    printf("la_objopen(): loading &#92;"%s&#92;"; lmid = %s; cookie=%p&#92;n",
+            map-&gt;l_name,
+            (lmid == LM_ID_BASE) ?  "LM_ID_BASE" :
+            (lmid == LM_ID_NEWLM) ? "LM_ID_NEWLM" :
+            "???",
+            cookie);
+
+    return LA_FLG_BINDTO | LA_FLG_BINDFROM;
+}
+
+unsigned int
+la_objclose (uintptr_t *cookie)
+{
+    printf("la_objclose(): %p&#92;n", cookie);
+
+    return 0;
+}
+
+void
+la_preinit(uintptr_t *cookie)
+{
+    printf("la_preinit(): %p&#92;n", cookie);
+}
+
+uintptr_t
+la_symbind32(Elf32_Sym *sym, unsigned int ndx, uintptr_t *refcook,
+        uintptr_t *defcook, unsigned int *flags, const char *symname)
+{
+    printf("la_symbind32(): symname = %s; sym-&gt;st_value = %p&#92;n",
+            symname, sym-&gt;st_value);
+    printf("        ndx = %d; flags = 0x%x", ndx, *flags);
+    printf("; refcook = %p; defcook = %p&#92;n", refcook, defcook);
+
+    return sym-&gt;st_value;
+}
+
+uintptr_t
+la_symbind64(Elf64_Sym *sym, unsigned int ndx, uintptr_t *refcook,
+        uintptr_t *defcook, unsigned int *flags, const char *symname)
+{
+    printf("la_symbind64(): symname = %s; sym-&gt;st_value = %p&#92;n",
+            symname, sym-&gt;st_value);
+    printf("        ndx = %d; flags = 0x%x", ndx, *flags);
+    printf("; refcook = %p; defcook = %p&#92;n", refcook, defcook);
+
+    return sym-&gt;st_value;
+}
+
+Elf32_Addr
+la_i86_gnu_pltenter(Elf32_Sym *sym, unsigned int ndx,
+        uintptr_t *refcook, uintptr_t *defcook, La_i86_regs *regs,
+        unsigned int *flags, const char *symname, long int *framesizep)
+{
+    printf("la_i86_gnu_pltenter(): %s (%p)&#92;n", symname, sym-&gt;st_value);
+
+    return sym-&gt;st_value;
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man1/ldd.1.html"><strong>ldd</strong>(1)</a>, <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a>, <a href="../man8/ld.so.8.html"><strong>ld.so</strong>(8)</a>, <a href="../man8/ldconfig.8.html"><strong>ldconfig</strong>(8)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="regex.7.html"><span aria-hidden="true">&larr;</span> regex.7: POSIX.2 regular expressions</a></li><li class="next"><a href="rtnetlink.7.html">rtnetlink.7: Linux IPv4 routing socket <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

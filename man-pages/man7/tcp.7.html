@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tcp - TCP protocol</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">tcp<small> (7)</small></h1>
+        <p class="lead">TCP protocol</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/tcp.7.html"><span itemprop="title">tcp</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/socket.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>#include &lt;netinet/in.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>#include &lt;netinet/tcp.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>tcp_socket = socket(AF_INET, SOCK_STREAM, 0);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>This is an implementation of the TCP protocol defined in RFC&nbsp;793, RFC&nbsp;1122 and RFC&nbsp;2001 with the NewReno and SACK extensions. It provides a reliable, stream-oriented, full-duplex connection between two sockets on top of <strong>ip</strong>(7), for both v4 and v6 versions. TCP guarantees that the data arrives in order and retransmits lost packets. It generates and checks a per-packet checksum to catch transmission errors. TCP does not preserve record boundaries.</p>
+<p class='spacer'>
+
+<p>A newly created TCP socket has no remote or local address and is not fully specified. To create an outgoing TCP connection use <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> to establish a connection to another TCP socket. To receive new incoming connections, first <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a> the socket to a local address and port and then call <a href="../man2/listen.2.html"><strong>listen</strong>(2)</a> to put the socket into the listening state. After that a new socket for each incoming connection can be accepted using <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>. A socket which has had <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a> or <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> successfully called on it is fully specified and may transmit data. Data cannot be transmitted on listening or not yet connected sockets.</p>
+<p class='spacer'>
+
+<p>Linux supports RFC&nbsp;1323 TCP high performance extensions. These include Protection Against Wrapped Sequence Numbers (PAWS), Window Scaling and Timestamps. Window scaling allows the use of large (&gt; 64K) TCP windows in order to support links with high latency or bandwidth. To make use of them, the send and receive buffer sizes must be increased. They can be set globally with the <em>/proc/sys/net/ipv4/tcp_wmem</em> and <em>/proc/sys/net/ipv4/tcp_rmem</em> files, or on individual sockets by using the <strong>SO_SNDBUF</strong> and <strong>SO_RCVBUF</strong> socket options with the <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> call.</p>
+<p class='spacer'>
+
+<p>The maximum sizes for socket buffers declared via the <strong>SO_SNDBUF</strong> and <strong>SO_RCVBUF</strong> mechanisms are limited by the values in the <em>/proc/sys/net/core/rmem_max</em> and <em>/proc/sys/net/core/wmem_max</em> files. Note that TCP actually allocates twice the size of the buffer requested in the <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> call, and so a succeeding <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> call will not return the same size of buffer as requested in the <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> call. TCP uses the extra space for administrative purposes and internal kernel structures, and the <em>/proc</em> file values reflect the larger sizes compared to the actual TCP windows. On individual connections, the socket buffer size must be set prior to the <a href="../man2/listen.2.html"><strong>listen</strong>(2)</a> or <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> calls in order to have it take effect. See <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a> for more information.</p>
+<p class='spacer'>
+
+<p>TCP supports urgent data. Urgent data is used to signal the receiver that some important message is part of the data stream and that it should be processed as soon as possible. To send urgent data specify the <strong>MSG_OOB</strong> option to <a href="../man2/send.2.html"><strong>send</strong>(2)</a>. When urgent data is received, the kernel sends a <strong>SIGURG</strong> signal to the process or process group that has been set as the socket "owner" using the <strong>SIOCSPGRP</strong> or <strong>FIOSETOWN</strong> ioctls (or the POSIX.1-specified <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> <strong>F_SETOWN</strong> operation). When the <strong>SO_OOBINLINE</strong> socket option is enabled, urgent data is put into the normal data stream (a program can test for its location using the <strong>SIOCATMARK</strong> ioctl described below), otherwise it can be received only when the <strong>MSG_OOB</strong> flag is set for <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a> or <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>Linux 2.4 introduced a number of changes for improved throughput and scaling, as well as enhanced functionality. Some of these features include support for zero-copy <a href="../man2/sendfile.2.html"><strong>sendfile</strong>(2)</a>, Explicit Congestion Notification, new management of TIME_WAIT sockets, keep-alive socket options and support for Duplicate SACK extensions.</p>
+  <h3>Address formats</h3>
+<p>TCP is built on top of IP (see <strong>ip</strong>(7)). The address formats defined by <strong>ip</strong>(7) apply to TCP. TCP supports point-to-point communication only; broadcasting and multicasting are not supported.</p>
+  <h3>/proc interfaces</h3>
+  <p>System-wide TCP parameter settings can be accessed by files in the directory <em>/proc/sys/net/ipv4/</em>. In addition, most IP <em>/proc</em> interfaces also apply to TCP; see <strong>ip</strong>(7). Variables described as <em>Boolean</em> take an integer value, with a nonzero value ("true") meaning that the corresponding option is enabled, and a zero value ("false") meaning that the option is disabled.</p>
+  <dl class='dl-vertical'>
+    <dt><em>tcp_abc</em> (Integer; default: 0; since Linux 2.6.15)</dt>
+    <dd>
+      <p>Control the Appropriate Byte Count (ABC), defined in RFC 3465. ABC is a way of increasing the congestion window (<em>cwnd</em>) more slowly in response to partial acknowledgments. Possible values are:</p>
+      <dl class='dl-horizontal'>
+        <dt>0</dt>
+        <dd>
+      <p>increase <em>cwnd</em> once per acknowledgment (no ABC)</p>
+        </dd>
+        <dt>1</dt>
+        <dd>
+      <p>increase <em>cwnd</em> once per acknowledgment of full sized segment</p>
+        </dd>
+        <dt>2</dt>
+        <dd>
+      <p>allow increase <em>cwnd</em> by two if acknowledgment is of two segments to compensate for delayed acknowledgments.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><em>tcp_abort_on_overflow</em> (Boolean; default: disabled; since Linux 2.4)</dt>
+    <dd>
+  <p>Enable resetting connections if the listening service is too slow and unable to keep up and accept them. It means that if overflow occurred due to a burst, the connection will recover. Enable this option <em>only</em> if you are really sure that the listening daemon cannot be tuned to accept connections faster. Enabling this option can harm the clients of your server.</p>
+    </dd>
+    <dt><em>tcp_adv_win_scale</em> (integer; default: 2; since Linux 2.4)</dt>
+    <dd>
+  <p>Count buffering overhead as <em>bytes/2^tcp_adv_win_scale</em>, if <em>tcp_adv_win_scale</em> is greater than 0; or <em>bytes-bytes/2^(-tcp_adv_win_scale)</em>, if <em>tcp_adv_win_scale</em> is less than or equal to zero.</p>
+<p class='spacer'>
+
+  <p>The socket receive buffer space is shared between the application and kernel. TCP maintains part of the buffer as the TCP window, this is the size of the receive window advertised to the other end. The rest of the space is used as the "application" buffer, used to isolate the network from scheduling and application latencies. The <em>tcp_adv_win_scale</em> default value of 2 implies that the space used for the application buffer is one fourth that of the total.</p>
+    </dd>
+    <dt><em>tcp_allowed_congestion_control</em> (String; default: see text; since Linux 2.4.20)</dt>
+    <dd>
+  <p>Show/set the congestion control algorithm choices available to unprivileged processes (see the description of the <strong>TCP_CONGESTION</strong> socket option). The items in the list are separated by white space and terminated by a newline character. The list is a subset of those listed in <em>tcp_available_congestion_control</em>. The default value for this list is "reno" plus the default setting of <em>tcp_congestion_control</em>.</p>
+    </dd>
+    <dt><em>tcp_autocorking</em> (Boolean; default: enabled; since Linux 3.14)</dt>
+    <dd>
+  <p>If this option is enabled, the kernel tries to coalesce small writes (from consecutive <a href="../man2/write.2.html"><strong>write</strong>(2)</a> and <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> calls) as much as possible, in order to decrease the total number of sent packets. Coalescing is done if at least one prior packet for the flow is waiting in Qdisc queues or device transmit queue. Applications can still use the <strong>TCP_CORK</strong> socket option to obtain optimal behavior when they know how/when to uncork their sockets.</p>
+    </dd>
+    <dt><em>tcp_available_congestion_control</em> (String; read-only; since Linux 2.4.20)</dt>
+    <dd>
+  <p>Show a list of the congestion-control algorithms that are registered. The items in the list are separated by white space and terminated by a newline character. This list is a limiting set for the list in <em>tcp_allowed_congestion_control</em>. More congestion-control algorithms may be available as modules, but not loaded.</p>
+    </dd>
+    <dt><em>tcp_app_win</em> (integer; default: 31; since Linux 2.4)</dt>
+    <dd>
+  <p>This variable defines how many bytes of the TCP window are reserved for buffering overhead.</p>
+<p class='spacer'>
+
+  <p>A maximum of (<em>window/2^tcp_app_win</em>, mss) bytes in the window are reserved for the application buffer. A value of 0 implies that no amount is reserved.</p>
+    </dd>
+    <dt><em>tcp_base_mss</em> (Integer; default: 512; since Linux 2.6.17)</dt>
+    <dd>
+  <p>The initial value of <em>search_low</em> to be used by the packetization layer Path MTU discovery (MTU probing). If MTU probing is enabled, this is the initial MSS used by the connection.</p>
+    </dd>
+    <dt><em>tcp_bic</em> (Boolean; default: disabled; Linux 2.4.27/2.6.6 to 2.6.13)</dt>
+    <dd>
+  <p>Enable BIC TCP congestion control algorithm. BIC-TCP is a sender-side-only change that ensures a linear RTT fairness under large windows while offering both scalability and bounded TCP-friendliness. The protocol combines two schemes called additive increase and binary search increase. When the congestion window is large, additive increase with a large increment ensures linear RTT fairness as well as good scalability. Under small congestion windows, binary search increase provides TCP friendliness.</p>
+    </dd>
+    <dt><em>tcp_bic_low_window</em> (integer; default: 14; Linux 2.4.27/2.6.6 to 2.6.13)</dt>
+    <dd>
+  <p>Set the threshold window (in packets) where BIC TCP starts to adjust the congestion window. Below this threshold BIC TCP behaves the same as the default TCP Reno.</p>
+    </dd>
+    <dt><em>tcp_bic_fast_convergence</em> (Boolean; default: enabled; Linux 2.4.27/2.6.6 to 2.6.13)</dt>
+    <dd>
+  <p>Force BIC TCP to more quickly respond to changes in congestion window. Allows two flows sharing the same connection to converge more rapidly.</p>
+    </dd>
+    <dt><em>tcp_congestion_control</em> (String; default: see text; since Linux 2.4.13)</dt>
+    <dd>
+  <p>Set the default congestion-control algorithm to be used for new connections. The algorithm "reno" is always available, but additional choices may be available depending on kernel configuration. The default value for this file is set as part of kernel configuration.</p>
+    </dd>
+    <dt><em>tcp_dma_copybreak</em> (integer; default: 4096; since Linux 2.6.24)</dt>
+    <dd>
+  <p>Lower limit, in bytes, of the size of socket reads that will be offloaded to a DMA copy engine, if one is present in the system and the kernel was configured with the <strong>CONFIG_NET_DMA</strong> option.</p>
+    </dd>
+    <dt><em>tcp_dsack</em> (Boolean; default: enabled; since Linux 2.4)</dt>
+    <dd>
+  <p>Enable RFC&nbsp;2883 TCP Duplicate SACK support.</p>
+    </dd>
+    <dt><em>tcp_ecn</em> (Integer; default: se below; since Linux 2.4)</dt>
+    <dd>
+  <p>Enable RFC&nbsp;3168 Explicit Congestion Notification.</p>
+<p class='spacer'>
+
+      <p>This file can have one of the following values:</p>
+      <dl class='dl-horizontal'>
+        <dt>0</dt>
+        <dd>
+      <p>Disable ECN. Neither initiate nor accept ECN. This was the default up to and including Linux 2.6.30.</p>
+        </dd>
+        <dt>1</dt>
+        <dd>
+      <p>Enable ECN when requested by incoming connections and also request ECN on outgoing connection attempts.</p>
+        </dd>
+        <dt>2</dt>
+        <dd>
+      <p>Enable ECN when requested by incoming connections, but do not request ECN on outgoing connections. This value is supported, and is the default, since Linux 2.6.31.</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+  <p>When enabled, connectivity to some destinations could be affected due to older, misbehaving middle boxes along the path, causing connections to be dropped. However, to facilitate and encourage deployment with option 1, and to work around such buggy equipment, the <strong>tcp_ecn_fallback</strong> option has been introduced.</p>
+    </dd>
+    <dt><em>tcp_ecn_fallback</em> (Boolean; default: enabled; since Linux 4.1)</dt>
+    <dd>
+  <p>Enable RFC&nbsp;3168, Section 6.1.1.1. fallback. When enabled, outgoing ECN-setup SYNs that time out within the normal SYN retransmission timeout will be resent with CWR and ECE cleared.</p>
+    </dd>
+    <dt><em>tcp_fack</em> (Boolean; default: enabled; since Linux 2.2)</dt>
+    <dd>
+  <p>Enable TCP Forward Acknowledgement support.</p>
+    </dd>
+    <dt><em>tcp_fin_timeout</em> (integer; default: 60; since Linux 2.2)</dt>
+    <dd>
+  <p>This specifies how many seconds to wait for a final FIN packet before the socket is forcibly closed. This is strictly a violation of the TCP specification, but required to prevent denial-of-service attacks. In Linux 2.2, the default value was 180.</p>
+    </dd>
+    <dt><em>tcp_frto</em> (integer; default: 0; since Linux 2.4.21/2.6)</dt>
+    <dd>
+  <p>Enable F-RTO, an enhanced recovery algorithm for TCP retransmission timeouts (RTOs). It is particularly beneficial in wireless environments where packet loss is typically due to random radio interference rather than intermediate router congestion. See RFC 4138 for more details.</p>
+<p class='spacer'>
+
+      <p>This file can have one of the following values:</p>
+      <dl class='dl-horizontal'>
+        <dt>0</dt>
+        <dd>
+      <p>Disabled.</p>
+        </dd>
+        <dt>1</dt>
+        <dd>
+      <p>The basic version F-RTO algorithm is enabled.</p>
+        </dd>
+        <dt>2</dt>
+        <dd>
+      <p>Enable SACK-enhanced F-RTO if flow uses SACK. The basic version can be used also when SACK is in use though in that case scenario(s) exists where F-RTO interacts badly with the packet counting of the SACK-enabled TCP flow.</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+  <p>Before Linux 2.6.22, this parameter was a Boolean value, supporting just values 0 and 1 above.</p>
+    </dd>
+    <dt><em>tcp_frto_response</em> (integer; default: 0; since Linux 2.6.22)</dt>
+    <dd>
+      <p>When F-RTO has detected that a TCP retransmission timeout was spurious (i.e., the timeout would have been avoided had TCP set a longer retransmission timeout), TCP has several options concerning what to do next. Possible values are:</p>
+      <dl class='dl-horizontal'>
+        <dt>0</dt>
+        <dd>
+      <p>Rate halving based; a smooth and conservative response, results in halved congestion window (<em>cwnd</em>) and slow-start threshold (<em>ssthresh</em>) after one RTT.</p>
+        </dd>
+        <dt>1</dt>
+        <dd>
+      <p>Very conservative response; not recommended because even though being valid, it interacts poorly with the rest of Linux TCP; halves <em>cwnd</em> and <em>ssthresh</em> immediately.</p>
+        </dd>
+        <dt>2</dt>
+        <dd>
+      <p>Aggressive response; undoes congestion-control measures that are now known to be unnecessary (ignoring the possibility of a lost retransmission that would require TCP to be more cautious); <em>cwnd</em> and <em>ssthresh</em> are restored to the values prior to timeout.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><em>tcp_keepalive_intvl</em> (integer; default: 75; since Linux 2.4)</dt>
+    <dd>
+  <p>The number of seconds between TCP keep-alive probes.</p>
+    </dd>
+    <dt><em>tcp_keepalive_probes</em> (integer; default: 9; since Linux 2.2)</dt>
+    <dd>
+  <p>The maximum number of TCP keep-alive probes to send before giving up and killing the connection if no response is obtained from the other end.</p>
+    </dd>
+    <dt><em>tcp_keepalive_time</em> (integer; default: 7200; since Linux 2.2)</dt>
+    <dd>
+  <p>The number of seconds a connection needs to be idle before TCP begins sending out keep-alive probes. Keep-alives are sent only when the <strong>SO_KEEPALIVE</strong> socket option is enabled. The default value is 7200 seconds (2 hours). An idle connection is terminated after approximately an additional 11 minutes (9 probes an interval of 75 seconds apart) when keep-alive is enabled.</p>
+<p class='spacer'>
+
+  <p>Note that underlying connection tracking mechanisms and application timeouts may be much shorter.</p>
+    </dd>
+    <dt><em>tcp_low_latency</em> (Boolean; default: disabled; since Linux 2.4.21/2.6)</dt>
+    <dd>
+  <p>If enabled, the TCP stack makes decisions that prefer lower latency as opposed to higher throughput. It this option is disabled, then higher throughput is preferred. An example of an application where this default should be changed would be a Beowulf compute cluster.</p>
+    </dd>
+    <dt><em>tcp_max_orphans</em> (integer; default: see below; since Linux 2.4)</dt>
+    <dd>
+  <p>The maximum number of orphaned (not attached to any user file handle) TCP sockets allowed in the system. When this number is exceeded, the orphaned connection is reset and a warning is printed. This limit exists only to prevent simple denial-of-service attacks. Lowering this limit is not recommended. Network conditions might require you to increase the number of orphans allowed, but note that each orphan can eat up to ~64K of unswappable memory. The default initial value is set equal to the kernel parameter NR_FILE. This initial default is adjusted depending on the memory in the system.</p>
+    </dd>
+    <dt><em>tcp_max_syn_backlog</em> (integer; default: see below; since Linux 2.2)</dt>
+    <dd>
+  <p>The maximum number of queued connection requests which have still not received an acknowledgement from the connecting client. If this number is exceeded, the kernel will begin dropping requests. The default value of 256 is increased to 1024 when the memory present in the system is adequate or greater (&gt;= 128Mb), and reduced to 128 for those systems with very low memory (&lt;= 32Mb).</p>
+<p class='spacer'>
+
+  <p>Prior to Linux 2.6.20, it was recommended that if this needed to be increased above 1024, the size of the SYNACK hash table (<strong>TCP_SYNQ_HSIZE</strong>) in <em>include/net/tcp.h</em> should be modified to keep</p>
+<p class='spacer'>
+
+<pre>    TCP_SYNQ_HSIZE * 16 &lt;= tcp_max_syn_backlog</pre>
+
+<p class='spacer'>
+
+  <p>and the kernel should be recompiled. In Linux 2.6.20, the fixed sized <strong>TCP_SYNQ_HSIZE</strong> was removed in favor of dynamic sizing.</p>
+    </dd>
+    <dt><em>tcp_max_tw_buckets</em> (integer; default: see below; since Linux 2.4)</dt>
+    <dd>
+  <p>The maximum number of sockets in TIME_WAIT state allowed in the system. This limit exists only to prevent simple denial-of-service attacks. The default value of NR_FILE*2 is adjusted depending on the memory in the system. If this number is exceeded, the socket is closed and a warning is printed.</p>
+    </dd>
+    <dt><em>tcp_moderate_rcvbuf</em> (Boolean; default: enabled; since Linux 2.4.17/2.6.7)</dt>
+    <dd>
+  <p>If enabled, TCP performs receive buffer auto-tuning, attempting to automatically size the buffer (no greater than <em>tcp_rmem[2]</em>) to match the size required by the path for full throughput.</p>
+    </dd>
+    <dt><em>tcp_mem</em> (since Linux 2.4)</dt>
+    <dd>
+      <p>This is a vector of 3 integers: [low, pressure, high]. These bounds, measured in units of the system page size, are used by TCP to track its memory usage. The defaults are calculated at boot time from the amount of available memory. (TCP can only use <em>low memory</em> for this, which is limited to around 900 megabytes on 32-bit systems. 64-bit systems do not suffer this limitation.)</p>
+      <dl class='dl-vertical'>
+        <dt><em>low</em></dt>
+        <dd>
+      <p>TCP doesn't regulate its memory allocation when the number of pages it has allocated globally is below this number.</p>
+        </dd>
+        <dt><em>pressure</em></dt>
+        <dd>
+      <p>When the amount of memory allocated by TCP exceeds this number of pages, TCP moderates its memory consumption. This memory pressure state is exited once the number of pages allocated falls below the <em>low</em> mark.</p>
+        </dd>
+        <dt><em>high</em></dt>
+        <dd>
+      <p>The maximum number of pages, globally, that TCP will allocate. This value overrides any other limits imposed by the kernel.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><em>tcp_mtu_probing</em> (integer; default: 0; since Linux 2.6.17)</dt>
+    <dd>
+      <p>This parameter controls TCP Packetization-Layer Path MTU Discovery. The following values may be assigned to the file:</p>
+      <dl class='dl-horizontal'>
+        <dt>0</dt>
+        <dd>
+      <p>Disabled</p>
+        </dd>
+        <dt>1</dt>
+        <dd>
+      <p>Disabled by default, enabled when an ICMP black hole detected</p>
+        </dd>
+        <dt>2</dt>
+        <dd>
+      <p>Always enabled, use initial MSS of <em>tcp_base_mss</em>.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><em>tcp_no_metrics_save</em> (Boolean; default: disabled; since Linux 2.6.6)</dt>
+    <dd>
+  <p>By default, TCP saves various connection metrics in the route cache when the connection closes, so that connections established in the near future can use these to set initial conditions. Usually, this increases overall performance, but it may sometimes cause performance degradation. If <em>tcp_no_metrics_save</em> is enabled, TCP will not cache metrics on closing connections.</p>
+    </dd>
+    <dt><em>tcp_orphan_retries</em> (integer; default: 8; since Linux 2.4)</dt>
+    <dd>
+  <p>The maximum number of attempts made to probe the other end of a connection which has been closed by our end.</p>
+    </dd>
+    <dt><em>tcp_reordering</em> (integer; default: 3; since Linux 2.4)</dt>
+    <dd>
+  <p>The maximum a packet can be reordered in a TCP packet stream without TCP assuming packet loss and going into slow start. It is not advisable to change this number. This is a packet reordering detection metric designed to minimize unnecessary back off and retransmits provoked by reordering of packets on a connection.</p>
+    </dd>
+    <dt><em>tcp_retrans_collapse</em> (Boolean; default: enabled; since Linux 2.2)</dt>
+    <dd>
+  <p>Try to send full-sized packets during retransmit.</p>
+    </dd>
+    <dt><em>tcp_retries1</em> (integer; default: 3; since Linux 2.2)</dt>
+    <dd>
+  <p>The number of times TCP will attempt to retransmit a packet on an established connection normally, without the extra effort of getting the network layers involved. Once we exceed this number of retransmits, we first have the network layer update the route if possible before each new retransmit. The default is the RFC specified minimum of 3.</p>
+    </dd>
+    <dt><em>tcp_retries2</em> (integer; default: 15; since Linux 2.2)</dt>
+    <dd>
+  <p>The maximum number of times a TCP packet is retransmitted in established state before giving up. The default value is 15, which corresponds to a duration of approximately between 13 to 30 minutes, depending on the retransmission timeout. The RFC&nbsp;1122 specified minimum limit of 100 seconds is typically deemed too short.</p>
+    </dd>
+    <dt><em>tcp_rfc1337</em> (Boolean; default: disabled; since Linux 2.2)</dt>
+    <dd>
+  <p>Enable TCP behavior conformant with RFC&nbsp;1337. When disabled, if a RST is received in TIME_WAIT state, we close the socket immediately without waiting for the end of the TIME_WAIT period.</p>
+    </dd>
+    <dt><em>tcp_rmem</em> (since Linux 2.4)</dt>
+    <dd>
+      <p>This is a vector of 3 integers: [min, default, max]. These parameters are used by TCP to regulate receive buffer sizes. TCP dynamically adjusts the size of the receive buffer from the defaults listed below, in the range of these values, depending on memory available in the system.</p>
+      <dl class='dl-vertical'>
+        <dt><em>min</em></dt>
+        <dd>
+      <p>minimum size of the receive buffer used by each TCP socket. The default value is the system page size. (On Linux 2.4, the default value is 4K, lowered to <strong>PAGE_SIZE</strong> bytes in low-memory systems.) This value is used to ensure that in memory pressure mode, allocations below this size will still succeed. This is not used to bound the size of the receive buffer declared using <strong>SO_RCVBUF</strong> on a socket.</p>
+        </dd>
+        <dt><em>default</em></dt>
+        <dd>
+      <p>the default size of the receive buffer for a TCP socket. This value overwrites the initial default buffer size from the generic global <em>net.core.rmem_default</em> defined for all protocols. The default value is 87380 bytes. (On Linux 2.4, this will be lowered to 43689 in low-memory systems.) If larger receive buffer sizes are desired, this value should be increased (to affect all sockets). To employ large TCP windows, the <em>net.ipv4.tcp_window_scaling</em> must be enabled (default).</p>
+        </dd>
+        <dt><em>max</em></dt>
+        <dd>
+      <p>the maximum size of the receive buffer used by each TCP socket. This value does not override the global <em>net.core.rmem_max</em>. This is not used to limit the size of the receive buffer declared using <strong>SO_RCVBUF</strong> on a socket. The default value is calculated using the formula</p>
+<p class='spacer'>
+
+<pre>    max(87380, min(4MB, <em>tcp_mem</em>[1]*PAGE_SIZE/128))</pre>
+
+<p class='spacer'>
+
+      <p>(On Linux 2.4, the default is 87380*2 bytes, lowered to 87380 in low-memory systems).</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><em>tcp_sack</em> (Boolean; default: enabled; since Linux 2.2)</dt>
+    <dd>
+  <p>Enable RFC&nbsp;2018 TCP Selective Acknowledgements.</p>
+    </dd>
+    <dt><em>tcp_slow_start_after_idle</em> (Boolean; default: enabled; since Linux 2.6.18)</dt>
+    <dd>
+  <p>If enabled, provide RFC 2861 behavior and time out the congestion window after an idle period. An idle period is defined as the current RTO (retransmission timeout). If disabled, the congestion window will not be timed out after an idle period.</p>
+    </dd>
+    <dt><em>tcp_stdurg</em> (Boolean; default: disabled; since Linux 2.2)</dt>
+    <dd>
+  <p>If this option is enabled, then use the RFC&nbsp;1122 interpretation of the TCP urgent-pointer field. According to this interpretation, the urgent pointer points to the last byte of urgent data. If this option is disabled, then use the BSD-compatible interpretation of the urgent pointer: the urgent pointer points to the first byte after the urgent data. Enabling this option may lead to interoperability problems.</p>
+    </dd>
+    <dt><em>tcp_syn_retries</em> (integer; default: 5; since Linux 2.2)</dt>
+    <dd>
+  <p>The maximum number of times initial SYNs for an active TCP connection attempt will be retransmitted. This value should not be higher than 255. The default value is 5, which corresponds to approximately 180 seconds.</p>
+    </dd>
+    <dt><em>tcp_synack_retries</em> (integer; default: 5; since Linux 2.2)</dt>
+    <dd>
+  <p>The maximum number of times a SYN/ACK segment for a passive TCP connection will be retransmitted. This number should not be higher than 255.</p>
+    </dd>
+    <dt><em>tcp_syncookies</em> (Boolean; since Linux 2.2)</dt>
+    <dd>
+  <p>Enable TCP syncookies. The kernel must be compiled with <strong>CONFIG_SYN_COOKIES</strong>. Send out syncookies when the syn backlog queue of a socket overflows. The syncookies feature attempts to protect a socket from a SYN flood attack. This should be used as a last resort, if at all. This is a violation of the TCP protocol, and conflicts with other areas of TCP such as TCP extensions. It can cause problems for clients and relays. It is not recommended as a tuning mechanism for heavily loaded servers to help with overloaded or misconfigured conditions. For recommended alternatives see <em>tcp_max_syn_backlog</em>, <em>tcp_synack_retries</em>, and <em>tcp_abort_on_overflow</em>.</p>
+    </dd>
+    <dt><em>tcp_timestamps</em> (Boolean; default: enabled; since Linux 2.2)</dt>
+    <dd>
+  <p>Enable RFC&nbsp;1323 TCP timestamps.</p>
+    </dd>
+    <dt><em>tcp_tso_win_divisor</em> (integer; default: 3; since Linux 2.6.9)</dt>
+    <dd>
+  <p>This parameter controls what percentage of the congestion window can be consumed by a single TCP Segmentation Offload (TSO) frame. The setting of this parameter is a tradeoff between burstiness and building larger TSO frames.</p>
+    </dd>
+    <dt><em>tcp_tw_recycle</em> (Boolean; default: disabled; since Linux 2.4)</dt>
+    <dd>
+  <p>Enable fast recycling of TIME_WAIT sockets. Enabling this option is not recommended for devices communicating with the general Internet or using NAT (Network Address Translation). Since some NAT gateways pass through IP timestamp values, one IP can appear to have non-increasing timestamps. See RFC 1323 (PAWS), RFC 6191.</p>
+    </dd>
+    <dt><em>tcp_tw_reuse</em> (Boolean; default: disabled; since Linux 2.4.19/2.6)</dt>
+    <dd>
+  <p>Allow to reuse TIME_WAIT sockets for new connections when it is safe from protocol viewpoint. It should not be changed without advice/request of technical experts.</p>
+    </dd>
+    <dt><em>tcp_vegas_cong_avoid</em> (Boolean; default: disabled; Linux 2.2 to 2.6.13)</dt>
+    <dd>
+  <p>Enable TCP Vegas congestion avoidance algorithm. TCP Vegas is a sender-side-only change to TCP that anticipates the onset of congestion by estimating the bandwidth. TCP Vegas adjusts the sending rate by modifying the congestion window. TCP Vegas should provide less packet loss, but it is not as aggressive as TCP Reno.</p>
+    </dd>
+    <dt><em>tcp_westwood</em> (Boolean; default: disabled; Linux 2.4.26/2.6.3 to 2.6.13)</dt>
+    <dd>
+  <p>Enable TCP Westwood+ congestion control algorithm. TCP Westwood+ is a sender-side-only modification of the TCP Reno protocol stack that optimizes the performance of TCP congestion control. It is based on end-to-end bandwidth estimation to set congestion window and slow start threshold after a congestion episode. Using this estimation, TCP Westwood+ adaptively sets a slow start threshold and a congestion window which takes into account the bandwidth used at the time congestion is experienced. TCP Westwood+ significantly increases fairness with respect to TCP Reno in wired networks and throughput over wireless links.</p>
+    </dd>
+    <dt><em>tcp_window_scaling</em> (Boolean; default: enabled; since Linux 2.2)</dt>
+    <dd>
+  <p>Enable RFC&nbsp;1323 TCP window scaling. This feature allows the use of a large window (&gt; 64K) on a TCP connection, should the other end support it. Normally, the 16 bit window length field in the TCP header limits the window size to less than 64K bytes. If larger windows are desired, applications can increase the size of their socket buffers and the window scaling option will be employed. If <em>tcp_window_scaling</em> is disabled, TCP will not negotiate the use of window scaling with the other end during connection setup.</p>
+    </dd>
+    <dt><em>tcp_wmem</em> (since Linux 2.4)</dt>
+    <dd>
+      <p>This is a vector of 3 integers: [min, default, max]. These parameters are used by TCP to regulate send buffer sizes. TCP dynamically adjusts the size of the send buffer from the default values listed below, in the range of these values, depending on memory available.</p>
+      <dl class='dl-vertical'>
+        <dt><em>min</em></dt>
+        <dd>
+      <p>Minimum size of the send buffer used by each TCP socket. The default value is the system page size. (On Linux 2.4, the default value is 4K bytes.) This value is used to ensure that in memory pressure mode, allocations below this size will still succeed. This is not used to bound the size of the send buffer declared using <strong>SO_SNDBUF</strong> on a socket.</p>
+        </dd>
+        <dt><em>default</em></dt>
+        <dd>
+      <p>The default size of the send buffer for a TCP socket. This value overwrites the initial default buffer size from the generic global <em>/proc/sys/net/core/wmem_default</em> defined for all protocols. The default value is 16K bytes. If larger send buffer sizes are desired, this value should be increased (to affect all sockets). To employ large TCP windows, the <em>/proc/sys/net/ipv4/tcp_window_scaling</em> must be set to a nonzero value (default).</p>
+        </dd>
+        <dt><em>max</em></dt>
+        <dd>
+      <p>The maximum size of the send buffer used by each TCP socket. This value does not override the value in <em>/proc/sys/net/core/wmem_max</em>. This is not used to limit the size of the send buffer declared using <strong>SO_SNDBUF</strong> on a socket. The default value is calculated using the formula</p>
+<p class='spacer'>
+
+<pre>    max(65536, min(4MB, <em>tcp_mem</em>[1]*PAGE_SIZE/128))</pre>
+
+<p class='spacer'>
+
+      <p>(On Linux 2.4, the default value is 128K bytes, lowered 64K depending on low-memory systems.)</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><em>tcp_workaround_signed_windows</em> (Boolean; default: disabled; since Linux 2.6.26)</dt>
+    <dd>
+  <p>If enabled, assume that no receipt of a window-scaling option means that the remote TCP is broken and treats the window as a signed quantity. If disabled, assume that the remote TCP is not broken even if we do not receive a window scaling option from it.</p>
+    </dd>
+  </dl>
+  <h3>Socket options</h3>
+  <p>To set or get a TCP socket option, call <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> to read or <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> to write the option with the option level argument set to <strong>IPPROTO_TCP</strong>. Unless otherwise noted, <em>optval</em> is a pointer to an <em>int</em>. In addition, most <strong>IPPROTO_IP</strong> socket options are valid on TCP sockets. For more information see <strong>ip</strong>(7).</p>
+  <dl class='dl-vertical'>
+    <dt><strong>TCP_CONGESTION</strong> (since Linux 2.6.13)</dt>
+    <dd>
+  <p>The argument for this option is a string. This option allows the caller to set the TCP congestion control algorithm to be used, on a per-socket basis. Unprivileged processes are restricted to choosing one of the algorithms in <em>tcp_allowed_congestion_control</em> (described above). Privileged processes (<strong>CAP_NET_ADMIN</strong>) can choose from any of the available congestion-control algorithms (see the description of <em>tcp_available_congestion_control</em> above).</p>
+    </dd>
+    <dt><strong>TCP_CORK</strong> (since Linux 2.2)</dt>
+    <dd>
+  <p>If set, don't send out partial frames. All queued partial frames are sent when the option is cleared again. This is useful for prepending headers before calling <a href="../man2/sendfile.2.html"><strong>sendfile</strong>(2)</a>, or for throughput optimization. As currently implemented, there is a 200 millisecond ceiling on the time for which output is corked by <strong>TCP_CORK</strong>. If this ceiling is reached, then queued data is automatically transmitted. This option can be combined with <strong>TCP_NODELAY</strong> only since Linux 2.5.71. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_DEFER_ACCEPT</strong> (since Linux 2.4)</dt>
+    <dd>
+  <p>Allow a listener to be awakened only when data arrives on the socket. Takes an integer value (seconds), this can bound the maximum number of attempts TCP will make to complete the connection. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_INFO</strong> (since Linux 2.4)</dt>
+    <dd>
+  <p>Used to collect information about this socket. The kernel returns a <em>struct tcp_info</em> as defined in the file <em>/usr/include/linux/tcp.h</em>. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_KEEPCNT</strong> (since Linux 2.4)</dt>
+    <dd>
+  <p>The maximum number of keepalive probes TCP should send before dropping the connection. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_KEEPIDLE</strong> (since Linux 2.4)</dt>
+    <dd>
+  <p>The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes, if the socket option <strong>SO_KEEPALIVE</strong> has been set on this socket. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_KEEPINTVL</strong> (since Linux 2.4)</dt>
+    <dd>
+  <p>The time (in seconds) between individual keepalive probes. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_LINGER2</strong> (since Linux 2.4)</dt>
+    <dd>
+  <p>The lifetime of orphaned FIN_WAIT2 state sockets. This option can be used to override the system-wide setting in the file <em>/proc/sys/net/ipv4/tcp_fin_timeout</em> for this socket. This is not to be confused with the <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a> level option <strong>SO_LINGER</strong>. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_MAXSEG</strong></dt>
+    <dd>
+  <p>The maximum segment size for outgoing TCP packets. In Linux 2.2 and earlier, and in Linux 2.6.28 and later, if this option is set before connection establishment, it also changes the MSS value announced to the other end in the initial packet. Values greater than the (eventual) interface MTU have no effect. TCP will also impose its minimum and maximum bounds over the value provided.</p>
+    </dd>
+    <dt><strong>TCP_NODELAY</strong></dt>
+    <dd>
+  <p>If set, disable the Nagle algorithm. This means that segments are always sent as soon as possible, even if there is only a small amount of data. When not set, data is buffered until there is a sufficient amount to send out, thereby avoiding the frequent sending of small packets, which results in poor utilization of the network. This option is overridden by <strong>TCP_CORK</strong>; however, setting this option forces an explicit flush of pending output, even if <strong>TCP_CORK</strong> is currently set.</p>
+    </dd>
+    <dt><strong>TCP_QUICKACK</strong> (since Linux 2.4.4)</dt>
+    <dd>
+  <p>Enable quickack mode if set or disable quickack mode if cleared. In quickack mode, acks are sent immediately, rather than delayed if needed in accordance to normal TCP operation. This flag is not permanent, it only enables a switch to or from quickack mode. Subsequent operation of the TCP protocol will once again enter/leave quickack mode depending on internal protocol processing and factors such as delayed ack timeouts occurring and data transfer. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_SYNCNT</strong> (since Linux 2.4)</dt>
+    <dd>
+  <p>Set the number of SYN retransmits that TCP should send before aborting the attempt to connect. It cannot exceed 255. This option should not be used in code intended to be portable.</p>
+    </dd>
+    <dt><strong>TCP_USER_TIMEOUT</strong> (since Linux 2.6.37)</dt>
+    <dd>
+  <p>This option takes an <em>unsigned int</em> as an argument. When the value is greater than 0, it specifies the maximum amount of time in milliseconds that transmitted data may remain unacknowledged before TCP will forcibly close the corresponding connection and return <strong>ETIMEDOUT</strong> to the application. If the option value is specified as 0, TCP will to use the system default.</p>
+<p class='spacer'>
+
+  <p>Increasing user timeouts allows a TCP connection to survive extended periods without end-to-end connectivity. Decreasing user timeouts allows applications to "fail fast", if so desired. Otherwise, failure may take up to 20 minutes with the current system defaults in a normal WAN environment.</p>
+<p class='spacer'>
+
+  <p>This option can be set during any state of a TCP connection, but is effective only during the synchronized states of a connection (ESTABLISHED, FIN-WAIT-1, FIN-WAIT-2, CLOSE-WAIT, CLOSING, and LAST-ACK). Moreover, when used with the TCP keepalive (<strong>SO_KEEPALIVE</strong>) option, <strong>TCP_USER_TIMEOUT</strong> will override keepalive to determine when to close a connection due to keepalive failure.</p>
+<p class='spacer'>
+
+  <p>The option has no effect on when TCP retransmits a packet, nor when a keepalive probe is sent.</p>
+<p class='spacer'>
+
+  <p>This option, like many others, will be inherited by the socket returned by <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>, if it was set on the listening socket.</p>
+<p class='spacer'>
+
+  <p>Further details on the user timeout feature can be found in RFC&nbsp;793 and RFC&nbsp;5482 ("TCP User Timeout Option").</p>
+    </dd>
+    <dt><strong>TCP_WINDOW_CLAMP</strong> (since Linux 2.4)</dt>
+    <dd>
+  <p>Bound the size of the advertised window to this value. The kernel imposes a minimum size of SOCK_MIN_RCVBUF/2. This option should not be used in code intended to be portable.</p>
+    </dd>
+  </dl>
+  <h3>Sockets API</h3>
+<p>TCP provides limited support for out-of-band data, in the form of (a single byte of) urgent data. In Linux this means if the other end sends newer out-of-band data the older urgent data is inserted as normal data into the stream (even when <strong>SO_OOBINLINE</strong> is not set). This differs from BSD-based stacks.</p>
+<p class='spacer'>
+
+<p>Linux uses the BSD compatible interpretation of the urgent pointer field by default. This violates RFC&nbsp;1122, but is required for interoperability with other stacks. It can be changed via <em>/proc/sys/net/ipv4/tcp_stdurg</em>.</p>
+<p class='spacer'>
+
+<p>It is possible to peek at out-of-band data using the <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a> <strong>MSG_PEEK</strong> flag.</p>
+<p class='spacer'>
+
+<p>Since version 2.4, Linux supports the use of <strong>MSG_TRUNC</strong> in the <em>flags</em> argument of <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a> (and <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>). This flag causes the received bytes of data to be discarded, rather than passed back in a caller-supplied buffer. Since Linux 2.4.4, <strong>MSG_TRUNC</strong> also has this effect when used in conjunction with <strong>MSG_OOB</strong> to receive out-of-band data.</p>
+  <h3>Ioctls</h3>
+<p>The following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> calls return information in <em>value</em>. The correct syntax is:</p>
+<p class='spacer'>
+
+<pre><strong>int</strong><em> value;</em>
+<em>error</em><strong> = ioctl(</strong><em>tcp_socket</em><strong>, </strong><em>ioctl_type</em><strong>, &</strong><em>value</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+  <p><em>ioctl_type</em> is one of the following:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>SIOCINQ</strong></dt>
+    <dd>
+  <p>Returns the amount of queued unread data in the receive buffer. The socket must not be in LISTEN state, otherwise an error (<strong>EINVAL</strong>) is returned. <strong>SIOCINQ</strong> is defined in <em>&lt;linux/sockios.h&gt;</em>. Alternatively, you can use the synonymous <strong>FIONREAD</strong>, defined in <em>&lt;sys/ioctl.h&gt;</em>.</p>
+    </dd>
+    <dt><strong>SIOCATMARK</strong></dt>
+    <dd>
+  <p>Returns true (i.e., <em>value</em> is nonzero) if the inbound data stream is at the urgent mark.</p>
+<p class='spacer'>
+
+  <p>If the <strong>SO_OOBINLINE</strong> socket option is set, and <strong>SIOCATMARK</strong> returns true, then the next read from the socket will return the urgent data. If the <strong>SO_OOBINLINE</strong> socket option is not set, and <strong>SIOCATMARK</strong> returns true, then the next read from the socket will return the bytes following the urgent data (to actually read the urgent data requires the <strong>recv(MSG_OOB)</strong> flag).</p>
+<p class='spacer'>
+
+  <p>Note that a read never reads across the urgent mark. If an application is informed of the presence of urgent data via <a href="../man2/select.2.html"><strong>select</strong>(2)</a> (using the <em>exceptfds</em> argument) or through delivery of a <strong>SIGURG</strong> signal, then it can advance up to the mark using a loop which repeatedly tests <strong>SIOCATMARK</strong> and performs a read (requesting any number of bytes) as long as <strong>SIOCATMARK</strong> returns false.</p>
+    </dd>
+    <dt><strong>SIOCOUTQ</strong></dt>
+    <dd>
+  <p>Returns the amount of unsent data in the socket send queue. The socket must not be in LISTEN state, otherwise an error (<strong>EINVAL</strong>) is returned. <strong>SIOCOUTQ</strong> is defined in <em>&lt;linux/sockios.h&gt;</em>. Alternatively, you can use the synonymous <strong>TIOCOUTQ</strong>, defined in <em>&lt;sys/ioctl.h&gt;</em>.</p>
+    </dd>
+  </dl>
+  <h3>Error handling</h3>
+<p>When a network error occurs, TCP tries to resend the packet. If it doesn't succeed after some time, either <strong>ETIMEDOUT</strong> or the last received error on this connection is reported.</p>
+<p class='spacer'>
+
+<p>Some applications require a quicker error notification. This can be enabled with the <strong>IPPROTO_IP</strong> level <strong>IP_RECVERR</strong> socket option. When this option is enabled, all incoming errors are immediately passed to the user program. Use this option with care &ndash; it makes TCP less tolerant to routing changes and other normal network conditions.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EAFNOTSUPPORT</strong></dt>
+    <dd>
+  <p>Passed socket address type in <em>sin_family</em> was not <strong>AF_INET</strong>.</p>
+    </dd>
+    <dt><strong>EPIPE</strong></dt>
+    <dd>
+  <p>The other end closed the socket unexpectedly or a read is executed on a shut down socket.</p>
+    </dd>
+    <dt><strong>ETIMEDOUT</strong></dt>
+    <dd>
+  <p>The other end didn't acknowledge retransmitted data after some time.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Any errors defined for <strong>ip</strong>(7) or the generic socket layer may also be returned for TCP.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>Support for Explicit Congestion Notification, zero-copy <a href="../man2/sendfile.2.html"><strong>sendfile</strong>(2)</a>, reordering support and some SACK extensions (DSACK) were introduced in 2.4. Support for forward acknowledgement (FACK), TIME_WAIT recycling, and per-connection keepalive socket options were introduced in 2.3.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>Not all errors are documented.</p>
+<p class='spacer'>
+
+<p>IPv6 is not described.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>, <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a>, <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a>, <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a>, <a href="../man2/listen.2.html"><strong>listen</strong>(2)</a>, <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/sendfile.2.html"><strong>sendfile</strong>(2)</a>, <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a>, <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <strong>ip</strong>(7), <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a></p>
+<p class='spacer'>
+
+<p>RFC&nbsp;793 for the TCP specification.</p>
+<p class='spacer'>
+
+<p>RFC&nbsp;1122 for the TCP requirements and a description of the Nagle algorithm.</p>
+<p class='spacer'>
+
+<p>RFC&nbsp;1323 for TCP timestamp and window scaling options.</p>
+<p class='spacer'>
+
+<p>RFC&nbsp;1337 for a description of TIME_WAIT assassination hazards.</p>
+<p class='spacer'>
+
+<p>RFC&nbsp;3168 for a description of Explicit Congestion Notification.</p>
+<p class='spacer'>
+
+<p>RFC&nbsp;2581 for TCP congestion control algorithms.</p>
+<p class='spacer'>
+
+<p>RFC&nbsp;2018 and RFC&nbsp;2883 for SACK and extensions to SACK.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="symlink.7.html"><span aria-hidden="true">&larr;</span> symlink.7: symbolic link handling</a></li><li class="next"><a href="term.7.html">term.7: conventions for naming terminal types <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

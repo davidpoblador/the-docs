@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>resolver - resolver configuration file</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">resolver<small> (5)</small></h1>
+        <p class="lead">resolver configuration file</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/resolver.5.html"><span itemprop="title">resolver</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>/etc/resolv.conf</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <em>resolver</em> is a set of routines in the C library that provide access to the Internet Domain Name System (DNS). The resolver configuration file contains information that is read by the resolver routines the first time they are invoked by a process. The file is designed to be human readable and contains a list of keywords with values that provide various types of resolver information. The configuration file is considered a trusted source of DNS information (e.g., DNSSEC AD-bit information will be returned unmodified from this source).</p>
+<p class='spacer'>
+
+<p>If this file does not exist, only the name server on the local machine will be queried; the domain name is determined from the hostname and the domain search path is constructed from the domain name.</p>
+<p class='spacer'>
+
+  <p>The different configuration options are:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>nameserver</strong> Name server IP address</dt>
+    <dd>
+  <p>Internet address of a name server that the resolver should query, either an IPv4 address (in dot notation), or an IPv6 address in colon (and possibly dot) notation as per RFC 2373. Up to <strong>MAXNS</strong> (currently 3, see <em>&lt;resolv.h&gt;</em>) name servers may be listed, one per keyword. If there are multiple servers, the resolver library queries them in the order listed. If no <strong>nameserver</strong> entries are present, the default is to use the name server on the local machine. (The algorithm used is to try a name server, and if the query times out, try the next, until out of name servers, then repeat trying all the name servers until a maximum number of retries are made.)</p>
+    </dd>
+    <dt><strong>domain</strong> Local domain name.</dt>
+    <dd>
+  <p>Most queries for names within this domain can use short names relative to the local domain. If set to &apos;.&apos;, the root domain is considered. If no <strong>domain</strong> entry is present, the domain is determined from the local hostname returned by <a href="../man2/gethostname.2.html"><strong>gethostname</strong>(2)</a>; the domain part is taken to be everything after the first &apos;.&apos;. Finally, if the hostname does not contain a domain part, the root domain is assumed.</p>
+    </dd>
+    <dt><strong>search</strong> Search list for host-name lookup.</dt>
+    <dd>
+  <p>The search list is normally determined from the local domain name; by default, it contains only the local domain name. This may be changed by listing the desired domain search path following the <em>search</em> keyword with spaces or tabs separating the names. Resolver queries having fewer than <em>ndots</em> dots (default is 1) in them will be attempted using each component of the search path in turn until a match is found. For environments with multiple subdomains please read <strong>options ndots:</strong><em>n</em> below to avoid man-in-the-middle attacks and unnecessary traffic for the root-dns-servers. Note that this process may be slow and will generate a lot of network traffic if the servers for the listed domains are not local, and that queries will time out if no server is available for one of the domains.</p>
+<p class='spacer'>
+
+  <p>The search list is currently limited to six domains with a total of 256 characters.</p>
+    </dd>
+    <dt><strong>sortlist</strong></dt>
+    <dd>
+  <p>This option allows addresses returned by <a href="../man3/gethostbyname.3.html"><strong>gethostbyname</strong>(3)</a> to be sorted. A sortlist is specified by IP-address-netmask pairs. The netmask is optional and defaults to the natural netmask of the net. The IP address and optional network pairs are separated by slashes. Up to 10 pairs may be specified. Here is an example:</p>
+<p class='spacer'>
+
+  <p>sortlist 130.155.160.0/255.255.240.0 130.155.0.0</p>
+<p class='spacer'>
+
+    </dd>
+    <dt><strong>options</strong></dt>
+    <dd>
+    <p>Options allows certain internal resolver variables to be modified. The syntax is</p>
+<p class='spacer'>
+
+    <p><strong>options</strong> <em>option</em> <em>...</em></p>
+<p class='spacer'>
+
+      <p>where <em>option</em> is one of the following:</p>
+      <dl class='dl-vertical'>
+        <dt><strong>debug</strong></dt>
+        <dd>
+      <p>Sets <strong>RES_DEBUG</strong> in <em>_res.options</em> (effective only if glibc was built with debug support; see <a href="../man3/resolver.3.html"><strong>resolver</strong>(3)</a>).</p>
+        </dd>
+        <dt><strong>ndots:</strong><em>n</em></dt>
+        <dd>
+      <p>Sets a threshold for the number of dots which must appear in a name given to <a href="../man3/res_query.3.html"><strong>res_query</strong>(3)</a> (see <a href="../man3/resolver.3.html"><strong>resolver</strong>(3)</a>) before an <em>initial absolute query</em> will be made. The default for <em>n</em> is 1, meaning that if there are any dots in a name, the name will be tried first as an absolute name before any <em>search list</em> elements are appended to it. The value for this option is silently capped to 15.</p>
+        </dd>
+        <dt><strong>timeout:</strong><em>n</em></dt>
+        <dd>
+      <p>Sets the amount of time the resolver will wait for a response from a remote name server before retrying the query via a different name server. Measured in seconds, the default is <strong>RES_TIMEOUT</strong> (currently 5, see <em>&lt;resolv.h&gt;</em>). The value for this option is silently capped to 30.</p>
+        </dd>
+        <dt><strong>attempts:</strong><em>n</em></dt>
+        <dd>
+      <p>Sets the number of times the resolver will send a query to its name servers before giving up and returning an error to the calling application. The default is <strong>RES_DFLRETRY</strong> (currently 2, see <em>&lt;resolv.h&gt;</em>). The value for this option is silently capped to 5.</p>
+        </dd>
+        <dt><strong>rotate</strong></dt>
+        <dd>
+      <p>Sets <strong>RES_ROTATE</strong> in <em>_res.options</em>, which causes round-robin selection of name servers from among those listed. This has the effect of spreading the query load among all listed servers, rather than having all clients try the first listed server first every time.</p>
+        </dd>
+        <dt><strong>no-check-names</strong></dt>
+        <dd>
+      <p>Sets <strong>RES_NOCHECKNAME</strong> in <em>_res.options</em>, which disables the modern BIND checking of incoming hostnames and mail names for invalid characters such as underscore (_), non-ASCII, or control characters.</p>
+        </dd>
+        <dt><strong>inet6</strong></dt>
+        <dd>
+      <p>Sets <strong>RES_USE_INET6</strong> in <em>_res.options</em>. This has the effect of trying an AAAA query before an A query inside the <a href="../man3/gethostbyname.3.html"><strong>gethostbyname</strong>(3)</a> function, and of mapping IPv4 responses in IPv6 "tunneled form" if no AAAA records are found but an A record set exists.</p>
+        </dd>
+        <dt><strong>ip6-bytestring</strong> (since glibc 2.3.4)</dt>
+        <dd>
+      <p>Sets <strong>RES_USE_BSTRING</strong> in <em>_res.options</em>. This causes reverse IPv6 lookups to be made using the bit-label format described in RFC&nbsp;2673; if this option is not set, then nibble format is used.</p>
+        </dd>
+        <dt><strong>ip6-dotint</strong>/<strong>no-ip6-dotint</strong> (since glibc 2.3.4)</dt>
+        <dd>
+      <p>Clear/set <strong>RES_NOIP6DOTINT</strong> in <em>_res.options</em>. When this option is clear (<strong>ip6-dotint</strong>), reverse IPv6 lookups are made in the (deprecated) <em>ip6.int</em> zone; when this option is set (<strong>no-ip6-dotint</strong>), reverse IPv6 lookups are made in the <em>ip6.arpa</em> zone by default. This option is set by default.</p>
+        </dd>
+        <dt><strong>edns0</strong> (since glibc 2.6)</dt>
+        <dd>
+      <p>Sets <strong>RES_USE_EDNSO</strong> in <em>_res.options</em>. This enables support for the DNS extensions described in RFC&nbsp;2671.</p>
+        </dd>
+        <dt><strong>single-request</strong> (since glibc 2.10)</dt>
+        <dd>
+      <p>Sets <strong>RES_SNGLKUP</strong> in <em>_res.options</em>. By default, glibc performs IPv4 and IPv6 lookups in parallel since version 2.9. Some appliance DNS servers cannot handle these queries properly and make the requests time out. This option disables the behavior and makes glibc perform the IPv6 and IPv4 requests sequentially (at the cost of some slowdown of the resolving process).</p>
+        </dd>
+        <dt><strong>single-request-reopen</strong> (since glibc 2.9)</dt>
+        <dd>
+      <p>Sets <strong>RES_SNGLKUPREOP</strong> in <em>_res.options</em>. The resolver uses the same socket for the A and AAAA requests. Some hardware mistakenly sends back only one reply. When that happens the client system will sit and wait for the second reply. Turning this option on changes this behavior so that if two requests from the same port are not handled correctly it will close the socket and open a new one before sending the second request.</p>
+        </dd>
+        <dt><strong>no-tld-query</strong> (since glibc 2.14)</dt>
+        <dd>
+      <p>Sets <strong>RES_NOTLDQUERY</strong> in <em>_res.options</em>. This option causes <strong>res_nsearch</strong>() to not attempt to resolve an unqualified name as if it were a top level domain (TLD). This option can cause problems if the site has ``localhost'' as a TLD rather than having localhost on one or more elements of the search list. This option has no effect if neither RES_DEFNAMES or RES_DNSRCH is set.</p>
+        </dd>
+        <dt><strong>use-vc</strong> (since glibc 2.14)</dt>
+        <dd>
+      <p>Sets <strong>RES_USEVC</strong> in <em>_res.options</em>. This option forces the use of TCP for DNS resolutions.</p>
+        </dd>
+      </dl>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The <em>domain</em> and <em>search</em> keywords are mutually exclusive. If more than one instance of these keywords is present, the last instance wins.</p>
+<p class='spacer'>
+
+<p>The <em>search</em> keyword of a system's <em>resolv.conf</em> file can be overridden on a per-process basis by setting the environment variable <strong>LOCALDOMAIN</strong> to a space-separated list of search domains.</p>
+<p class='spacer'>
+
+<p>The <em>options</em> keyword of a system's <em>resolv.conf</em> file can be amended on a per-process basis by setting the environment variable <strong>RES_OPTIONS</strong> to a space-separated list of resolver options as explained above under <strong>options</strong>.</p>
+<p class='spacer'>
+
+<p>The keyword and value must appear on a single line, and the keyword (e.g., <strong>nameserver</strong>) must start the line. The value follows the keyword, separated by white space.</p>
+<p class='spacer'>
+
+<p>Lines that contain a semicolon (;) or hash character (#) in the first column are treated as comments.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+<p><em>/etc/resolv.conf</em>, <em>&lt;resolv.h&gt;</em></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man3/gethostbyname.3.html"><strong>gethostbyname</strong>(3)</a>, <a href="../man5/host.conf.5.html"><strong>host.conf</strong>(5)</a>, <a href="../man5/hosts.5.html"><strong>hosts</strong>(5)</a>, <a href="../man3/resolver.3.html"><strong>resolver</strong>(3)</a>, <a href="../man5/nsswitch.conf.5.html"><strong>nsswitch.conf</strong>(5)</a>, <a href="../man7/hostname.7.html"><strong>hostname</strong>(7)</a>, <a href="../man8/named.8.html"><strong>named</strong>(8)</a></p>
+<p class='spacer'>
+
+<p>Name Server Operations Guide for BIND</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="resolv.conf.5.html"><span aria-hidden="true">&larr;</span> resolv.conf.5: resolver configuration file</a></li><li class="next"><a href="rndc.conf.5.html">rndc.conf.5: rndc configuration file <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

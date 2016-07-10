@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>makecontext - manipulate user context</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">makecontext<small> (3)</small></h1>
+        <p class="lead">manipulate user context</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/makecontext.3.html"><span itemprop="title">makecontext</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;ucontext.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>void makecontext(ucontext_t *</strong><em>ucp</em><strong>, void (*</strong><em>func</em><strong>)(),</strong> <strong>int </strong><em>argc</em><strong>, ...);</strong></p>
+<p class='spacer'>
+
+<p><strong>int swapcontext(ucontext_t *</strong><em>oucp</em><strong>, const ucontext_t *</strong><em>ucp</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>In a System V-like environment, one has the type <em>ucontext_t</em> defined in <em>&lt;ucontext.h&gt;</em> and the four functions <a href="../man3/getcontext.3.html"><strong>getcontext</strong>(3)</a>, <a href="../man3/setcontext.3.html"><strong>setcontext</strong>(3)</a>, <strong>makecontext</strong>() and <strong>swapcontext</strong>() that allow user-level context switching between multiple threads of control within a process.</p>
+<p class='spacer'>
+
+<p>For the type and the first two functions, see <a href="../man3/getcontext.3.html"><strong>getcontext</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p>The <strong>makecontext</strong>() function modifies the context pointed to by <em>ucp</em> (which was obtained from a call to <a href="../man3/getcontext.3.html"><strong>getcontext</strong>(3)</a>). Before invoking <strong>makecontext</strong>(), the caller must allocate a new stack for this context and assign its address to <em>ucp-&gt;uc_stack</em>, and define a successor context and assign its address to <em>ucp-&gt;uc_link</em>.</p>
+<p class='spacer'>
+
+<p>When this context is later activated (using <a href="../man3/setcontext.3.html"><strong>setcontext</strong>(3)</a> or <strong>swapcontext</strong>()) the function <em>func</em> is called, and passed the series of integer (<em>int</em>) arguments that follow <em>argc</em>; the caller must specify the number of these arguments in <em>argc</em>. When this function returns, the successor context is activated. If the successor context pointer is NULL, the thread exits.</p>
+<p class='spacer'>
+
+<p>The <strong>swapcontext</strong>() function saves the current context in the structure pointed to by <em>oucp</em>, and then activates the context pointed to by <em>ucp</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>When successful, <strong>swapcontext</strong>() does not return. (But we may return later, in case <em>oucp</em> is activated, in which case it looks like <strong>swapcontext</strong>() returns 0.) On error, <strong>swapcontext</strong>() returns -1 and sets <em>errno</em> appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>Insufficient stack space left.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>makecontext</strong>() and <strong>swapcontext</strong>() are provided in glibc since version 2.1.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
+        <div class="sectioncontent">
+
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
+<table class="table table-striped">
+<tr>
+<th>Interface</th>
+<th>Attribute</th>
+<th>Value</th></tr>
+
+<tr>
+<td><strong>makecontext</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe race:ucp</td></tr>
+
+<tr>
+<td><strong>swapcontext</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe race:oucp race:ucp</td></tr>
+</table>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>SUSv2, POSIX.1-2001. POSIX.1-2008 removes the specifications of <strong>makecontext</strong>() and <strong>swapcontext</strong>(), citing portability issues, and recommending that applications be rewritten to use POSIX threads instead.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>The interpretation of <em>ucp-&gt;uc_stack</em> is just as in <a href="../man2/sigaltstack.2.html"><strong>sigaltstack</strong>(2)</a>, namely, this struct contains the start and length of a memory area to be used as the stack, regardless of the direction of growth of the stack. Thus, it is not necessary for the user program to worry about this direction.</p>
+<p class='spacer'>
+
+<p>On architectures where <em>int</em> and pointer types are the same size (e.g., x86-32, where both types are 32 bits), you may be able to get away with passing pointers as arguments to <strong>makecontext</strong>() following <em>argc</em>. However, doing this is not guaranteed to be portable, is undefined according to the standards, and won't work on architectures where pointers are larger than <em>int</em>s. Nevertheless, starting with version 2.8, glibc makes some changes to <strong>makecontext</strong>(), to permit this on some 64-bit architectures (e.g., x86-64).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+  <p>The example program below demonstrates the use of <a href="../man3/getcontext.3.html"><strong>getcontext</strong>(3)</a>, <strong>makecontext</strong>(), and <strong>swapcontext</strong>(). Running the program produces the following output:</p>
+<pre>
+$<strong> ./a.out</strong>
+main: swapcontext(&uctx_main, &uctx_func2)
+func2: started
+func2: swapcontext(&uctx_func2, &uctx_func1)
+func1: started
+func1: swapcontext(&uctx_func1, &uctx_func2)
+func2: returning
+func1: returning
+main: exiting</pre>
+
+  <h3>Program source</h3>
+  <p></p>
+<pre>#include &lt;ucontext.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+static ucontext_t uctx_main, uctx_func1, uctx_func2;
+
+#define handle_error(msg) &#92;
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+static void
+func1(void)
+{
+    printf("func1: started&#92;n");
+    printf("func1: swapcontext(&uctx_func1, &uctx_func2)&#92;n");
+    if (swapcontext(&uctx_func1, &uctx_func2) == -1)
+        handle_error("swapcontext");
+    printf("func1: returning&#92;n");
+}
+
+static void
+func2(void)
+{
+    printf("func2: started&#92;n");
+    printf("func2: swapcontext(&uctx_func2, &uctx_func1)&#92;n");
+    if (swapcontext(&uctx_func2, &uctx_func1) == -1)
+        handle_error("swapcontext");
+    printf("func2: returning&#92;n");
+}
+
+int
+main(int argc, char *argv[])
+{
+    char func1_stack[16384];
+    char func2_stack[16384];
+
+    if (getcontext(&uctx_func1) == -1)
+        handle_error("getcontext");
+    uctx_func1.uc_stack.ss_sp = func1_stack;
+    uctx_func1.uc_stack.ss_size = sizeof(func1_stack);
+    uctx_func1.uc_link = &uctx_main;
+    makecontext(&uctx_func1, func1, 0);
+
+    if (getcontext(&uctx_func2) == -1)
+        handle_error("getcontext");
+    uctx_func2.uc_stack.ss_sp = func2_stack;
+    uctx_func2.uc_stack.ss_size = sizeof(func2_stack);
+    /* Successor context is f1(), unless argc &gt; 1 */
+    uctx_func2.uc_link = (argc &gt; 1) ? NULL : &uctx_func1;
+    makecontext(&uctx_func2, func2, 0);
+
+    printf("main: swapcontext(&uctx_main, &uctx_func2)&#92;n");
+    if (swapcontext(&uctx_main, &uctx_func2) == -1)
+        handle_error("swapcontext");
+
+    printf("main: exiting&#92;n");
+    exit(EXIT_SUCCESS);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, <a href="../man2/sigaltstack.2.html"><strong>sigaltstack</strong>(2)</a>, <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>, <a href="../man3/getcontext.3.html"><strong>getcontext</strong>(3)</a>, <a href="../man3/sigsetjmp.3.html"><strong>sigsetjmp</strong>(3)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="major.3.html"><span aria-hidden="true">&larr;</span> major.3: manage a device number</a></li><li class="next"><a href="makedev.3.html">makedev.3: manage a device number <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

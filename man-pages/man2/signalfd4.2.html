@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>signalfd4 - create a file descriptor for accepting signals</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">signalfd4<small> (2)</small></h1>
+        <p class="lead">create a file descriptor for accepting signals</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/signalfd4.2.html"><span itemprop="title">signalfd4</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/signalfd.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>int signalfd(int </strong><em>fd</em><strong>, const sigset_t *</strong><em>mask</em><strong>, int </strong><em>flags</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>signalfd</strong>() creates a file descriptor that can be used to accept signals targeted at the caller. This provides an alternative to the use of a signal handler or <a href="../man2/sigwaitinfo.2.html"><strong>sigwaitinfo</strong>(2)</a>, and has the advantage that the file descriptor may be monitored by <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, and <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>.</p>
+<p class='spacer'>
+
+<p>The <em>mask</em> argument specifies the set of signals that the caller wishes to accept via the file descriptor. This argument is a signal set whose contents can be initialized using the macros described in <a href="../man3/sigsetops.3.html"><strong>sigsetops</strong>(3)</a>. Normally, the set of signals to be received via the file descriptor should be blocked using <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>, to prevent the signals being handled according to their default dispositions. It is not possible to receive <strong>SIGKILL</strong> or <strong>SIGSTOP</strong> signals via a signalfd file descriptor; these signals are silently ignored if specified in <em>mask</em>.</p>
+<p class='spacer'>
+
+<p>If the <em>fd</em> argument is -1, then the call creates a new file descriptor and associates the signal set specified in <em>mask</em> with that file descriptor. If <em>fd</em> is not -1, then it must specify a valid existing signalfd file descriptor, and <em>mask</em> is used to replace the signal set associated with that file descriptor.</p>
+<p class='spacer'>
+
+  <p>Starting with Linux 2.6.27, the following values may be bitwise ORed in <em>flags</em> to change the behavior of <strong>signalfd</strong>():</p>
+  <dl class='dl-vertical'>
+    <dt><strong>SFD_NONBLOCK</strong></dt>
+    <dd>
+  <p>Set the <strong>O_NONBLOCK</strong> file status flag on the new open file description. Using this flag saves extra calls to <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> to achieve the same result.</p>
+    </dd>
+    <dt><strong>SFD_CLOEXEC</strong></dt>
+    <dd>
+  <p>Set the close-on-exec (<strong>FD_CLOEXEC</strong>) flag on the new file descriptor. See the description of the <strong>O_CLOEXEC</strong> flag in <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for reasons why this may be useful.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>In Linux up to version 2.6.26, the <em>flags</em> argument is unused, and must be specified as zero.</p>
+<p class='spacer'>
+
+  <p><strong>signalfd</strong>() returns a file descriptor that supports the following operations:</p>
+  <dl class='dl-vertical'>
+    <dt><a href="../man2/read.2.html"><strong>read</strong>(2)</a></dt>
+    <dd>
+  <p>If one or more of the signals specified in <em>mask</em> is pending for the process, then the buffer supplied to <a href="../man2/read.2.html"><strong>read</strong>(2)</a> is used to return one or more <em>signalfd_siginfo</em> structures (see below) that describe the signals. The <a href="../man2/read.2.html"><strong>read</strong>(2)</a> returns information for as many signals as are pending and will fit in the supplied buffer. The buffer must be at least <em>sizeof(struct signalfd_siginfo)</em> bytes. The return value of the <a href="../man2/read.2.html"><strong>read</strong>(2)</a> is the total number of bytes read.</p>
+<p class='spacer'>
+
+  <p>As a consequence of the <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, the signals are consumed, so that they are no longer pending for the process (i.e., will not be caught by signal handlers, and cannot be accepted using <a href="../man2/sigwaitinfo.2.html"><strong>sigwaitinfo</strong>(2)</a>).</p>
+<p class='spacer'>
+
+  <p>If none of the signals in <em>mask</em> is pending for the process, then the <a href="../man2/read.2.html"><strong>read</strong>(2)</a> either blocks until one of the signals in <em>mask</em> is generated for the process, or fails with the error <strong>EAGAIN</strong> if the file descriptor has been made nonblocking.</p>
+    </dd>
+    <dt><a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a> (and similar)</dt>
+    <dd>
+  <p>The file descriptor is readable (the <a href="../man2/select.2.html"><strong>select</strong>(2)</a> <em>readfds</em> argument; the <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> <strong>POLLIN</strong> flag) if one or more of the signals in <em>mask</em> is pending for the process.</p>
+<p class='spacer'>
+
+  <p>The signalfd file descriptor also supports the other file-descriptor multiplexing APIs: <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a>, <a href="../man2/ppoll.2.html"><strong>ppoll</strong>(2)</a>, and <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>.</p>
+    </dd>
+    <dt><a href="../man2/close.2.html"><strong>close</strong>(2)</a></dt>
+    <dd>
+  <p>When the file descriptor is no longer required it should be closed. When all file descriptors associated with the same signalfd object have been closed, the resources for object are freed by the kernel.</p>
+    </dd>
+  </dl>
+  <h3>The signalfd_siginfo structure</h3>
+  <p>The format of the <em>signalfd_siginfo</em> structure(s) returned by <a href="../man2/read.2.html"><strong>read</strong>(2)</a>s from a signalfd file descriptor is as follows:</p>
+<pre>
+struct signalfd_siginfo {
+    uint32_t ssi_signo;   /* Signal number */
+    int32_t  ssi_errno;   /* Error number (unused) */
+    int32_t  ssi_code;    /* Signal code */
+    uint32_t ssi_pid;     /* PID of sender */
+    uint32_t ssi_uid;     /* Real UID of sender */
+    int32_t  ssi_fd;      /* File descriptor (SIGIO) */
+    uint32_t ssi_tid;     /* Kernel timer ID (POSIX timers)
+    uint32_t ssi_band;    /* Band event (SIGIO) */
+    uint32_t ssi_overrun; /* POSIX timer overrun count */
+    uint32_t ssi_trapno;  /* Trap number that caused signal */
+    int32_t  ssi_status;  /* Exit status or signal (SIGCHLD) */
+    int32_t  ssi_int;     /* Integer sent by <a href="../man3/sigqueue.3.html"><strong>sigqueue</strong>(3)</a> */
+    uint64_t ssi_ptr;     /* Pointer sent by <a href="../man3/sigqueue.3.html"><strong>sigqueue</strong>(3)</a> */
+    uint64_t ssi_utime;   /* User CPU time consumed (SIGCHLD) */
+    uint64_t ssi_stime;   /* System CPU time consumed (SIGCHLD) */
+    uint64_t ssi_addr;    /* Address that generated signal
+                             (for hardware-generated signals) */
+    uint8_t  pad[<em>X</em>];      /* Pad size to 128 bytes (allow for
+                              additional fields in the future) */
+};
+</pre>
+
+<p>Each of the fields in this structure is analogous to the similarly named field in the <em>siginfo_t</em> structure. The <em>siginfo_t</em> structure is described in <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>. Not all fields in the returned <em>signalfd_siginfo</em> structure will be valid for a specific signal; the set of valid fields can be determined from the value returned in the <em>ssi_code</em> field. This field is the analog of the <em>siginfo_t</em> <em>si_code</em> field; see <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> for details.</p>
+  <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> semantics</h3>
+<p>After a <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, the child inherits a copy of the signalfd file descriptor. A <a href="../man2/read.2.html"><strong>read</strong>(2)</a> from the file descriptor in the child will return information about signals queued to the child.</p>
+  <h3>Semantics of file descriptor passing</h3>
+<p>As with other file descriptors, signalfd file descriptors can be passed to another process via a UNIX domain socket (see <a href="../man7/unix.7.html"><strong>unix</strong>(7)</a>). In the receiving process, a <a href="../man2/read.2.html"><strong>read</strong>(2)</a> from the received file descriptor will return information about signals queued to that process.</p>
+  <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> semantics</h3>
+<p>Just like any other file descriptor, a signalfd file descriptor remains open across an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, unless it has been marked for close-on-exec (see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>). Any signals that were available for reading before the <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> remain available to the newly loaded program. (This is analogous to traditional signal semantics, where a blocked signal that is pending remains pending across an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.)</p>
+  <h3>Thread semantics</h3>
+<p>The semantics of signalfd file descriptors in a multithreaded program mirror the standard semantics for signals. In other words, when a thread reads from a signalfd file descriptor, it will read the signals that are directed to the thread itself and the signals that are directed to the process (i.e., the entire thread group). (A thread will not be able to read signals that are directed to other threads in the process.)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>signalfd</strong>() returns a signalfd file descriptor; this is either a new file descriptor (if <em>fd</em> was -1), or <em>fd</em> if <em>fd</em> was a valid signalfd file descriptor. On error, -1 is returned and <em>errno</em> is set to indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EBADF</strong></dt>
+    <dd>
+  <p>The <em>fd</em> file descriptor is not a valid file descriptor.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>fd</em> is not a valid signalfd file descriptor.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>flags</em> is invalid; or, in Linux 2.6.26 or earlier, <em>flags</em> is nonzero.</p>
+    </dd>
+    <dt><strong>EMFILE</strong></dt>
+    <dd>
+  <p>The per-process limit on the number of open file descriptors has been reached.</p>
+    </dd>
+    <dt><strong>ENFILE</strong></dt>
+    <dd>
+  <p>The system-wide limit on the total number of open files has been reached.</p>
+    </dd>
+    <dt><strong>ENODEV</strong></dt>
+    <dd>
+  <p>Could not mount (internal) anonymous inode device.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>There was insufficient memory to create a new signalfd file descriptor.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>signalfd</strong>() is available on Linux since kernel 2.6.22. Working support is provided in glibc since version 2.8. The <strong>signalfd4</strong>() system call (see NOTES) is available on Linux since kernel 2.6.27.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p><strong>signalfd</strong>() and <strong>signalfd4</strong>() are Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>A process can create multiple signalfd file descriptors. This makes it possible to accept different signals on different file descriptors. (This may be useful if monitoring the file descriptors using <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, or <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>: the arrival of different signals will make different file descriptors ready.) If a signal appears in the <em>mask</em> of more than one of the file descriptors, then occurrences of that signal can be read (once) from any one of the file descriptors.</p>
+<p class='spacer'>
+
+<p>The signal mask employed by a signalfd file descriptor can be viewed via the entry for the corresponding file descriptor in the process's <em>/proc/[pid]/fdinfo</em> directory. See <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> for further details.</p>
+  <h3>C library/kernel differences</h3>
+<p>The underlying Linux system call requires an additional argument, <em>size_t sizemask</em>, which specifies the size of the <em>mask</em> argument. The glibc <strong>signalfd</strong>() wrapper function does not include this argument, since it provides the required value for the underlying system call.</p>
+<p class='spacer'>
+
+<p>There are two underlying Linux system calls: <strong>signalfd</strong>() and the more recent <strong>signalfd4</strong>(). The former system call does not implement a <em>flags</em> argument. The latter system call implements the <em>flags</em> values described above. Starting with glibc 2.9, the <strong>signalfd</strong>() wrapper function will use <strong>signalfd4</strong>() where it is available.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>In kernels before 2.6.25, the <em>ssi_ptr</em> and <em>ssi_int</em> fields are not filled in with the data accompanying a signal sent by <a href="../man3/sigqueue.3.html"><strong>sigqueue</strong>(3)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+  <p>The program below accepts the signals <strong>SIGINT</strong> and <strong>SIGQUIT</strong> via a signalfd file descriptor. The program terminates after accepting a <strong>SIGQUIT</strong> signal. The following shell session demonstrates the use of the program:</p>
+<pre>
+$<strong> ./signalfd_demo</strong>
+<strong>^C</strong>                   # Control-C generates SIGINT
+Got SIGINT
+<strong>^C</strong>
+Got SIGINT
+<strong>^&#92;</strong>                    # Control-nbsp;generates SIGQUIT
+Got SIGQUIT
+$</pre>
+
+  <h3>Program source</h3>
+  <p></p>
+<pre>#include &lt;sys/signalfd.h&gt;
+#include &lt;signal.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+#define handle_error(msg) &#92;
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+int
+main(int argc, char *argv[])
+{
+    sigset_t mask;
+    int sfd;
+    struct signalfd_siginfo fdsi;
+    ssize_t s;
+
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGQUIT);
+
+    /* Block signals so that they aren&apos;t handled
+       according to their default dispositions */
+
+    if (sigprocmask(SIG_BLOCK, &mask, NULL) == -1)
+        handle_error("sigprocmask");
+
+    sfd = signalfd(-1, &mask, 0);
+    if (sfd == -1)
+        handle_error("signalfd");
+
+    for (;;) {
+        s = read(sfd, &fdsi, sizeof(struct signalfd_siginfo));
+        if (s != sizeof(struct signalfd_siginfo))
+            handle_error("read");
+
+        if (fdsi.ssi_signo == SIGINT) {
+            printf("Got SIGINT&#92;n");
+        } else if (fdsi.ssi_signo == SIGQUIT) {
+            printf("Got SIGQUIT&#92;n");
+            exit(EXIT_SUCCESS);
+        } else {
+            printf("Read unexpected signal&#92;n");
+        }
+    }
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/eventfd.2.html"><strong>eventfd</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>, <a href="../man2/sigwaitinfo.2.html"><strong>sigwaitinfo</strong>(2)</a>, <a href="../man2/timerfd_create.2.html"><strong>timerfd_create</strong>(2)</a>, <a href="../man3/sigsetops.3.html"><strong>sigsetops</strong>(3)</a>, <a href="../man3/sigwait.3.html"><strong>sigwait</strong>(3)</a>, <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>, <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="signalfd.2.html"><span aria-hidden="true">&larr;</span> signalfd.2: create a file descriptor for accepting signals</a></li><li class="next"><a href="sigpending.2.html">sigpending.2: examine pending signals <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

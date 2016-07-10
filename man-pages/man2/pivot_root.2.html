@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pivot_root - change the root filesystem</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pivot_root<small> (2)</small></h1>
+        <p class="lead">change the root filesystem</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/pivot_root.2.html"><span itemprop="title">pivot_root</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>int pivot_root(const char *</strong><em>new_root</em><strong>, const char *</strong><em>put_old</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>pivot_root</strong>() moves the root filesystem of the calling process to the directory <em>put_old</em> and makes <em>new_root</em> the new root filesystem of the calling process.</p>
+<p class='spacer'>
+
+<p>The typical use of <strong>pivot_root</strong>() is during system startup, when the system mounts a temporary root filesystem (e.g., an <strong>initrd</strong>), then mounts the real root filesystem, and eventually turns the latter into the current root of all relevant processes or threads.</p>
+<p class='spacer'>
+
+<p><strong>pivot_root</strong>() may or may not change the current root and the current working directory of any processes or threads which use the old root directory. The caller of <strong>pivot_root</strong>() must ensure that processes with root or current working directory at the old root operate correctly in either case. An easy way to ensure this is to change their root and current working directory to <em>new_root</em> before invoking <strong>pivot_root</strong>().</p>
+<p class='spacer'>
+
+<p>The paragraph above is intentionally vague because the implementation of <strong>pivot_root</strong>() may change in the future. At the time of writing, <strong>pivot_root</strong>() changes root and current working directory of each process or thread to <em>new_root</em> if they point to the old root directory. This is necessary in order to prevent kernel threads from keeping the old root directory busy with their root and current working directory, even if they never access the filesystem in any way. In the future, there may be a mechanism for kernel threads to explicitly relinquish any access to the filesystem, such that this fairly intrusive mechanism can be removed from <strong>pivot_root</strong>().</p>
+<p class='spacer'>
+
+<p>Note that this also applies to the calling process: <strong>pivot_root</strong>() may or may not affect its current working directory. It is therefore recommended to call <strong>chdir("/")</strong> immediately after <strong>pivot_root</strong>().</p>
+<p class='spacer'>
+
+  <p>The following restrictions apply to <em>new_root</em> and <em>put_old</em>:</p>
+  <dl class='dl-horizontal'>
+    <dt>-</dt>
+    <dd>
+  <p>They must be directories.</p>
+    </dd>
+    <dt>-</dt>
+    <dd>
+  <p><em>new_root</em> and <em>put_old</em> must not be on the same filesystem as the current root.</p>
+    </dd>
+    <dt>-</dt>
+    <dd>
+  <p><em>put_old</em> must be underneath <em>new_root</em>, that is, adding a nonzero number of <em>/..</em> to the string pointed to by <em>put_old</em> must yield the same directory as <em>new_root</em>.</p>
+    </dd>
+    <dt>-</dt>
+    <dd>
+  <p>No other filesystem may be mounted on <em>put_old</em>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>See also <a href="../man8/pivot_root.8.html"><strong>pivot_root</strong>(8)</a> for additional usage examples.</p>
+<p class='spacer'>
+
+<p>If the current root is not a mount point (e.g., after <a href="../man2/chroot.2.html"><strong>chroot</strong>(2)</a> or <strong>pivot_root</strong>(), see also below), not the old root directory, but the mount point of that filesystem is mounted on <em>put_old</em>.</p>
+<p class='spacer'>
+
+<p><em>new_root</em> does not have to be a mount point. In this case, <em>/proc/mounts</em> will show the mount point of the filesystem containing <em>new_root</em> as root (<em>/</em>).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <p><strong>pivot_root</strong>() may return (in <em>errno</em>) any of the errors returned by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>. Additionally, it may return:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>EBUSY</strong></dt>
+    <dd>
+  <p><em>new_root</em> or <em>put_old</em> are on the current root filesystem, or a filesystem is already mounted on <em>put_old</em>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>put_old</em> is not underneath <em>new_root</em>.</p>
+    </dd>
+    <dt><strong>ENOTDIR</strong></dt>
+    <dd>
+  <p><em>new_root</em> or <em>put_old</em> is not a directory.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>The calling process does not have the <strong>CAP_SYS_ADMIN</strong> capability.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>pivot_root</strong>() was introduced in Linux 2.3.41.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p><strong>pivot_root</strong>() is Linux-specific and hence is not portable.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p><strong>pivot_root</strong>() should not have to change root and current working directory of all other processes in the system.</p>
+<p class='spacer'>
+
+<p>Some of the more obscure uses of <strong>pivot_root</strong>() may quickly lead to insanity.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a>, <a href="../man2/chroot.2.html"><strong>chroot</strong>(2)</a>, <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, <a href="../man4/initrd.4.html"><strong>initrd</strong>(4)</a>, <a href="../man8/pivot_root.8.html"><strong>pivot_root</strong>(8)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="pipe2.2.html"><span aria-hidden="true">&larr;</span> pipe2.2: create pipe</a></li><li class="next"><a href="poll.2.html">poll.2: wait for some event on a file descriptor <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

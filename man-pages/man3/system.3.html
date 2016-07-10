@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>system - execute a shell command</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">system<small> (3)</small></h1>
+        <p class="lead">execute a shell command</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/system.3.html"><span itemprop="title">system</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;stdlib.h&gt;</strong>
+
+<strong>int system(const char *</strong><em>command</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>system</strong>() library function uses <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> to create a child process that executes the shell command specified in <em>command</em> using <a href="../man3/execl.3.html"><strong>execl</strong>(3)</a> as follows:</p>
+<p class='spacer'>
+
+<pre>    execl("/bin/sh", "sh", "-c", command, (char *) 0);</pre>
+
+<p class='spacer'>
+
+<p><strong>system</strong>() returns after the command has been completed.</p>
+<p class='spacer'>
+
+<p>During execution of the command, <strong>SIGCHLD</strong> will be blocked, and <strong>SIGINT</strong> and <strong>SIGQUIT</strong> will be ignored, in the process that calls <strong>system</strong>() (these signals will be handled according to their defaults inside the child process that executes <em>command</em>).</p>
+<p class='spacer'>
+
+<p>If <em>command</em> is NULL, then <strong>system</strong>() returns a status indicating whether a shell is available on the system</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+  <p>The return value of <strong>system</strong>() is one of the following:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>If <em>command</em> is NULL, then a nonzero value if a shell is available, or 0 if no shell is available.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>If a child process could not be created, or its status could not be retrieved, the return value is -1.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>If a shell could not be executed in the child process, then the return value is as though the child shell terminated by calling <a href="../man2/_exit.2.html"><strong>_exit</strong>(2)</a> with the status 127.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>If all system calls succeed, then the return value is the termination status of the child shell used to execute <em>command</em>. (The termination status of a shell is the termination status of the last command it executes.)</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>In the last two cases, the return value is a "wait status" that can be examined using the macros described in <a href="../man2/waitpid.2.html"><strong>waitpid</strong>(2)</a>. (i.e., <strong>WIFEXITED</strong>(), <strong>WEXITSTATUS</strong>(), and so on).</p>
+<p class='spacer'>
+
+<p><strong>system</strong>() does not affect the wait status of any other children.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
+        <div class="sectioncontent">
+
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
+<table class="table table-striped">
+<tr>
+<th>Interface</th>
+<th>Attribute</th>
+<th>Value</th></tr>
+
+<tr>
+<td><strong>system</strong>()  </td>
+<td>Thread safety</td>
+<td>MT-Safe</td></tr>
+</table>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>POSIX.1-2001, POSIX.1-2008, C89, C99.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p><strong>system</strong>() provides simplicity and convenience: it handles all of the details of calling <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man3/execl.3.html"><strong>execl</strong>(3)</a>, and <a href="../man2/waitpid.2.html"><strong>waitpid</strong>(2)</a>, as well as the necessary manipulations of signals; in addition, the shell performs the usual substitutions and I/O redirections for <em>command</em>. The main cost of <strong>system</strong>() is inefficiency: additional system calls are required to create the process that runs the shell and to execute the shell.</p>
+<p class='spacer'>
+
+<p>If the <strong>_XOPEN_SOURCE</strong> feature test macro is defined (before including <em>any</em> header files), then the macros described in <a href="../man2/waitpid.2.html"><strong>waitpid</strong>(2)</a> (<strong>WEXITSTATUS</strong>(), etc.) are made available when including <em>&lt;stdlib.h&gt;</em>.</p>
+<p class='spacer'>
+
+<p>As mentioned, <strong>system</strong>() ignores <strong>SIGINT</strong> and <strong>SIGQUIT</strong>. This may make programs that call it from a loop uninterruptible, unless they take care themselves to check the exit status of the child. For example:</p>
+<p class='spacer'>
+
+<pre>
+    while (something) {
+        int ret = system("foo");
+
+        if (WIFSIGNALED(ret) &&
+            (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
+                break;
+    }</pre>
+
+<p class='spacer'>
+
+<p>Do not use <strong>system</strong>() from a program with set-user-ID or set-group-ID privileges, because strange values for some environment variables might be used to subvert system integrity. Use the <a href="../man3/exec.3.html"><strong>exec</strong>(3)</a> family of functions instead, but not <a href="../man3/execlp.3.html"><strong>execlp</strong>(3)</a> or <a href="../man3/execvp.3.html"><strong>execvp</strong>(3)</a>. <strong>system</strong>() will not, in fact, work properly from programs with set-user-ID or set-group-ID privileges on systems on which <em>/bin/sh</em> is bash version 2, since bash 2 drops privileges on startup. (Debian uses a modified bash which does not do this when invoked as <strong>sh</strong>.)</p>
+<p class='spacer'>
+
+<p>In versions of glibc before 2.1.3, the check for the availability of <em>/bin/sh</em> was not actually performed if <em>command</em> was NULL; instead it was always assumed to be available, and <strong>system</strong>() always returned 1 in this case. Since glibc 2.1.3, this check is performed because, even though POSIX.1-2001 requires a conforming implementation to provide a shell, that shell may not be available or executable if the calling program has previously called <a href="../man2/chroot.2.html"><strong>chroot</strong>(2)</a> (which is not specified by POSIX.1-2001).</p>
+<p class='spacer'>
+
+<p>It is possible for the shell command to terminate with a status of 127, which yields a <strong>system</strong>() return value that is indistinguishable from the case where a shell could not be executed in the child process.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>sh</strong>(1), <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>, <a href="../man2/wait.2.html"><strong>wait</strong>(2)</a>, <a href="../man3/exec.3.html"><strong>exec</strong>(3)</a>, <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="syslog.3.html"><span aria-hidden="true">&larr;</span> syslog.3: send messages to the system logger</a></li><li class="next"><a href="sysv_signal.3.html">sysv_signal.3: signal handling with System V semantics <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

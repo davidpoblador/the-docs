@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>raw - Linux IPv4 raw sockets</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">raw<small> (7)</small></h1>
+        <p class="lead">Linux IPv4 raw sockets</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/raw.7.html"><span itemprop="title">raw</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/socket.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>#include &lt;netinet/in.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>raw_socket = socket(AF_INET, SOCK_RAW, int </strong><em>protocol</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>Raw sockets allow new IPv4 protocols to be implemented in user space. A raw socket receives or sends the raw datagram not including link level headers.</p>
+<p class='spacer'>
+
+<p>The IPv4 layer generates an IP header when sending a packet unless the <strong>IP_HDRINCL</strong> socket option is enabled on the socket. When it is enabled, the packet must contain an IP header. For receiving, the IP header is always included in the packet.</p>
+<p class='spacer'>
+
+<p>Only processes with an effective user ID of 0 or the <strong>CAP_NET_RAW</strong> capability are allowed to open raw sockets.</p>
+<p class='spacer'>
+
+<p>All packets or errors matching the <em>protocol</em> number specified for the raw socket are passed to this socket. For a list of the allowed protocols, see the IANA list of assigned protocol numbers at <a href="http://www.iana.org/assignments/protocol-numbers/">http://www.iana.org/assignments/protocol-numbers/</a> and <a href="../man3/getprotobyname.3.html"><strong>getprotobyname</strong>(3)</a>.</p>
+<p class='spacer'>
+
+  <p>A protocol of <strong>IPPROTO_RAW</strong> implies enabled <strong>IP_HDRINCL</strong> and is able to send any IP protocol that is specified in the passed header. Receiving of all IP protocols via <strong>IPPROTO_RAW</strong> is not possible using raw sockets.</p>
+<table class="table table-striped">
+<tr>
+<th>IP Header fields modified on sending by <strong>IP_HDRINCL</strong></th>
+<th></th></tr>
+
+<tr>
+<td>IP Checksum:Always filled in</td>
+<td></td></tr>
+
+<tr>
+<td>Source Address:Filled in when zero</td>
+<td></td></tr>
+
+<tr>
+<td>Packet ID:Filled in when zero</td>
+<td></td></tr>
+
+<tr>
+<td>Total Length:Always filled in</td>
+<td></td></tr>
+</table>
+
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p>If <strong>IP_HDRINCL</strong> is specified and the IP header has a nonzero destination address, then the destination address of the socket is used to route the packet. When <strong>MSG_DONTROUTE</strong> is specified, the destination address should refer to a local interface, otherwise a routing table lookup is done anyway but gatewayed routes are ignored.</p>
+<p class='spacer'>
+
+<p>If <strong>IP_HDRINCL</strong> isn't set, then IP header options can be set on raw sockets with <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a>; see <strong>ip</strong>(7) for more information.</p>
+<p class='spacer'>
+
+<p>Starting with Linux 2.2, all IP header fields and options can be set using IP socket options. This means raw sockets are usually needed only for new protocols or protocols with no user interface (like ICMP).</p>
+<p class='spacer'>
+
+<p>When a packet is received, it is passed to any raw sockets which have been bound to its protocol before it is passed to other protocol handlers (e.g., kernel protocol modules).</p>
+  <h3>Address format</h3>
+<p>For sending and receiving datagrams (<a href="../man2/sendto.2.html"><strong>sendto</strong>(2)</a>, <a href="../man2/recvfrom.2.html"><strong>recvfrom</strong>(2)</a>, and similar), raw sockets use the standard <em>sockaddr_in</em> address structure defined in <strong>ip</strong>(7). The <em>sin_port</em> field could be used to specify the IP protocol number, but it is ignored for sending in Linux 2.2 and later, and should be always set to 0 (see BUGS). For incoming packets, <em>sin_port</em> is set to zero.</p>
+  <h3>Socket options</h3>
+  <p>Raw socket options can be set with <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> and read with <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> by passing the <strong>IPPROTO_RAW</strong> family flag.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>ICMP_FILTER</strong></dt>
+    <dd>
+  <p>Enable a special filter for raw sockets bound to the <strong>IPPROTO_ICMP</strong> protocol. The value has a bit set for each ICMP message type which should be filtered out. The default is to filter no ICMP messages.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>In addition, all <strong>ip</strong>(7) <strong>IPPROTO_IP</strong> socket options valid for datagram sockets are supported.</p>
+  <h3>Error handling</h3>
+<p>Errors originating from the network are passed to the user only when the socket is connected or the <strong>IP_RECVERR</strong> flag is enabled. For connected sockets, only <strong>EMSGSIZE</strong> and <strong>EPROTO</strong> are passed for compatibility. With <strong>IP_RECVERR</strong>, all network errors are saved in the error queue.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EACCES</strong></dt>
+    <dd>
+  <p>User tried to send to a broadcast address without having the broadcast flag set on the socket.</p>
+    </dd>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>An invalid memory address was supplied.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>Invalid argument.</p>
+    </dd>
+    <dt><strong>EMSGSIZE</strong></dt>
+    <dd>
+  <p>Packet too big. Either Path MTU Discovery is enabled (the <strong>IP_MTU_DISCOVER</strong> socket flag) or the packet size exceeds the maximum allowed IPv4 packet size of 64KB.</p>
+    </dd>
+    <dt><strong>EOPNOTSUPP</strong></dt>
+    <dd>
+  <p>Invalid flag has been passed to a socket call (like <strong>MSG_OOB</strong>).</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>The user doesn't have permission to open raw sockets. Only processes with an effective user ID of 0 or the <strong>CAP_NET_RAW</strong> attribute may do that.</p>
+    </dd>
+    <dt><strong>EPROTO</strong></dt>
+    <dd>
+  <p>An ICMP error has arrived reporting a parameter problem.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>IP_RECVERR</strong> and <strong>ICMP_FILTER</strong> are new in Linux 2.2. They are Linux extensions and should not be used in portable programs.</p>
+<p class='spacer'>
+
+<p>Linux 2.0 enabled some bug-to-bug compatibility with BSD in the raw socket code when the <strong>SO_BSDCOMPAT</strong> socket option was set; since Linux 2.2, this option no longer has that effect.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>By default, raw sockets do path MTU (Maximum Transmission Unit) discovery. This means the kernel will keep track of the MTU to a specific target IP address and return <strong>EMSGSIZE</strong> when a raw packet write exceeds it. When this happens, the application should decrease the packet size. Path MTU discovery can be also turned off using the <strong>IP_MTU_DISCOVER</strong> socket option or the <em>/proc/sys/net/ipv4/ip_no_pmtu_disc</em> file, see <strong>ip</strong>(7) for details. When turned off, raw sockets will fragment outgoing packets that exceed the interface MTU. However, disabling it is not recommended for performance and reliability reasons.</p>
+<p class='spacer'>
+
+<p>A raw socket can be bound to a specific local address using the <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a> call. If it isn't bound, all packets with the specified IP protocol are received. In addition, a raw socket can be bound to a specific network device using <strong>SO_BINDTODEVICE</strong>; see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>.</p>
+<p class='spacer'>
+
+<p>An <strong>IPPROTO_RAW</strong> socket is send only. If you really want to receive all IP packets, use a <a href="../man7/packet.7.html"><strong>packet</strong>(7)</a> socket with the <strong>ETH_P_IP</strong> protocol. Note that packet sockets don't reassemble IP fragments, unlike raw sockets.</p>
+<p class='spacer'>
+
+<p>If you want to receive all ICMP packets for a datagram socket, it is often better to use <strong>IP_RECVERR</strong> on that particular socket; see <strong>ip</strong>(7).</p>
+<p class='spacer'>
+
+<p>Raw sockets may tap all IP protocols in Linux, even protocols like ICMP or TCP which have a protocol module in the kernel. In this case, the packets are passed to both the kernel module and the raw socket(s). This should not be relied upon in portable programs, many other BSD socket implementation have limitations here.</p>
+<p class='spacer'>
+
+<p>Linux never changes headers passed from the user (except for filling in some zeroed fields as described for <strong>IP_HDRINCL</strong>). This differs from many other implementations of raw sockets.</p>
+<p class='spacer'>
+
+<p>Raw sockets are generally rather unportable and should be avoided in programs intended to be portable.</p>
+<p class='spacer'>
+
+<p>Sending on raw sockets should take the IP protocol from <em>sin_port</em>; this ability was lost in Linux 2.2. The workaround is to use <strong>IP_HDRINCL</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>Transparent proxy extensions are not described.</p>
+<p class='spacer'>
+
+<p>When the <strong>IP_HDRINCL</strong> option is set, datagrams will not be fragmented and are limited to the interface MTU.</p>
+<p class='spacer'>
+
+<p>Setting the IP protocol for sending in <em>sin_port</em> got lost in Linux 2.2. The protocol that the socket was bound to or that was specified in the initial <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a> call is always used.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <strong>ip</strong>(7), <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a></p>
+<p class='spacer'>
+
+<p><strong>RFC&nbsp;1191</strong> for path MTU discovery. <strong>RFC&nbsp;791</strong> and the <em>&lt;linux/ip.h&gt;</em> header file for the IP protocol.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="pty.7.html"><span aria-hidden="true">&larr;</span> pty.7: pseudoterminal interfaces</a></li><li class="next"><a href="regex.7.html">regex.7: POSIX.2 regular expressions <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
