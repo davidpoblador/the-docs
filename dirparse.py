@@ -59,7 +59,8 @@ class ManDirectoryParser(object):
         missing_parsers = Counter()
         for manfile in list_of_manfiles:
             page_directory, basename = os.path.split(manfile)
-            redirection_base_dir, section_directory = os.path.split(page_directory)
+            redirection_base_dir, section_directory = os.path.split(
+                page_directory)
             package_name = os.path.basename(redirection_base_dir)
 
             if basename in broken_files:
@@ -160,8 +161,9 @@ class ManDirectoryParser(object):
                     continue
                 except:
                     self.pages_with_errors.add(os.path.basename(page_file))
-                    logging.error(" * ERR %s: %s" %
-                                  (page_file, manpage_instances[page_file].filename, ))
+                    logging.error(
+                        " * ERR %s: %s" %
+                        (page_file, manpage_instances[page_file].filename, ))
                     mandirpages[directory].remove(page_file)
                     continue
 

@@ -274,7 +274,8 @@ class ManPage(object):
 
                 parsed_line = LineParser(line)
 
-                if parsed_line.extra and ((not self.in_pre) or parsed_line.macro):
+                if parsed_line.extra and (
+                        (not self.in_pre) or parsed_line.macro):
                     extra_line = parsed_line.extra
                     continue
 
