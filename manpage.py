@@ -16,7 +16,6 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 class MacroParser(object):
-
     macros_to_ignore = {
         'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam',
         'ne', 'UC', 'nr', 'ns', 'ds', 'na', 'DT', 'bp',
@@ -275,7 +274,8 @@ class ManPage(object):
                 parsed_line = LineParser(line)
 
                 if parsed_line.extra and (
-                        (not self.in_pre) or parsed_line.macro):
+                    (self.is_state(ManPageStates.BODY) and not self.in_pre)
+                        or parsed_line.macro):
                     extra_line = parsed_line.extra
                     continue
 
@@ -291,18 +291,6 @@ class ManPage(object):
 
         self.preserve_next_line = False
         self.in_if = False
-        self.in_dl = False
-        self.in_li = False
-        self.in_pre = False
-        self.in_table = False
-        self.table_buffer = []
-        self.pre_buffer = []
-        self.spaced_lines_buffer = []
-        self.blank_line = False  # Previous line was blank
-        self.content_buffer = []
-
-        self.state = []
-        self.depth = 0
 
         if redirected_from:
             self.manpage_name = os.path.basename(redirected_from)
@@ -338,6 +326,20 @@ class ManPage(object):
             self.spaced_lines_buffer = []
 
     def parse_body(self):
+        self.in_dl = False
+        self.in_li = False
+        self.in_pre = False
+        self.in_table = False
+        self.table_buffer = []
+        self.pre_buffer = []
+
+        self.spaced_lines_buffer = []
+        self.blank_line = False  # Previous line was blank
+        self.content_buffer = []
+
+        self.state = []
+        self.depth = 0
+
         if not self.is_state(ManPageStates.BODY):
             raise UnexpectedState(self.parsing_state)
 
