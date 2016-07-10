@@ -121,7 +121,14 @@ class HeaderMacroParser(MacroParser):
         self.manpage.set_state(ManPageStates.TITLE)
 
     def p_so(self):
-        self.manpage._redirect = self.data.split("/")
+        chunks = self.data.split("/", 1)
+        if len(chunks) == 1:
+            base_dir, page = "", chunks[0]
+        else:
+            base_dir, page = chunks
+
+        self.manpage._redirect = (base_dir, page,)
+
         raise RedirectedPage(
             "Page %s redirects to %s" %
             (self.manpage.filename, "/".join(self.manpage.redirect)))
@@ -423,8 +430,11 @@ class ManPage(object):
             self.flush_dl()
             self.flush_li()
 
-            self.in_dl, self.in_li = self.state.pop(-1)
-            self.depth -= 1
+            try:
+                self.in_dl, self.in_li = self.state.pop(-1)
+                self.depth -= 1
+            except:
+                pass
 
     def flush_dl(self):
         if self.in_dl:
@@ -515,7 +525,8 @@ class ManPage(object):
             pass
         elif macro == 'SM':
             # FIXME: Make font smaller
-            self.add_content(data)
+            if data:
+                self.add_content(data)
             pass
         elif not macro:
             pass

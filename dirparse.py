@@ -14,7 +14,11 @@ import shutil
 package_directory = os.path.dirname(os.path.abspath(__file__))
 
 root_html = os.path.join(package_directory, "public_html")
+base_src = "man-pages"
 base_url = "https://www.carta.tech/"
+
+base_manpage_dir = os.path.join(root_html, base_src)
+base_manpage_url = base_url + base_src
 
 # To skip
 broken_files = set()
@@ -33,32 +37,64 @@ SECTIONS = {
 }
 
 
+def get_section_url(section):
+    return base_manpage_url + "/" + section + "/"
+
+
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
 
     def __init__(self, source_dir):
+        self.pages = dict()
+
         self.source_dir = source_dir
+
+        self.missing_parsers = Counter()
         self.number_missing_parsers = 10
 
         self.missing_links = Counter()
         self.number_missing_links = 10
 
-        self.pages_with_missing_parsers = set()
-        self.pages_with_errors = set()
+    def get_dir_pages(self):
+        mandirpages = defaultdict(set)
+        for page, v in self.pages.iteritems():
+            if 'errors' not in v and 'missing-parser' not in v:
+                mandirpages[v['section-dir']].add(page)
+
+        return mandirpages
+
+    def get_pages(self):
+        for page, v in self.pages.iteritems():
+            if 'errors' not in v and 'missing-parser' not in v:
+                yield (v['instance'], v['final-page'])
+
+    def get_pages_without_errors(self):
+        manpages = set()
+        for page, v in self.pages.iteritems():
+            if 'errors' not in v and 'missing-parser' not in v:
+                manpages.add(page)
+
+        return manpages
+
+    def get_pages_with_errors(self):
+        for page, v in self.pages.iteritems():
+            if 'errors' in v or 'missing-parser' in v:
+                yield page
+
+    def get_pages_with_missing_parsers(self):
+        pages_with_missing_parsers = []
+        for page, v in self.pages.iteritems():
+            if 'missing-parser' in v:
+                pages_with_missing_parsers.append(page)
+
+        return pages_with_missing_parsers
 
     def parse_directory(self):
-        list_of_manfiles = list(glob.iglob("%s/*/man?/*.?" % self.source_dir))
-        base_src = "man-pages"
-        manpage_instances = dict()
-        mandirpages = defaultdict(set)
-        pages = defaultdict()
+        shutil.rmtree(base_manpage_dir, ignore_errors=True)
+        p = self.pages
 
-        shutil.rmtree(os.path.join(root_html, base_src), ignore_errors=True)
-        manpage_parent_url = base_url + base_src
-
-        missing_parsers = Counter()
-        for manfile in list_of_manfiles:
-            page_directory, basename = os.path.split(manfile)
+        for item in list(glob.iglob("%s/*/man?/*.?" % self.source_dir)):
+            page_directory, basename = os.path.split(item)
             redirection_base_dir, section_directory = os.path.split(
                 page_directory)
             package_name = os.path.basename(redirection_base_dir)
@@ -66,132 +102,104 @@ class ManDirectoryParser(object):
             if basename in broken_files:
                 continue
 
+            cp = p[basename] = dict()  # Current page
+            sd = cp['section-dir'] = section_directory  # Section Directory
+            package = cp['package'] = package_name  # Package
+            rd = cp['red-dir'] = redirection_base_dir  # Redirection base dir
+            fp = cp['full-path'] = item  # Full Path
+
+            cp['name'], cp['section'] = basename.rsplit('.', 1)
+            cp['page-url'] = get_section_url(sd) + basename + ".html"
+
             first_pass = True
             try:
-                while (first_pass or manpage.redirect):
+                while (first_pass or mp.redirect):
                     if first_pass:
                         logging.debug(
                             "Processing man page %s ..." %
-                            (manfile, ))
-                        manpage = ManPage(manfile, base_url=manpage_parent_url)
+                            (fp, ))
+                        mp = cp['instance'] = ManPage(
+                            fp, base_url=base_manpage_url)
                         first_pass = False
                     else:
-                        redirection = get_redirection_file(
-                            redirection_base_dir, manpage.redirect)
+                        red_section, red_page = mp.redirect
+                        if not red_section:
+                            red_section = sd
+
+                        red = os.path.join(rd, red_section, red_page)
+
                         logging.debug(
                             " * Page %s has a redirection to %s. Processing..." %
-                            (manfile, redirection))
-                        manpage = ManPage(
-                            redirection,
-                            base_url=manpage_parent_url,
-                            redirected_from=manfile)
+                            (fp, red))
+                        mp = cp['instance'] = ManPage(
+                            red, base_url=base_manpage_url, redirected_from=fp)
 
                     try:
-                        manpage.parse_header()
+                        mp.parse_header()
                     except NotSupportedFormat:
-                        logging.error(
-                            " * ERR (not supported format): %s" %
-                            (manfile, ))
-                        self.pages_with_errors.add(basename)
-                        continue
+                        raise NotSupportedFormat
                     except RedirectedPage:
                         continue
                     else:
-                        manpage.parse_title()
-                        subtitle = manpage.subtitle
+                        mp.parse_title()
+                        subtitle = cp['subtitle'] = mp.subtitle
+                        mp.parse_body()
 
             except MissingParser as e:
-                mp = str(e).split(" ", 2)[1]
-                self.pages_with_missing_parsers.add(basename)
-                logging.warning(
-                    " * Missing Parser (%s) (PS: %s): %s" %
-                    (mp, manpage.parsing_state, manfile, ))
-                missing_parsers[mp] += 1
-                self.pages_with_errors.add(basename)
+                macro = str(e).split(" ", 2)[1]
+                logging.warning(" * Missing Parser (%s): %s" % (macro, fp, ))
+                self.missing_parsers[macro] += 1
+                cp['errors'] = True
+                cp['missing-parser'] = True
+                continue
+            except NotSupportedFormat:
+                logging.warning(" * Not supported format: %s" % (fp, ))
+                cp['errors'] = True
                 continue
             except IOError:
-                if manpage.redirect:
-                    self.missing_links[manpage.redirect[0]] += 1
-                self.pages_with_errors.add(basename)
+                cp['errors'] = True
+                if mp.redirect:
+                    self.missing_links[red_page] += 1
                 continue
+            except:
+                logging.error(" * Unknown error: %s" % (fp, ))
+                cp['errors'] = True
+                raise
 
-            mandirpages[section_directory].add(basename)
-            pages[basename] = (subtitle, section_directory, package_name)
+        try:
+            checksum_file = open('checksums.dat', 'rb')
+            checksums = marshal.load(checksum_file)
+            checksum_file.close()
+        except IOError:
+            checksums = {}
 
-            manpage_instances[basename] = manpage
-
-        del(list_of_manfiles)
-
-        # FIXME:
-        # try:
-        #    checksum_file = open('checksums.dat', 'rb')
-        #    checksums = marshal.load(checksum_file)
-        #    checksum_file.close()
-        # except IOError:
-        #    checksums = {}
-
-        checksums = {}
-
-        # Write and Linkify
-        list_of_pages = set(pages.keys())
-        pages_to_process = []
-        for directory, page_files in list(mandirpages.items()):
-            man_directory = os.path.join(root_html, base_src, directory)
+        found_pages = self.get_pages_without_errors()
+        for directory, page_files in self.get_dir_pages().iteritems():
+            man_directory = os.path.join(base_manpage_dir, directory)
             try:
                 os.makedirs(man_directory)
             except OSError:
                 pass
 
             previous = None
-            for page_file in sorted(page_files):
-                logging.debug(" * Writing page: %s" % page_file)
-
-                try:
-                    manpage_instances[page_file].parse_body()
-                except MissingParser as e:
-                    mp = str(e).split(" ", 2)[1]
-                    self.pages_with_missing_parsers.add(
-                        os.path.basename(page_file))
-                    logging.warning(
-                        " * Missing Parser (%s) (PS: %s): %s" %
-                        (mp, manpage_instances[page_file].parsing_state,
-                         manpage_instances[page_file].filename,))
-                    missing_parsers[mp] += 1
-                    mandirpages[directory].remove(page_file)
-                    continue
-                except:
-                    self.pages_with_errors.add(os.path.basename(page_file))
-                    logging.error(
-                        " * ERR %s: %s" %
-                        (page_file, manpage_instances[page_file].filename, ))
-                    mandirpages[directory].remove(page_file)
-                    continue
-
+            for page in sorted(page_files):
+                d = p[page]
+                d['final-page'] = os.path.join(man_directory, page) + ".html"
+                logging.debug(" * Writing page: %s" % page)
                 if previous:
-                    manpage_instances[page_file].set_previous(
-                        previous[0], previous[1])
-                    manpage_instances[previous[0]].set_next(
-                        page_file, pages[page_file][0])
+                    d['instance'].set_previous(previous[0], previous[1])
+                    p[previous[0]]['instance'].set_next(page, d['subtitle'])
 
-                previous = (page_file, pages[page_file][0])
+                previous = (page, d['subtitle'])
 
-                pages_to_process.append((man_directory, page_file))
-
-        for page in self.pages_with_errors:
-            if page in list_of_pages:
-                list_of_pages.remove(page)
-
-        for man_directory, page_file in pages_to_process:
-            final_page = os.path.join(man_directory, page_file) + ".html"
-            out = manpage_instances[page_file].html(
-                pages_to_link=list_of_pages)
-            self.missing_links.update(
-                manpage_instances[page_file].broken_links)
+        for mp, full_path in self.get_pages():
+            out = mp.html(pages_to_link=found_pages)
+            self.missing_links.update(mp.broken_links)
             checksum = md5(out).hexdigest()
 
-            if checksum != checksums.get(final_page, None):
-                checksums[final_page] = checksum
-                file = open(final_page, "w")
+            if checksum != checksums.get(full_path, None):
+                checksums[full_path] = checksum
+                file = open(full_path, "w")
                 file.write(out)
                 file.close()
 
@@ -202,66 +210,60 @@ class ManDirectoryParser(object):
         del(checksums)
 
         # Directory Indexes & Sitemaps
-        sitemap_urls = []
-        for directory, page_files in list(mandirpages.items()):
+        sm_urls = []
+        for directory, page_files in self.get_dir_pages().iteritems():
             logging.debug(
                 " * Generating indexes and sitemaps for %s" %
                 directory)
 
             section_item_tpl = load_template('section-index-item')
-            sitemap_url_item_tpl = load_template('sitemap-url')
+            sm_item_tpl = load_template('sitemap-url')
 
             section_items, sitemap_items = ("", "")
-            for page_file in sorted(page_files):
-                name, section = page_file.rsplit('.', 1)
+            for page in sorted(page_files):
+                d = p[page]
 
                 section_items += section_item_tpl.substitute(
-                    link=page_file,
-                    name=name,
-                    section=section,
-                    description=pages[page_file][0],
-                    package=pages[page_file][2],
+                    link=page,
+                    name=d['name'],
+                    section=d['section'],
+                    description=d['subtitle'],
+                    package=d['package'],
                 )
 
-                item_url = base_url + base_src + "/" + directory + "/" + name + "." + section + ".html"
-                sitemap_items += sitemap_url_item_tpl.substitute(url=item_url)
+                sitemap_items += sm_item_tpl.substitute(
+                    url=d
+                    ['page-url'])
             else:
-                item_url = base_url + base_src + "/" + directory + "/"
-                sitemap_items += sitemap_url_item_tpl.substitute(url=item_url)
+                sitemap_items += sm_item_tpl.substitute(
+                    url=get_section_url(directory))
 
-            section_index_tpl = load_template('section-index')
-            section_content = section_index_tpl.substitute(items=section_items)
-
-            sitemap_tpl = load_template('sitemap')
-            sitemap = sitemap_tpl.substitute(urlset=sitemap_items)
+            section_content = load_template(
+                'section-index').substitute(items=section_items)
+            sitemap = load_template('sitemap').substitute(urlset=sitemap_items)
 
             sitemap_path = os.path.join(
-                root_html, base_src, directory, "sitemap.xml")
+                base_manpage_dir, directory, "sitemap.xml")
             f = open(sitemap_path, 'w')
             f.write(sitemap)
             f.close()
 
-            sitemap_url = base_url + base_src + "/" + directory + "/" + "sitemap.xml"
-            sitemap_urls.append(sitemap_url)
-
-            base_tpl = load_template('base')
-            header_tpl = load_template('header')
-            breadcrumb_tpl = load_template('breadcrumb-section')
+            sm_urls.append(get_section_url(directory) + "sitemap.xml")
 
             full_section = SECTIONS[directory]
-            numeric_section = directory.replace('man', '', 1)
+            numeric_section = directory[3:]
 
-            out = base_tpl.safe_substitute(
+            out = load_template('base').safe_substitute(
                 title="Linux Man Pages - %s" %
                 full_section,
                 canonical="",
-                header=header_tpl.safe_substitute(
+                header=load_template('header').safe_substitute(
                     title=full_section,
                     section=numeric_section,
                     subtitle=""),
-                breadcrumb=breadcrumb_tpl.substitute(
+                breadcrumb=load_template('breadcrumb-section').substitute(
                     section_name=full_section,
-                    base_url=manpage_parent_url,
+                    base_url=base_manpage_url,
                     section=numeric_section),
                 content=section_content,
                 metadescription=full_section.replace(
@@ -270,18 +272,13 @@ class ManDirectoryParser(object):
             )
 
             f = open(
-                os.path.join(
-                    root_html,
-                    base_src,
-                    directory,
-                    'index.html'),
-                'w')
+                os.path.join(base_manpage_dir, directory, 'index.html'), 'w')
             f.write(out)
             f.close()
 
         sitemap_index_url_tpl = load_template('sitemap-index-url')
         sitemap_index_content = ""
-        for sitemap_url in sitemap_urls:
+        for sitemap_url in sm_urls:
             sitemap_index_content += sitemap_index_url_tpl.substitute(
                 url=sitemap_url)
 
@@ -289,7 +286,7 @@ class ManDirectoryParser(object):
         sitemap_index_content = sitemap_index_tpl.substitute(
             sitemaps=sitemap_index_content)
 
-        f = open("%s/sitemap.xml" % (os.path.join(root_html, base_src), ), 'w')
+        f = open(os.path.join(base_manpage_dir, "sitemap.xml"), 'w')
         f.write(sitemap_index_content)
         f.close()
 
@@ -309,7 +306,7 @@ class ManDirectoryParser(object):
             content=index_tpl.substitute(),
         )
 
-        f = open("%s/index.html" % (os.path.join(root_html, base_src), ), 'w')
+        f = open(os.path.join(base_manpage_dir, "index.html"), 'w')
         f.write(index)
         f.close()
 
@@ -326,27 +323,14 @@ class ManDirectoryParser(object):
             content=index_tpl.substitute(),
         )
 
-        f = open("%s/index.html" % root_html, 'w')
+        f = open(os.path.join(root_html, "index.html"), 'w')
         f.write(index)
         f.close()
-
-        missing_parsers = ' '.join(
-            ["%s:%s" % (k, v) for k, v in missing_parsers.most_common(
-                self.number_missing_parsers)])
-
-        logging.info("Top %s Missing Parsers: %s" %
-                     (self.number_missing_parsers, missing_parsers))
 
         self.fix_missing_links()
 
     def fix_missing_links(self):
-        # FIXME: Use Comprehension
-        for page in self.pages_with_missing_parsers:
-            if page in self.missing_links:
-                del self.missing_links[page]
-
-        # FIXME: Use Comprehension
-        for page in self.pages_with_errors:
+        for page in self.get_pages_with_errors():
             if page in self.missing_links:
                 del self.missing_links[page]
 
@@ -363,9 +347,8 @@ class ManDirectoryParser(object):
     def get_missing_links(self):
         return self.missing_links.most_common(self.number_missing_links)
 
-
-def get_redirection_file(src, manpage_redirect):
-    return os.path.join(src, *manpage_redirect)
+    def get_missing_parsers(self):
+        return self.missing_parsers.most_common(self.number_missing_parsers)
 
 
 def load_template(template):
@@ -409,7 +392,8 @@ if __name__ == '__main__':
     parser.parse_directory()
 
     print "Missing Links: %s" % parser.get_missing_links()
-    print "DEBUG", parser.pages_with_missing_parsers
+    print "Missing Parsers: %s" % parser.get_missing_parsers()
+    print "Pages With Missing Parsers", parser.get_pages_with_missing_parsers()
 
     elapsed = time.time() - start_time
     logging.info("--- Total time: %s seconds ---" % (elapsed, ))
