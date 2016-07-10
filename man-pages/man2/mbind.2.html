@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mbind - set memory policy for a memory range</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">mbind<small> (2)</small></h1>
+        <p class="lead">set memory policy for a memory range</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/mbind.2.html"><span itemprop="title">mbind</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;numaif.h&gt;</strong>
+
+<strong>long mbind(void *</strong><em>addr</em><strong>, unsigned long </strong><em>len</em><strong>, int </strong><em>mode</em><strong>,</strong>
+<strong>           const unsigned long *</strong><em>nodemask</em><strong>, unsigned long </strong><em>maxnode</em><strong>,</strong>
+<strong>           unsigned </strong><em>flags</em><strong>);</strong>
+
+Link with <em>-lnuma</em>.</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>mbind</strong>() sets the NUMA memory policy, which consists of a policy mode and zero or more nodes, for the memory range starting with <em>addr</em> and continuing for <em>len</em> bytes. The memory policy defines from which node memory is allocated.</p>
+<p class='spacer'>
+
+<p>If the memory range specified by the <em>addr</em> and <em>len</em> arguments includes an "anonymous" region of memory&ndash;that is a region of memory created using the <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> system call with the <strong>MAP_ANONYMOUS</strong>&ndash;or a memory-mapped file, mapped using the <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> system call with the <strong>MAP_PRIVATE</strong> flag, pages will be allocated only according to the specified policy when the application writes [stores] to the page. For anonymous regions, an initial read access will use a shared page in the kernel containing all zeros. For a file mapped with <strong>MAP_PRIVATE</strong>, an initial read access will allocate pages according to the process policy of the process that causes the page to be allocated. This may not be the process that called <strong>mbind</strong>().</p>
+<p class='spacer'>
+
+<p>The specified policy will be ignored for any <strong>MAP_SHARED</strong> mappings in the specified memory range. Rather the pages will be allocated according to the process policy of the process that caused the page to be allocated. Again, this may not be the process that called <strong>mbind</strong>().</p>
+<p class='spacer'>
+
+<p>If the specified memory range includes a shared memory region created using the <a href="../man2/shmget.2.html"><strong>shmget</strong>(2)</a> system call and attached using the <a href="../man2/shmat.2.html"><strong>shmat</strong>(2)</a> system call, pages allocated for the anonymous or shared memory region will be allocated according to the policy specified, regardless which process attached to the shared memory segment causes the allocation. If, however, the shared memory region was created with the <strong>SHM_HUGETLB</strong> flag, the huge pages will be allocated according to the policy specified only if the page allocation is caused by the process that calls <strong>mbind</strong>() for that region.</p>
+<p class='spacer'>
+
+<p>By default, <strong>mbind</strong>() has an effect only for new allocations; if the pages inside the range have been already touched before setting the policy, then the policy has no effect. This default behavior may be overridden by the <strong>MPOL_MF_MOVE</strong> and <strong>MPOL_MF_MOVE_ALL</strong> flags described below.</p>
+<p class='spacer'>
+
+<p>The <em>mode</em> argument must specify one of <strong>MPOL_DEFAULT</strong>, <strong>MPOL_BIND</strong>, <strong>MPOL_INTERLEAVE</strong>, or <strong>MPOL_PREFERRED</strong>. All policy modes except <strong>MPOL_DEFAULT</strong> require the caller to specify via the <em>nodemask</em> argument, the node or nodes to which the mode applies.</p>
+<p class='spacer'>
+
+  <p>The <em>mode</em> argument may also include an optional <em>mode flag .</em> The supported <em>mode flags</em> are:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>MPOL_F_STATIC_NODES</strong> (since Linux-2.6.26)</dt>
+    <dd>
+  <p>A nonempty <em>nodemask</em> specifies physical node ids. Linux does not remap the <em>nodemask</em> when the process moves to a different cpuset context, nor when the set of nodes allowed by the process's current cpuset context changes.</p>
+    </dd>
+    <dt><strong>MPOL_F_RELATIVE_NODES</strong> (since Linux-2.6.26)</dt>
+    <dd>
+  <p>A nonempty <em>nodemask</em> specifies node ids that are relative to the set of node ids allowed by the process's current cpuset.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><em>nodemask</em> points to a bit mask of nodes containing up to <em>maxnode</em> bits. The bit mask size is rounded to the next multiple of <em>sizeof(unsigned long)</em>, but the kernel will use bits only up to <em>maxnode</em>. A NULL value of <em>nodemask</em> or a <em>maxnode</em> value of zero specifies the empty set of nodes. If the value of <em>maxnode</em> is zero, the <em>nodemask</em> argument is ignored. Where a <em>nodemask</em> is required, it must contain at least one node that is on-line, allowed by the process's current cpuset context [unless the <strong>MPOL_F_STATIC_NODES</strong> mode flag is specified], and contains memory.</p>
+<p class='spacer'>
+
+<p>The <strong>MPOL_DEFAULT</strong> mode requests that any nondefault policy be removed, restoring default behavior. When applied to a range of memory via <strong>mbind</strong>(), this means to use the process policy, which may have been set with <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>. If the mode of the process policy is also <strong>MPOL_DEFAULT</strong>, the system-wide default policy will be used. The system-wide default policy allocates pages on the node of the CPU that triggers the allocation. For <strong>MPOL_DEFAULT</strong>, the <em>nodemask</em> and <em>maxnode</em> arguments must be specify the empty set of nodes.</p>
+<p class='spacer'>
+
+<p>The <strong>MPOL_BIND</strong> mode specifies a strict policy that restricts memory allocation to the nodes specified in <em>nodemask</em>. If <em>nodemask</em> specifies more than one node, page allocations will come from the node with the lowest numeric node ID first, until that node contains no free memory. Allocations will then come from the node with the next highest node ID specified in <em>nodemask</em> and so forth, until none of the specified nodes contain free memory. Pages will not be allocated from any node not specified in the <em>nodemask</em>.</p>
+<p class='spacer'>
+
+<p>The <strong>MPOL_INTERLEAVE</strong> mode specifies that page allocations be interleaved across the set of nodes specified in <em>nodemask</em>. This optimizes for bandwidth instead of latency by spreading out pages and memory accesses to those pages across multiple nodes. To be effective the memory area should be fairly large, at least 1MB or bigger with a fairly uniform access pattern. Accesses to a single page of the area will still be limited to the memory bandwidth of a single node.</p>
+<p class='spacer'>
+
+<p><strong>MPOL_PREFERRED</strong> sets the preferred node for allocation. The kernel will try to allocate pages from this node first and fall back to other nodes if the preferred nodes is low on free memory. If <em>nodemask</em> specifies more than one node ID, the first node in the mask will be selected as the preferred node. If the <em>nodemask</em> and <em>maxnode</em> arguments specify the empty set, then the memory is allocated on the node of the CPU that triggered the allocation. This is the only way to specify "local allocation" for a range of memory via <strong>mbind</strong>().</p>
+<p class='spacer'>
+
+<p>If <strong>MPOL_MF_STRICT</strong> is passed in <em>flags</em> and <em>mode</em> is not <strong>MPOL_DEFAULT</strong>, then the call will fail with the error <strong>EIO</strong> if the existing pages in the memory range don't follow the policy.</p>
+<p class='spacer'>
+
+<p>If <strong>MPOL_MF_MOVE</strong> is specified in <em>flags</em>, then the kernel will attempt to move all the existing pages in the memory range so that they follow the policy. Pages that are shared with other processes will not be moved. If <strong>MPOL_MF_STRICT</strong> is also specified, then the call will fail with the error <strong>EIO</strong> if some pages could not be moved.</p>
+<p class='spacer'>
+
+<p>If <strong>MPOL_MF_MOVE_ALL</strong> is passed in <em>flags</em>, then the kernel will attempt to move all existing pages in the memory range regardless of whether other processes use the pages. The calling process must be privileged (<strong>CAP_SYS_NICE</strong>) to use this flag. If <strong>MPOL_MF_STRICT</strong> is also specified, then the call will fail with the error <strong>EIO</strong> if some pages could not be moved.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>mbind</strong>() returns 0; on error, -1 is returned and <em>errno</em> is set to indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>Part or all of the memory range specified by <em>nodemask</em> and <em>maxnode</em> points outside your accessible address space. Or, there was an unmapped hole in the specified memory range specified by <em>addr</em> and <em>len</em>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>An invalid value was specified for <em>flags</em> or <em>mode</em>; or <em>addr + len</em> was less than <em>addr</em>; or <em>addr</em> is not a multiple of the system page size. Or, <em>mode</em> is <strong>MPOL_DEFAULT</strong> and <em>nodemask</em> specified a nonempty set; or <em>mode</em> is <strong>MPOL_BIND</strong> or <strong>MPOL_INTERLEAVE</strong> and <em>nodemask</em> is empty. Or, <em>maxnode</em> exceeds a kernel-imposed limit. Or, <em>nodemask</em> specifies one or more node IDs that are greater than the maximum supported node ID. Or, none of the node IDs specified by <em>nodemask</em> are on-line and allowed by the process's current cpuset context, or none of the specified nodes contain memory. Or, the <em>mode</em> argument specified both <strong>MPOL_F_STATIC_NODES</strong> and <strong>MPOL_F_RELATIVE_NODES</strong>.</p>
+    </dd>
+    <dt><strong>EIO</strong></dt>
+    <dd>
+  <p><strong>MPOL_MF_STRICT</strong> was specified and an existing page was already on a node that does not follow the policy; or <strong>MPOL_MF_MOVE</strong> or <strong>MPOL_MF_MOVE_ALL</strong> was specified and the kernel was unable to move all existing pages in the range.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>Insufficient kernel memory was available.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>The <em>flags</em> argument included the <strong>MPOL_MF_MOVE_ALL</strong> flag and the caller does not have the <strong>CAP_SYS_NICE</strong> privilege.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>mbind</strong>() system call was added to the Linux kernel in version 2.6.7.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>This system call is Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>For information on library support, see <a href="../man7/numa.7.html"><strong>numa</strong>(7)</a>.</p>
+<p class='spacer'>
+
+<p>NUMA policy is not supported on a memory-mapped file range that was mapped with the <strong>MAP_SHARED</strong> flag.</p>
+<p class='spacer'>
+
+<p>The <strong>MPOL_DEFAULT</strong> mode can have different effects for <strong>mbind</strong>() and <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>. When <strong>MPOL_DEFAULT</strong> is specified for <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>, the process's policy reverts to system default policy or local allocation. When <strong>MPOL_DEFAULT</strong> is specified for a range of memory using <strong>mbind</strong>(), any pages subsequently allocated for that range will use the process's policy, as set by <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>. This effectively removes the explicit policy from the specified range, "falling back" to a possibly nondefault policy. To select explicit "local allocation" for a memory range, specify a <em>mode</em> of <strong>MPOL_PREFERRED</strong> with an empty set of nodes. This method will work for <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>, as well.</p>
+<p class='spacer'>
+
+<p>Support for huge page policy was added with 2.6.16. For interleave policy to be effective on huge page mappings the policied memory needs to be tens of megabytes or larger.</p>
+<p class='spacer'>
+
+<p><strong>MPOL_MF_STRICT</strong> is ignored on huge page mappings.</p>
+<p class='spacer'>
+
+<p><strong>MPOL_MF_MOVE</strong> and <strong>MPOL_MF_MOVE_ALL</strong> are available only on Linux 2.6.16 and later.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/get_mempolicy.2.html"><strong>get_mempolicy</strong>(2)</a>, <a href="../man2/getcpu.2.html"><strong>getcpu</strong>(2)</a>, <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>, <a href="../man2/shmat.2.html"><strong>shmat</strong>(2)</a>, <a href="../man2/shmget.2.html"><strong>shmget</strong>(2)</a>, <strong>numa</strong>(3), <a href="../man7/cpuset.7.html"><strong>cpuset</strong>(7)</a>, <a href="../man7/numa.7.html"><strong>numa</strong>(7)</a>, <strong>numactl</strong>(8)</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="madvise1.2.html"><span aria-hidden="true">&larr;</span> madvise1.2: unimplemented system calls</a></li><li class="next"><a href="membarrier.2.html">membarrier.2: issue memory barriers on a set of threads <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>getitimer - get or set value of an interval timer</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">getitimer<small> (2)</small></h1>
+        <p class="lead">get or set value of an interval timer</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/getitimer.2.html"><span itemprop="title">getitimer</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;sys/time.h&gt;</strong>
+
+<strong>int getitimer(int </strong><em>which</em><strong>, struct itimerval *</strong><em>curr_value</em><strong>);</strong>
+
+<strong>int setitimer(int </strong><em>which</em><strong>, const struct itimerval *</strong><em>new_value</em><strong>,</strong>
+<strong>              struct itimerval *</strong><em>old_value</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+  <p>The system provides each process with three interval timers, each decrementing in a distinct time domain. When a timer expires, a signal is sent to the process, and the timer is reset to the specified interval (if nonzero).</p>
+  <dl class='dl-vertical'>
+    <dt><strong>ITIMER_REAL</strong></dt>
+    <dd>
+  <p>decrements in real time, and delivers <strong>SIGALRM</strong> upon expiration.</p>
+    </dd>
+    <dt><strong>ITIMER_VIRTUAL</strong></dt>
+    <dd>
+  <p>decrements only when the process is executing, and delivers <strong>SIGVTALRM</strong> upon expiration.</p>
+    </dd>
+    <dt><strong>ITIMER_PROF</strong></dt>
+    <dd>
+  <p>decrements both when the process executes and when the system is executing on behalf of the process. Coupled with <strong>ITIMER_VIRTUAL</strong>, this timer is usually used to profile the time spent by the application in user and kernel space. <strong>SIGPROF</strong> is delivered upon expiration.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>Timer values are defined by the following structures:</p>
+<pre>
+struct itimerval {
+    struct timeval it_interval; /* Interval for periodic timer */
+    struct timeval it_value;    /* Time until next expiration */
+};
+
+struct timeval {
+    time_t      tv_sec;         /* seconds */
+    suseconds_t tv_usec;        /* microseconds */
+};</pre>
+
+<p class='spacer'>
+
+<p>The function <strong>getitimer</strong>() fills the structure pointed to by <em>curr_value</em> with the current value (i.e., the amount of time remaining until the next expiration) of the timer specified by <em>which</em> (one of <strong>ITIMER_REAL</strong>, <strong>ITIMER_VIRTUAL</strong>, or <strong>ITIMER_PROF</strong>). The subfields of the field <em>it_value</em> are set to the amount of time remaining on the timer, or zero if the timer is disabled. The <em>it_interval</em> field is set to the timer interval (period); a value of zero returned in (both subfields of) this field indicates that this is a single-shot timer.</p>
+<p class='spacer'>
+
+<p>The function <strong>setitimer</strong>() sets the specified timer to the value in <em>new_value</em>. If <em>old_value</em> is non-NULL, the old value of the timer (i.e., the same information as returned by <strong>getitimer</strong>()) is stored there.</p>
+<p class='spacer'>
+
+<p>Timers decrement from <em>it_value</em> to zero, generate a signal, and reset to <em>it_interval</em>. A timer which is set to zero (<em>it_value</em> is zero or the timer expires and <em>it_interval</em> is zero) stops.</p>
+<p class='spacer'>
+
+<p>Both <em>tv_sec</em> and <em>tv_usec</em> are significant in determining the duration of a timer.</p>
+<p class='spacer'>
+
+<p>Timers will never expire before the requested time, but may expire some (short) time afterward, which depends on the system timer resolution and on the system load; see <a href="../man7/time.7.html"><strong>time</strong>(7)</a>. (But see BUGS below.) Upon expiration, a signal will be generated and the timer reset. If the timer expires while the process is active (always true for <strong>ITIMER_VIRTUAL</strong>), the signal will be delivered immediately when generated. Otherwise, the delivery will be offset by a small time dependent on the system loading.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p><em>new_value</em>, <em>old_value</em>, or <em>curr_value</em> is not valid a pointer.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>which</em> is not one of <strong>ITIMER_REAL</strong>, <strong>ITIMER_VIRTUAL</strong>, or <strong>ITIMER_PROF</strong>; or (since Linux 2.6.22) one of the <em>tv_usec</em> fields in the structure pointed to by <em>new_value</em> contains a value outside the range 0 to 999999.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>POSIX.1-2001, SVr4, 4.4BSD (this call first appeared in 4.2BSD). POSIX.1-2008 marks <strong>getitimer</strong>() and <strong>setitimer</strong>() obsolete, recommending the use of the POSIX timers API (<a href="../man2/timer_gettime.2.html"><strong>timer_gettime</strong>(2)</a>, <a href="../man2/timer_settime.2.html"><strong>timer_settime</strong>(2)</a>, etc.) instead.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>A child created via <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> does not inherit its parent's interval timers. Interval timers are preserved across an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>POSIX.1 leaves the interaction between <strong>setitimer</strong>() and the three interfaces <a href="../man2/alarm.2.html"><strong>alarm</strong>(2)</a>, <a href="../man3/sleep.3.html"><strong>sleep</strong>(3)</a>, and <a href="../man3/usleep.3.html"><strong>usleep</strong>(3)</a> unspecified.</p>
+<p class='spacer'>
+
+<p>The standards are silent on the meaning of the call:</p>
+<p class='spacer'>
+
+<pre>    setitimer(which, NULL, &old_value);</pre>
+
+<p class='spacer'>
+
+<p>Many systems (Solaris, the BSDs, and perhaps others) treat this as equivalent to:</p>
+<p class='spacer'>
+
+<pre>    getitimer(which, &old_value);</pre>
+
+<p class='spacer'>
+
+<p>In Linux, this is treated as being equivalent to a call in which the <em>new_value</em> fields are zero; that is, the timer is disabled. <em>Don't use this Linux misfeature</em>: it is nonportable and unnecessary.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>The generation and delivery of a signal are distinct, and only one instance of each of the signals listed above may be pending for a process. Under very heavy loading, an <strong>ITIMER_REAL</strong> timer may expire before the signal from a previous expiration has been delivered. The second signal in such an event will be lost.</p>
+<p class='spacer'>
+
+<p>On Linux kernels before 2.6.16, timer values are represented in jiffies. If a request is made set a timer with a value whose jiffies representation exceeds <strong>MAX_SEC_IN_JIFFIES</strong> (defined in <em>include/linux/jiffies.h</em>), then the timer is silently truncated to this ceiling value. On Linux/i386 (where, since Linux 2.6.13, the default jiffy is 0.004 seconds), this means that the ceiling value for a timer is approximately 99.42 days. Since Linux 2.6.16, the kernel uses a different internal representation for times, and this ceiling is removed.</p>
+<p class='spacer'>
+
+<p>On certain systems (including i386), Linux kernels before version 2.6.12 have a bug which will produce premature timer expirations of up to one jiffy under some circumstances. This bug is fixed in kernel 2.6.12.</p>
+<p class='spacer'>
+
+<p>POSIX.1-2001 says that <strong>setitimer</strong>() should fail if a <em>tv_usec</em> value is specified that is outside of the range 0 to 999999. However, in kernels up to and including 2.6.21, Linux does not give an error, but instead silently adjusts the corresponding seconds value for the timer. From kernel 2.6.22 onward, this nonconformance has been repaired: an improper <em>tv_usec</em> value results in an <strong>EINVAL</strong> error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/gettimeofday.2.html"><strong>gettimeofday</strong>(2)</a>, <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, <a href="../man2/signal.2.html"><strong>signal</strong>(2)</a>, <a href="../man2/timer_create.2.html"><strong>timer_create</strong>(2)</a>, <a href="../man2/timerfd_create.2.html"><strong>timerfd_create</strong>(2)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="gethostname.2.html"><span aria-hidden="true">&larr;</span> gethostname.2: get/set hostname</a></li><li class="next"><a href="getmsg.2.html">getmsg.2: unimplemented system calls <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

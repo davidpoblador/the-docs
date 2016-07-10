@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mq_overview - overview of POSIX message queues</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">mq_overview<small> (7)</small></h1>
+        <p class="lead">overview of POSIX message queues</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/mq_overview.7.html"><span itemprop="title">mq_overview</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>POSIX message queues allow processes to exchange data in the form of messages. This API is distinct from that provided by System V message queues (<a href="../man2/msgget.2.html"><strong>msgget</strong>(2)</a>, <a href="../man2/msgsnd.2.html"><strong>msgsnd</strong>(2)</a>, <a href="../man2/msgrcv.2.html"><strong>msgrcv</strong>(2)</a>, etc.), but provides similar functionality.</p>
+<p class='spacer'>
+
+<p>Message queues are created and opened using <a href="../man3/mq_open.3.html"><strong>mq_open</strong>(3)</a>; this function returns a <em>message queue descriptor</em> (<em>mqd_t</em>), which is used to refer to the open message queue in later calls. Each message queue is identified by a name of the form <em>/somename</em>; that is, a null-terminated string of up to <strong>NAME_MAX</strong> (i.e., 255) characters consisting of an initial slash, followed by one or more characters, none of which are slashes. Two processes can operate on the same queue by passing the same name to <a href="../man3/mq_open.3.html"><strong>mq_open</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p>Messages are transferred to and from a queue using <a href="../man3/mq_send.3.html"><strong>mq_send</strong>(3)</a> and <a href="../man3/mq_receive.3.html"><strong>mq_receive</strong>(3)</a>. When a process has finished using the queue, it closes it using <a href="../man3/mq_close.3.html"><strong>mq_close</strong>(3)</a>, and when the queue is no longer required, it can be deleted using <a href="../man3/mq_unlink.3.html"><strong>mq_unlink</strong>(3)</a>. Queue attributes can be retrieved and (in some cases) modified using <a href="../man3/mq_getattr.3.html"><strong>mq_getattr</strong>(3)</a> and <a href="../man3/mq_setattr.3.html"><strong>mq_setattr</strong>(3)</a>. A process can request asynchronous notification of the arrival of a message on a previously empty queue using <a href="../man3/mq_notify.3.html"><strong>mq_notify</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p>A message queue descriptor is a reference to an <em>open message queue description</em> (cf. <a href="../man2/open.2.html"><strong>open</strong>(2)</a>). After a <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, a child inherits copies of its parent's message queue descriptors, and these descriptors refer to the same open message queue descriptions as the corresponding message queue descriptors in the parent. Corresponding message queue descriptors in the two processes share the flags (<em>mq_flags</em>) that are associated with the open message queue description.</p>
+<p class='spacer'>
+
+<p>Each message has an associated <em>priority</em>, and messages are always delivered to the receiving process highest priority first. Message priorities range from 0 (low) to <em>sysconf(_SC_MQ_PRIO_MAX)&nbsp;-&nbsp;1</em> (high). On Linux, <em>sysconf(_SC_MQ_PRIO_MAX)</em> returns 32768, but POSIX.1 requires only that an implementation support at least priorities in the range 0 to 31; some implementations provide only this range.</p>
+<p class='spacer'>
+
+<p>The remainder of this section describes some specific details of the Linux implementation of POSIX message queues.</p>
+  <h3>Library interfaces and system calls</h3>
+  <p>In most cases the <strong>mq_*</strong>() library interfaces listed above are implemented on top of underlying system calls of the same name. Deviations from this scheme are indicated in the following table:</p>
+<table class="table table-striped">
+<tr>
+<th>Library interface</th>
+<th>System call</th></tr>
+
+<tr>
+<a href="../man3/mq_close.3.html"><strong>mq_close</strong>(3)</a></td>
+<a href="../man2/close.2.html"><strong>close</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_getattr.3.html"><strong>mq_getattr</strong>(3)</a></td>
+<a href="../man2/mq_getsetattr.2.html"><strong>mq_getsetattr</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_notify.3.html"><strong>mq_notify</strong>(3)</a></td>
+<a href="../man2/mq_notify.2.html"><strong>mq_notify</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_open.3.html"><strong>mq_open</strong>(3)</a></td>
+<a href="../man2/mq_open.2.html"><strong>mq_open</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_receive.3.html"><strong>mq_receive</strong>(3)</a></td>
+<a href="../man2/mq_timedreceive.2.html"><strong>mq_timedreceive</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_send.3.html"><strong>mq_send</strong>(3)</a></td>
+<a href="../man2/mq_timedsend.2.html"><strong>mq_timedsend</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_setattr.3.html"><strong>mq_setattr</strong>(3)</a></td>
+<a href="../man2/mq_getsetattr.2.html"><strong>mq_getsetattr</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_timedreceive.3.html"><strong>mq_timedreceive</strong>(3)</a></td>
+<a href="../man2/mq_timedreceive.2.html"><strong>mq_timedreceive</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_timedsend.3.html"><strong>mq_timedsend</strong>(3)</a></td>
+<a href="../man2/mq_timedsend.2.html"><strong>mq_timedsend</strong>(2)</a></td></tr>
+
+<tr>
+<a href="../man3/mq_unlink.3.html"><strong>mq_unlink</strong>(3)</a></td>
+<a href="../man2/mq_unlink.2.html"><strong>mq_unlink</strong>(2)</a></td></tr>
+</table>
+
+  <h3>Versions</h3>
+<p>POSIX message queues have been supported on Linux since kernel 2.6.6. Glibc support has been provided since version 2.3.4.</p>
+  <h3>Kernel configuration</h3>
+<p>Support for POSIX message queues is configurable via the <strong>CONFIG_POSIX_MQUEUE</strong> kernel configuration option. This option is enabled by default.</p>
+  <h3>Persistence</h3>
+<p>POSIX message queues have kernel persistence: if not removed by <a href="../man3/mq_unlink.3.html"><strong>mq_unlink</strong>(3)</a>, a message queue will exist until the system is shut down.</p>
+  <h3>Linking</h3>
+<p>Programs using the POSIX message queue API must be compiled with <em>cc -lrt</em> to link against the real-time library, <em>librt</em>.</p>
+  <h3>/proc interfaces</h3>
+  <p>The following interfaces can be used to limit the amount of kernel memory consumed by POSIX message queues and to set the default attributes for new message queues:</p>
+  <dl class='dl-vertical'>
+    <dt><em>/proc/sys/fs/mqueue/msg_default</em> (since Linux 3.5)</dt>
+    <dd>
+  <p>This file defines the value used for a new queue's <em>mq_maxmsg</em> setting when the queue is created with a call to <a href="../man3/mq_open.3.html"><strong>mq_open</strong>(3)</a> where <em>attr</em> is specified as NULL. The default value for this file is 10. The minimum and maximum are as for <em>/proc/sys/fs/mqueue/msg_max</em>. A new queue's default <em>mq_maxmsg</em> value will be the smaller of <em>msg_default</em> and <em>msg_max</em>. Up until Linux 2.6.28, the default <em>mq_maxmsg</em> was 10; from Linux 2.6.28 to Linux 3.4, the default was the value defined for the <em>msg_max</em> limit.</p>
+    </dd>
+    <dt><em>/proc/sys/fs/mqueue/msg_max</em></dt>
+    <dd>
+  <p>This file can be used to view and change the ceiling value for the maximum number of messages in a queue. This value acts as a ceiling on the <em>attr-&gt;mq_maxmsg</em> argument given to <a href="../man3/mq_open.3.html"><strong>mq_open</strong>(3)</a>. The default value for <em>msg_max</em> is 10. The minimum value is 1 (10 in kernels before 2.6.28). The upper limit is <strong>HARD_MSGMAX</strong>. The <em>msg_max</em> limit is ignored for privileged processes (<strong>CAP_SYS_RESOURCE</strong>), but the <strong>HARD_MSGMAX</strong> ceiling is nevertheless imposed.</p>
+<p class='spacer'>
+
+      <p>The definition of <strong>HARD_MSGMAX</strong> has changed across kernel versions:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+      <p>Up to Linux 2.6.32: <em>131072&nbsp;/&nbsp;sizeof(void&nbsp;*)</em></p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>Linux 2.6.33 to 3.4: <em>(32768&nbsp;*&nbsp;sizeof(void&nbsp;*) / 4)</em></p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>Since Linux 3.5: 65,536</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><em>/proc/sys/fs/mqueue/msgsize_default</em> (since Linux 3.5)</dt>
+    <dd>
+  <p>This file defines the value used for a new queue's <em>mq_msgsize</em> setting when the queue is created with a call to <a href="../man3/mq_open.3.html"><strong>mq_open</strong>(3)</a> where <em>attr</em> is specified as NULL. The default value for this file is 8192 (bytes). The minimum and maximum are as for <em>/proc/sys/fs/mqueue/msgsize_max</em>. If <em>msgsize_default</em> exceeds <em>msgsize_max</em>, a new queue's default <em>mq_msgsize</em> value is capped to the <em>msgsize_max</em> limit. Up until Linux 2.6.28, the default <em>mq_msgsize</em> was 8192; from Linux 2.6.28 to Linux 3.4, the default was the value defined for the <em>msgsize_max</em> limit.</p>
+    </dd>
+    <dt><em>/proc/sys/fs/mqueue/msgsize_max</em></dt>
+    <dd>
+      <p>This file can be used to view and change the ceiling on the maximum message size. This value acts as a ceiling on the <em>attr-&gt;mq_msgsize</em> argument given to <a href="../man3/mq_open.3.html"><strong>mq_open</strong>(3)</a>. The default value for <em>msgsize_max</em> is 8192 bytes. The minimum value is 128 (8192 in kernels before 2.6.28). The upper limit for <em>msgsize_max</em> has varied across kernel versions:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+      <p>Before Linux 2.6.28, the upper limit is <strong>INT_MAX</strong>.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>From Linux 2.6.28 to 3.4, the limit is 1,048,576.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>Since Linux 3.5, the limit is 16,777,216 (<strong>HARD_MSGSIZEMAX</strong>).</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+  <p>The <em>msgsize_max</em> limit is ignored for privileged process (<strong>CAP_SYS_RESOURCE</strong>), but, since Linux 3.5, the <strong>HARD_MSGSIZEMAX</strong> ceiling is enforced for privileged processes.</p>
+    </dd>
+    <dt><em>/proc/sys/fs/mqueue/queues_max</em></dt>
+    <dd>
+  <p>This file can be used to view and change the system-wide limit on the number of message queues that can be created. The default value for <em>queues_max</em> is 256. No ceiling is imposed on the <em>queues_max</em> limit; privileged processes (<strong>CAP_SYS_RESOURCE</strong>) can exceed the limit (but see BUGS).</p>
+    </dd>
+  </dl>
+  <h3>Resource limit</h3>
+<p>The <strong>RLIMIT_MSGQUEUE</strong> resource limit, which places a limit on the amount of space that can be consumed by all of the message queues belonging to a process's real user ID, is described in <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>.</p>
+  <h3>Mounting the message queue filesystem</h3>
+  <p>On Linux, message queues are created in a virtual filesystem. (Other implementations may also provide such a feature, but the details are likely to differ.) This filesystem can be mounted (by the superuser) using the following commands:</p>
+<pre>
+#<strong> mkdir /dev/mqueue</strong>
+#<strong> mount -t mqueue none /dev/mqueue</strong>
+</pre>
+
+<p>The sticky bit is automatically enabled on the mount directory.</p>
+<p class='spacer'>
+
+<p>After the filesystem has been mounted, the message queues on the system can be viewed and manipulated using the commands usually used for files (e.g., <strong>ls</strong>(1) and <strong>rm</strong>(1)).</p>
+<p class='spacer'>
+
+  <p>The contents of each file in the directory consist of a single line containing information about the queue:</p>
+<pre>
+$<strong> cat /dev/mqueue/mymq</strong>
+QSIZE:129     NOTIFY:2    SIGNO:0    NOTIFY_PID:8260
+</pre>
+
+  <p>These fields are as follows:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>QSIZE</strong></dt>
+    <dd>
+  <p>Number of bytes of data in all messages in the queue (but see BUGS).</p>
+    </dd>
+    <dt><strong>NOTIFY_PID</strong></dt>
+    <dd>
+  <p>If this is nonzero, then the process with this PID has used <a href="../man3/mq_notify.3.html"><strong>mq_notify</strong>(3)</a> to register for asynchronous message notification, and the remaining fields describe how notification occurs.</p>
+    </dd>
+    <dt><strong>NOTIFY</strong></dt>
+    <dd>
+  <p>Notification method: 0 is <strong>SIGEV_SIGNAL</strong>; 1 is <strong>SIGEV_NONE</strong>; and 2 is <strong>SIGEV_THREAD</strong>.</p>
+    </dd>
+    <dt><strong>SIGNO</strong></dt>
+    <dd>
+  <p>Signal number to be used for <strong>SIGEV_SIGNAL</strong>.</p>
+    </dd>
+  </dl>
+  <h3>Linux implementation of message queue descriptors</h3>
+<p>On Linux, a message queue descriptor is actually a file descriptor. (POSIX does not require such an implementation.) This means that a message queue descriptor can be monitored using <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, or <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>. This is not portable.</p>
+<p class='spacer'>
+
+<p>The close-on-exec flag (see <a href="../man2/open.2.html"><strong>open</strong>(2)</a>) is automatically set on the file descriptor returned by <a href="../man2/mq_open.2.html"><strong>mq_open</strong>(2)</a>.</p>
+  <h3>IPC namespaces</h3>
+<p>For a discussion of the interaction of System V IPC objects and IPC namespaces, see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>System V message queues (<a href="../man2/msgget.2.html"><strong>msgget</strong>(2)</a>, <a href="../man2/msgsnd.2.html"><strong>msgsnd</strong>(2)</a>, <a href="../man2/msgrcv.2.html"><strong>msgrcv</strong>(2)</a>, etc.) are an older API for exchanging messages between processes. POSIX message queues provide a better designed interface than System V message queues; on the other hand POSIX message queues are less widely available (especially on older systems) than System V message queues.</p>
+<p class='spacer'>
+
+<p>Linux does not currently (2.6.26) support the use of access control lists (ACLs) for POSIX message queues.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>An example of the use of various message queue functions is shown in <a href="../man3/mq_notify.3.html"><strong>mq_notify</strong>(3)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>In Linux versions 3.5 to 3.14, the kernel imposed a ceiling of 1024 (<strong>HARD_QUEUESMAX</strong>) on the value to which the <em>queues_max</em> limit could be raised, and the ceiling was enforced even for privileged processes. This ceiling value was removed in Linux 3.14, and patches to stable kernels 3.5.x to 3.13.x also removed the ceiling.</p>
+<p class='spacer'>
+
+<p>As originally implemented (and documented), the QSIZE field displayed the total number of (user-supplied) bytes in all messages in the message queue. Some changes in Linux 3.5 inadvertently changed the behavior, so that this field also included a count of kernel overhead bytes used to store the messages in the queue. This behavioral regression was rectified in Linux 4.2 (and earlier stable kernel series), so that the count once more included just the bytes of user data in messages in the queue.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>, <a href="../man2/mq_getsetattr.2.html"><strong>mq_getsetattr</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man3/mq_close.3.html"><strong>mq_close</strong>(3)</a>, <a href="../man3/mq_getattr.3.html"><strong>mq_getattr</strong>(3)</a>, <a href="../man3/mq_notify.3.html"><strong>mq_notify</strong>(3)</a>, <a href="../man3/mq_open.3.html"><strong>mq_open</strong>(3)</a>, <a href="../man3/mq_receive.3.html"><strong>mq_receive</strong>(3)</a>, <a href="../man3/mq_send.3.html"><strong>mq_send</strong>(3)</a>, <a href="../man3/mq_unlink.3.html"><strong>mq_unlink</strong>(3)</a>, <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>, <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="math_error.7.html"><span aria-hidden="true">&larr;</span> math_error.7: detecting errors from mathematical functions</a></li><li class="next"><a href="namespaces.7.html">namespaces.7: overview of Linux namespaces <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

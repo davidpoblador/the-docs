@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>netdevice - low-level access to Linux network devices</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">netdevice<small> (7)</small></h1>
+        <p class="lead">low-level access to Linux network devices</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/netdevice.7.html"><span itemprop="title">netdevice</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/ioctl.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>#include &lt;net/if.h&gt;</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>This man page describes the sockets interface which is used to configure network devices.</p>
+<p class='spacer'>
+
+<p>Linux supports some standard ioctls to configure network devices. They can be used on any socket's file descriptor regardless of the family or type. Most of them pass an <em>ifreq</em> structure:</p>
+<p class='spacer'>
+
+<pre>struct ifreq {
+    char ifr_name[IFNAMSIZ]; /* Interface name */
+    union {
+        struct sockaddr ifr_addr;
+        struct sockaddr ifr_dstaddr;
+        struct sockaddr ifr_broadaddr;
+        struct sockaddr ifr_netmask;
+        struct sockaddr ifr_hwaddr;
+        short           ifr_flags;
+        int             ifr_ifindex;
+        int             ifr_metric;
+        int             ifr_mtu;
+        struct ifmap    ifr_map;
+        char            ifr_slave[IFNAMSIZ];
+        char            ifr_newname[IFNAMSIZ];
+        char           *ifr_data;
+    };
+};</pre>
+
+<p class='spacer'>
+
+<p>Normally, the user specifies which device to affect by setting <em>ifr_name</em> to the name of the interface. All other members of the structure may share memory.</p>
+  <h3>Ioctls</h3>
+  <p>If an ioctl is marked as privileged, then using it requires an effective user ID of 0 or the <strong>CAP_NET_ADMIN</strong> capability. If this is not the case, <strong>EPERM</strong> will be returned.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>SIOCGIFNAME</strong></dt>
+    <dd>
+  <p>Given the <em>ifr_ifindex</em>, return the name of the interface in <em>ifr_name</em>. This is the only ioctl which returns its result in <em>ifr_name</em>.</p>
+    </dd>
+    <dt><strong>SIOCGIFINDEX</strong></dt>
+    <dd>
+  <p>Retrieve the interface index of the interface into <em>ifr_ifindex</em>.</p>
+    </dd>
+    <dt><strong>SIOCGIFFLAGS</strong>, <strong>SIOCSIFFLAGS</strong></dt>
+    <dd>
+  <p>Get or set the active flag word of the device. <em>ifr_flags</em> contains a bit mask of the following values:</p>
+<p class='spacer'>
+
+<table class="table table-striped">
+<tr>
+<th>Device flags</th>
+<th></th></tr>
+
+<tr>
+<td>IFF_UP</td>
+<td>Interface is running.</td></tr>
+
+<tr>
+<td>IFF_BROADCAST</td>
+<td>Valid broadcast address set.</td></tr>
+
+<tr>
+<td>IFF_DEBUG</td>
+<td>Internal debugging flag.</td></tr>
+
+<tr>
+<td>IFF_LOOPBACK</td>
+<td>Interface is a loopback interface.</td></tr>
+
+<tr>
+<td>IFF_POINTOPOINT</td>
+<td>Interface is a point-to-point link.</td></tr>
+
+<tr>
+<td>IFF_RUNNING</td>
+<td>Resources allocated.</td></tr>
+
+<tr>
+<td>IFF_NOARP</td>
+<td>No arp protocol, L2 destination address not set. </td></tr>
+
+<tr>
+<td>IFF_PROMISC</td>
+<td>Interface is in promiscuous mode.</td></tr>
+
+<tr>
+<td>IFF_NOTRAILERS</td>
+<td>Avoid use of trailers.</td></tr>
+
+<tr>
+<td>IFF_ALLMULTI</td>
+<td>Receive all multicast packets.</td></tr>
+
+<tr>
+<td>IFF_MASTER</td>
+<td>Master of a load balancing bundle.</td></tr>
+
+<tr>
+<td>IFF_SLAVE</td>
+<td>Slave of a load balancing bundle.</td></tr>
+
+<tr>
+<td>IFF_MULTICAST</td>
+<td>Supports multicast</td></tr>
+
+<tr>
+<td>IFF_PORTSEL</td>
+<td>Is able to select media type via ifmap.</td></tr>
+
+<tr>
+<td>IFF_AUTOMEDIA</td>
+<td>Auto media selection active.</td></tr>
+
+<tr>
+<td>IFF_DYNAMIC</td>
+<td>The addresses are lost when the interface goes down. </td></tr>
+
+<tr>
+<td>IFF_LOWER_UP</td>
+<td>Driver signals L1 up (since Linux 2.6.17)</td></tr>
+
+<tr>
+<td>IFF_DORMANT</td>
+<td>Driver signals dormant (since Linux 2.6.17)</td></tr>
+
+<tr>
+<td>IFF_ECHO</td>
+<td>Echo sent packets (since Linux 2.6.25)</td></tr>
+</table>
+
+  <p>Setting the active flag word is a privileged operation, but any process may read it.</p>
+    </dd>
+    <dt><strong>SIOCGIFPFLAGS</strong>, <strong>SIOCSIFPFLAGS</strong></dt>
+    <dd>
+  <p>Get or set extended (private) flags for the device. <em>ifr_flags</em> contains a bit mask of the following values:</p>
+<table class="table table-striped">
+<tr>
+<th>Private flags</th>
+<th></th></tr>
+
+<tr>
+<td>IFF_802_1Q_VLAN</td>
+<td>Interface is 802.1Q VLAN device.</td></tr>
+
+<tr>
+<td>IFF_EBRIDGE</td>
+<td>Interface is Ethernet bridging device.</td></tr>
+
+<tr>
+<td>IFF_SLAVE_INACTIVE</td>
+<td>Interface is inactive bonding slave.</td></tr>
+
+<tr>
+<td>IFF_MASTER_8023AD</td>
+<td>Interface is 802.3ad bonding master.</td></tr>
+
+<tr>
+<td>IFF_MASTER_ALB</td>
+<td>Interface is balanced-alb bonding master.</td></tr>
+
+<tr>
+<td>IFF_BONDING</td>
+<td>Interface is a bonding master or slave.</td></tr>
+
+<tr>
+<td>IFF_SLAVE_NEEDARP</td>
+<td>Interface needs ARPs for validation.</td></tr>
+
+<tr>
+<td>IFF_ISATAP</td>
+<td>Interface is RFC4214 ISATAP interface.</td></tr>
+</table>
+
+<p class='spacer'>
+
+  <p>Setting the extended (private) interface flags is a privileged operation.</p>
+    </dd>
+    <dt><strong>SIOCGIFADDR</strong>, <strong>SIOCSIFADDR</strong></dt>
+    <dd>
+  <p>Get or set the address of the device using <em>ifr_addr</em>. Setting the interface address is a privileged operation. For compatibility, only <strong>AF_INET</strong> addresses are accepted or returned.</p>
+    </dd>
+    <dt><strong>SIOCGIFDSTADDR</strong>, <strong>SIOCSIFDSTADDR</strong></dt>
+    <dd>
+  <p>Get or set the destination address of a point-to-point device using <em>ifr_dstaddr</em>. For compatibility, only <strong>AF_INET</strong> addresses are accepted or returned. Setting the destination address is a privileged operation.</p>
+    </dd>
+    <dt><strong>SIOCGIFBRDADDR</strong>, <strong>SIOCSIFBRDADDR</strong></dt>
+    <dd>
+  <p>Get or set the broadcast address for a device using <em>ifr_brdaddr</em>. For compatibility, only <strong>AF_INET</strong> addresses are accepted or returned. Setting the broadcast address is a privileged operation.</p>
+    </dd>
+    <dt><strong>SIOCGIFNETMASK</strong>, <strong>SIOCSIFNETMASK</strong></dt>
+    <dd>
+  <p>Get or set the network mask for a device using <em>ifr_netmask</em>. For compatibility, only <strong>AF_INET</strong> addresses are accepted or returned. Setting the network mask is a privileged operation.</p>
+    </dd>
+    <dt><strong>SIOCGIFMETRIC</strong>, <strong>SIOCSIFMETRIC</strong></dt>
+    <dd>
+  <p>Get or set the metric of the device using <em>ifr_metric</em>. This is currently not implemented; it sets <em>ifr_metric</em> to 0 if you attempt to read it and returns <strong>EOPNOTSUPP</strong> if you attempt to set it.</p>
+    </dd>
+    <dt><strong>SIOCGIFMTU</strong>, <strong>SIOCSIFMTU</strong></dt>
+    <dd>
+  <p>Get or set the MTU (Maximum Transfer Unit) of a device using <em>ifr_mtu</em>. Setting the MTU is a privileged operation. Setting the MTU to too small values may cause kernel crashes.</p>
+    </dd>
+    <dt><strong>SIOCGIFHWADDR</strong>, <strong>SIOCSIFHWADDR</strong></dt>
+    <dd>
+  <p>Get or set the hardware address of a device using <em>ifr_hwaddr</em>. The hardware address is specified in a struct <em>sockaddr</em>. <em>sa_family</em> contains the ARPHRD_* device type, <em>sa_data</em> the L2 hardware address starting from byte 0. Setting the hardware address is a privileged operation.</p>
+    </dd>
+    <dt><strong>SIOCSIFHWBROADCAST</strong></dt>
+    <dd>
+  <p>Set the hardware broadcast address of a device from <em>ifr_hwaddr</em>. This is a privileged operation.</p>
+    </dd>
+    <dt><strong>SIOCGIFMAP</strong>, <strong>SIOCSIFMAP</strong></dt>
+    <dd>
+  <p>Get or set the interface's hardware parameters using <em>ifr_map</em>. Setting the parameters is a privileged operation.</p>
+<p class='spacer'>
+
+<pre>struct ifmap {
+    unsigned long   mem_start;
+    unsigned long   mem_end;
+    unsigned short  base_addr;
+    unsigned char   irq;
+    unsigned char   dma;
+    unsigned char   port;
+};</pre>
+
+<p class='spacer'>
+
+  <p>The interpretation of the ifmap structure depends on the device driver and the architecture.</p>
+    </dd>
+    <dt><strong>SIOCADDMULTI</strong>, <strong>SIOCDELMULTI</strong></dt>
+    <dd>
+  <p>Add an address to or delete an address from the device's link layer multicast filters using <em>ifr_hwaddr</em>. These are privileged operations. See also <a href="../man7/packet.7.html"><strong>packet</strong>(7)</a> for an alternative.</p>
+    </dd>
+    <dt><strong>SIOCGIFTXQLEN</strong>, <strong>SIOCSIFTXQLEN</strong></dt>
+    <dd>
+  <p>Get or set the transmit queue length of a device using <em>ifr_qlen</em>. Setting the transmit queue length is a privileged operation.</p>
+    </dd>
+    <dt><strong>SIOCSIFNAME</strong></dt>
+    <dd>
+  <p>Changes the name of the interface specified in <em>ifr_name</em> to <em>ifr_newname</em>. This is a privileged operation. It is allowed only when the interface is not up.</p>
+    </dd>
+    <dt><strong>SIOCGIFCONF</strong></dt>
+    <dd>
+  <p>Return a list of interface (transport layer) addresses. This currently means only addresses of the <strong>AF_INET</strong> (IPv4) family for compatibility. Unlike the others, this ioctl passes an <em>ifconf</em> structure:</p>
+<p class='spacer'>
+
+<pre>struct ifconf {
+    int                 ifc_len; /* size of buffer */
+    union {
+        char           *ifc_buf; /* buffer address */
+        struct ifreq   *ifc_req; /* array of structures */
+    };
+};</pre>
+
+<p class='spacer'>
+
+  <p>If <em>ifc_req</em> is NULL, <strong>SIOCGIFCONF</strong> returns the necessary buffer size in bytes for receiving all available addresses in <em>ifc_len</em>. Otherwise, <em>ifc_req</em> contains a pointer to an array of <em>ifreq</em> structures to be filled with all currently active L3 interface addresses. <em>ifc_len</em> contains the size of the array in bytes. Within each <em>ifreq</em> structure, <em>ifr_name</em> will receive the interface name, and <em>ifr_addr</em> the address. The actual number of bytes transferred is returned in <em>ifc_len</em>.</p>
+<p class='spacer'>
+
+  <p>If the size specified by <em>ifc_len</em> is insufficient to store all the addresses, the kernel will skip the exceeding ones and return success. There is no reliable way of detecting this condition once it has occurred. It is therefore recommended to either determine the necessary buffer size beforehand by calling <strong>SIOCGIFCONF</strong> with <em>ifc_req</em> set to NULL, or to retry the call with a bigger buffer whenever <em>ifc_len</em> upon return differs by less than <em>sizeof(struct ifreq)</em> from its original value.</p>
+<p class='spacer'>
+
+  <p>If an error occurs accessing the <em>ifconf</em> or <em>ifreq</em> structures, <strong>EFAULT</strong> will be returned.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Most protocols support their own ioctls to configure protocol-specific interface options. See the protocol man pages for a description. For configuring IP addresses, see <strong>ip</strong>(7).</p>
+<p class='spacer'>
+
+<p>In addition, some devices support private ioctls. These are not described here.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Strictly speaking, <strong>SIOCGIFCONF</strong> and the other ioctls that accept or return only <strong>AF_INET</strong> socket addresses, are IP-specific and belong in <strong>ip</strong>(7).</p>
+<p class='spacer'>
+
+<p>The names of interfaces with no addresses or that don't have the <strong>IFF_RUNNING</strong> flag set can be found via <em>/proc/net/dev</em>.</p>
+<p class='spacer'>
+
+<p>Local IPv6 IP addresses can be found via <em>/proc/net</em> or via <a href="../man7/rtnetlink.7.html"><strong>rtnetlink</strong>(7)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>glibc 2.1 is missing the <em>ifr_newname</em> macro in <em>&lt;net/if.h&gt;</em>. Add the following to your program as a workaround:</p>
+<p class='spacer'>
+
+<pre>#ifndef ifr_newname
+#define ifr_newname     ifr_ifru.ifru_slave
+#endif</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <strong>ip</strong>(7), <a href="../man7/rtnetlink.7.html"><strong>rtnetlink</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="namespaces.7.html"><span aria-hidden="true">&larr;</span> namespaces.7: overview of Linux namespaces</a></li><li class="next"><a href="netlink.7.html">netlink.7: communication between kernel and user space (AF_NETLINK) <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

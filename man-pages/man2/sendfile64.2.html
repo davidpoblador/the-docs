@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sendfile64 - transfer data between file descriptors</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">sendfile64<small> (2)</small></h1>
+        <p class="lead">transfer data between file descriptors</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/sendfile64.2.html"><span itemprop="title">sendfile64</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/sendfile.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>ssize_t sendfile(int</strong><em> out_fd</em><strong>, int</strong><em> in_fd</em><strong>, off_t *</strong><em>offset</em><strong>, size_t</strong><em> count</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>sendfile</strong>() copies data between one file descriptor and another. Because this copying is done within the kernel, <strong>sendfile</strong>() is more efficient than the combination of <a href="../man2/read.2.html"><strong>read</strong>(2)</a> and <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, which would require transferring data to and from user space.</p>
+<p class='spacer'>
+
+<p><em>in_fd</em> should be a file descriptor opened for reading and <em>out_fd</em> should be a descriptor opened for writing.</p>
+<p class='spacer'>
+
+<p>If <em>offset</em> is not NULL, then it points to a variable holding the file offset from which <strong>sendfile</strong>() will start reading data from <em>in_fd</em>. When <strong>sendfile</strong>() returns, this variable will be set to the offset of the byte following the last byte that was read. If <em>offset</em> is not NULL, then <strong>sendfile</strong>() does not modify the file offset of <em>in_fd</em>; otherwise the file offset is adjusted to reflect the number of bytes read from <em>in_fd</em>.</p>
+<p class='spacer'>
+
+<p>If <em>offset</em> is NULL, then data will be read from <em>in_fd</em> starting at the file offset, and the file offset will be updated by the call.</p>
+<p class='spacer'>
+
+<p><em>count</em> is the number of bytes to copy between the file descriptors.</p>
+<p class='spacer'>
+
+<p>The <em>in_fd</em> argument must correspond to a file which supports <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>-like operations (i.e., it cannot be a socket).</p>
+<p class='spacer'>
+
+<p>In Linux kernels before 2.6.33, <em>out_fd</em> must refer to a socket. Since Linux 2.6.33 it can be any file. If it is a regular file, then <strong>sendfile</strong>() changes the file offset appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>If the transfer was successful, the number of bytes written to <em>out_fd</em> is returned. Note that a successful call to <strong>sendfile</strong>() may write fewer bytes than requested; the caller should be prepared to retry the call if there were unsent bytes. See also NOTES.</p>
+<p class='spacer'>
+
+<p>On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EAGAIN</strong></dt>
+    <dd>
+  <p>Nonblocking I/O has been selected using <strong>O_NONBLOCK</strong> and the write would block.</p>
+    </dd>
+    <dt><strong>EBADF</strong></dt>
+    <dd>
+  <p>The input file was not opened for reading or the output file was not opened for writing.</p>
+    </dd>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>Bad address.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>Descriptor is not valid or locked, or an <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>-like operation is not available for <em>in_fd</em>, or <em>count</em> is negative.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>out_fd</em> has the <strong>O_APPEND</strong> flag set. This is not currently supported by <strong>sendfile</strong>().</p>
+    </dd>
+    <dt><strong>EIO</strong></dt>
+    <dd>
+  <p>Unspecified error while reading from <em>in_fd</em>.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>Insufficient memory to read from <em>in_fd</em>.</p>
+    </dd>
+    <dt><strong>EOVERFLOW</strong></dt>
+    <dd>
+  <p><em>count</em> is too large, the operation would result in exceeding the maximum size of either the input file or the output file.</p>
+    </dd>
+    <dt><strong>ESPIPE</strong></dt>
+    <dd>
+  <p><em>offset</em> is not NULL but the input file is not <strong>seek</strong>(2)-able.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p><strong>sendfile</strong>() first appeared in Linux 2.2. The include file <em>&lt;sys/sendfile.h&gt;</em> is present since glibc 2.1.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>Not specified in POSIX.1-2001, nor in other standards.</p>
+<p class='spacer'>
+
+<p>Other UNIX systems implement <strong>sendfile</strong>() with different semantics and prototypes. It should not be used in portable programs.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p><strong>sendfile</strong>() will transfer at most 0x7ffff000 (2,147,479,552) bytes, returning the number of bytes actually transferred. (This is true on both 32-bit and 64-bit systems.)</p>
+<p class='spacer'>
+
+<p>If you plan to use <strong>sendfile</strong>() for sending files to a TCP socket, but need to send some header data in front of the file contents, you will find it useful to employ the <strong>TCP_CORK</strong> option, described in <a href="../man7/tcp.7.html"><strong>tcp</strong>(7)</a>, to minimize the number of packets and to tune performance.</p>
+<p class='spacer'>
+
+<p>In Linux 2.4 and earlier, <em>out_fd</em> could also refer to a regular file; this possibility went away in the Linux 2.6.x kernel series, but was restored in Linux 2.6.33.</p>
+<p class='spacer'>
+
+<p>The original Linux <strong>sendfile</strong>() system call was not designed to handle large file offsets. Consequently, Linux 2.4 added <strong>sendfile64</strong>(), with a wider type for the <em>offset</em> argument. The glibc <strong>sendfile</strong>() wrapper function transparently deals with the kernel differences.</p>
+<p class='spacer'>
+
+<p>Applications may wish to fall back to <a href="../man2/read.2.html"><strong>read</strong>(2)</a>/<a href="../man2/write.2.html"><strong>write</strong>(2)</a> in the case where <strong>sendfile</strong>() fails with <strong>EINVAL</strong> or <strong>ENOSYS</strong>.</p>
+<p class='spacer'>
+
+<p>If <em>out_fd</em> refers to a socket or pipe with zero-copy support, callers must ensure the transferred portions of the file referred to by <em>in_fd</em> remain unmodified until the reader on the other end of <em>out_fd</em> has consumed the transferred data.</p>
+<p class='spacer'>
+
+<p>The Linux-specific <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a> call supports transferring data between arbitrary file descriptors provided one (or both) of them is a pipe.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/copy_file_range.2.html"><strong>copy_file_range</strong>(2)</a>, <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="sendfile.2.html"><span aria-hidden="true">&larr;</span> sendfile.2: transfer data between file descriptors</a></li><li class="next"><a href="sendmmsg.2.html">sendmmsg.2: send multiple messages on a socket <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
