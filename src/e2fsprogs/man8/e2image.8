@@ -1,255 +1,285 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>e2image - Save critical ext2/ext3/ext4 filesystem metadata to a file</title>
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/manpage.css" rel="stylesheet">
-  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-  <link rel="manifest" href="/icons/manifest.json">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="${metadescription}">
-  
-</head>
-<body>
-  <div class="container final">
-          <div class="page-header">
-        <h1 class="font-effect-destruction">e2image<small> (8)</small></h1>
-        <p class="lead">Save critical ext2/ext3/ext4 filesystem metadata to a file</p>
-      </div>
+.\" -*- nroff -*-
+.\" Copyright 2001 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.TH E2IMAGE 8 "August 2014" "E2fsprogs version 1.42.12"
+.SH NAME
+e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
+.SH SYNOPSIS
+.B e2image
+[
+.B \-r|Q
+]
+[
+.B \-fr
+]
+.I device
+.I image-file
+.br
+.B e2image
+.B \-I
+.I device
+.I image-file
+.br
+.B e2image
+.B \-ra
+[
+.B \-cfnp
+]
+[
+.B \-o
+.I src_offset
+]
+[
+.B \-O
+.I dest_offset
+]
+.I src_fs
+[
+.I dest_fs
+]
+.SH DESCRIPTION
+The
+.B e2image
+program will save critical ext2, ext3, or ext4 filesystem metadata located on
+.I device
+to a file specified by
+.IR image-file .
+The image file may be examined by
+.B dumpe2fs
+and
+.BR  debugfs ,
+by using the
+.B \-i
+option to those programs.  This can assist an expert in
+recovering catastrophically corrupted filesystems.  In the future,
+e2fsck will be enhanced to be able to use the image file to help
+recover a badly damaged filesystem.
+.PP
+When saving an e2image for debugging purposes, using either the
+.B \-r
+or
+.B \-Q
+options, the filesystem must be unmounted or be mounted read/only, in order
+for the image file to be in a consistent state.  This requirement can be
+overriden using the
+.B \-f
+option, but the resulting image file is very likely not going to be useful.
+.PP
+If
+.I image-file
+is \-, then the output of
+.B e2image
+will be sent to standard output, so that the output can be piped to
+another program, such as
+.BR gzip (1).
+(Note that this is currently only supported when
+creating a raw image file using the
+.B \-r
+option, since the process of creating a normal image file, or QCOW2
+image currently
+requires random access to the file, which cannot be done using a
+pipe.  This restriction will hopefully be lifted in a future version of
+.BR e2image .)
+.PP
+It is a very good idea to create image files for all of
+filesystems on a system and save the partition
+layout (which can be generated using the
+.B fdisk \-l
+command) at regular intervals --- at boot time, and/or every week or so.
+The image file should be stored on some filesystem other than
+the filesystem whose data it contains, to ensure that this data is
+accessible in the case where the filesystem has been badly damaged.
+.PP
+To save disk space,
+.B e2image
+creates the image file as a sparse file, or in QCOW2 format.
+Hence, if the sparse image file
+needs to be copied to another location, it should
+either be compressed first or copied using the
+.B \-\-sparse=always
+option to the GNU version of
+.BR cp .
+This does not apply to the QCOW2 image, which is not sparse.
+.PP
+The size of an ext2 image file depends primarily on the size of the
+filesystems and how many inodes are in use.  For a typical 10 gigabyte
+filesystem, with 200,000 inodes in use out of 1.2 million inodes, the
+image file will be approximately 35 megabytes; a 4 gigabyte filesystem with
+15,000 inodes in use out of 550,000 inodes will result in a 3 megabyte
+image file.  Image files tend to be quite
+compressible; an image file taking up 32 megabytes of space on
+disk will generally compress down to 3 or 4 megabytes.
+.PP
+.SH RESTORING FILESYSTEM METADATA USING AN IMAGE FILE
+.PP
+The
+.B \-I
+option will cause e2image to install the metadata stored in the image
+file back to the device.  It can be used to restore the filesystem metadata
+back to the device in emergency situations.
+.PP
+.B WARNING!!!!
+The
+.B \-I
+option should only be used as a desperation measure when other
+alternatives have failed.  If the filesystem has changed since the image
+file was created, data
+.B will
+be lost.  In general, you should make a full image
+backup of the filesystem first, in case you wish to try other recovery
+strategies afterwards.
+.PP
+.SH RAW IMAGE FILES
+The
+.B \-r
+option will create a raw image file instead of a normal image file.
+A raw image file differs
+from a normal image file in two ways.  First, the filesystem metadata is
+placed in the proper position so that e2fsck, dumpe2fs, debugfs,
+etc.\& can be run directly on the raw image file.  In order to minimize
+the amount of disk space consumed by a raw image file, the file is
+created as a sparse file.  (Beware of copying or
+compressing/decompressing this file with utilities that don't understand
+how to create sparse files; the file will become as large as the
+filesystem itself!)  Secondly, the raw image file also includes indirect
+blocks and directory blocks, which the standard image file does not have,
+although this may change in the future.
+.PP
+Raw image files are sometimes used when sending filesystems to the maintainer
+as part of bug reports to e2fsprogs.  When used in this capacity, the
+recommended command is as follows (replace hda1 with the appropriate device):
+.PP
+.br
+	\fBe2image \-r /dev/hda1 \- | bzip2 > hda1.e2i.bz2\fR
+.PP
+This will only send the metadata information, without any data blocks.
+However, the filenames in the directory blocks can still reveal
+information about the contents of the filesystem that the bug reporter
+may wish to keep confidential.  To address this concern, the
+.B \-s
+option can be specified.  This will cause
+.B e2image
+to scramble directory entries and zero out any unused portions
+of the directory blocks before writing the image file.  However,
+the
+.B \-s
+option will prevent analysis of problems related to hash-tree indexed
+directories.
+.PP
+Note that this will work even if you substitute "/dev/hda1" for another raw
+disk image, or QCOW2 image previously created by
+.BR e2image .
+.PP
+.SH QCOW2 IMAGE FILES
+The
+.B \-Q
+option will create a QCOW2 image file instead of a normal, or raw image file.
+A QCOW2 image contains all the information the raw image does, however unlike
+the raw image it is not sparse. The QCOW2 image minimize the amount of disk
+space by storing data in special format with pack data closely together, hence
+avoiding holes while still minimizing size.
+.PP
+In order to send filesystem to the maintainer as a part of bug report to
+e2fsprogs, use following commands (replace hda1 with the appropriate device):
+.PP
+.br
+\	\fBe2image \-Q /dev/hda1 hda1.qcow2\fR
+.br
+\	\fBbzip2 -z hda1.qcow2\fR
+.PP
+This will only send the metadata information, without any data blocks.
+However, the filenames in the directory blocks can still reveal
+information about the contents of the filesystem that the bug reporter
+may wish to keep confidential.  To address this concern, the
+.B \-s
+option can be specified.  This will cause
+.B e2image
+to scramble directory entries and zero out any unused portions
+of the directory blocks before writing the image file.  However, the
+.B \-s
+option will prevent analysis of problems related to hash-tree indexed
+directories.
+.PP
+Note that QCOW2 image created by
+.B e2image
+is regular QCOW2 image and can be processed by tools aware of QCOW2 format
+such as for example
+.BR qemu-img .
+.PP
+You can convert a qcow2 image into a raw image with:
+.PP
+.br
+\	\fBe2image \-r hda1.qcow2 hda1.raw\fR
+.br
+.PP
+This can be useful to write a qcow2 image containing all data to a
+sparse image file where it can be loop mounted, or to a disk partition.
+Note that this may not work with qcow2 images not generated by e2image.
+.PP
+.SH INCLUDING DATA
+Normally
+.B e2image
+only includes fs metadata, not regular file data.  The
+.B \-a
+option can be specified to include all data.  This will
+give an image that is suitable to use to clone the entire FS or
+for backup purposes.  Note that this option only works with the
+raw or QCOW2 formats.  The
+.B \-p
+switch may be given to show progress.  If the file system is being
+cloned to a flash-based storage device (where reads are very fast and
+where it is desirable to avoid unnecessary writes to reduce write wear
+on the device), the
+.B \-c
+option which cause e2image to try reading a block from the destination
+to see if it is identical to the block which
+.B e2image
+is about to copy.  If the block is already the same, the write can be
+skipped.  The
+.B \-n
+option will cause all of the writes to be no-ops, and print the blocks
+that would have been written.
+.PP
+.SH OFFSETS
+Normally a filesystem starts at the beginning of a partition, and
+.B e2image
+is run on the partition.  When working with image files, you don't
+have the option of using the partition device, so you can specify
+the offset where the filesystem starts directly with the
+.B \-o
+option.  Similarly the
+.B \-O
+option specifies the offset that should be seeked to in the destination
+before writing the filesystem.
+.PP
+For example, if you have a
+.B dd
+image of a whole hard drive that contains an ext2 fs in a partition
+starting at 1 MiB, you can clone that fs with:
+.PP
+.br
+\	\fBe2image \-aro 1048576 img /dev/sda1\fR
+.br
+.PP
+Or you can clone a fs into an image file, leaving room in the first
+MiB for a partition table with:
+.PP
+.br
+\	\fBe2image -arO 1048576 /dev/sda1 img\fR
+.br
+.PP
+If you specify at least one offset, and only one file, an in-place
+move will be performed, allowing you to safely move the filesystem
+from one offset to another.
+.SH AUTHOR
+.B e2image
+was written by Theodore Ts'o (tytso@mit.edu).
+.SH AVAILABILITY
+.B e2image
+is part of the e2fsprogs package and is available from
+http://e2fsprogs.sourceforge.net.
+.SH SEE ALSO
+.BR dumpe2fs (8),
+.BR debugfs (8)
 
-    <ol class="breadcrumb">
-	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
-	</li>
-	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
-	</li>
-	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/e2image.8.html"><span itemprop="title">e2image</span></a>
-	</li>
-</ol>
-    
-      <section>
-        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
-        <div class="sectioncontent">
-
-<p><strong>e2image</strong> [ <strong>-r|Q</strong> ] [ <strong>-fr</strong> ] <em>device</em> <em>image-file</em></p>
-<p class='spacer'>
-
-<p><strong>e2image</strong> <strong>-I</strong> <em>device</em> <em>image-file</em></p>
-<p class='spacer'>
-
-<p><strong>e2image</strong> <strong>-ra</strong> [ <strong>-cfnp</strong> ] [ <strong>-o</strong> <em>src_offset</em> ] [ <strong>-O</strong> <em>dest_offset</em> ] <em>src_fs</em> [ <em>dest_fs</em> ]</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
-        <div class="sectioncontent">
-
-<p>The <strong>e2image</strong> program will save critical ext2, ext3, or ext4 filesystem metadata located on <em>device</em> to a file specified by <em>image-file</em>. The image file may be examined by <strong>dumpe2fs</strong> and <strong>debugfs</strong>, by using the <strong>-i</strong> option to those programs.  This can assist an expert in recovering catastrophically corrupted filesystems.  In the future, e2fsck will be enhanced to be able to use the image file to help recover a badly damaged filesystem.</p>
-<p class='spacer'>
-
-<p>When saving an e2image for debugging purposes, using either the <strong>-r</strong> or <strong>-Q</strong> options, the filesystem must be unmounted or be mounted read/only, in order for the image file to be in a consistent state.  This requirement can be overriden using the <strong>-f</strong> option, but the resulting image file is very likely not going to be useful.</p>
-<p class='spacer'>
-
-<p>If <em>image-file</em> is -, then the output of <strong>e2image</strong> will be sent to standard output, so that the output can be piped to another program, such as <strong>gzip</strong>(1). (Note that this is currently only supported when creating a raw image file using the <strong>-r</strong> option, since the process of creating a normal image file, or QCOW2 image currently requires random access to the file, which cannot be done using a pipe.  This restriction will hopefully be lifted in a future version of <strong>e2image</strong>.)</p>
-<p class='spacer'>
-
-<p>It is a very good idea to create image files for all of filesystems on a system and save the partition layout (which can be generated using the <strong>fdisk -l</strong> command) at regular intervals --- at boot time, and/or every week or so. The image file should be stored on some filesystem other than the filesystem whose data it contains, to ensure that this data is accessible in the case where the filesystem has been badly damaged.</p>
-<p class='spacer'>
-
-<p>To save disk space, <strong>e2image</strong> creates the image file as a sparse file, or in QCOW2 format. Hence, if the sparse image file needs to be copied to another location, it should either be compressed first or copied using the <strong>--sparse=always</strong> option to the GNU version of <strong>cp</strong>. This does not apply to the QCOW2 image, which is not sparse.</p>
-<p class='spacer'>
-
-<p>The size of an ext2 image file depends primarily on the size of the filesystems and how many inodes are in use.  For a typical 10 gigabyte filesystem, with 200,000 inodes in use out of 1.2 million inodes, the image file will be approximately 35 megabytes; a 4 gigabyte filesystem with 15,000 inodes in use out of 550,000 inodes will result in a 3 megabyte image file.  Image files tend to be quite compressible; an image file taking up 32 megabytes of space on disk will generally compress down to 3 or 4 megabytes.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">RESTORING FILESYSTEM METADATA USING AN IMAGE FILE</h2>
-        <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>The <strong>-I</strong> option will cause e2image to install the metadata stored in the image file back to the device.  It can be used to restore the filesystem metadata back to the device in emergency situations.</p>
-<p class='spacer'>
-
-<p><strong>WARNING!!!!</strong> The <strong>-I</strong> option should only be used as a desperation measure when other alternatives have failed.  If the filesystem has changed since the image file was created, data <strong>will</strong> be lost.  In general, you should make a full image backup of the filesystem first, in case you wish to try other recovery strategies afterwards.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">RAW IMAGE FILES</h2>
-        <div class="sectioncontent">
-
-<p>The <strong>-r</strong> option will create a raw image file instead of a normal image file. A raw image file differs from a normal image file in two ways.  First, the filesystem metadata is placed in the proper position so that e2fsck, dumpe2fs, debugfs, etc. can be run directly on the raw image file.  In order to minimize the amount of disk space consumed by a raw image file, the file is created as a sparse file.  (Beware of copying or compressing/decompressing this file with utilities that don't understand how to create sparse files; the file will become as large as the filesystem itself!)  Secondly, the raw image file also includes indirect blocks and directory blocks, which the standard image file does not have, although this may change in the future.</p>
-<p class='spacer'>
-
-<p>Raw image files are sometimes used when sending filesystems to the maintainer as part of bug reports to e2fsprogs.  When used in this capacity, the recommended command is as follows (replace hda1 with the appropriate device):</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>	<strong>e2image -r /dev/hda1 - | bzip2 &gt; hda1.e2i.bz2</strong></p>
-<p class='spacer'>
-
-<p>This will only send the metadata information, without any data blocks. However, the filenames in the directory blocks can still reveal information about the contents of the filesystem that the bug reporter may wish to keep confidential.  To address this concern, the <strong>-s</strong> option can be specified.  This will cause <strong>e2image</strong> to scramble directory entries and zero out any unused portions of the directory blocks before writing the image file.  However, the <strong>-s</strong> option will prevent analysis of problems related to hash-tree indexed directories.</p>
-<p class='spacer'>
-
-<p>Note that this will work even if you substitute "/dev/hda1" for another raw disk image, or QCOW2 image previously created by <strong>e2image</strong>.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">QCOW2 IMAGE FILES</h2>
-        <div class="sectioncontent">
-
-<p>The <strong>-Q</strong> option will create a QCOW2 image file instead of a normal, or raw image file. A QCOW2 image contains all the information the raw image does, however unlike the raw image it is not sparse. The QCOW2 image minimize the amount of disk space by storing data in special format with pack data closely together, hence avoiding holes while still minimizing size.</p>
-<p class='spacer'>
-
-<p>In order to send filesystem to the maintainer as a part of bug report to e2fsprogs, use following commands (replace hda1 with the appropriate device):</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>\	<strong>e2image -Q /dev/hda1 hda1.qcow2</strong></p>
-<p class='spacer'>
-
-<p>\	<strong>bzip2 -z hda1.qcow2</strong></p>
-<p class='spacer'>
-
-<p>This will only send the metadata information, without any data blocks. However, the filenames in the directory blocks can still reveal information about the contents of the filesystem that the bug reporter may wish to keep confidential.  To address this concern, the <strong>-s</strong> option can be specified.  This will cause <strong>e2image</strong> to scramble directory entries and zero out any unused portions of the directory blocks before writing the image file.  However, the <strong>-s</strong> option will prevent analysis of problems related to hash-tree indexed directories.</p>
-<p class='spacer'>
-
-<p>Note that QCOW2 image created by <strong>e2image</strong> is regular QCOW2 image and can be processed by tools aware of QCOW2 format such as for example <strong>qemu-img</strong>.</p>
-<p class='spacer'>
-
-<p>You can convert a qcow2 image into a raw image with:</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>\	<strong>e2image -r hda1.qcow2 hda1.raw</strong></p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>This can be useful to write a qcow2 image containing all data to a sparse image file where it can be loop mounted, or to a disk partition. Note that this may not work with qcow2 images not generated by e2image.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">INCLUDING DATA</h2>
-        <div class="sectioncontent">
-
-<p>Normally <strong>e2image</strong> only includes fs metadata, not regular file data.  The <strong>-a</strong> option can be specified to include all data.  This will give an image that is suitable to use to clone the entire FS or for backup purposes.  Note that this option only works with the raw or QCOW2 formats.  The <strong>-p</strong> switch may be given to show progress.  If the file system is being cloned to a flash-based storage device (where reads are very fast and where it is desirable to avoid unnecessary writes to reduce write wear on the device), the <strong>-c</strong> option which cause e2image to try reading a block from the destination to see if it is identical to the block which <strong>e2image</strong> is about to copy.  If the block is already the same, the write can be skipped.  The <strong>-n</strong> option will cause all of the writes to be no-ops, and print the blocks that would have been written.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">OFFSETS</h2>
-        <div class="sectioncontent">
-
-<p>Normally a filesystem starts at the beginning of a partition, and <strong>e2image</strong> is run on the partition.  When working with image files, you don't have the option of using the partition device, so you can specify the offset where the filesystem starts directly with the <strong>-o</strong> option.  Similarly the <strong>-O</strong> option specifies the offset that should be seeked to in the destination before writing the filesystem.</p>
-<p class='spacer'>
-
-<p>For example, if you have a <strong>dd</strong> image of a whole hard drive that contains an ext2 fs in a partition starting at 1 MiB, you can clone that fs with:</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>\	<strong>e2image -aro 1048576 img /dev/sda1</strong></p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>Or you can clone a fs into an image file, leaving room in the first MiB for a partition table with:</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>\	<strong>e2image -arO 1048576 /dev/sda1 img</strong></p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>If you specify at least one offset, and only one file, an in-place move will be performed, allowing you to safely move the filesystem from one offset to another.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p><strong>e2image</strong> was written by Theodore Ts'o (tytso@mit.edu).</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
-        <div class="sectioncontent">
-
-<p><strong>e2image</strong> is part of the e2fsprogs package and is available from http://e2fsprogs.sourceforge.net.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
-        <div class="sectioncontent">
-
-<p><a href="../man8/dumpe2fs.8.html"><strong>dumpe2fs</strong>(8)</a>, <a href="../man8/debugfs.8.html"><strong>debugfs</strong>(8)</a></p>
-<p class='spacer'>
-
-        </div>
-      </section>
-<nav>
-  <ul class="pager">
-  <li class="previous"><a href="e2fsck.8.html"><span aria-hidden="true">&larr;</span> e2fsck.8: check a Linux ext2/ext3/ext4 file system</a></li><li class="next"><a href="e2label.8.html">e2label.8: Change the label on an ext2/ext3/ext4 filesystem <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
-  </div>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script src="/js/bootstrap.min.js"></script>
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-60781387-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
-</body>
-</html>

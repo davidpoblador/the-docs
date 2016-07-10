@@ -1,204 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>chcpu - configure CPUs</title>
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/manpage.css" rel="stylesheet">
-  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-  <link rel="manifest" href="/icons/manifest.json">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="${metadescription}">
-  
-</head>
-<body>
-  <div class="container final">
-          <div class="page-header">
-        <h1 class="font-effect-destruction">chcpu<small> (8)</small></h1>
-        <p class="lead">configure CPUs</p>
-      </div>
+.TH CHCPU 8 "July 2014" "util-linux" "System Administration"
+.SH NAME
+chcpu \- configure CPUs
+.SH SYNOPSIS
+.B chcpu
+.BR \-c | \-d | \-e | \-g
+.I cpu-list
+.br
+.B chcpu \-p
+.I mode
+.br
+.B chcpu
+.BR \-r | \-h | \-V
+.SH DESCRIPTION
+.B chcpu
+can modify the state of CPUs.  It can enable or disable CPUs, scan for new
+CPUs, change the CPU dispatching
+.I mode
+of the underlying hypervisor, and request CPUs from the hypervisor
+(configure) or return CPUs to the hypervisor (deconfigure).
+.PP
+Some options have a
+.I cpu-list
+argument.  Use this argument to specify a comma-separated list of CPUs.  The
+list can contain individual CPU addresses or ranges of addresses.  For
+example,
+.B 0,5,7,9-11
+makes the command applicable to the CPUs with the addresses 0, 5, 7, 9, 10,
+and 11.
+.SH OPTIONS
+.TP
+.BR \-c , " \-\-configure " \fIcpu-list\fP
+Configure the specified CPUs.  Configuring a CPU means that the hypervisor
+takes a CPU from the CPU pool and assigns it to the virtual hardware on which
+your kernel runs.
+.TP
+.BR \-d , " \-\-disable " \fIcpu-list\fP
+Disable the specified CPUs.  Disabling a CPU means that the kernel sets it
+offline.
+.TP
+.BR \-e , " \-\-enable " \fIcpu-list\fP
+Enable the specified CPUs.  Enabling a CPU means that the kernel sets it
+online.  A CPU must be configured, see \fB\-c\fR, before it can be enabled.
+.TP
+.BR \-g , " \-\-deconfigure " \fIcpu-list\fP
+Deconfigure the specified CPUs.  Deconfiguring a CPU means that the
+hypervisor removes the CPU from the virtual hardware on which the Linux
+instance runs and returns it to the CPU pool.  A CPU must be offline, see
+\fB\-d\fR, before it can be deconfigured.
+.TP
+.BR \-p , " \-\-dispatch " \fImode\fP
+Set the CPU dispatching
+.I mode
+(polarization).  This option has an effect only if your hardware architecture
+and hypervisor support CPU polarization.  Available
+.I modes
+are:
+.RS 14
+.TP 12
+.PD 0
+.B horizontal
+The workload is spread across all available CPUs.
+.TP 12
+.B vertical
+The workload is concentrated on few CPUs.
+.RE
+.PD 1
+.TP
+.BR \-r , " \-\-rescan"
+Trigger a rescan of CPUs.  After a rescan, the Linux kernel recognizes
+the new CPUs.  Use this option on systems that do not
+automatically detect newly attached CPUs.
+.TP
+.BR \-V , " \-\-version"
+Display version information and exit.
+.TP
+.BR \-h , " \-\-help"
+Display help text and exit.
 
-    <ol class="breadcrumb">
-	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
-	</li>
-	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
-	</li>
-	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/chcpu.8.html"><span itemprop="title">chcpu</span></a>
-	</li>
-</ol>
-    
-      <section>
-        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
-        <div class="sectioncontent">
-
-<p><strong>chcpu</strong> <strong>-c</strong>|<strong>-d</strong>|<strong>-e</strong>|<strong>-g</strong> <em>cpu-list</em></p>
-<p class='spacer'>
-
-<p><strong>chcpu -p</strong> <em>mode</em></p>
-<p class='spacer'>
-
-<p><strong>chcpu</strong> <strong>-r</strong>|<strong>-h</strong>|<strong>-V</strong></p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
-        <div class="sectioncontent">
-
-<p><strong>chcpu</strong> can modify the state of CPUs.  It can enable or disable CPUs, scan for new CPUs, change the CPU dispatching <em>mode</em> of the underlying hypervisor, and request CPUs from the hypervisor (configure) or return CPUs to the hypervisor (deconfigure).</p>
-<p class='spacer'>
-
-<p>Some options have a <em>cpu-list</em> argument.  Use this argument to specify a comma-separated list of CPUs.  The list can contain individual CPU addresses or ranges of addresses.  For example, <strong>0,5,7,9-11</strong> makes the command applicable to the CPUs with the addresses 0, 5, 7, 9, 10, and 11.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
-        <div class="sectioncontent">
-
-  <dl class='dl-vertical'>
-    <dt><strong>-c</strong>,<strong> --configure </strong><em>cpu-list</em></dt>
-    <dd>
-  <p>Configure the specified CPUs.  Configuring a CPU means that the hypervisor takes a CPU from the CPU pool and assigns it to the virtual hardware on which your kernel runs.</p>
-    </dd>
-    <dt><strong>-d</strong>,<strong> --disable </strong><em>cpu-list</em></dt>
-    <dd>
-  <p>Disable the specified CPUs.  Disabling a CPU means that the kernel sets it offline.</p>
-    </dd>
-    <dt><strong>-e</strong>,<strong> --enable </strong><em>cpu-list</em></dt>
-    <dd>
-  <p>Enable the specified CPUs.  Enabling a CPU means that the kernel sets it online.  A CPU must be configured, see <strong>-c</strong>, before it can be enabled.</p>
-    </dd>
-    <dt><strong>-g</strong>,<strong> --deconfigure </strong><em>cpu-list</em></dt>
-    <dd>
-  <p>Deconfigure the specified CPUs.  Deconfiguring a CPU means that the hypervisor removes the CPU from the virtual hardware on which the Linux instance runs and returns it to the CPU pool.  A CPU must be offline, see <strong>-d</strong>, before it can be deconfigured.</p>
-    </dd>
-    <dt><strong>-p</strong>,<strong> --dispatch </strong><em>mode</em></dt>
-    <dd>
-      <p>Set the CPU dispatching <em>mode</em> (polarization).  This option has an effect only if your hardware architecture and hypervisor support CPU polarization.  Available <em>modes</em> are:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>horizontal</strong></dt>
-        <dd>
-      <p>The workload is spread across all available CPUs.</p>
-        </dd>
-        <dt><strong>vertical</strong></dt>
-        <dd>
-      <p>The workload is concentrated on few CPUs.</p>
-        </dd>
-      </dl>
-    </dd>
-    <dt><strong>-r</strong>,<strong> --rescan</strong></dt>
-    <dd>
-  <p>Trigger a rescan of CPUs.  After a rescan, the Linux kernel recognizes the new CPUs.  Use this option on systems that do not automatically detect newly attached CPUs.</p>
-    </dd>
-    <dt><strong>-V</strong>,<strong> --version</strong></dt>
-    <dd>
-  <p>Display version information and exit.</p>
-    </dd>
-    <dt><strong>-h</strong>,<strong> --help</strong></dt>
-    <dd>
-  <p>Display help text and exit.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">RETURN CODES</h2>
-        <div class="sectioncontent">
-
-  <p><strong>chcpu</strong> has the following return codes:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>0</strong></dt>
-    <dd>
-  <p>success</p>
-    </dd>
-    <dt><strong>1</strong></dt>
-    <dd>
-  <p>failure</p>
-    </dd>
-    <dt><strong>64</strong></dt>
-    <dd>
-  <p>partial success</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p><a href="mailto:heiko.carstens@de.ibm.com">heiko.carstens@de.ibm.com</a> Heiko Carstens</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">COPYRIGHT</h2>
-        <div class="sectioncontent">
-
-<p>Copyright IBM Corp. 2011</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
-        <div class="sectioncontent">
-
-<p><a href="../man1/lscpu.1.html"><strong>lscpu</strong>(1)</a></p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
-        <div class="sectioncontent">
-
-<p>The chcpu command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
-        </div>
-      </section>
-<nav>
-  <ul class="pager">
-  <li class="previous"><a href="cfdisk.8.html"><span aria-hidden="true">&larr;</span> cfdisk.8: display or manipulate a disk partition table</a></li><li class="next"><a href="chgpasswd.8.html">chgpasswd.8: update group passwords in batch mode <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
-  </div>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script src="/js/bootstrap.min.js"></script>
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-60781387-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
-</body>
-</html>
+.SH RETURN CODES
+.B chcpu
+has the following return codes:
+.TP
+.BR 0
+success
+.TP
+.BR 1
+failure
+.TP
+.BR 64
+partial success
+.RE
+.SH AUTHOR
+.MT heiko.carstens@de.ibm.com
+Heiko Carstens
+.ME
+.SH COPYRIGHT
+Copyright IBM Corp. 2011
+.br
+.SH "SEE ALSO"
+.BR lscpu (1)
+.SH AVAILABILITY
+The chcpu command is part of the util-linux package and is available from
+.UR ftp://\:ftp.kernel.org\:/pub\:/linux\:/utils\:/util-linux/
+Linux Kernel Archive
+.UE .

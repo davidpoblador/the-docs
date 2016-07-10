@@ -1,253 +1,169 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>losetup - set up and control loop devices</title>
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/manpage.css" rel="stylesheet">
-  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-  <link rel="manifest" href="/icons/manifest.json">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="${metadescription}">
-  
-</head>
-<body>
-  <div class="container final">
-          <div class="page-header">
-        <h1 class="font-effect-destruction">losetup<small> (8)</small></h1>
-        <p class="lead">set up and control loop devices</p>
-      </div>
+.TH LOSETUP 8 "July 2014" "util-linux" "System Administration"
+.SH NAME
+losetup \- set up and control loop devices
+.SH SYNOPSIS
+.ad l
+Get info:
+.sp
+.in +5
+.B losetup
+.I loopdev
+.sp
+.B losetup -l
+.RB [ \-a ]
+.sp
+.B losetup -j
+.I file
+.RB [ \-o
+.IR offset ]
+.sp
+.in -5
+Detach a loop device:
+.sp
+.in +5
+.B "losetup \-d"
+.IR loopdev ...
+.sp
+.in -5
+Detach all associated loop devices:
+.sp
+.in +5
+.B "losetup \-D"
+.sp
+.in -5
+Print the name of the first unused loop device:
+.sp
+.in +5
+.B "losetup \-f"
+.sp
+.in -5
+Set up a loop device:
+.sp
+.in +5
+.B losetup
+.RB [ \-o
+.IR offset ]
+.RB [ \-\-sizelimit
+.IR size ]
+.in +8
+.RB [ \-Pr ]
+.RB [ \-\-show ]  " \-f" | \fIloopdev\fP
+.I file
+.sp
+.in -13
+Resize a loop device:
+.sp
+.in +5
+.B "losetup \-c"
+.I loopdev
+.in -5
+.ad b
+.SH DESCRIPTION
+.B losetup
+is used to associate loop devices with regular files or block devices,
+to detach loop devices, and to query the status of a loop device.  If only the
+\fIloopdev\fP argument is given, the status of the corresponding loop
+device is shown.  If no option is given, all loop devices are shown.
+.sp
+Note that the old output format (i.e. \fBlosetup -a\fR) with comma-delimited
+strings is deprecated in favour of the \fB--list\fR output format.
 
-    <ol class="breadcrumb">
-	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
-	</li>
-	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
-	</li>
-	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/losetup.8.html"><span itemprop="title">losetup</span></a>
-	</li>
-</ol>
-    
-      <section>
-        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
-        <div class="sectioncontent">
+.SH OPTIONS
+The \fIsize\fR and \fIoffset\fR
+arguments may be followed by the multiplicative suffixes KiB (=1024),
+MiB (=1024*1024), and so on for GiB, TiB, PiB, EiB, ZiB and YiB (the "iB" is
+optional, e.g., "K" has the same meaning as "KiB") or the suffixes
+KB (=1000), MB (=1000*1000), and so on for GB, TB, PB, EB, ZB and YB.
 
-<p>Get info:</p>
-<p class='spacer'>
+.TP
+.BR \-a , " \-\-all"
+Show the status of all loop devices.  Note that not all information is accessible
+for non-root users.  See also \fB\-\-list\fR.  The old output format (as printed
+without \fB--list)\fR is deprecated.
+.TP
+.BR \-c , " \-\-set-capacity " \fIloopdev
+Force the loop driver to reread the size of the file associated with the
+specified loop device.
+.TP
+.BR \-d , " \-\-detach " \fIloopdev\fR...
+Detach the file or device associated with the specified loop device(s).
+.TP
+.BR \-D , " \-\-detach-all"
+Detach all associated loop devices.
+.TP
+.BR \-f , " \-\-find"
+Find the first unused loop device.  If a
+.I file
+argument is present, use the found device as loop device.
+Otherwise, just print its name.
+.IP "\fB\-j, \-\-associated \fIfile\fP"
+Show the status of all loop devices associated with the given
+.IR file .
+.TP
+.BR \-l , " \-\-list"
+If a loop device or the \fB-a\fR option is specified, print the default columns
+for either the specified loop device or all loop devices; the default is to
+print info about all devices.  See also \fB\-\-output\fP, \fB\-\-noheadings\fP
+and \fB\-\-raw\fP.
+.TP
+.BR \-n , " \-\-noheadings"
+Don't print headings for \fB\-\-list\fP output format.
+.TP
+.BR \-o , " \-\-offset " \fIoffset
+The data start is moved \fIoffset\fP bytes into the specified file or device.
+.TP
+.BR \-O , " \-\-output " \fIcolumns
+Specify the columns that are to be printed for the \fB\-\-list\fP output.
+.TP
+.BR \-P , " \-\-partscan"
+Force the kernel to scan the partition table on a newly created loop device.
+.IP "\fB\-\-raw\fP"
+Use the raw \fB\-\-list\fP output format.
+.TP
+.BR \-r , " \-\-read-only"
+Set up a read-only loop device.
+.IP "\fB\-\-sizelimit \fIsize\fP"
+The data end is set to no more than \fIsize\fP bytes after the data start.
+.IP "\fB\-\-show\fP"
+Display the name of the assigned loop device if the
+.B \-f
+option and a
+.I file
+argument are present.
+.TP
+.BR \-v , " \-\-verbose"
+Verbose mode.
+.TP
+.BR \-V , " \-\-version"
+Display version information and exit.
+.TP
+.BR \-h , " \-\-help"
+Display help text and exit.
 
-<p><strong>losetup</strong> <em>loopdev</em></p>
-<p class='spacer'>
+.SH ENCRYPTION
+.B Cryptoloop is no longer supported in favor of dm-crypt.
+.B For more details see cryptsetup (8).
 
-<p><strong>losetup -l</strong> [<strong>-a</strong>]</p>
-<p class='spacer'>
+.SH RETURN VALUE
+.B losetup
+returns 0 on success, nonzero on failure.  When
+.B losetup
+displays the status of a loop device, it returns 1 if the device
+is not configured and 2 if an error occurred which prevented
+determining the status of the device.
 
-<p><strong>losetup -j</strong> <em>file</em> [<strong>-o</strong> <em>offset</em>]</p>
-<p class='spacer'>
+.SH FILES
+.TP
+.I /dev/loop[0..N]
+loop block devices
+.TP
+.I /dev/loop-control
+loop control device
 
-<p>Detach a loop device:</p>
-<p class='spacer'>
-
-<p><strong>losetup -d</strong> <em>loopdev</em>...</p>
-<p class='spacer'>
-
-<p>Detach all associated loop devices:</p>
-<p class='spacer'>
-
-<p><strong>losetup -D</strong></p>
-<p class='spacer'>
-
-<p>Print the name of the first unused loop device:</p>
-<p class='spacer'>
-
-<p><strong>losetup -f</strong></p>
-<p class='spacer'>
-
-<p>Set up a loop device:</p>
-<p class='spacer'>
-
-<p><strong>losetup</strong> [<strong>-o</strong> <em>offset</em>] [<strong>--sizelimit</strong> <em>size</em>] [<strong>-Pr</strong>] [<strong>--show</strong>]<strong> -f</strong>|<strong><em>loopdev</em></strong> <em>file</em></p>
-<p class='spacer'>
-
-<p>Resize a loop device:</p>
-<p class='spacer'>
-
-<p><strong>losetup -c</strong> <em>loopdev</em></p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
-        <div class="sectioncontent">
-
-<p><strong>losetup</strong> is used to associate loop devices with regular files or block devices, to detach loop devices, and to query the status of a loop device.  If only the <em>loopdev</em> argument is given, the status of the corresponding loop device is shown.  If no option is given, all loop devices are shown.</p>
-<p class='spacer'>
-
-<p>Note that the old output format (i.e. <strong>losetup -a</strong>) with comma-delimited strings is deprecated in favour of the <strong>--list</strong> output format.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
-        <div class="sectioncontent">
-
-<p>The <em>size</em> and <em>offset</em> arguments may be followed by the multiplicative suffixes KiB (=1024), MiB (=1024*1024), and so on for GiB, TiB, PiB, EiB, ZiB and YiB (the "iB" is optional, e.g., "K" has the same meaning as "KiB") or the suffixes KB (=1000), MB (=1000*1000), and so on for GB, TB, PB, EB, ZB and YB.</p>
-<p class='spacer'>
-
-  <dl class='dl-vertical'>
-    <dt><strong>-a</strong>,<strong> --all</strong></dt>
-    <dd>
-  <p>Show the status of all loop devices.  Note that not all information is accessible for non-root users.  See also <strong>--list</strong>.  The old output format (as printed without <strong>--list)</strong> is deprecated.</p>
-    </dd>
-    <dt><strong>-c</strong>,<strong> --set-capacity </strong>loopdev</dt>
-    <dd>
-  <p>Force the loop driver to reread the size of the file associated with the specified loop device.</p>
-    </dd>
-    <dt><strong>-d</strong>,<strong> --detach </strong><em>loopdev</em>...</dt>
-    <dd>
-  <p>Detach the file or device associated with the specified loop device(s).</p>
-    </dd>
-    <dt><strong>-D</strong>,<strong> --detach-all</strong></dt>
-    <dd>
-  <p>Detach all associated loop devices.</p>
-    </dd>
-    <dt><strong>-f</strong>,<strong> --find</strong></dt>
-    <dd>
-    <p>Find the first unused loop device.  If a <em>file</em> argument is present, use the found device as loop device. Otherwise, just print its name.</p>
-    <dl class='dl-horizontal'>
-      <dt>-j, --associated <em>file</em></dt>
-      <dd>
-      <p>Show the status of all loop devices associated with the given <em>file</em>.</p>
-      <dl class='dl-vertical'>
-        <dt><strong>-l</strong>,<strong> --list</strong></dt>
-        <dd>
-      <p>If a loop device or the <strong>-a</strong> option is specified, print the default columns for either the specified loop device or all loop devices; the default is to print info about all devices.  See also <strong>--output</strong>, <strong>--noheadings</strong> and <strong>--raw</strong>.</p>
-        </dd>
-        <dt><strong>-n</strong>,<strong> --noheadings</strong></dt>
-        <dd>
-      <p>Don't print headings for <strong>--list</strong> output format.</p>
-        </dd>
-        <dt><strong>-o</strong>,<strong> --offset </strong>offset</dt>
-        <dd>
-      <p>The data start is moved <em>offset</em> bytes into the specified file or device.</p>
-        </dd>
-        <dt><strong>-O</strong>,<strong> --output </strong>columns</dt>
-        <dd>
-      <p>Specify the columns that are to be printed for the <strong>--list</strong> output.</p>
-        </dd>
-        <dt><strong>-P</strong>,<strong> --partscan</strong></dt>
-        <dd>
-        <p>Force the kernel to scan the partition table on a newly created loop device.</p>
-        <dl class='dl-horizontal'>
-          <dt><strong>--raw</strong></dt>
-          <dd>
-          <p>Use the raw <strong>--list</strong> output format.</p>
-          <dl class='dl-vertical'>
-            <dt><strong>-r</strong>,<strong> --read-only</strong></dt>
-            <dd>
-            <p>Set up a read-only loop device.</p>
-            <dl class='dl-horizontal'>
-              <dt>--sizelimit <em>size</em></dt>
-              <dd>
-            <p>The data end is set to no more than <em>size</em> bytes after the data start.</p>
-              </dd>
-              <dt><strong>--show</strong></dt>
-              <dd>
-              <p>Display the name of the assigned loop device if the <strong>-f</strong> option and a <em>file</em> argument are present.</p>
-              <dl class='dl-vertical'>
-                <dt><strong>-v</strong>,<strong> --verbose</strong></dt>
-                <dd>
-              <p>Verbose mode.</p>
-                </dd>
-                <dt><strong>-V</strong>,<strong> --version</strong></dt>
-                <dd>
-              <p>Display version information and exit.</p>
-                </dd>
-                <dt><strong>-h</strong>,<strong> --help</strong></dt>
-                <dd>
-              <p>Display help text and exit.</p>
-<p class='spacer'>
-
-                </dd>
-              </dl>
-              </dd>
-            </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">ENCRYPTION</h2>
-        <div class="sectioncontent">
-
-          <p><strong>Cryptoloop is no longer supported in favor of dm-crypt.</strong> <strong>For more details see cryptsetup (8).</strong></p>
-<p class='spacer'>
-
-            </dd>
-          </dl>
-          </dd>
-        </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
-        <div class="sectioncontent">
-
-      <p><strong>losetup</strong> returns 0 on success, nonzero on failure.  When <strong>losetup</strong> displays the status of a loop device, it returns 1 if the device is not configured and 2 if an error occurred which prevented determining the status of the device.</p>
-<p class='spacer'>
-
-        </dd>
-      </dl>
-      </dd>
-    </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">FILES</h2>
-        <div class="sectioncontent">
-
-    </dd>
-    <dt><em>/dev/loop[0..N]</em></dt>
-    <dd>
-  <p>loop block devices</p>
-    </dd>
-    <dt><em>/dev/loop-control</em></dt>
-    <dd>
-  <p>loop control device</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
-        <div class="sectioncontent">
-
-  <p>The following commands can be used as an example of using the loop device.</p>
-<pre>
+.SH EXAMPLE
+The following commands can be used as an example of using the loop device.
+.nf
+.IP
 # dd if=/dev/zero of=~/file.img bs=1MiB count=10
 # losetup --find --show ~/file.img
 /dev/loop0
@@ -255,45 +171,11 @@
 # mount /dev/loop0 /mnt
  ...
 # umount /dev/loop0
-# losetup --detach /dev/loop0</pre>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
-        <div class="sectioncontent">
-
-<p>Karel Zak &lt;kzak@redhat.com&gt;, based on the original version from Theodore Ts'o &lt;tytso@athena.mit.edu&gt;</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
-        <div class="sectioncontent">
-
-<p>The losetup command is part of the util-linux package and is available from ftp://ftp.kernel.org/pub/linux/utils/util-linux/.</p>
-        </div>
-      </section>
-<nav>
-  <ul class="pager">
-  <li class="previous"><a href="logsave.8.html"><span aria-hidden="true">&larr;</span> logsave.8: save the output of a command in a logfile</a></li><li class="next"><a href="lsblk.8.html">lsblk.8: list block devices <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
-  </div>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script src="/js/bootstrap.min.js"></script>
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-60781387-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
-</body>
-</html>
+# losetup --detach /dev/loop0
+.fi
+.SH AUTHORS
+Karel Zak <kzak@redhat.com>, based on the original version from
+Theodore Ts'o <tytso@athena.mit.edu>
+.SH AVAILABILITY
+The losetup command is part of the util-linux package and is available from
+ftp://ftp.kernel.org/pub/linux/utils/util-linux/.

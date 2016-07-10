@@ -1,197 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>fallocate - preallocate or deallocate space to a file</title>
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/manpage.css" rel="stylesheet">
-  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-  <link rel="manifest" href="/icons/manifest.json">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="${metadescription}">
-  
-</head>
-<body>
-  <div class="container final">
-          <div class="page-header">
-        <h1 class="font-effect-destruction">fallocate<small> (1)</small></h1>
-        <p class="lead">preallocate or deallocate space to a file</p>
-      </div>
+.\" -*- nroff -*-
+.TH FALLOCATE 1 "September 2011" "util-linux" "User Commands"
+.SH NAME
+fallocate \- preallocate or deallocate space to a file
+.SH SYNOPSIS
+.B fallocate
+.RB [ \-n ]
+.RB [ \-p ]
+.RB [ \-c ]
+.RB [ \-z ]
+.RB [ \-o
+.IR offset ]
+.B \-l
+.IR length
+.I filename
+.PP
+.B fallocate
+.RB \-d
+.RB [ \-o
+.IR offset ]
+.RB [ \-l
+.IR length ]
+.I filename
+.SH DESCRIPTION
+.B fallocate
+is used to manipulate the allocated disk space for a file, either to deallocate
+or preallocate it. For filesystems which support the fallocate system call,
+preallocation is done quickly by allocating blocks and marking them as
+uninitialized, requiring no IO to the data blocks. This is much faster than
+creating a file by filling it with zeros.
+.PP
+The exit code returned by
+.B fallocate
+is 0 on success and 1 on failure.
+.PP
+.SH OPTIONS
+The \fIlength\fR and \fIoffset\fR arguments may be followed by the multiplicative
+suffixes KiB=1024, MiB=1024*1024, and so on for GiB, TiB, PiB, EiB, ZiB and YiB
+(the "iB" is optional, e.g. "K" has the same meaning as "KiB") or the suffixes
+KB=1000, MB=1000*1000, and so on for GB, TB, PB, EB, ZB and YB.
 
-    <ol class="breadcrumb">
-	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
-	</li>
-	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/"><span itemprop="title">Executable programs or shell commands</span></a>
-	</li>
-	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/fallocate.1.html"><span itemprop="title">fallocate</span></a>
-	</li>
-</ol>
-    
-      <section>
-        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
-        <div class="sectioncontent">
+The options \fB\-\-collapse-range\fP, \fB\-\-dig-holes\fP, \fB\-\-punch-hole\fP and
+\fB\-\-zero-range\fP are mutually exclusive.
 
-<p><strong>fallocate</strong> [<strong>-n</strong>] [<strong>-p</strong>] [<strong>-c</strong>] [<strong>-z</strong>] [<strong>-o</strong> <em>offset</em>] <strong>-l</strong> <em>length</em> <em>filename</em></p>
-<p class='spacer'>
+.IP "\fB\-n, \-\-keep-size\fP"
+Do not modify the apparent length of the file.  This may effectively allocate
+blocks past EOF, which can be removed with a truncate.
+.IP "\fB\-p, \-\-punch-hole\fP"
+Deallocates space (i.e., creates a hole) in the byte range starting at
+\fIoffset\fP and continuing for \fIlength\fR bytes.  Within the
+specified range, partial filesystem blocks are zeroed, and whole
+filesystem blocks are removed from the file.  After a successful
+call, subsequent reads from this range will return zeroes.  This option
+may not be specified at the same time as  the \fB\-\-zero-range\fP option.
+Also, when using this option, \fB\-\-keep-size\fP is implied.
 
-<p><strong>fallocate</strong> -d [<strong>-o</strong> <em>offset</em>] [<strong>-l</strong> <em>length</em>] <em>filename</em></p>
-        </div>
-      </section>
+Supported for XFS (since Linux 2.6.38), ext4 (since Linux 3.0),
+Btrfs (since Linux 3.7) and tmpfs (since Linux 3.5).
+.IP "\fB\-d, \-\-dig-holes\fP"
+Detect and dig holes. Makes the file sparse in-place, without using extra disk
+space. The minimal size of the hole depends on filesystem I/O block size
+(usually 4096 bytes). Also, when using this option, \fB\-\-keep-size\fP is
+implied. If no range is specified by \fB\-\-offset\fP and \fB\-\-length\fP,
+then all file is analyzed for holes.
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
-        <div class="sectioncontent">
+You can think of this as doing a "\fBcp --sparse\fP" and
+renaming the dest file as the original, without the need for extra disk space.
 
-<p><strong>fallocate</strong> is used to manipulate the allocated disk space for a file, either to deallocate or preallocate it. For filesystems which support the fallocate system call, preallocation is done quickly by allocating blocks and marking them as uninitialized, requiring no IO to the data blocks. This is much faster than creating a file by filling it with zeros.</p>
-<p class='spacer'>
+See \fB\-\-punch-hole\fP for list of the supported filesystems.
+.IP "\fB\-c, \-\-collapse-range\fP"
+Removes a byte range from a file, without leaving a hole.  The byte range
+to be collapsed starts at \fIoffset\fP and continues
+for \fIlength\fR bytes.  At the completion of the operation, the contents of
+the file starting at the location offset+length will be appended at the
+location offset, and the file will be \fIlength\fR bytes smaller. The option
+\fB\-\-keep\-size\fR may not be specified for colapse range operation.
 
-<p>The exit code returned by <strong>fallocate</strong> is 0 on success and 1 on failure.</p>
-<p class='spacer'>
+Available since Linux 3.15 for ext4 (only for extent-based files) and XFS.
+.IP "\fB\-z, \-\-zero-range\fP"
+Zeroes space in the byte range starting at \fIoffset\fP and
+continuing for \fIlength\fR bytes.  Within the specified range, blocks are
+preallocated for the regions that span the holes in the file.  After
+a successful call, subsequent reads from this range will return zeroes.
 
-        </div>
-      </section>
+Zeroing is done within the filesystem preferably by converting the
+range into unwritten extents.  This approach means that the specified
+range will not be physically zeroed out on the device (except for
+partial blocks at the either end of the range), and I/O is
+(otherwise) required only to update metadata.
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
-        <div class="sectioncontent">
+Option \fB\-\-keep\-size\fP can be specified to prevent file length
+modification.
 
-<p>The <em>length</em> and <em>offset</em> arguments may be followed by the multiplicative suffixes KiB=1024, MiB=1024*1024, and so on for GiB, TiB, PiB, EiB, ZiB and YiB (the "iB" is optional, e.g. "K" has the same meaning as "KiB") or the suffixes KB=1000, MB=1000*1000, and so on for GB, TB, PB, EB, ZB and YB.</p>
-<p class='spacer'>
-
-<p>The options <strong>--collapse-range</strong>, <strong>--dig-holes</strong>, <strong>--punch-hole</strong> and <strong>--zero-range</strong> are mutually exclusive.</p>
-<p class='spacer'>
-
-  <dl class='dl-horizontal'>
-    <dt><strong>-n, --keep-size</strong></dt>
-    <dd>
-  <p>Do not modify the apparent length of the file.  This may effectively allocate blocks past EOF, which can be removed with a truncate.</p>
-    </dd>
-    <dt><strong>-p, --punch-hole</strong></dt>
-    <dd>
-  <p>Deallocates space (i.e., creates a hole) in the byte range starting at <em>offset</em> and continuing for <em>length</em> bytes.  Within the specified range, partial filesystem blocks are zeroed, and whole filesystem blocks are removed from the file.  After a successful call, subsequent reads from this range will return zeroes.  This option may not be specified at the same time as  the <strong>--zero-range</strong> option. Also, when using this option, <strong>--keep-size</strong> is implied.</p>
-<p class='spacer'>
-
-  <p>Supported for XFS (since Linux 2.6.38), ext4 (since Linux 3.0), Btrfs (since Linux 3.7) and tmpfs (since Linux 3.5).</p>
-    </dd>
-    <dt><strong>-d, --dig-holes</strong></dt>
-    <dd>
-  <p>Detect and dig holes. Makes the file sparse in-place, without using extra disk space. The minimal size of the hole depends on filesystem I/O block size (usually 4096 bytes). Also, when using this option, <strong>--keep-size</strong> is implied. If no range is specified by <strong>--offset</strong> and <strong>--length</strong>, then all file is analyzed for holes.</p>
-<p class='spacer'>
-
-  <p>You can think of this as doing a "<strong>cp --sparse</strong>" and renaming the dest file as the original, without the need for extra disk space.</p>
-<p class='spacer'>
-
-  <p>See <strong>--punch-hole</strong> for list of the supported filesystems.</p>
-    </dd>
-    <dt><strong>-c, --collapse-range</strong></dt>
-    <dd>
-  <p>Removes a byte range from a file, without leaving a hole.  The byte range to be collapsed starts at <em>offset</em> and continues for <em>length</em> bytes.  At the completion of the operation, the contents of the file starting at the location offset+length will be appended at the location offset, and the file will be <em>length</em> bytes smaller. The option <strong>--keep-size</strong> may not be specified for colapse range operation.</p>
-<p class='spacer'>
-
-  <p>Available since Linux 3.15 for ext4 (only for extent-based files) and XFS.</p>
-    </dd>
-    <dt><strong>-z, --zero-range</strong></dt>
-    <dd>
-  <p>Zeroes space in the byte range starting at <em>offset</em> and continuing for <em>length</em> bytes.  Within the specified range, blocks are preallocated for the regions that span the holes in the file.  After a successful call, subsequent reads from this range will return zeroes.</p>
-<p class='spacer'>
-
-  <p>Zeroing is done within the filesystem preferably by converting the range into unwritten extents.  This approach means that the specified range will not be physically zeroed out on the device (except for partial blocks at the either end of the range), and I/O is (otherwise) required only to update metadata.</p>
-<p class='spacer'>
-
-  <p>Option <strong>--keep-size</strong> can be specified to prevent file length modification.</p>
-<p class='spacer'>
-
-  <p>Available since Linux 3.14 for ext4 (only for extent-based files) and XFS.</p>
-    </dd>
-    <dt><strong>-o, --offset</strong> <em>offset</em></dt>
-    <dd>
-  <p>Specifies the beginning offset of the range, in bytes.</p>
-    </dd>
-    <dt><strong>-l, --length</strong> <em>length</em></dt>
-    <dd>
-  <p>Specifies the length of the range, in bytes.</p>
-    </dd>
-    <dt><strong>-h, --help</strong></dt>
-    <dd>
-  <p>Display help text and exit.</p>
-    </dd>
-    <dt>-v, --verbose</dt>
-    <dd>
-  <p>Enable verbose mode.</p>
-    </dd>
-    <dt>-V, --version</dt>
-    <dd>
-  <p>Display version information and exit.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
-        <div class="sectioncontent">
-
-<p><a href="mailto:sandeen@redhat.com">sandeen@redhat.com</a> Eric Sandeen</p>
-<p class='spacer'>
-
-<p><a href="mailto:kzak@redhat.com">kzak@redhat.com</a> Karel Zak</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
-        <div class="sectioncontent">
-
-<p><a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a>, <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a>, <a href="../man1/truncate.1.html"><strong>truncate</strong>(1)</a></p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
-        <div class="sectioncontent">
-
-<p>The fallocate command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
-        </div>
-      </section>
-<nav>
-  <ul class="pager">
-  <li class="previous"><a href="factor.1.html"><span aria-hidden="true">&larr;</span> factor.1: factor numbers</a></li><li class="next"><a href="false.1.html">false.1: do nothing, unsuccessfully <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
-  </div>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script src="/js/bootstrap.min.js"></script>
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-60781387-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
-</body>
-</html>
+Available since Linux 3.14 for ext4 (only for extent-based files) and XFS.
+.IP "\fB\-o, \-\-offset\fP \fIoffset\fP
+Specifies the beginning offset of the range, in bytes.
+.IP "\fB\-l, \-\-length\fP \fIlength\fP
+Specifies the length of the range, in bytes.
+.IP "\fB\-h, \-\-help\fP"
+Display help text and exit.
+.IP "\fB-v, \-\-verbose"
+Enable verbose mode.
+.IP "\fB-V, \-\-version"
+Display version information and exit.
+.SH AUTHORS
+.UR sandeen@redhat.com
+Eric Sandeen
+.UE
+.br
+.UR kzak@redhat.com
+Karel Zak
+.UE
+.SH SEE ALSO
+.BR fallocate (2),
+.BR posix_fallocate (3),
+.BR truncate (1)
+.SH AVAILABILITY
+The fallocate command is part of the util-linux package and is available from
+.UR ftp://\:ftp.kernel.org\:/pub\:/linux\:/utils\:/util-linux/
+Linux Kernel Archive
+.UE .

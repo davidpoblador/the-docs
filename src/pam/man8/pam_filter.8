@@ -1,189 +1,172 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>pam_filter - PAM filter module</title>
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/manpage.css" rel="stylesheet">
-  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-  <link rel="manifest" href="/icons/manifest.json">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="${metadescription}">
-  
-</head>
-<body>
-  <div class="container final">
-          <div class="page-header">
-        <h1 class="font-effect-destruction">pam_filter<small> (8)</small></h1>
-        <p class="lead">PAM filter module</p>
-      </div>
-
-    <ol class="breadcrumb">
-	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
-	</li>
-	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
-	</li>
-	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/pam_filter.8.html"><span itemprop="title">pam_filter</span></a>
-	</li>
-</ol>
-    
-      <section>
-        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
-        <div class="sectioncontent">
-
-<p><strong>pam_filter.so</strong> [debug] [new_term] [non_term] run1|run2 <em>filter</em> [<em>...</em>]</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
-        <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>This module is intended to be a platform for providing access to all of the input/output that passes between the user and the application. It is only suitable for tty-based and (stdin/stdout) applications.</p>
-<p class='spacer'>
-
-<p>To function this module requires <em>filters</em> to be installed on the system. The single filter provided with the module simply transposes upper and lower case letters in the input and output streams. (This can be very annoying and is not kind to termcap based editors).</p>
-<p class='spacer'>
-
-<p>Each component of the module has the potential to invoke the desired filter. The filter is always <strong>execv</strong>(2) with the privilege of the calling application and <em>not</em> that of the user. For this reason it cannot usually be killed by the user without closing their session.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
-        <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p><strong>debug</strong> Print debug information.</p>
-<p class='spacer'>
-
-<p><strong>new_term</strong> The default action of the filter is to set the <em>PAM_TTY</em> item to indicate the terminal that the user is using to connect to the application. This argument indicates that the filter should set <em>PAM_TTY</em> to the filtered pseudo-terminal.</p>
-<p class='spacer'>
-
-<p><strong>non_term</strong> don&apos;t try to set the <em>PAM_TTY</em> item.</p>
-<p class='spacer'>
-
-  <p><strong>runX</strong> In order that the module can invoke a filter it should know when to invoke it. This argument is required to tell the filter when to do this.</p>
-<p class='spacer'>
-
-  <p>Permitted values for <em>X</em> are <em>1</em> and <em>2</em>. These indicate the precise time that the filter is to be run. To understand this concept it will be useful to have read the <strong>pam</strong>(3) manual page. Basically, for each management group there are up to two ways of calling the module&apos;s functions. In the case of the <em>authentication</em> and <em>session</em> components there are actually two separate functions. For the case of authentication, these functions are <strong>pam_authenticate</strong>(3) and <strong>pam_setcred</strong>(3), here <strong>run1</strong> means run the filter from the <strong>pam_authenticate</strong> function and <strong>run2</strong> means run the filter from <strong>pam_setcred</strong>. In the case of the session modules, <em>run1</em> implies that the filter is invoked at the <strong>pam_open_session</strong>(3) stage, and <em>run2</em> for <strong>pam_close_session</strong>(3).</p>
-<p class='spacer'>
-
-  <p>For the case of the account component. Either <em>run1</em> or <em>run2</em> may be used.</p>
-<p class='spacer'>
-
-<p>For the case of the password component, <em>run1</em> is used to indicate that the filter is run on the first occasion of <strong>pam_chauthtok</strong>(3) (the <em>PAM_PRELIM_CHECK</em> phase) and <em>run2</em> is used to indicate that the filter is run on the second occasion (the <em>PAM_UPDATE_AUTHTOK</em> phase).</p>
-<p class='spacer'>
-
-<p><strong>filter</strong> The full pathname of the filter to be run and any command line arguments that the filter might expect.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">MODULE TYPES PROVIDED</h2>
-        <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>All module types (<strong>auth</strong>, <strong>account</strong>, <strong>password</strong> and <strong>session</strong>) are provided.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">RETURN VALUES</h2>
-        <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>PAM_SUCCESS The new filter was set successfully.</p>
-<p class='spacer'>
-
-<p>PAM_ABORT Critical error, immediate abort.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
-        <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>Add the following line to /etc/pam.d/login to see how to configure login to transpose upper and lower case letters once the user has logged in:</p>
-<p class='spacer'>
-
-<pre>        session required pam_filter.so run1 /lib/security/pam_filter/upperLOWER
-</pre>
-
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
-        <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p><a href="../man5/pam.conf.5.html"><strong>pam.conf</strong>(5)</a>, <a href="../man5/pam.d.5.html"><strong>pam.d</strong>(5)</a>, <strong>pam</strong>(7)</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>pam_filter was written by Andrew G. Morgan &lt;morgan@kernel.org&gt;.</p>
-        </div>
-      </section>
-<nav>
-  <ul class="pager">
-  <li class="previous"><a href="pam_faildelay.8.html"><span aria-hidden="true">&larr;</span> pam_faildelay.8: Change the delay on failure per-application</a></li><li class="next"><a href="pam_ftp.8.html">pam_ftp.8: PAM module for anonymous access module <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
-  </div>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script src="/js/bootstrap.min.js"></script>
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-60781387-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
-</body>
-</html>
+'\" t
+.\"     Title: pam_filter
+.\"    Author: [see the "AUTHOR" section]
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 09/19/2013
+.\"    Manual: Linux-PAM Manual
+.\"    Source: Linux-PAM Manual
+.\"  Language: English
+.\"
+.TH "PAM_FILTER" "8" "09/19/2013" "Linux-PAM Manual" "Linux\-PAM Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+pam_filter \- PAM filter module
+.SH "SYNOPSIS"
+.HP \w'\fBpam_filter\&.so\fR\ 'u
+\fBpam_filter\&.so\fR [debug] [new_term] [non_term] run1|run2 \fIfilter\fR [\fI\&.\&.\&.\fR]
+.SH "DESCRIPTION"
+.PP
+This module is intended to be a platform for providing access to all of the input/output that passes between the user and the application\&. It is only suitable for tty\-based and (stdin/stdout) applications\&.
+.PP
+To function this module requires
+\fIfilters\fR
+to be installed on the system\&. The single filter provided with the module simply transposes upper and lower case letters in the input and output streams\&. (This can be very annoying and is not kind to termcap based editors)\&.
+.PP
+Each component of the module has the potential to invoke the desired filter\&. The filter is always
+\fBexecv\fR(2)
+with the privilege of the calling application and
+\fInot\fR
+that of the user\&. For this reason it cannot usually be killed by the user without closing their session\&.
+.SH "OPTIONS"
+.PP
+.PP
+\fBdebug\fR
+.RS 4
+Print debug information\&.
+.RE
+.PP
+\fBnew_term\fR
+.RS 4
+The default action of the filter is to set the
+\fIPAM_TTY\fR
+item to indicate the terminal that the user is using to connect to the application\&. This argument indicates that the filter should set
+\fIPAM_TTY\fR
+to the filtered pseudo\-terminal\&.
+.RE
+.PP
+\fBnon_term\fR
+.RS 4
+don\*(Aqt try to set the
+\fIPAM_TTY\fR
+item\&.
+.RE
+.PP
+\fBrunX\fR
+.RS 4
+In order that the module can invoke a filter it should know when to invoke it\&. This argument is required to tell the filter when to do this\&.
+.sp
+Permitted values for
+\fIX\fR
+are
+\fI1\fR
+and
+\fI2\fR\&. These indicate the precise time that the filter is to be run\&. To understand this concept it will be useful to have read the
+\fBpam\fR(3)
+manual page\&. Basically, for each management group there are up to two ways of calling the module\*(Aqs functions\&. In the case of the
+\fIauthentication\fR
+and
+\fIsession\fR
+components there are actually two separate functions\&. For the case of authentication, these functions are
+\fBpam_authenticate\fR(3)
+and
+\fBpam_setcred\fR(3), here
+\fBrun1\fR
+means run the filter from the
+\fBpam_authenticate\fR
+function and
+\fBrun2\fR
+means run the filter from
+\fBpam_setcred\fR\&. In the case of the session modules,
+\fIrun1\fR
+implies that the filter is invoked at the
+\fBpam_open_session\fR(3)
+stage, and
+\fIrun2\fR
+for
+\fBpam_close_session\fR(3)\&.
+.sp
+For the case of the account component\&. Either
+\fIrun1\fR
+or
+\fIrun2\fR
+may be used\&.
+.sp
+For the case of the password component,
+\fIrun1\fR
+is used to indicate that the filter is run on the first occasion of
+\fBpam_chauthtok\fR(3)
+(the
+\fIPAM_PRELIM_CHECK\fR
+phase) and
+\fIrun2\fR
+is used to indicate that the filter is run on the second occasion (the
+\fIPAM_UPDATE_AUTHTOK\fR
+phase)\&.
+.RE
+.PP
+\fBfilter\fR
+.RS 4
+The full pathname of the filter to be run and any command line arguments that the filter might expect\&.
+.RE
+.SH "MODULE TYPES PROVIDED"
+.PP
+All module types (\fBauth\fR,
+\fBaccount\fR,
+\fBpassword\fR
+and
+\fBsession\fR) are provided\&.
+.SH "RETURN VALUES"
+.PP
+.PP
+PAM_SUCCESS
+.RS 4
+The new filter was set successfully\&.
+.RE
+.PP
+PAM_ABORT
+.RS 4
+Critical error, immediate abort\&.
+.RE
+.SH "EXAMPLES"
+.PP
+Add the following line to
+/etc/pam\&.d/login
+to see how to configure login to transpose upper and lower case letters once the user has logged in:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+        session required pam_filter\&.so run1 /lib/security/pam_filter/upperLOWER
+      
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "SEE ALSO"
+.PP
+\fBpam.conf\fR(5),
+\fBpam.d\fR(5),
+\fBpam\fR(7)
+.SH "AUTHOR"
+.PP
+pam_filter was written by Andrew G\&. Morgan <morgan@kernel\&.org>\&.

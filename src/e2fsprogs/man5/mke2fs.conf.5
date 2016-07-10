@@ -1,463 +1,530 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>mke2fs.conf - Configuration file for mke2fs</title>
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/manpage.css" rel="stylesheet">
-  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-  <link rel="manifest" href="/icons/manifest.json">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="${metadescription}">
-  
-</head>
-<body>
-  <div class="container final">
-          <div class="page-header">
-        <h1 class="font-effect-destruction">mke2fs.conf<small> (5)</small></h1>
-        <p class="lead">Configuration file for mke2fs</p>
-      </div>
+.\" -*- nroff -*-
+.\" Copyright 2006 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.TH mke2fs.conf 5 "August 2014" "E2fsprogs version 1.42.12"
+.SH NAME
+mke2fs.conf \- Configuration file for mke2fs
+.SH DESCRIPTION
+.I mke2fs.conf
+is the configuration file for 
+.BR mke2fs (8).  
+It controls the default parameters used by 
+.BR mke2fs (8)
+when it is creating ext2, ext3, or ext4 filesystems.
+.PP
+The
+.I mke2fs.conf
+file uses an INI-style format.  Stanzas, or top-level sections, are 
+delimited by square braces: [ ].  Within each section, each line 
+defines a relation, which assigns tags to values, or to a subsection,
+which contains further relations or subsections.   
+.\" Tags can be assigned multiple values
+An example of the INI-style format used by this configuration file 
+follows below:
+.P
+	[section1]
+.br
+		tag1 = value_a
+.br
+		tag1 = value_b
+.br
+		tag2 = value_c
+.P
+	[section 2]
+.br
+		tag3 = {
+.br
+			subtag1 = subtag_value_a
+.br
+			subtag1 = subtag_value_b
+.br
+			subtag2 = subtag_value_c
+.br
+		}
+.br
+		tag1 = value_d
+.br
+		tag2 = value_e
+.br
+	}
+.P
+Comments are delimited by a semicolon (';') or a hash ('#') character 
+at the beginning of the comment, and are terminated by the end of 
+line character.
+.P
+Tags and values must be quoted using double quotes if they contain
+spaces.  Within a quoted string, the standard backslash interpretations 
+apply: "\en" (for the newline character), 
+"\et" (for the tab character), "\eb" (for the backspace character), 
+and "\e\e" (for the backslash character).
+.P
+Some relations expect a boolean value.  The parser is quite liberal on
+recognizing ``yes'', '`y'', ``true'', ``t'', ``1'', ``on'', etc. as a
+boolean true value, and ``no'', ``n'', ``false'', ``nil'', ``0'',
+``off'' as a boolean false value.
+.P
+The following stanzas are used in the 
+.I mke2fs.conf
+file.  They will be described in more detail in future sections of this
+document.
+.TP
+.I [options]
+Contains relations which influence how mke2fs behaves.
+.TP
+.I [defaults]
+Contains relations which define the default parameters
+used by
+.BR mke2fs (8).
+In general, these defaults may be overridden by a definition in the
+.B fs_types
+stanza, or by an command-line option provided by the user.
+.TP 
+.I [fs_types]
+Contains relations which define defaults that should be used for specific
+filesystem types.  The filesystem type can be specified explicitly using
+the 
+.B -T
+option to
+.BR mke2fs (8).
+.SH THE [options] STANZA
+The following relations are defined in the
+.I [options]
+stanza.
+.TP
+.I proceed_delay
+If this relation is set to a positive integer, then if mke2fs will
+proceed after waiting
+.I proceed_delay
+seconds, after asking the user for permission to proceed, even if the
+user has not answered the question.  Defaults to 0, which means to wait
+until the user answers the question one way or another.
+.SH THE [defaults] STANZA
+The following relations are defined in the 
+.I [defaults]
+stanza.
+.TP
+.I base_features
+This relation specifies the filesystems features which are enabled in
+newly created filesystems.  It may be overridden by the
+.I base_features
+relation found in the filesystem or usage type subsection of
+the
+.I [fs_types] 
+stanza.
+.TP
+.I default_features
+This relation specifies a set of features that should be added or
+removed to the features listed in the
+.I base_features
+relation.  It may be overridden by the filesystem-specific 
+.I default_features
+in the filesystem or usage type subsection of
+.IR [fs_types] ,
+and by the 
+.B -O
+command-line option
+to 
+.BR mke2fs (8).
+.TP
+.I enable_periodic_fsck
+This boolean relation specifies whether periodic filesystem checks should be
+enforced at boot time.  If set to true, checks will be forced every
+180 days, or after a random number of mounts.  These values may
+be changed later via the
+.B -i
+and
+.B -c
+command-line options to
+.BR tune2fs (8).
+.TP
+.I force_undo
+This boolean relation, if set to a value of true, forces
+.B mke2fs
+to always try to create an undo file, even if the undo file might be
+huge and it might extend the time to create the filesystem image
+because the inode table isn't being initialized lazily.
+.TP
+.I fs_type
+This relation specifies the default filesystem type if the user does not
+specify it via the
+.B \-t
+option, or if
+.B mke2fs
+is not started using a program name of the form
+.BI mkfs. fs-type\fR.
+If both the user and the
+.B mke2fs.conf
+file does not specify a default filesystem type, mke2fs will use a
+default filesystem type of
+.IR ext3
+if a journal was requested via a command-line option, or
+.I ext2
+if not.
+.TP
+.I blocksize
+This relation specifies the default blocksize if the user does not
+specify a blocksize on the command line, and the filesystem-type
+specific section of the configuration file does not specify a blocksize.
+.TP
+.I hash_alg
+This relation specifies the default hash algorithm used for the
+new filesystems with hashed b-tree directories.  Valid algorithms
+accepted are:
+.IR legacy ,
+.IR half_md4 ,
+and
+.IR tea .
+.TP
+.I inode_ratio
+This relation specifies the default inode ratio if the user does not
+specify one on the command line, and the filesystem-type
+specific section of the configuration file does not specify a default
+inode ratio.
+.TP
+.I inode_size
+This relation specifies the default inode size if the user does not
+specify one on the command line, and the filesystem-type
+specific section of the configuration file does not specify a default
+inode size.
+.TP
+.I reserved_ratio
+This relation specifies the default percentage of filesystem blocks
+reserved for the super-user, if the user does not
+specify one on the command line, and the filesystem-type
+specific section of the configuration file does not specify a default
+reserved ratio. This value can be a floating point number.
+.TP
+.I undo_dir
+This relation specifies the directory where the undo file should be
+stored.  It can be overridden via the
+.B E2FSPROGS_UNDO_DIR
+environment variable.  If the directory location is set to the value
+.IR none ,
+.B mke2fs
+will not create an undo file.
+.SH THE [fs_types] STANZA
+Each tag in the
+.I [fs_types] 
+stanza names a filesystem type or usage type which can be specified via the
+.B \-t
+or
+.B \-T
+options to
+.BR mke2fs (8),
+respectively.
+.P
+The
+.B mke2fs
+program constructs a list of fs_types by concatenating the filesystem
+type (i.e., ext2, ext3, etc.) with the usage type list.  For most
+configuration options,
+.B mke2fs
+will look for a subsection in the
+.I [fs_types]
+stanza corresponding with each entry in the constructed list, with later
+entries overriding earlier filesystem or usage types.
+For
+example, consider the following
+.B mke2fs.conf
+fragment:
+.P
+[defaults]
+.br
+	base_features = sparse_super,filetype,resize_inode,dir_index
+.br
+	blocksize = 4096
+.br
+	inode_size = 256
+.br
+	inode_ratio = 16384
+.br
 
-    <ol class="breadcrumb">
-	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
-	</li>
-	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
-	</li>
-	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/mke2fs.conf.5.html"><span itemprop="title">mke2fs.conf</span></a>
-	</li>
-</ol>
-    
-      <section>
-        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
-        <div class="sectioncontent">
-
-<p><em>mke2fs.conf</em> is the configuration file for <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>. It controls the default parameters used by <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a> when it is creating ext2, ext3, or ext4 filesystems.</p>
-<p class='spacer'>
-
-<p>The <em>mke2fs.conf</em> file uses an INI-style format.  Stanzas, or top-level sections, are delimited by square braces: [ ].  Within each section, each line defines a relation, which assigns tags to values, or to a subsection, which contains further relations or subsections. An example of the INI-style format used by this configuration file follows below:</p>
-<p class='spacer'>
-
-<p>	[section1]</p>
-<p class='spacer'>
-
-<p>		tag1 = value_a</p>
-<p class='spacer'>
-
-<p>		tag1 = value_b</p>
-<p class='spacer'>
-
-<p>		tag2 = value_c</p>
-<p class='spacer'>
-
-<p>	[section 2]</p>
-<p class='spacer'>
-
-<p>		tag3 = {</p>
-<p class='spacer'>
-
-<p>			subtag1 = subtag_value_a</p>
-<p class='spacer'>
-
-<p>			subtag1 = subtag_value_b</p>
-<p class='spacer'>
-
-<p>			subtag2 = subtag_value_c</p>
-<p class='spacer'>
-
-<p>		}</p>
-<p class='spacer'>
-
-<p>		tag1 = value_d</p>
-<p class='spacer'>
-
-<p>		tag2 = value_e</p>
-<p class='spacer'>
-
-<p>	}</p>
-<p class='spacer'>
-
-<p>Comments are delimited by a semicolon (';') or a hash ('#') character at the beginning of the comment, and are terminated by the end of line character.</p>
-<p class='spacer'>
-
-<p>Tags and values must be quoted using double quotes if they contain spaces.  Within a quoted string, the standard backslash interpretations apply: "&#92;n" (for the newline character), "&#92;t" (for the tab character), "&#92;b" (for the backspace character), and "&#92;&#92;" (for the backslash character).</p>
-<p class='spacer'>
-
-<p>Some relations expect a boolean value.  The parser is quite liberal on recognizing ``yes'', '`y'', ``true'', ``t'', ``1'', ``on'', etc. as a boolean true value, and ``no'', ``n'', ``false'', ``nil'', ``0'', ``off'' as a boolean false value.</p>
-<p class='spacer'>
-
-  <p>The following stanzas are used in the <em>mke2fs.conf</em> file.  They will be described in more detail in future sections of this document.</p>
-  <dl class='dl-vertical'>
-    <dt><em>[options]</em></dt>
-    <dd>
-  <p>Contains relations which influence how mke2fs behaves.</p>
-    </dd>
-    <dt><em>[defaults]</em></dt>
-    <dd>
-  <p>Contains relations which define the default parameters used by <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>. In general, these defaults may be overridden by a definition in the <strong>fs_types</strong> stanza, or by an command-line option provided by the user.</p>
-    </dd>
-    <dt><em>[fs_types]</em></dt>
-    <dd>
-  <p>Contains relations which define defaults that should be used for specific filesystem types.  The filesystem type can be specified explicitly using the <strong>-T</strong> option to <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">THE [options] STANZA</h2>
-        <div class="sectioncontent">
-
-  <p>The following relations are defined in the <em>[options]</em> stanza.</p>
-  <dl class='dl-vertical'>
-    <dt><em>proceed_delay</em></dt>
-    <dd>
-  <p>If this relation is set to a positive integer, then if mke2fs will proceed after waiting <em>proceed_delay</em> seconds, after asking the user for permission to proceed, even if the user has not answered the question.  Defaults to 0, which means to wait until the user answers the question one way or another.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">THE [defaults] STANZA</h2>
-        <div class="sectioncontent">
-
-  <p>The following relations are defined in the <em>[defaults]</em> stanza.</p>
-  <dl class='dl-vertical'>
-    <dt><em>base_features</em></dt>
-    <dd>
-  <p>This relation specifies the filesystems features which are enabled in newly created filesystems.  It may be overridden by the <em>base_features</em> relation found in the filesystem or usage type subsection of the <em>[fs_types]</em> stanza.</p>
-    </dd>
-    <dt><em>default_features</em></dt>
-    <dd>
-  <p>This relation specifies a set of features that should be added or removed to the features listed in the <em>base_features</em> relation.  It may be overridden by the filesystem-specific <em>default_features</em> in the filesystem or usage type subsection of <em>[fs_types]</em>, and by the <strong>-O</strong> command-line option to <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>.</p>
-    </dd>
-    <dt><em>enable_periodic_fsck</em></dt>
-    <dd>
-  <p>This boolean relation specifies whether periodic filesystem checks should be enforced at boot time.  If set to true, checks will be forced every 180 days, or after a random number of mounts.  These values may be changed later via the <strong>-i</strong> and <strong>-c</strong> command-line options to <a href="../man8/tune2fs.8.html"><strong>tune2fs</strong>(8)</a>.</p>
-    </dd>
-    <dt><em>force_undo</em></dt>
-    <dd>
-  <p>This boolean relation, if set to a value of true, forces <strong>mke2fs</strong> to always try to create an undo file, even if the undo file might be huge and it might extend the time to create the filesystem image because the inode table isn't being initialized lazily.</p>
-    </dd>
-    <dt><em>fs_type</em></dt>
-    <dd>
-  <p>This relation specifies the default filesystem type if the user does not specify it via the <strong>-t</strong> option, or if <strong>mke2fs</strong> is not started using a program name of the form <strong>mkfs.</strong><em>fs-type.</em> If both the user and the <strong>mke2fs.conf</strong> file does not specify a default filesystem type, mke2fs will use a default filesystem type of <em>ext3</em> if a journal was requested via a command-line option, or <em>ext2</em> if not.</p>
-    </dd>
-    <dt><em>blocksize</em></dt>
-    <dd>
-  <p>This relation specifies the default blocksize if the user does not specify a blocksize on the command line, and the filesystem-type specific section of the configuration file does not specify a blocksize.</p>
-    </dd>
-    <dt><em>hash_alg</em></dt>
-    <dd>
-  <p>This relation specifies the default hash algorithm used for the new filesystems with hashed b-tree directories.  Valid algorithms accepted are: <em>legacy</em>, <em>half_md4</em>, and <em>tea</em>.</p>
-    </dd>
-    <dt><em>inode_ratio</em></dt>
-    <dd>
-  <p>This relation specifies the default inode ratio if the user does not specify one on the command line, and the filesystem-type specific section of the configuration file does not specify a default inode ratio.</p>
-    </dd>
-    <dt><em>inode_size</em></dt>
-    <dd>
-  <p>This relation specifies the default inode size if the user does not specify one on the command line, and the filesystem-type specific section of the configuration file does not specify a default inode size.</p>
-    </dd>
-    <dt><em>reserved_ratio</em></dt>
-    <dd>
-  <p>This relation specifies the default percentage of filesystem blocks reserved for the super-user, if the user does not specify one on the command line, and the filesystem-type specific section of the configuration file does not specify a default reserved ratio. This value can be a floating point number.</p>
-    </dd>
-    <dt><em>undo_dir</em></dt>
-    <dd>
-  <p>This relation specifies the directory where the undo file should be stored.  It can be overridden via the <strong>E2FSPROGS_UNDO_DIR</strong> environment variable.  If the directory location is set to the value <em>none</em>, <strong>mke2fs</strong> will not create an undo file.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">THE [fs_types] STANZA</h2>
-        <div class="sectioncontent">
-
-<p>Each tag in the <em>[fs_types]</em> stanza names a filesystem type or usage type which can be specified via the <strong>-t</strong> or <strong>-T</strong> options to <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>, respectively.</p>
-<p class='spacer'>
-
-<p>The <strong>mke2fs</strong> program constructs a list of fs_types by concatenating the filesystem type (i.e., ext2, ext3, etc.) with the usage type list.  For most configuration options, <strong>mke2fs</strong> will look for a subsection in the <em>[fs_types]</em> stanza corresponding with each entry in the constructed list, with later entries overriding earlier filesystem or usage types. For example, consider the following <strong>mke2fs.conf</strong> fragment:</p>
-<p class='spacer'>
-
-<p>[defaults]</p>
-<p class='spacer'>
-
-<p>	base_features = sparse_super,filetype,resize_inode,dir_index</p>
-<p class='spacer'>
-
-<p>	blocksize = 4096</p>
-<p class='spacer'>
-
-<p>	inode_size = 256</p>
-<p class='spacer'>
-
-<p>	inode_ratio = 16384</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>[fs_types]</p>
-<p class='spacer'>
-
-<p>	ext3 = {</p>
-<p class='spacer'>
-
-<p>		features = has_journal</p>
-<p class='spacer'>
-
-<p>	}</p>
-<p class='spacer'>
-
-<p>	ext4 = {</p>
-<p class='spacer'>
-
-<p>		features = extents,flex_bg</p>
-<p class='spacer'>
-
-<p>		inode_size = 256</p>
-<p class='spacer'>
-
-<p>	}</p>
-<p class='spacer'>
-
-<p>	small = {</p>
-<p class='spacer'>
-
-<p>		blocksize = 1024</p>
-<p class='spacer'>
-
-<p>		inode_ratio = 4096</p>
-<p class='spacer'>
-
-<p>	}</p>
-<p class='spacer'>
-
-<p>	floppy = {</p>
-<p class='spacer'>
-
-<p>		features = ^resize_inode</p>
-<p class='spacer'>
-
-<p>		blocksize = 1024</p>
-<p class='spacer'>
-
-<p>		inode_size = 128</p>
-<p class='spacer'>
-
-<p>	}</p>
-<p class='spacer'>
-
-<p>If mke2fs started with a program name of <strong>mke2fs.ext4</strong>, then the filesystem type of ext4 will be used.  If the filesystem is smaller than 3 megabytes, and no usage type is specified, then <strong>mke2fs</strong> will use a default usage type of <em>floppy</em>. This results in an fs_types list of "ext4, floppy".   Both the ext4 subsection and the floppy subsection define an <em>inode_size</em> relation, but since the later entries in the fs_types list supersede earlier ones, the configuration parameter for fs_types.floppy.inode_size will be used, so the filesystem  will have an inode size of 128.</p>
-<p class='spacer'>
-
-<p>The exception to this resolution is the <em>features</em> tag, which is specifies a set of changes to the features used by the filesystem, and which is cumulative.  So in the above example, first the configuration relation defaults.base_features would enable an initial feature set with the sparse_super, filetype, resize_inode, and dir_index features enabled.  Then configuration relation fs_types.ext4.features would enable the extents and flex_bg features, and finally the configuration relation fs_types.floppy.features would remove the resize_inode feature, resulting in a filesystem feature set consisting of the sparse_super, filetype, resize_inode, dir_index, extents_and flex_bg features.</p>
-<p class='spacer'>
-
-  <p>For each filesystem type, the following tags may be used in that fs_type's subsection:</p>
-  <dl class='dl-vertical'>
-    <dt><em>base_features</em></dt>
-    <dd>
-  <p>This relation specifies the features which are initially enabled for this filesystem type.  Only one <em>base_features</em> will be used, so if there are multiple entries in the fs_types list whose subsections define the <em>base_features</em> relation, only the last will be used by <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>.</p>
-    </dd>
-    <dt><em>features</em></dt>
-    <dd>
-  <p>This relation specifies a comma-separated list of features edit requests which modify the feature set used by the newly constructed filesystem.  The syntax is the same as the <strong>-O</strong> command-line option to <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>; that is, a feature can be prefixed by a caret ('^') symbol to disable a named feature.  Each <em>feature</em> relation specified in the fs_types list will be applied in the order found in the fs_types list.</p>
-    </dd>
-    <dt><em>default_features</em></dt>
-    <dd>
-  <p>This relation specifies set of features which should be enabled or disabled after applying the features listed in the <em>base_features</em> and <em>features</em> relations.  It may be overridden by the <strong>-O</strong> command-line option to <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>.</p>
-    </dd>
-    <dt><em>auto_64-bit_support</em></dt>
-    <dd>
-  <p>This relation is a boolean which specifies whether <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a> should automatically add the 64bit feature if the number of blocks for the file system requires this feature to be enabled.  The resize_inode feature is also automatically disabled since it doesn't support 64-bit block numbers.</p>
-    </dd>
-    <dt><em>default_mntopts</em></dt>
-    <dd>
-  <p>This relation specifies the set of mount options which should be enabled by default.  These may be changed at a later time with the <strong>-o</strong> command-line option to <a href="../man8/tune2fs.8.html"><strong>tune2fs</strong>(8)</a>.</p>
-    </dd>
-    <dt><em>blocksize</em></dt>
-    <dd>
-  <p>This relation specifies the default blocksize if the user does not specify a blocksize on the command line.</p>
-    </dd>
-    <dt><em>lazy_itable_init</em></dt>
-    <dd>
-  <p>This boolean relation specifies whether the inode table should be lazily initialized.  It only has meaning if the uninit_bg feature is enabled.  If lazy_itable_init is true and the uninit_bg feature is enabled,  the inode table will not fully initialized by <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>. This speeds up filesystem initialization noticeably, but it requires the kernel to finish initializing the filesystem in the background when the filesystem is first mounted.</p>
-    </dd>
-    <dt><em>journal_location</em></dt>
-    <dd>
-  <p>This relation specifies the location of the journal.</p>
-    </dd>
-    <dt><em>num_backup_sb</em></dt>
-    <dd>
-  <p>This relation indicates whether file systems with the <strong>sparse_super2</strong> feature enabled should be created with 0, 1, or 2 backup superblocks.</p>
-    </dd>
-    <dt><em>packed_meta_blocks</em></dt>
-    <dd>
-  <p>This boolean relation specifes whether the allocation bitmaps, inode table, and journal should be located at the beginning of the file system.</p>
-    </dd>
-    <dt><em>inode_ratio</em></dt>
-    <dd>
-  <p>This relation specifies the default inode ratio if the user does not specify one on the command line.</p>
-    </dd>
-    <dt><em>inode_size</em></dt>
-    <dd>
-  <p>This relation specifies the default inode size if the user does not specify one on the command line.</p>
-    </dd>
-    <dt><em>reserved_ratio</em></dt>
-    <dd>
-  <p>This relation specifies the default percentage of filesystem blocks reserved for the super-user, if the user does not specify one on the command line.</p>
-    </dd>
-    <dt><em>hash_alg</em></dt>
-    <dd>
-  <p>This relation specifies the default hash algorithm used for the new filesystems with hashed b-tree directories.  Valid algorithms accepted are: <em>legacy</em>, <em>half_md4</em>, and <em>tea</em>.</p>
-    </dd>
-    <dt><em>flex_bg_size</em></dt>
-    <dd>
-  <p>This relation specifies the number of block groups that will be packed together to create one large virtual block group on an ext4 filesystem. This improves meta-data locality and performance on meta-data heavy workloads.  The number of groups must be a power of 2 and may only be specified if the flex_bg filesystem feature is enabled.</p>
-    </dd>
-    <dt><em>options</em></dt>
-    <dd>
-  <p>This relation specifies additional extended options which should be treated by <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a> as if they were prepended to the argument of the <strong>-E</strong> option.  This can be used to configure the default extended options used by <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a> on a per-filesystem type basis.</p>
-    </dd>
-    <dt><em>discard</em></dt>
-    <dd>
-  <p>This boolean relation specifies whether the <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a> should attempt to discard device prior to filesystem creation.</p>
-    </dd>
-    <dt><em>cluster_size</em></dt>
-    <dd>
-  <p>This relation specifies the default cluster size if the bigalloc file system feature is enabled.  It can be overridden via the <strong>-C</strong> command line option to <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a></p>
-    </dd>
-    <dt><em>make_hugefiles</em></dt>
-    <dd>
-  <p>This boolean relation enables the creation of pre-allocated files as part of formatting the file system.</p>
-    </dd>
-    <dt><em>hugefiles_uid</em></dt>
-    <dd>
-  <p>This relation controls the user ownership for all of the files and directories created by the <em>make_hugefiles</em> feature.</p>
-    </dd>
-    <dt><em>hugefiles_gid</em></dt>
-    <dd>
-  <p>This relation controls the group ownership for all of the files and directories created by the <em>make_hugefiles</em> feature.</p>
-    </dd>
-    <dt><em>hugefiles_umask</em></dt>
-    <dd>
-  <p>This relation specifies the umask used when creating the files and directories by the <em>make_hugefiles</em> feature.</p>
-    </dd>
-    <dt><em>num_hugefiles</em></dt>
-    <dd>
-  <p>This relation specifies the number of huge files to be created.  If this relation is not specified, or is set to zero, and the <em>hugefiles_size</em> relation is non-zero, then <em>make_hugefiles</em> will create as many huge files as can fit to fill the entire file system.</p>
-    </dd>
-    <dt><em>hugefiles_slack</em></dt>
-    <dd>
-  <p>This relation specifies how much space should be reserved for other files.</p>
-    </dd>
-    <dt><em>hugefiles_size</em></dt>
-    <dd>
-  <p>This relation specifies the size of the huge files.  If this relation is not specified, the default is to fill the entire file system.</p>
-    </dd>
-    <dt><em>hugefiles_align</em></dt>
-    <dd>
-  <p>This relation specifies the alignment for the start block of the huge files.  It also forces the size of huge files to be a multiple of the requested alignment.  If this relation is not specified, no alignment requirement will be imposed on the huge files.</p>
-    </dd>
-    <dt><em>hugefiles_align_disk</em></dt>
-    <dd>
-  <p>Thie relations specifies whether the alignment should be relative to the beginning of the hard drive (assuming that the starting offset of the partition is available to mke2fs).  The default value is false, which if will cause hugefile alignment to be relative to the beginning of the file system.</p>
-    </dd>
-    <dt><em>hugefiles_name</em></dt>
-    <dd>
-  <p>This relation specifies the base file name for the huge files.</p>
-    </dd>
-    <dt><em>hugefiles_digits</em></dt>
-    <dd>
-  <p>This relation specifies the (zero-padded) width of the field for the huge file number.</p>
-    </dd>
-    <dt><em>zero_hugefiles</em></dt>
-    <dd>
-  <p>This boolean relation specifies whether or not zero blocks will be written to the hugefiles while <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a></strong> is creating them.  By default, zero blocks will be written to the huge files to avoid stale data from being made available to potentially untrusted user programs, unless the device supports a discard/trim operation which will take care of zeroing the device blocks.  By <em>zero_hugefiles</em> to false, this step will always be skipped, which can be useful if it is known that the disk has been previously erased, or if the user programs that will have access to the huge files are trusted to not reveal stale data.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">THE [devices] STANZA</h2>
-        <div class="sectioncontent">
-
-  <p>Each tag in the <em>[devices]</em> stanza names device name so that per-device defaults can be specified.</p>
-  <dl class='dl-vertical'>
-    <dt><em>fs_type</em></dt>
-    <dd>
-  <p>This relation specifies the default parameter for the <strong>-t</strong> option, if this option isn't specified on the command line.</p>
-    </dd>
-    <dt><em>usage_types</em></dt>
-    <dd>
-  <p>This relation specifies the default parameter for the <strong>-T</strong> option, if this option isn't specified on the command line.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">FILES</h2>
-        <div class="sectioncontent">
-
-  <dl class='dl-vertical'>
-    <dt><em>/etc/mke2fs.conf</em></dt>
-    <dd>
-  <p>The configuration file for <a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a>.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
-        <div class="sectioncontent">
-
-<p><a href="../man8/mke2fs.8.html"><strong>mke2fs</strong>(8)</a></p>
-        </div>
-      </section>
-<nav>
-  <ul class="pager">
-  <li class="previous"><a href="login.defs.5.html"><span aria-hidden="true">&larr;</span> login.defs.5: shadow password suite configuration</a></li><li class="next"><a href="motd.5.html">motd.5: message of the day <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
-  </div>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script src="/js/bootstrap.min.js"></script>
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-60781387-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
-</body>
-</html>
+.br
+[fs_types]
+.br
+	ext3 = {
+.br
+		features = has_journal
+.br
+	}
+.br
+	ext4 = {
+.br
+		features = extents,flex_bg
+.br
+		inode_size = 256
+.br
+	}
+.br
+	small = {
+.br
+		blocksize = 1024
+.br
+		inode_ratio = 4096
+.br
+	}
+.br
+	floppy = {
+.br
+		features = ^resize_inode
+.br
+		blocksize = 1024
+.br
+		inode_size = 128
+.br
+	}
+.P
+If mke2fs started with a program name of
+.BR mke2fs.ext4 ,
+then the filesystem type of ext4 will be used.  If the filesystem is
+smaller than 3 megabytes, and no usage type is specified, then
+.B mke2fs
+will use a default
+usage type of
+.IR floppy .
+This results in an fs_types list of "ext4, floppy".   Both the ext4
+subsection and the floppy subsection define an
+.I inode_size
+relation, but since the later entries in the fs_types list supersede
+earlier ones, the configuration parameter for fs_types.floppy.inode_size
+will be used, so the filesystem  will have an inode size of 128.
+.P
+The exception to this resolution is the
+.I features
+tag, which is specifies a set of changes to the features used by the
+filesystem, and which is cumulative.  So in the above example, first
+the configuration relation defaults.base_features would enable an
+initial feature set with the sparse_super, filetype, resize_inode, and
+dir_index features enabled.  Then configuration relation
+fs_types.ext4.features would enable the extents and flex_bg
+features, and finally the configuration relation
+fs_types.floppy.features would remove
+the resize_inode feature, resulting in a filesystem feature set
+consisting of the sparse_super, filetype, resize_inode, dir_index,
+extents_and flex_bg features.
+.P
+For each filesystem type, the following tags may be used in that 
+fs_type's subsection:
+.TP
+.I base_features
+This relation specifies the features which are initially enabled for this
+filesystem type.  Only one
+.I base_features
+will be used, so if there are multiple entries in the fs_types list
+whose subsections define the
+.I base_features
+relation, only the last will be used by
+.BR mke2fs (8).
+.TP
+.I features
+This relation specifies a comma-separated list of features edit
+requests which modify the feature set
+used by the newly constructed filesystem.  The syntax is the same as the
+.B -O
+command-line option to
+.BR mke2fs (8);
+that is, a feature can be prefixed by a caret ('^') symbol to disable
+a named feature.  Each
+.I feature
+relation specified in the fs_types list will be applied in the order
+found in the fs_types list.
+.TP
+.I default_features
+This relation specifies set of features which should be enabled or 
+disabled after applying the features listed in the
+.I base_features
+and
+.I features
+relations.  It may be overridden by the
+.B -O
+command-line option to
+.BR mke2fs (8).
+.TP
+.I auto_64-bit_support
+This relation is a boolean which specifies whether
+.BR mke2fs (8)
+should automatically add the 64bit feature if the number of blocks for
+the file system requires this feature to be enabled.  The resize_inode
+feature is also automatically disabled since it doesn't support 64-bit
+block numbers.
+.TP
+.I default_mntopts
+This relation specifies the set of mount options which should be enabled
+by default.  These may be changed at a later time with the
+.B -o
+command-line option to
+.BR tune2fs (8).
+.TP
+.I blocksize
+This relation specifies the default blocksize if the user does not
+specify a blocksize on the command line.
+.TP
+.I lazy_itable_init
+This boolean relation specifies whether the inode table should 
+be lazily initialized.  It only has meaning if the uninit_bg feature is
+enabled.  If lazy_itable_init is true and the uninit_bg feature is
+enabled,  the inode table will
+not fully initialized by 
+.BR mke2fs (8).
+This speeds up filesystem
+initialization noticeably, but it requires the kernel to finish
+initializing the filesystem in the background when the filesystem is
+first mounted.
+.TP
+.I journal_location
+This relation specifies the location of the journal.
+.TP
+.I num_backup_sb
+This relation indicates whether file systems with the
+.B sparse_super2
+feature enabled should be created with 0, 1, or 2 backup superblocks.
+.TP
+.I packed_meta_blocks
+This boolean relation specifes whether the allocation bitmaps, inode
+table, and journal should be located at the beginning of the file system.
+.TP
+.I inode_ratio
+This relation specifies the default inode ratio if the user does not
+specify one on the command line.
+.TP
+.I inode_size
+This relation specifies the default inode size if the user does not
+specify one on the command line.
+.TP
+.I reserved_ratio
+This relation specifies the default percentage of filesystem blocks
+reserved for the super-user, if the user does not specify one on the command
+line.
+.TP
+.I hash_alg
+This relation specifies the default hash algorithm used for the
+new filesystems with hashed b-tree directories.  Valid algorithms
+accepted are:
+.IR legacy ,
+.IR half_md4 ,
+and
+.IR tea .
+.TP
+.I flex_bg_size
+This relation specifies the number of block groups that will be packed
+together to create one large virtual block group on an ext4 filesystem.
+This improves meta-data locality and performance on meta-data heavy
+workloads.  The number of groups must be a power of 2 and may only be
+specified if the flex_bg filesystem feature is enabled.
+.TP
+.I options
+This relation specifies additional extended options which should be
+treated by
+.BR mke2fs (8)
+as if they were prepended to the argument of the
+.B -E
+option.  This can be used to configure the default extended options used
+by
+.BR mke2fs (8)
+on a per-filesystem type basis.
+.TP
+.I discard
+This boolean relation specifies whether the
+.BR mke2fs (8)
+should attempt to discard device prior to filesystem creation.
+.TP
+.I cluster_size
+This relation specifies the default cluster size if the bigalloc file
+system feature is enabled.  It can be overridden via the
+.B \-C
+command line option to
+.BR mke2fs (8)
+.TP
+.I make_hugefiles
+This boolean relation enables the creation of pre-allocated files as
+part of formatting the file system.
+.TP
+.I hugefiles_uid
+This relation controls the user ownership for all of the files and
+directories created by the
+.I make_hugefiles
+feature.
+.TP
+.I hugefiles_gid
+This relation controls the group ownership for all of the files and
+directories created by the
+.I make_hugefiles
+feature.
+.TP
+.I hugefiles_umask
+This relation specifies the umask used when creating the files and
+directories by the
+.I make_hugefiles
+feature.
+.TP
+.I num_hugefiles
+This relation specifies the number of huge files to be created.  If this
+relation is not specified, or is set to zero, and the
+.I hugefiles_size
+relation is non-zero, then
+.I make_hugefiles
+will create as many huge files as can fit to fill the entire file system.
+.TP
+.I hugefiles_slack
+This relation specifies how much space should be reserved for other
+files.
+.TP
+.I hugefiles_size
+This relation specifies the size of the huge files.  If this relation is
+not specified, the default is to fill the entire file system.
+.TP
+.I hugefiles_align
+This relation specifies the alignment for the start block of the huge
+files.  It also forces the size of huge files to be a multiple of the
+requested alignment.  If this relation is not specified, no alignment
+requirement will be imposed on the huge files.
+.TP
+.I hugefiles_align_disk
+Thie relations specifies whether the alignment should be relative to the
+beginning of the hard drive (assuming that the starting offset of the
+partition is available to mke2fs).  The default value is false, which
+if will cause hugefile alignment to be relative to the beginning of the
+file system.
+.TP
+.I hugefiles_name
+This relation specifies the base file name for the huge files.
+.TP
+.I hugefiles_digits
+This relation specifies the (zero-padded) width of the field for the
+huge file number.
+.TP
+.I zero_hugefiles
+This boolean relation specifies whether or not zero blocks will be
+written to the hugefiles while
+.BR mke2fs(8)
+is creating them.  By default, zero blocks will be written to the huge
+files to avoid stale data from being made available to potentially
+untrusted user programs, unless the device supports a discard/trim
+operation which will take care of zeroing the device blocks.  By
+.I zero_hugefiles
+to false, this step will always be skipped, which can be useful if it is
+known that the disk has been previously erased, or if the user programs
+that will have access to the huge files are trusted to not reveal stale
+data.
+.SH THE [devices] STANZA
+Each tag in the
+.I [devices] 
+stanza names device name so that per-device defaults can be specified.
+.TP
+.I fs_type
+This relation specifies the default parameter for the
+.B \-t
+option, if this option isn't specified on the command line.
+.TP
+.I usage_types
+This relation specifies the default parameter for the
+.B \-T
+option, if this option isn't specified on the command line.
+.SH FILES
+.TP
+.I /etc/mke2fs.conf
+The configuration file for 
+.BR mke2fs (8).
+.SH SEE ALSO
+.BR mke2fs (8)
