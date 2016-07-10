@@ -1,0 +1,139 @@
+.\" Copyright (c) 1989-2013 The Regents of the University of California.
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgement:
+.\"	This product includes software developed by the University of
+.\"	California, Berkeley and its contributors.
+.\" 4. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.TH UUENCODE 5
+.SH NAME
+uuencode \- format of an encoded uuencode file
+.SH DESCRIPTION
+Files output by
+uuencode(1)
+consist of a header line,
+followed by a number of body lines,
+and a trailer line.
+The
+uudecode(1)
+command will ignore any lines preceding the header or
+following the trailer.
+Lines preceding a header must not, of course, look like a header.
+.PP
+The header line is distinguished by having the first 5 characters be
+.I begin
+followed by a space, or else a hyphen and either
+.I base64
+or
+.I encoded
+or both (also separated with a hyphen).
+The
+.I base64
+option says the file has been encoded using base64.
+The
+.I encoded
+option says the output file
+.I name
+has been base64 encoded.  It is never encoded with traditional uuencoding.
+This is a GNU extension.
+These are followed by a mode (in octal), and a string which names the
+remote file.  The mode is separated from the
+.I begin
+clause and the file name by a single space character.
+.SS "Traditional uuencoding"
+.PP
+The traditional
+.I uuencoded
+file body consists of a number of lines, each at most 62 characters
+long (including the trailing newline). These consist of a character
+count letter, followed by the encoded characters, followed by a newline.
+The character count is a single printing character,
+and represents an integer, the number of bytes
+the rest of the line represents.
+Such integers are always in the range from 0 to 63 and can
+be determined by subtracting the character space (octal 40)
+from the character.
+.PP
+Groups of 3 bytes are stored in 4 characters, 6 bits per character.
+All are offset by a space to make the characters printing.
+The last line may be shorter than the normal 45 bytes.
+If the size is not a multiple of 3, this fact can be determined
+by the value of the count on the last line.
+Extra garbage will be included to make the character count a multiple
+of 4.
+The body is terminated by a line with a count of zero.
+This line consists of one ASCII space.
+.PP
+The trailer line consists of
+.I end
+on a line by itself.
+.PP
+.SS "base64 encoding"
+.I base64
+encoded files follow the specified format for the body, but
+also include a
+.I begin-base64
+header and a trailer line of four \fI=\fP characters.
+.SH EXAMPLES
+.nf
+.na
+.in +5
+begin-base64-encoded 644 VE9ETw==
+.in -5
+.fi
+.ad
+This introduces a base64 encoded file named,
+.I TODO
+with that name encoded using base64 encoding.
+.sp
+.nf
+.na
+.in +5
+begin-encoded 644 5$]$3P``
+.in -5
+.fi
+.ad
+This introduces an encoded file named,
+.I TODO
+with that name encoded using uuencoding.
+The encoding is a lot less friendly.  Please prefer base64 encoding.
+.SH CONFORMING TO
+IEEE Std 1003.1, plus extensions
+.sp
+The
+.I \-encoded
+suffix to the
+.I begin
+header line is a GNU extension.  Recipients must have the GNU
+.I uudecode
+program to decode them.
+.SH SEE ALSO
+uuencode(1), uudecode(1), base64(1GNU)
+.SH HISTORY
+The
+.I uuencode
+file format appeared in BSD 4.0 .
