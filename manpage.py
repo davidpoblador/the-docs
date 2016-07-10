@@ -280,9 +280,10 @@ class ManPage(object):
 
                 parsed_line = LineParser(line)
 
-                if parsed_line.extra and (
-                    (self.is_state(ManPageStates.BODY) and not self.in_pre)
-                        or parsed_line.macro):
+                if parsed_line.extra and(
+                    ((self.is_state(ManPageStates.BODY) and not self.in_pre)
+                     or parsed_line.macro) or self.is_state(
+                        ManPageStates.TITLE)):
                     extra_line = parsed_line.extra
                     continue
 
