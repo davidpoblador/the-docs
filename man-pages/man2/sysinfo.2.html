@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>sysinfo - returns information on overall system statistics</title>
+  <title>sysinfo - return system information</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -32,7 +32,7 @@
   <div class="container final">
           <div class="page-header">
         <h1 class="font-effect-destruction">sysinfo<small> (2)</small></h1>
-        <p class="lead">returns information on overall system statistics</p>
+        <p class="lead">return system information</p>
       </div>
 
     <ol class="breadcrumb">
@@ -62,7 +62,10 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 
-<p>Until Linux 2.3.16, <strong>sysinfo</strong>() used to return information in the following structure:</p>
+<p><strong>sysinfo</strong>() returns certain statistics on memory and swap usage, as well as the load average.</p>
+<p class='spacer'>
+
+<p>Until Linux 2.3.16, <strong>sysinfo</strong>() returned information in the following structure:</p>
 <p class='spacer'>
 
 <pre>struct sysinfo {
@@ -73,17 +76,17 @@
     unsigned long sharedram; /* Amount of shared memory */
     unsigned long bufferram; /* Memory used by buffers */
     unsigned long totalswap; /* Total swap space size */
-    unsigned long freeswap;  /* swap space still available */
+    unsigned long freeswap;  /* Swap space still available */
     unsigned short procs;    /* Number of current processes */
     char _f[22];             /* Pads structure to 64 bytes */
 };</pre>
 
 <p class='spacer'>
 
-<p>and the sizes were given in bytes.</p>
+<p>In the above structure, the sizes of the memory and swap fields are given in bytes.</p>
 <p class='spacer'>
 
-<p>Since Linux 2.3.23 (i386), 2.3.48 (all architectures) the structure is:</p>
+<p>Since Linux 2.3.23 (i386) and Linux 2.3.48 (all architectures) the structure is:</p>
 <p class='spacer'>
 
 <pre>struct sysinfo {
@@ -94,20 +97,18 @@
     unsigned long sharedram; /* Amount of shared memory */
     unsigned long bufferram; /* Memory used by buffers */
     unsigned long totalswap; /* Total swap space size */
-    unsigned long freeswap;  /* swap space still available */
+    unsigned long freeswap;  /* Swap space still available */
     unsigned short procs;    /* Number of current processes */
     unsigned long totalhigh; /* Total high memory size */
     unsigned long freehigh;  /* Available high memory size */
     unsigned int mem_unit;   /* Memory unit size in bytes */
-    char _f[20-2*sizeof(long)-sizeof(int)]; /* Padding to 64 bytes */
+    char _f[20-2*sizeof(long)-sizeof(int)];
+                             /* Padding to 64 bytes */
 };</pre>
 
 <p class='spacer'>
 
-<p>and the sizes are given as multiples of <em>mem_unit</em> bytes.</p>
-<p class='spacer'>
-
-<p><strong>sysinfo</strong>() provides a simple way of getting overall system statistics. This is more portable than reading <em>/dev/kmem</em>.</p>
+<p>In the above structure, sizes of the memory and swap fields are given as multiples of <em>mem_unit</em> bytes.</p>
         </div>
       </section>
 
@@ -115,7 +116,7 @@
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
 
-<p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+<p>On success, <strong>sysinfo</strong>() returns zero. On error, -1 is returned, and <em>errno</em> is set to indicate the cause of the error.</p>
         </div>
       </section>
 
@@ -126,7 +127,7 @@
   <dl class='dl-vertical'>
     <dt><strong>EFAULT</strong></dt>
     <dd>
-  <p>pointer to <em>struct&nbsp;sysinfo</em> is invalid</p>
+  <p><em>info</em> is not a valid address.</p>
     </dd>
   </dl>
         </div>
@@ -136,7 +137,7 @@
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
 
-<p>The Linux kernel has a <strong>sysinfo</strong>() system call since 0.98.pl6.</p>
+<p><strong>sysinfo</strong>() first appeared in Linux 0.98.pl6.</p>
         </div>
       </section>
 
@@ -145,6 +146,14 @@
         <div class="sectioncontent">
 
 <p>This function is Linux-specific, and should not be used in programs intended to be portable.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>All of the information provided by this system call is also available via <em>/proc/meminfo</em> and <em>/proc/loadavg</em>.</p>
         </div>
       </section>
 

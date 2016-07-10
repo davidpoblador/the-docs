@@ -613,7 +613,7 @@ p = private (copy on write)</pre>
     </dd>
     <dt><em>/proc/[pid]/mountinfo</em> (since Linux 2.6.26)</dt>
     <dd>
-  <p>This file contains information about mount points. It supplies various information (e.g., propagation state, root of mount for bind mounts, identifier for each mount and its parent) that is missing from the (older) <em>/proc/[pid]/mounts</em> file, and fixes various other problems with that file (e.g., nonextensibility, failure to distinguish per-mount versus per-superblock options).</p>
+  <p>This file contains information about mount points in the process's mount namespace (see <a href="../man7/mount_namespaces.7.html"><strong>mount_namespaces</strong>(7)</a>). It supplies various information (e.g., propagation state, root of mount for bind mounts, identifier for each mount and its parent) that is missing from the (older) <em>/proc/[pid]/mounts</em> file, and fixes various other problems with that file (e.g., nonextensibility, failure to distinguish per-mount versus per-superblock options).</p>
 <p class='spacer'>
 
     <p>The file contains lines of the form:</p>
@@ -672,45 +672,21 @@ p = private (copy on write)</pre>
       </dl>
 <p class='spacer'>
 
-      <p>Currently, the possible optional fields are:</p>
-      <dl class='dl-vertical'>
-        <dt>shared:X</dt>
-        <dd>
-      <p>mount is shared in peer group X</p>
-        </dd>
-        <dt>master:X</dt>
-        <dd>
-      <p>mount is slave to peer group X</p>
-        </dd>
-        <dt>propagate_from:X</dt>
-        <dd>
-      <p>mount is slave and receives propagation from peer group X (*)</p>
-        </dd>
-        <dt>unbindable</dt>
-        <dd>
-      <p>mount is unbindable</p>
-        </dd>
-      </dl>
-<p class='spacer'>
-
-  <p>Parsers should ignore all unrecognized optional fields.</p>
-<p class='spacer'>
-
-  <p>(*) X is the closest dominant peer group under the process's root. If X is the immediate master of the mount, or if there is no dominant peer group under the same root, then only the "master:X" field is present and not the "propagate_from:X" field.</p>
+  <p>Currently, the possible optional fields are <em>shared</em>, <em>master</em>, <em>propagate_from</em>, and <em>unbindable</em>. See <a href="../man7/mount_namespaces.7.html"><strong>mount_namespaces</strong>(7)</a> for a description of these fields. Parsers should ignore all unrecognized optional fields.</p>
 <p class='spacer'>
 
   <p>For more information on mount propagation see: <em>Documentation/filesystems/sharedsubtree.txt</em> in the Linux kernel source tree.</p>
     </dd>
     <dt><em>/proc/[pid]/mounts</em> (since Linux 2.4.19)</dt>
     <dd>
-  <p>This file lists all the filesystems currently mounted in the process's mount namespace. The format of this file is documented in <a href="../man5/fstab.5.html"><strong>fstab</strong>(5)</a>.</p>
+  <p>This file lists all the filesystems currently mounted in the process's mount namespace (see <a href="../man7/mount_namespaces.7.html"><strong>mount_namespaces</strong>(7)</a>). The format of this file is documented in <a href="../man5/fstab.5.html"><strong>fstab</strong>(5)</a>.</p>
 <p class='spacer'>
 
   <p>Since kernel version 2.6.15, this file is pollable: after opening the file for reading, a change in this file (i.e., a filesystem mount or unmount) causes <a href="../man2/select.2.html"><strong>select</strong>(2)</a> to mark the file descriptor as having an exceptional condition, and <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> and <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a> mark the file as having a priority event (<strong>POLLPRI</strong>). (Before Linux 2.6.30, a change in this file was indicated by the file descriptor being marked as readable for <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, and being marked as having an error condition for <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> and <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a>.)</p>
     </dd>
     <dt><em>/proc/[pid]/mountstats</em> (since Linux 2.6.17)</dt>
     <dd>
-    <p>This file exports information (statistics, configuration information) about the mount points in the process's mount namespace. Lines in this file have the form:</p>
+    <p>This file exports information (statistics, configuration information) about the mount points in the process's mount namespace (see <a href="../man7/mount_namespaces.7.html"><strong>mount_namespaces</strong>(7)</a>). Lines in this file have the form:</p>
 <pre>
 device /dev/sda7 mounted on /home with fstype ext3 [statistics]
 (       1      )            ( 2 )             (3 ) (4)</pre>
@@ -739,9 +715,10 @@ device /dev/sda7 mounted on /home with fstype ext3 [statistics]
 <p class='spacer'>
 
   <p>This file is readable only by the owner of the process.</p>
-<p class='spacer'>
-
-  <p>See <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a> for more information.</p>
+    </dd>
+    <dt>/proc/[pid]/net " (since Linux 2.6.25)"</dt>
+    <dd>
+  <p>See the description of <em>/proc/net</em>.</p>
     </dd>
     <dt><em>/proc/[pid]/ns/</em> (since Linux 3.0)</dt>
     <dd>
@@ -1995,7 +1972,7 @@ smart_values       in hexadecimal</pre>
     </dd>
     <dt><em>/proc/mounts</em></dt>
     <dd>
-  <p>Before kernel 2.4.19, this file was a list of all the filesystems currently mounted on the system. With the introduction of per-process mount namespaces in Linux 2.4.19, this file became a link to <em>/proc/self/mounts</em>, which lists the mount points of the process's own mount namespace. The format of this file is documented in <a href="../man5/fstab.5.html"><strong>fstab</strong>(5)</a>.</p>
+  <p>Before kernel 2.4.19, this file was a list of all the filesystems currently mounted on the system. With the introduction of per-process mount namespaces in Linux 2.4.19 (see <a href="../man7/mount_namespaces.7.html"><strong>mount_namespaces</strong>(7)</a>), this file became a link to <em>/proc/self/mounts</em>, which lists the mount points of the process's own mount namespace. The format of this file is documented in <a href="../man5/fstab.5.html"><strong>fstab</strong>(5)</a>.</p>
     </dd>
     <dt><em>/proc/mtrr</em></dt>
     <dd>
@@ -2003,7 +1980,10 @@ smart_values       in hexadecimal</pre>
     </dd>
     <dt><em>/proc/net</em></dt>
     <dd>
-  <p>various net pseudo-files, all of which give the status of some part of the networking layer. These files contain ASCII structures and are, therefore, readable with <a href="../man1/cat.1.html"><strong>cat</strong>(1)</a>. However, the standard <a href="../man8/netstat.8.html"><strong>netstat</strong>(8)</a> suite provides much cleaner access to these files.</p>
+  <p>This directory contains various files and subdirectories containing information about the networking layer. The files contain ASCII structures and are, therefore, readable with <a href="../man1/cat.1.html"><strong>cat</strong>(1)</a>. However, the standard <a href="../man8/netstat.8.html"><strong>netstat</strong>(8)</a> suite provides much cleaner access to these files.</p>
+<p class='spacer'>
+
+  <p>With the advent of network namespaces, various information relating to the network stack is virtualized (see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>). Thus, since Linux 2.6.25, <em>/proc/net</em> is a symbolic link to the directory <em>/proc/self/net</em>, which contains the same files and directories as listed below. However, these files and directories now expose information for the network namespace of which the process is a member.</p>
     </dd>
     <dt><em>/proc/net/arp</em></dt>
     <dd>

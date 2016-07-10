@@ -68,13 +68,19 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 
-<p>The scheduling priority of the process, process group, or user, as indicated by <em>which</em> and <em>who</em> is obtained with the <strong>getpriority</strong>() call and set with the <strong>setpriority</strong>() call.</p>
+<p>The scheduling priority of the process, process group, or user, as indicated by <em>which</em> and <em>who</em> is obtained with the <strong>getpriority</strong>() call and set with the <strong>setpriority</strong>() call. The process attribute dealt with by these system calls is the same attribute (also known as the "nice" value) that is dealt with by <a href="../man2/nice.2.html"><strong>nice</strong>(2)</a>.</p>
 <p class='spacer'>
 
-<p>The value <em>which</em> is one of <strong>PRIO_PROCESS</strong>, <strong>PRIO_PGRP</strong>, or <strong>PRIO_USER</strong>, and <em>who</em> is interpreted relative to <em>which</em> (a process identifier for <strong>PRIO_PROCESS</strong>, process group identifier for <strong>PRIO_PGRP</strong>, and a user ID for <strong>PRIO_USER</strong>). A zero value for <em>who</em> denotes (respectively) the calling process, the process group of the calling process, or the real user ID of the calling process. The <em>prio</em> argument is a value in the range -20 to 19 (but see NOTES below). The default priority is 0; lower priorities cause more favorable scheduling.</p>
+<p>The value <em>which</em> is one of <strong>PRIO_PROCESS</strong>, <strong>PRIO_PGRP</strong>, or <strong>PRIO_USER</strong>, and <em>who</em> is interpreted relative to <em>which</em> (a process identifier for <strong>PRIO_PROCESS</strong>, process group identifier for <strong>PRIO_PGRP</strong>, and a user ID for <strong>PRIO_USER</strong>). A zero value for <em>who</em> denotes (respectively) the calling process, the process group of the calling process, or the real user ID of the calling process.</p>
 <p class='spacer'>
 
-<p>The <strong>getpriority</strong>() call returns the highest priority (lowest numerical value) enjoyed by any of the specified processes. The <strong>setpriority</strong>() call sets the priorities of all of the specified processes to the specified value. Only the superuser may lower priorities.</p>
+<p>The <em>prio</em> argument is a value in the range -20 to 19 (but see NOTES below). with -20 being the highest priority and 19 being the lowest priority. The default priority is 0; lower values give a process a higher scheduling priority.</p>
+<p class='spacer'>
+
+<p>The <strong>getpriority</strong>() call returns the highest priority (lowest numerical value) enjoyed by any of the specified processes. The <strong>setpriority</strong>() call sets the priorities of all of the specified processes to the specified value.</p>
+<p class='spacer'>
+
+<p>Traditionally, only a privileged process could lower the nice value (i.e., set a higher priority). However, since Linux 2.6.12, an unprivileged process can decrease the nice value of a target process that has a suitable <strong>RLIMIT_NICE</strong> soft limit; see <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a> for details.</p>
         </div>
       </section>
 
@@ -106,7 +112,7 @@
   <dl class='dl-vertical'>
     <dt><strong>EACCES</strong></dt>
     <dd>
-  <p>The caller attempted to lower a process priority, but did not have the required privilege (on Linux: did not have the <strong>CAP_SYS_NICE</strong> capability). Since Linux 2.6.12, this error occurs only if the caller attempts to set a process priority outside the range of the <strong>RLIMIT_NICE</strong> soft resource limit of the target process; see <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a> for details.</p>
+  <p>The caller attempted to set a lower nice value (i.e., a higher process priority), but did not have the required privilege (on Linux: did not have the <strong>CAP_SYS_NICE</strong> capability).</p>
     </dd>
     <dt><strong>EPERM</strong></dt>
     <dd>

@@ -100,13 +100,12 @@
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
 
-<p>When glibc determines that the argument is not a valid user ID, it will return -1 and set <em>errno</em> to <strong>EINVAL</strong> without attempting the system call.</p>
-<p class='spacer'>
-
 <p>At the time when this system call was introduced, one process could send a signal to another process with the same effective user ID. This meant that if a privileged process changed its effective user ID for the purpose of file permission checking, then it could become vulnerable to receiving signals sent by another (unprivileged) process with the same user ID. The filesystem user ID attribute was thus added to allow a process to change its user ID for the purposes of file permission checking without at the same time becoming vulnerable to receiving unwanted signals. Since Linux 2.0, signal permission handling is different (see <a href="../man2/kill.2.html"><strong>kill</strong>(2)</a>), with the result that a process change can change its effective user ID without being vulnerable to receiving signals from unwanted processes. Thus, <strong>setfsuid</strong>() is nowadays unneeded and should be avoided in new applications (likewise for <a href="../man2/setfsgid.2.html"><strong>setfsgid</strong>(2)</a>).</p>
 <p class='spacer'>
 
 <p>The original Linux <strong>setfsuid</strong>() system call supported only 16-bit user IDs. Subsequently, Linux 2.4 added <strong>setfsuid32</strong>() supporting 32-bit IDs. The glibc <strong>setfsuid</strong>() wrapper function transparently deals with the variation across kernel versions.</p>
+  <h3>C library/kernel differences</h3>
+<p>In glibc 2.15 and earlier, when the wrapper for this system call determines that the argument can't be passed to the kernel without integer truncation (because the kernel is old and does not support 32-bit user IDs), they will return -1 and set <em>errno</em> to <strong>EINVAL</strong> without attempting the system call.</p>
         </div>
       </section>
 
