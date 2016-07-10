@@ -1,151 +1,194 @@
-'\" t
-.\"     Title: pam_selinux
-.\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 01/14/2014
-.\"    Manual: Linux-PAM Manual
-.\"    Source: Linux-PAM Manual
-.\"  Language: English
-.\"
-.TH "PAM_SELINUX" "8" "01/14/2014" "Linux-PAM Manual" "Linux\-PAM Manual"
-.\" -----------------------------------------------------------------
-.\" * Define some portability stuff
-.\" -----------------------------------------------------------------
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.\" http://bugs.debian.org/507673
-.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
-.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.ie \n(.g .ds Aq \(aq
-.el       .ds Aq '
-.\" -----------------------------------------------------------------
-.\" * set default formatting
-.\" -----------------------------------------------------------------
-.\" disable hyphenation
-.nh
-.\" disable justification (adjust text to left margin only)
-.ad l
-.\" -----------------------------------------------------------------
-.\" * MAIN CONTENT STARTS HERE *
-.\" -----------------------------------------------------------------
-.SH "NAME"
-pam_selinux \- PAM module to set the default security context
-.SH "SYNOPSIS"
-.HP \w'\fBpam_selinux\&.so\fR\ 'u
-\fBpam_selinux\&.so\fR [open] [close] [restore] [nottys] [debug] [verbose] [select_context] [env_params] [use_current_range]
-.SH "DESCRIPTION"
-.PP
-pam_selinux is a PAM module that sets up the default SELinux security context for the next executed process\&.
-.PP
-When a new session is started, the open_session part of the module computes and sets up the execution security context used for the next
-\fBexecve\fR(2)
-call, the file security context for the controlling terminal, and the security context used for creating a new kernel keyring\&.
-.PP
-When the session is ended, the close_session part of the module restores old security contexts that were in effect before the change made by the open_session part of the module\&.
-.PP
-Adding pam_selinux into the PAM stack might disrupt behavior of other PAM modules which execute applications\&. To avoid that,
-\fIpam_selinux\&.so open\fR
-should be placed after such modules in the PAM stack, and
-\fIpam_selinux\&.so close\fR
-should be placed before them\&. When such a placement is not feasible,
-\fIpam_selinux\&.so restore\fR
-could be used to temporary restore original security contexts\&.
-.SH "OPTIONS"
-.PP
-\fBopen\fR
-.RS 4
-Only execute the open_session part of the module\&.
-.RE
-.PP
-\fBclose\fR
-.RS 4
-Only execute the close_session part of the module\&.
-.RE
-.PP
-\fBrestore\fR
-.RS 4
-In open_session part of the module, temporarily restore the security contexts as they were before the previous call of the module\&. Another call of this module without the restore option will set up the new security contexts again\&.
-.RE
-.PP
-\fBnottys\fR
-.RS 4
-Do not setup security context of the controlling terminal\&.
-.RE
-.PP
-\fBdebug\fR
-.RS 4
-Turn on debug messages via
-\fBsyslog\fR(3)\&.
-.RE
-.PP
-\fBverbose\fR
-.RS 4
-Attempt to inform the user when security context is set\&.
-.RE
-.PP
-\fBselect_context\fR
-.RS 4
-Attempt to ask the user for a custom security context role\&. If MLS is on, ask also for sensitivity level\&.
-.RE
-.PP
-\fBenv_params\fR
-.RS 4
-Attempt to obtain a custom security context role from PAM environment\&. If MLS is on, obtain also sensitivity level\&. This option and the select_context option are mutually exclusive\&. The respective PAM environment variables are
-\fISELINUX_ROLE_REQUESTED\fR,
-\fISELINUX_LEVEL_REQUESTED\fR, and
-\fISELINUX_USE_CURRENT_RANGE\fR\&. The first two variables are self describing and the last one if set to 1 makes the PAM module behave as if the use_current_range was specified on the command line of the module\&.
-.RE
-.PP
-\fBuse_current_range\fR
-.RS 4
-Use the sensitivity level of the current process for the user context instead of the default level\&. Also suppresses asking of the sensitivity level from the user or obtaining it from PAM environment\&.
-.RE
-.SH "MODULE TYPES PROVIDED"
-.PP
-Only the
-\fBsession\fR
-module type is provided\&.
-.SH "RETURN VALUES"
-.PP
-PAM_SUCCESS
-.RS 4
-The security context was set successfully\&.
-.RE
-.PP
-PAM_SESSION_ERR
-.RS 4
-Unable to get or set a valid context\&.
-.RE
-.PP
-PAM_USER_UNKNOWN
-.RS 4
-The user is not known to the system\&.
-.RE
-.PP
-PAM_BUF_ERR
-.RS 4
-Memory allocation error\&.
-.RE
-.SH "EXAMPLES"
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-auth     required  pam_unix\&.so
-session  required  pam_permit\&.so
-session  optional  pam_selinux\&.so
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pam_selinux - PAM module to set the default security context</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pam_selinux<small> (8)</small></h1>
+        <p class="lead">PAM module to set the default security context</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/pam_selinux.8.html"><span itemprop="title">pam_selinux</span></a>
+	</li>
+</ol>
     
-.fi
-.if n \{\
-.RE
-.\}
-.SH "SEE ALSO"
-.PP
-\fBexecve\fR(2),
-\fBtty\fR(4),
-\fBpam.d\fR(5),
-\fBpam\fR(7),
-\fBselinux\fR(8)
-.SH "AUTHOR"
-.PP
-pam_selinux was written by Dan Walsh <dwalsh@redhat\&.com>\&.
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>pam_selinux.so</strong> [open] [close] [restore] [nottys] [debug] [verbose] [select_context] [env_params] [use_current_range]</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>pam_selinux is a PAM module that sets up the default SELinux security context for the next executed process.</p>
+<p class='spacer'>
+
+<p>When a new session is started, the open_session part of the module computes and sets up the execution security context used for the next <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> call, the file security context for the controlling terminal, and the security context used for creating a new kernel keyring.</p>
+<p class='spacer'>
+
+<p>When the session is ended, the close_session part of the module restores old security contexts that were in effect before the change made by the open_session part of the module.</p>
+<p class='spacer'>
+
+<p>Adding pam_selinux into the PAM stack might disrupt behavior of other PAM modules which execute applications. To avoid that, <em>pam_selinux.so open</em> should be placed after such modules in the PAM stack, and <em>pam_selinux.so close</em> should be placed before them. When such a placement is not feasible, <em>pam_selinux.so restore</em> could be used to temporary restore original security contexts.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><strong>open</strong> Only execute the open_session part of the module.</p>
+<p class='spacer'>
+
+<p><strong>close</strong> Only execute the close_session part of the module.</p>
+<p class='spacer'>
+
+<p><strong>restore</strong> In open_session part of the module, temporarily restore the security contexts as they were before the previous call of the module. Another call of this module without the restore option will set up the new security contexts again.</p>
+<p class='spacer'>
+
+<p><strong>nottys</strong> Do not setup security context of the controlling terminal.</p>
+<p class='spacer'>
+
+<p><strong>debug</strong> Turn on debug messages via <a href="../man3/syslog.3.html"><strong>syslog</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p><strong>verbose</strong> Attempt to inform the user when security context is set.</p>
+<p class='spacer'>
+
+<p><strong>select_context</strong> Attempt to ask the user for a custom security context role. If MLS is on, ask also for sensitivity level.</p>
+<p class='spacer'>
+
+<p><strong>env_params</strong> Attempt to obtain a custom security context role from PAM environment. If MLS is on, obtain also sensitivity level. This option and the select_context option are mutually exclusive. The respective PAM environment variables are <em>SELINUX_ROLE_REQUESTED</em>, <em>SELINUX_LEVEL_REQUESTED</em>, and <em>SELINUX_USE_CURRENT_RANGE</em>. The first two variables are self describing and the last one if set to 1 makes the PAM module behave as if the use_current_range was specified on the command line of the module.</p>
+<p class='spacer'>
+
+<p><strong>use_current_range</strong> Use the sensitivity level of the current process for the user context instead of the default level. Also suppresses asking of the sensitivity level from the user or obtaining it from PAM environment.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">MODULE TYPES PROVIDED</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>Only the <strong>session</strong> module type is provided.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>PAM_SUCCESS The security context was set successfully.</p>
+<p class='spacer'>
+
+<p>PAM_SESSION_ERR Unable to get or set a valid context.</p>
+<p class='spacer'>
+
+<p>PAM_USER_UNKNOWN The user is not known to the system.</p>
+<p class='spacer'>
+
+<p>PAM_BUF_ERR Memory allocation error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<pre>auth     required  pam_unix.so
+session  required  pam_permit.so
+session  optional  pam_selinux.so
+</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, <a href="../man4/tty.4.html"><strong>tty</strong>(4)</a>, <a href="../man5/pam.d.5.html"><strong>pam.d</strong>(5)</a>, <strong>pam</strong>(7), <strong>selinux</strong>(8)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>pam_selinux was written by Dan Walsh &lt;dwalsh@redhat.com&gt;.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="pam_securetty.8.html"><span aria-hidden="true">&larr;</span> pam_securetty.8: Limit root login to special devices</a></li><li class="next"><a href="pam_sepermit.8.html">pam_sepermit.8: PAM module to allow/deny login depending on SELinux enforcement state <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

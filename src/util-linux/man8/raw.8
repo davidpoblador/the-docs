@@ -1,96 +1,166 @@
-.\" -*- nroff -*-
-.TH RAW 8 "August 1999" "util-linux" "System Administration"
-.SH NAME
-raw \- bind a Linux raw character device
-.SH SYNOPSIS
-.B raw
-.I /dev/raw/raw<N> <major> <minor>
-.PP
-.B raw
-.I /dev/raw/raw<N> /dev/<blockdev>
-.PP
-.B raw \-q
-.I /dev/raw/raw<N>
-.PP
-.B raw \-qa
-.SH DESCRIPTION
-.B raw
-is used to bind a Linux raw character device to a block device.  Any
-block device may be used: at the time of binding, the device driver does
-not even have to be accessible (it may be loaded on demand as a kernel
-module later).
-.PP
-.B raw
-is used in two modes: it either sets raw device bindings, or it queries
-existing bindings.  When setting a raw device,
-.I /dev/raw/raw<N>
-is the device name of an existing raw device node in the filesystem.
-The block device to which it is to be bound can be specified either in
-terms of its
-.I major
-and
-.I minor
-device numbers, or as a path name
-.I /dev/<blockdev>
-to an existing block device file.
-.PP
-The bindings already in existence can be queried with the
-.I \-q
-option, which is used either with a raw device filename to query that one
-device, or with the
-.I \-a
-option to query all bound raw devices.
-.PP
-Unbinding can be done by specifying major and minor 0.
-.PP
-Once bound to a block device, a raw device can be opened, read and
-written, just like the block device it is bound to.  However, the raw
-device does not behave exactly like the block device.  In particular,
-access to the raw device bypasses the kernel's block buffer cache
-entirely: all I/O is done directly to and from the address space of the
-process performing the I/O.  If the underlying block device driver can
-support DMA, then no data copying at all is required to complete the
-I/O.
-.PP
-Because raw I/O involves direct hardware access to a process's memory, a
-few extra restrictions must be observed.  All I/Os must be correctly
-aligned in memory and on disk: they must start at a sector offset on
-disk, they must be an exact number of sectors long, and the data buffer
-in virtual memory must also be aligned to a multiple of the sector
-size.  The sector size is 512 bytes for most devices.
-.SH OPTIONS
-.TP
-\fB\-q\fR, \fB\-\-query\fR
-Set query mode.
-.B raw
-will query an existing binding instead of setting a new one.
-.TP
-\fB\-a\fR, \fB\-\-all\fR
-With
-.B \-q
-, specify that all bound raw devices should be queried.
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-Display help text and exit.
-.TP
-\fB\-V\fR, \fB\-\-version\fR
-Display version information and exit.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>raw - bind a Linux raw character device</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">raw<small> (8)</small></h1>
+        <p class="lead">bind a Linux raw character device</p>
+      </div>
 
-.SH BUGS
-The Linux
-.BR dd (1)
-command should be used without the \fBbs=\fR option, or the blocksize
-needs to be a multiple of the sector size of the device (512 bytes usually),
-otherwise it will fail with "Invalid Argument" messages (EINVAL).
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/raw.8.html"><span itemprop="title">raw</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
 
-.PP
-Raw I/O devices do not maintain cache coherency with the Linux block
-device buffer cache.  If you use raw I/O to overwrite data already in
-the buffer cache, the buffer cache will no longer correspond to the
-contents of the actual storage device underneath.  This is deliberate,
-but is regarded either a bug or a feature depending on who you ask!
-.SH AUTHOR
-Stephen Tweedie (sct@redhat.com)
-.SH AVAILABILITY
-The raw command is part of the util-linux package and is available from
-ftp://ftp.kernel.org/pub/linux/utils/util-linux/.
+<p><strong>raw</strong> <em>/dev/raw/raw&lt;N&gt; &lt;major&gt; &lt;minor&gt;</em></p>
+<p class='spacer'>
+
+<p><strong>raw</strong> <em>/dev/raw/raw&lt;N&gt; /dev/&lt;blockdev&gt;</em></p>
+<p class='spacer'>
+
+<p><strong>raw -q</strong> <em>/dev/raw/raw&lt;N&gt;</em></p>
+<p class='spacer'>
+
+<p><strong>raw -qa</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>raw</strong> is used to bind a Linux raw character device to a block device.  Any block device may be used: at the time of binding, the device driver does not even have to be accessible (it may be loaded on demand as a kernel module later).</p>
+<p class='spacer'>
+
+<p><strong>raw</strong> is used in two modes: it either sets raw device bindings, or it queries existing bindings.  When setting a raw device, <em>/dev/raw/raw&lt;N&gt;</em> is the device name of an existing raw device node in the filesystem. The block device to which it is to be bound can be specified either in terms of its <em>major</em> and <em>minor</em> device numbers, or as a path name <em>/dev/&lt;blockdev&gt;</em> to an existing block device file.</p>
+<p class='spacer'>
+
+<p>The bindings already in existence can be queried with the <em>-q</em> option, which is used either with a raw device filename to query that one device, or with the <em>-a</em> option to query all bound raw devices.</p>
+<p class='spacer'>
+
+<p>Unbinding can be done by specifying major and minor 0.</p>
+<p class='spacer'>
+
+<p>Once bound to a block device, a raw device can be opened, read and written, just like the block device it is bound to.  However, the raw device does not behave exactly like the block device.  In particular, access to the raw device bypasses the kernel's block buffer cache entirely: all I/O is done directly to and from the address space of the process performing the I/O.  If the underlying block device driver can support DMA, then no data copying at all is required to complete the I/O.</p>
+<p class='spacer'>
+
+<p>Because raw I/O involves direct hardware access to a process's memory, a few extra restrictions must be observed.  All I/Os must be correctly aligned in memory and on disk: they must start at a sector offset on disk, they must be an exact number of sectors long, and the data buffer in virtual memory must also be aligned to a multiple of the sector size.  The sector size is 512 bytes for most devices.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>-q</strong>, <strong>--query</strong></dt>
+    <dd>
+  <p>Set query mode. <strong>raw</strong> will query an existing binding instead of setting a new one.</p>
+    </dd>
+    <dt><strong>-a</strong>, <strong>--all</strong></dt>
+    <dd>
+  <p>With <strong>-q</strong> , specify that all bound raw devices should be queried.</p>
+    </dd>
+    <dt><strong>-h</strong>, <strong>--help</strong></dt>
+    <dd>
+  <p>Display help text and exit.</p>
+    </dd>
+    <dt><strong>-V</strong>, <strong>--version</strong></dt>
+    <dd>
+  <p>Display version information and exit.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>The Linux <strong>dd</strong>(1) command should be used without the <strong>bs=</strong> option, or the blocksize needs to be a multiple of the sector size of the device (512 bytes usually), otherwise it will fail with "Invalid Argument" messages (EINVAL).</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p>Raw I/O devices do not maintain cache coherency with the Linux block device buffer cache.  If you use raw I/O to overwrite data already in the buffer cache, the buffer cache will no longer correspond to the contents of the actual storage device underneath.  This is deliberate, but is regarded either a bug or a feature depending on who you ask!</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p>Stephen Tweedie (sct@redhat.com)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
+        <div class="sectioncontent">
+
+<p>The raw command is part of the util-linux package and is available from ftp://ftp.kernel.org/pub/linux/utils/util-linux/.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="rarp.8.html"><span aria-hidden="true">&larr;</span> rarp.8: manipulate the system RARP table</a></li><li class="next"><a href="readprofile.8.html">readprofile.8: read kernel profiling information <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

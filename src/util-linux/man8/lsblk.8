@@ -1,152 +1,244 @@
-.\" -*- nroff -*-
-.TH LSBLK 8 "February 2013" "util-linux" "System Administration"
-.SH NAME
-lsblk \- list block devices
-.SH SYNOPSIS
-.B lsblk
-.RB [ options ]
-.RI [ device ...]
-.SH DESCRIPTION
-.B lsblk
-lists information about all available or the specified block devices.  The
-.B lsblk
-command reads the
-.B sysfs
-filesystem and
-.B udev db
-to gather information.
-.PP
-The command prints all block devices (except RAM disks) in a tree-like format
-by default.  Use
-.B "lsblk --help"
-to get a list of all available columns.
-.PP
-The default output, as well as the default output from options like
-.BR \-\-fs
-and
-.BR \-\-topology ,
-is subject to change.  So whenever possible, you should avoid using default
-outputs in your scripts.  Always explicitly define expected columns by using
-.B \-\-output
-.I columns-list
-in environments where a stable output is required.
-.PP
-Note that
-.B lsblk
-might be executed in time when
-.B udev
-does not have all information about recently added or modified devices yet. In this
-case it is recommended to use
-.B "udevadm settle"
-before lsblk to synchronize with udev.
-.SH OPTIONS
-.TP
-.BR \-a , " \-\-all"
-Also list empty devices.  (By default they are skipped.)
-.TP
-.BR \-b , " \-\-bytes"
-Print the SIZE column in bytes rather than in a human-readable format.
-.TP
-.BR \-D , " \-\-discard"
-Print information about the discarding capabilities (TRIM, UNMAP) for each device.
-.TP
-.BR \-d , " \-\-nodeps"
-Do not print holder devices or slaves.  For example, \fBlsblk --nodeps /dev/sda\fR prints
-information about the sda device only.
-.TP
-.BR \-e , " \-\-exclude " \fIlist\fP
-Exclude the devices specified by the comma-separated \fIlist\fR of major device numbers.
-Note that RAM disks (major=1) are excluded by default.  The filter is applied to the
-top-level devices only.
-.TP
-.BR \-f , " \-\-fs"
-Output info about filesystems.  This option is equivalent to
-.BR -o\ NAME,FSTYPE,LABEL,MOUNTPOINT .
-The authoritative information about filesystems and raids is provided by the
-.BR blkid (8)
-command.
-.TP
-.BR \-h , " \-\-help"
-Display help text and exit.
-.TP
-.BR \-I , " \-\-include " \fIlist\fP
-Include devices specified by the comma-separated \fIlist\fR of major device numbers.
-The filter is applied to the top-level devices only.
-.TP
-.BR \-i , " \-\-ascii"
-Use ASCII characters for tree formatting.
-.TP
-.BR \-l , " \-\-list"
-Produce output in the form of a list.
-.TP
-.BR \-m , " \-\-perms"
-Output info about device owner, group and mode.  This option is equivalent to
-.BR -o\ NAME,SIZE,OWNER,GROUP,MODE .
-.TP
-.BR \-n , " \-\-noheadings"
-Do not print a header line.
-.TP
-.BR \-o , " \-\-output " \fIlist\fP
-Specify which output columns to print.  Use
-.B \-\-help
-to get a list of all supported columns.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lsblk - list block devices</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">lsblk<small> (8)</small></h1>
+        <p class="lead">list block devices</p>
+      </div>
 
-The default list of columns may be extended if \fIlist\fP is
-specified in the format \fI+list\fP (e.g. \fBlsblk -o +UUID\fP).
-.TP
-.BR \-O , " \-\-output-all "
-Output all available columns.
-.TP
-.BR \-P , " \-\-pairs"
-Produce output in the form of key="value" pairs.
-All potentially unsafe characters are hex-escaped (\\x<code>).
-.TP
-.BR \-p , " \-\-paths"
-Print full device paths.
-.TP
-.BR \-r , " \-\-raw"
-Produce output in raw format.  All potentially unsafe characters are hex-escaped
-(\\x<code>) in the NAME, KNAME, LABEL, PARTLABEL and MOUNTPOINT columns.
-.TP
-.BR \-S , " \-\-scsi"
-Output info about SCSI devices only.  All partitions, slaves and holder devices are ignored.
-.TP
-.BR \-s , " \-\-inverse"
-Print dependencies in inverse order.
-.TP
-.BR \-t , " \-\-topology"
-Output info about block-device topology.
-This option is equivalent to
-.BR -o\ NAME,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,WSAME .
-.TP
-.BR \-V , " \-\-version"
-Display version information and exit.
-.TP
-.BR \-x , " \-\-sort " \fIcolumn\fP
-Sort output lines by output \fIcolumn\fP.
-.SH NOTES
-For partitions, some information (e.g. queue attributes) is inherited from the
-parent device.
-.PP
-The
-.B lsblk
-command needs to be able to look up each block device by major:minor numbers,
-which is done by using
-.BR /sys/dev/block .
-This sysfs block directory appeared in kernel 2.6.27 (October 2008).
-In case of problems with a new enough kernel, check that CONFIG_SYSFS
-was enabled at the time of the kernel build.
-.SH AUTHORS
-.nf
-Milan Broz <mbroz@redhat.com>
-Karel Zak <kzak@redhat.com>
-.fi
-.SH ENVIRONMENT
-.IP "Setting LIBMOUNT_DEBUG=0xffff enables debug output."
-.SH SEE ALSO
-.BR findmnt (8),
-.BR blkid (8),
-.BR ls (1)
-.SH AVAILABILITY
-The lsblk command is part of the util-linux package and is available from
-ftp://ftp.kernel.org/pub/linux/utils/util-linux/.
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/lsblk.8.html"><span itemprop="title">lsblk</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>lsblk</strong> [<strong>options</strong>] [<em>device</em>...]</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>lsblk</strong> lists information about all available or the specified block devices.  The <strong>lsblk</strong> command reads the <strong>sysfs</strong> filesystem and <strong>udev db</strong> to gather information.</p>
+<p class='spacer'>
+
+<p>The command prints all block devices (except RAM disks) in a tree-like format by default.  Use <strong>lsblk --help</strong> to get a list of all available columns.</p>
+<p class='spacer'>
+
+<p>The default output, as well as the default output from options like <strong>--fs</strong> and <strong>--topology</strong>, is subject to change.  So whenever possible, you should avoid using default outputs in your scripts.  Always explicitly define expected columns by using <strong>--output</strong> <em>columns-list</em> in environments where a stable output is required.</p>
+<p class='spacer'>
+
+<p>Note that <strong>lsblk</strong> might be executed in time when <strong>udev</strong> does not have all information about recently added or modified devices yet. In this case it is recommended to use <strong>udevadm settle</strong> before lsblk to synchronize with udev.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>-a</strong>,<strong> --all</strong></dt>
+    <dd>
+  <p>Also list empty devices.  (By default they are skipped.)</p>
+    </dd>
+    <dt><strong>-b</strong>,<strong> --bytes</strong></dt>
+    <dd>
+  <p>Print the SIZE column in bytes rather than in a human-readable format.</p>
+    </dd>
+    <dt><strong>-D</strong>,<strong> --discard</strong></dt>
+    <dd>
+  <p>Print information about the discarding capabilities (TRIM, UNMAP) for each device.</p>
+    </dd>
+    <dt><strong>-d</strong>,<strong> --nodeps</strong></dt>
+    <dd>
+  <p>Do not print holder devices or slaves.  For example, <strong>lsblk --nodeps /dev/sda</strong> prints information about the sda device only.</p>
+    </dd>
+    <dt><strong>-e</strong>,<strong> --exclude </strong><em>list</em></dt>
+    <dd>
+  <p>Exclude the devices specified by the comma-separated <em>list</em> of major device numbers. Note that RAM disks (major=1) are excluded by default.  The filter is applied to the top-level devices only.</p>
+    </dd>
+    <dt><strong>-f</strong>,<strong> --fs</strong></dt>
+    <dd>
+  <p>Output info about filesystems.  This option is equivalent to <strong>-o&nbsp;NAME,FSTYPE,LABEL,MOUNTPOINT</strong>. The authoritative information about filesystems and raids is provided by the <a href="../man8/blkid.8.html"><strong>blkid</strong>(8)</a> command.</p>
+    </dd>
+    <dt><strong>-h</strong>,<strong> --help</strong></dt>
+    <dd>
+  <p>Display help text and exit.</p>
+    </dd>
+    <dt><strong>-I</strong>,<strong> --include </strong><em>list</em></dt>
+    <dd>
+  <p>Include devices specified by the comma-separated <em>list</em> of major device numbers. The filter is applied to the top-level devices only.</p>
+    </dd>
+    <dt><strong>-i</strong>,<strong> --ascii</strong></dt>
+    <dd>
+  <p>Use ASCII characters for tree formatting.</p>
+    </dd>
+    <dt><strong>-l</strong>,<strong> --list</strong></dt>
+    <dd>
+  <p>Produce output in the form of a list.</p>
+    </dd>
+    <dt><strong>-m</strong>,<strong> --perms</strong></dt>
+    <dd>
+  <p>Output info about device owner, group and mode.  This option is equivalent to <strong>-o&nbsp;NAME,SIZE,OWNER,GROUP,MODE</strong>.</p>
+    </dd>
+    <dt><strong>-n</strong>,<strong> --noheadings</strong></dt>
+    <dd>
+  <p>Do not print a header line.</p>
+    </dd>
+    <dt><strong>-o</strong>,<strong> --output </strong><em>list</em></dt>
+    <dd>
+  <p>Specify which output columns to print.  Use <strong>--help</strong> to get a list of all supported columns.</p>
+<p class='spacer'>
+
+  <p>The default list of columns may be extended if <em>list</em> is specified in the format <em>+list</em> (e.g. <strong>lsblk -o +UUID</strong>).</p>
+    </dd>
+    <dt><strong>-O</strong>,<strong> --output-all </strong></dt>
+    <dd>
+  <p>Output all available columns.</p>
+    </dd>
+    <dt><strong>-P</strong>,<strong> --pairs</strong></dt>
+    <dd>
+  <p>Produce output in the form of key="value" pairs. All potentially unsafe characters are hex-escaped (&#92;x&lt;code&gt;).</p>
+    </dd>
+    <dt><strong>-p</strong>,<strong> --paths</strong></dt>
+    <dd>
+  <p>Print full device paths.</p>
+    </dd>
+    <dt><strong>-r</strong>,<strong> --raw</strong></dt>
+    <dd>
+  <p>Produce output in raw format.  All potentially unsafe characters are hex-escaped (&#92;x&lt;code&gt;) in the NAME, KNAME, LABEL, PARTLABEL and MOUNTPOINT columns.</p>
+    </dd>
+    <dt><strong>-S</strong>,<strong> --scsi</strong></dt>
+    <dd>
+  <p>Output info about SCSI devices only.  All partitions, slaves and holder devices are ignored.</p>
+    </dd>
+    <dt><strong>-s</strong>,<strong> --inverse</strong></dt>
+    <dd>
+  <p>Print dependencies in inverse order.</p>
+    </dd>
+    <dt><strong>-t</strong>,<strong> --topology</strong></dt>
+    <dd>
+  <p>Output info about block-device topology. This option is equivalent to <strong>-o&nbsp;NAME,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,WSAME</strong>.</p>
+    </dd>
+    <dt><strong>-V</strong>,<strong> --version</strong></dt>
+    <dd>
+  <p>Display version information and exit.</p>
+    </dd>
+    <dt><strong>-x</strong>,<strong> --sort </strong><em>column</em></dt>
+    <dd>
+  <p>Sort output lines by output <em>column</em>.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>For partitions, some information (e.g. queue attributes) is inherited from the parent device.</p>
+<p class='spacer'>
+
+<p>The <strong>lsblk</strong> command needs to be able to look up each block device by major:minor numbers, which is done by using <strong>/sys/dev/block</strong>. This sysfs block directory appeared in kernel 2.6.27 (October 2008). In case of problems with a new enough kernel, check that CONFIG_SYSFS was enabled at the time of the kernel build.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+
+<pre>Milan Broz &lt;mbroz@redhat.com&gt;
+Karel Zak &lt;kzak@redhat.com&gt;</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ENVIRONMENT</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-horizontal'>
+    <dt>Setting LIBMOUNT_DEBUG=0xffff enables debug output.</dt>
+    <dd>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man8/findmnt.8.html"><strong>findmnt</strong>(8)</a>, <a href="../man8/blkid.8.html"><strong>blkid</strong>(8)</a>, <strong>ls</strong>(1)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
+        <div class="sectioncontent">
+
+<p>The lsblk command is part of the util-linux package and is available from ftp://ftp.kernel.org/pub/linux/utils/util-linux/.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="losetup.8.html"><span aria-hidden="true">&larr;</span> losetup.8: set up and control loop devices</a></li><li class="next"><a href="lslocks.8.html">lslocks.8: list local system locks <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

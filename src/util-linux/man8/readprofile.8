@@ -1,153 +1,217 @@
-.TH READPROFILE "8" "October 2011" "util-linux" "System Administration"
-.SH NAME
-readprofile - read kernel profiling information
-.SH SYNOPSIS
-.B readprofile
-.RI [ options ]
-.SH VERSION
-This manpage documents version 2.0 of the program.
-.SH DESCRIPTION
-.LP
-The
-.B readprofile
-command uses the
-.B /proc/profile
-information to print ascii data on standard output.  The output is
-organized in three columns: the first is the number of clock ticks,
-the second is the name of the C function in the kernel where those
-many ticks occurred, and the third is the normalized `load' of the
-procedure, calculated as a ratio between the number of ticks and the
-length of the procedure.  The output is filled with blanks to ease
-readability.
-.SH OPTIONS
-.TP
-\fB\-a\fR, \fB\-\-all\fR
-Print all symbols in the mapfile.  By default the procedures with
-reported ticks are not printed.
-.TP
-\fB\-b\fR, \fB\-\-histbin\fR
-Print individual histogram-bin counts.
-.TP
-\fB\-i\fR, \fB\-\-info\fR
-Info.  This makes
-.B readprofile
-only print the profiling step used by the kernel.  The profiling step
-is the resolution of the profiling buffer, and is chosen during
-kernel configuration (through `make config'), or in the kernel's
-command line.  If the
-.B \-t
-(terse) switch is used together with
-.B \-i
-only the decimal number is printed.
-.TP
-\fB\-m\fR, \fB\-\-mapfile\fR \fImapfile\fR
-Specify a mapfile, which by default is
-.BR /usr/src/linux/System.map .
-You should specify the map file on cmdline if your current kernel
-isn't the last one you compiled, or if you keep System.map elsewhere.
-If the name of the map file ends with `.gz' it is decompressed on the
-fly.
-.TP
-\fB\-M\fR, \fB\-\-multiplier\fR \fImultiplier\fR
-On some architectures it is possible to alter the frequency at which
-the kernel delivers profiling interrupts to each CPU.  This option
-allows you to set the frequency, as a multiplier of the system clock
-frequency, HZ.  This is supported on i386-SMP (2.2 and 2.4 kernel)
-and also on sparc-SMP and sparc64-SMP (2.4 kernel).  This option also
-resets the profiling buffer, and requires superuser privileges.
-.TP
-\fB\-p\fR, \fB\-\-profile\fR \fIpro-file\fR
-Specify a different profiling buffer, which by default is
-.B /proc/profile.
-Using a different pro-file is useful if you want to `freeze' the
-kernel profiling at some time and read it later.  The
-.B /proc/profile
-file can be copied using `cat' or `cp'.  There is no more support for
-compressed profile buffers, like in
-.B readprofile-1.1,
-because the program needs to know the size of the buffer in advance.
-.TP
-\fB\-r\fR, \fB\-\-reset\fR
-Reset the profiling buffer.  This can only be invoked by root,
-because
-.B /proc/profile
-is readable by everybody but writable only by the superuser.
-However, you can make
-.B readprofile
-setuid 0, in order to reset the buffer without gaining privileges.
-.TP
-\fB\-s, \fB\-\-counters\fR
-Print individual counters within functions.
-.TP
-\fB\-v\fR, \fB\-\-verbose\fR
-Verbose.  The output is organized in four columns and filled with
-blanks.  The first column is the RAM address of a kernel function,
-the second is the name of the function, the third is the number of
-clock ticks and the last is the normalized load.
-.TP
-\fB\-V\fR, \fB\-\-version\fR
-Display version information and exit.
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-Display help text and exit.
-.SH EXAMPLES
-Browse the profiling buffer ordering by clock ticks:
-.nf
-   readprofile | sort -nr | less
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>readprofile - read kernel profiling information</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">readprofile<small> (8)</small></h1>
+        <p class="lead">read kernel profiling information</p>
+      </div>
 
-.fi
-Print the 20 most loaded procedures:
-.nf
-   readprofile | sort -nr +2 | head -20
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/readprofile.8.html"><span itemprop="title">readprofile</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
 
-.fi
-Print only filesystem profile:
-.nf
-   readprofile | grep _ext2
+<p><strong>readprofile</strong> [<em>options</em>]</p>
+        </div>
+      </section>
 
-.fi
-Look at all the kernel information, with ram addresses:
-.nf
-   readprofile -av | less
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSION</h2>
+        <div class="sectioncontent">
 
-.fi
-Browse a `freezed' profile buffer for a non current kernel:
-.nf
-   readprofile -p ~/profile.freeze -m /zImage.map.gz
+<p>This manpage documents version 2.0 of the program.</p>
+        </div>
+      </section>
 
-.fi
-Request profiling at 2kHz per CPU, and reset the profiling buffer:
-.nf
-   sudo readprofile -M 20
-.fi
-.SH BUGS
-.LP
-.B readprofile
-only works with an 1.3.x or newer kernel, because
-.B /proc/profile
-changed in the step from 1.2 to 1.3
-.LP
-This program only works with ELF kernels.  The change for a.out
-kernels is trivial, and left as an exercise to the a.out user.
-.LP
-To enable profiling, the kernel must be rebooted, because no
-profiling module is available, and it wouldn't be easy to build.  To
-enable profiling, you can specify "profile=2" (or another number) on
-the kernel commandline.  The number you specify is the two-exponent
-used as profiling step.
-.LP
-Profiling is disabled when interrupts are inhibited.  This means that
-many profiling ticks happen when interrupts are re-enabled.  Watch
-out for misleading information.
-.SH FILES
-.nf
-/proc/profile              A binary snapshot of the profiling buffer.
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The <strong>readprofile</strong> command uses the <strong>/proc/profile</strong> information to print ascii data on standard output.  The output is organized in three columns: the first is the number of clock ticks, the second is the name of the C function in the kernel where those many ticks occurred, and the third is the normalized `load' of the procedure, calculated as a ratio between the number of ticks and the length of the procedure.  The output is filled with blanks to ease readability.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>-a</strong>, <strong>--all</strong></dt>
+    <dd>
+  <p>Print all symbols in the mapfile.  By default the procedures with reported ticks are not printed.</p>
+    </dd>
+    <dt><strong>-b</strong>, <strong>--histbin</strong></dt>
+    <dd>
+  <p>Print individual histogram-bin counts.</p>
+    </dd>
+    <dt><strong>-i</strong>, <strong>--info</strong></dt>
+    <dd>
+  <p>Info.  This makes <strong>readprofile</strong> only print the profiling step used by the kernel.  The profiling step is the resolution of the profiling buffer, and is chosen during kernel configuration (through `make config'), or in the kernel's command line.  If the <strong>-t</strong> (terse) switch is used together with <strong>-i</strong> only the decimal number is printed.</p>
+    </dd>
+    <dt><strong>-m</strong>, <strong>--mapfile</strong> <em>mapfile</em></dt>
+    <dd>
+  <p>Specify a mapfile, which by default is <strong>/usr/src/linux/System.map</strong>. You should specify the map file on cmdline if your current kernel isn't the last one you compiled, or if you keep System.map elsewhere. If the name of the map file ends with `.gz' it is decompressed on the fly.</p>
+    </dd>
+    <dt><strong>-M</strong>, <strong>--multiplier</strong> <em>multiplier</em></dt>
+    <dd>
+  <p>On some architectures it is possible to alter the frequency at which the kernel delivers profiling interrupts to each CPU.  This option allows you to set the frequency, as a multiplier of the system clock frequency, HZ.  This is supported on i386-SMP (2.2 and 2.4 kernel) and also on sparc-SMP and sparc64-SMP (2.4 kernel).  This option also resets the profiling buffer, and requires superuser privileges.</p>
+    </dd>
+    <dt><strong>-p</strong>, <strong>--profile</strong> <em>pro-file</em></dt>
+    <dd>
+  <p>Specify a different profiling buffer, which by default is <strong>/proc/profile.</strong> Using a different pro-file is useful if you want to `freeze' the kernel profiling at some time and read it later.  The <strong>/proc/profile</strong> file can be copied using `cat' or `cp'.  There is no more support for compressed profile buffers, like in <strong>readprofile-1.1,</strong> because the program needs to know the size of the buffer in advance.</p>
+    </dd>
+    <dt><strong>-r</strong>, <strong>--reset</strong></dt>
+    <dd>
+  <p>Reset the profiling buffer.  This can only be invoked by root, because <strong>/proc/profile</strong> is readable by everybody but writable only by the superuser. However, you can make <strong>readprofile</strong> setuid 0, in order to reset the buffer without gaining privileges.</p>
+    </dd>
+    <dt><strong>-s, --counters</strong></dt>
+    <dd>
+  <p>Print individual counters within functions.</p>
+    </dd>
+    <dt><strong>-v</strong>, <strong>--verbose</strong></dt>
+    <dd>
+  <p>Verbose.  The output is organized in four columns and filled with blanks.  The first column is the RAM address of a kernel function, the second is the name of the function, the third is the number of clock ticks and the last is the normalized load.</p>
+    </dd>
+    <dt><strong>-V</strong>, <strong>--version</strong></dt>
+    <dd>
+  <p>Display version information and exit.</p>
+    </dd>
+    <dt><strong>-h</strong>, <strong>--help</strong></dt>
+    <dd>
+  <p>Display help text and exit.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
+        <div class="sectioncontent">
+
+  <p>Browse the profiling buffer ordering by clock ticks:</p>
+<pre>   readprofile | sort -nr | less
+</pre>
+
+  <p>Print the 20 most loaded procedures:</p>
+<pre>   readprofile | sort -nr +2 | head -20
+</pre>
+
+  <p>Print only filesystem profile:</p>
+<pre>   readprofile | grep _ext2
+</pre>
+
+  <p>Look at all the kernel information, with ram addresses:</p>
+<pre>   readprofile -av | less
+</pre>
+
+  <p>Browse a `freezed' profile buffer for a non current kernel:</p>
+<pre>   readprofile -p ~/profile.freeze -m /zImage.map.gz
+</pre>
+
+  <p>Request profiling at 2kHz per CPU, and reset the profiling buffer:</p>
+<pre>   sudo readprofile -M 20</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><strong>readprofile</strong> only works with an 1.3.x or newer kernel, because <strong>/proc/profile</strong> changed in the step from 1.2 to 1.3</p>
+<p class='spacer'>
+
+<p>This program only works with ELF kernels.  The change for a.out kernels is trivial, and left as an exercise to the a.out user.</p>
+<p class='spacer'>
+
+<p>To enable profiling, the kernel must be rebooted, because no profiling module is available, and it wouldn't be easy to build.  To enable profiling, you can specify "profile=2" (or another number) on the kernel commandline.  The number you specify is the two-exponent used as profiling step.</p>
+<p class='spacer'>
+
+<p>Profiling is disabled when interrupts are inhibited.  This means that many profiling ticks happen when interrupts are re-enabled.  Watch out for misleading information.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+<pre>/proc/profile              A binary snapshot of the profiling buffer.
 /usr/src/linux/System.map  The symbol table for the kernel.
-/usr/src/linux/*           The program being profiled :-)
-.fi
-.SH AVAILABILITY
-The readprofile command is part of the util-linux package and is
-available from
-.UR ftp://\:ftp.kernel.org\:/pub\:/linux\:/utils\:/util-linux/
-Linux Kernel Archive
-.UE .
+/usr/src/linux/*           The program being profiled :-)</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
+        <div class="sectioncontent">
+
+<p>The readprofile command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="raw.8.html"><span aria-hidden="true">&larr;</span> raw.8: bind a Linux raw character device</a></li><li class="next"><a href="reboot.8.html">reboot.8: stop the system. <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

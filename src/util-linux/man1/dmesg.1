@@ -1,235 +1,318 @@
-.\" Copyright 1993 Rickard E. Faith (faith@cs.unc.edu)
-.\" May be distributed under the GNU General Public License
-.TH DMESG "1" "July 2012" "util-linux" "User Commands"
-.SH NAME
-dmesg \- print or control the kernel ring buffer
-.SH SYNOPSIS
-.B dmesg
-[options]
-.sp
-.B dmesg \-\-clear
-.br
-.BR "dmesg \-\-read-clear " [options]
-.br
-.BI "dmesg \-\-console-level " level
-.br
-.B dmesg \-\-console-on
-.br
-.B dmesg \-\-console-off
-.SH DESCRIPTION
-.B dmesg
-is used to examine or control the kernel ring buffer.
-.PP
-The default action is to read all messages from the kernel ring buffer.
-.SH OPTIONS
-The
-.BR \-\-clear ,
-.BR \-\-read-clear ,
-.BR \-\-console-on ,
-.BR \-\-console-off ,
-and
-.B \-\-console-level
-options are mutually exclusive.
-.PP
-.IP "\fB\-C\fR, \fB\-\-clear\fR"
-Clear the ring buffer.
-.IP "\fB\-c\fR, \fB\-\-read-clear\fR"
-Clear the ring buffer after first printing its contents.
-.IP "\fB\-D\fR, \fB\-\-console-off\fR"
-Disable the printing of messages to the console.
-.IP "\fB\-d\fR, \fB\-\-show-delta\fR"
-Display the timestamp and the time delta spent between messages.  If used
-together with
-.B \-\-notime
-then only the time delta without the timestamp is printed.
-.IP "\fB\-E\fR, \fB\-\-console-on\fR"
-Enable printing messages to the console.
-.IP "\fB\-e\fR, \fB\-\-reltime\fR"
-Display the local time and the delta in human-readable format.
-.IP "\fB\-F\fR, \fB\-\-file \fIfile\fR"
-Read the messages from the given
-.IR file .
-.IP "\fB\-f\fR, \fB\-\-facility \fIlist\fR"
-Restrict output to the given (comma-separated)
-.I list
-of facilities.  For example:
-.PP
-.RS 14
-.B dmesg \-\-facility=daemon
-.RE
-.IP
-will print messages from system daemons only.  For all supported facilities
-see the
-.B \-\-help
-output.
-.IP "\fB\-H\fR, \fB\-\-human\fR"
-Enable human-readable output.  See also \fB\-\-color\fR, \fB\-\-reltime\fR
-and \fB\-\-nopager\fR.
-.IP "\fB\-h\fR, \fB\-\-help\fR"
-Display help text and exit.
-.IP "\fB\-k\fR, \fB\-\-kernel\fR"
-Print kernel messages.
-.IP "\fB\-L\fR, \fB\-\-color\fR[=\fIwhen\fR]"
-Colorize important messages (enabled by default).  The optional argument \fIwhen\fP
-can be \fBauto\fR, \fBnever\fR or \fBalways\fR.  If the \fIwhen\fR argument is omitted,
-it defaults to \fBauto\fR.
-.IP  "\fB\-l\fR, \fB\-\-level \fIlist\fR"
-Restrict output to the given (comma-separated)
-.I list
-of levels.  For example:
-.PP
-.RS 14
-.B dmesg \-\-level=err,warn
-.RE
-.IP
-will print error and warning messages only.  For all supported levels see the
-.B \-\-help
-output.
-.IP "\fB\-n\fR, \fB\-\-console-level \fIlevel\fR
-Set the
-.I level
-at which printing of messages is done to the console.  The
-.I level
-is a level number or abbreviation of the level name.  For all supported
-levels see the
-.B \-\-help
-output.
-.sp
-For example,
-.B \-n 1
-or
-.B \-n alert
-prevents all messages, except emergency (panic) messages, from appearing on
-the console.  All levels of messages are still written to
-.IR /proc/kmsg ,
-so
-.BR syslogd (8)
-can still be used to control exactly where kernel messages appear.  When the
-.B \-n
-option is used,
-.B dmesg
-will
-.I not
-print or clear the kernel ring buffer.
-.IP "\fB\-P\fR, \fB\-\-nopager\fR"
-Do not pipe output into a pager.  A pager is enabled by default for \fB\-\-human\fR output.
-.IP "\fB\-r\fR, \fB\-\-raw\fR"
-Print the raw message buffer, i.e. do not strip the log-level prefixes.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dmesg - print or control the kernel ring buffer</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">dmesg<small> (1)</small></h1>
+        <p class="lead">print or control the kernel ring buffer</p>
+      </div>
 
-Note that the real raw format depends on the method how
-.BR dmesg (1)
-reads kernel messages.  The /dev/kmsg device uses a different format than
-.BR syslog (2) .
-For backward compatibility,
-.BR dmesg (1)
-returns data always in the
-.BR syslog (2)
-format.  It is possible to read the real raw data from /dev/kmsg by, for example,
-the command 'dd if=/dev/kmsg iflag=nonblock'.
-.IP "\fB\-S\fR, \fB\-\-syslog\fR"
-Force \fBdmesg\fR to use the
-.BR syslog (2)
-kernel interface to read kernel messages.  The default is to use /dev/kmsg rather
-than
-.BR syslog (2)
-since kernel 3.5.0.
-.IP "\fB\-s\fR, \fB\-\-buffer-size \fIsize\fR
-Use a buffer of
-.I size
-to query the kernel ring buffer.  This is 16392 by default.  (The default
-kernel syslog buffer size was 4096 at first, 8192 since 1.3.54, 16384 since
-2.1.113.)  If you have set the kernel buffer to be larger than the default,
-then this option can be used to view the entire buffer.
-.IP "\fB\-T\fR, \fB\-\-ctime\fR"
-Print human-readable timestamps.
-.IP
-Be aware that the timestamp could be inaccurate!
-The
-.B time
-source used for the logs is
-.B not updated after
-system
-.BR SUSPEND / RESUME .
-.IP "\fB\-t\fR, \fB\-\-notime\fR"
-Do not print kernel's timestamps.
-.IP "\fB\-u\fR, \fB\-\-userspace\fR"
-Print userspace messages.
-.IP "\fB\-V\fR, \fB\-\-version\fR"
-Display version information and exit.
-.IP "\fB\-w\fR, \fB\-\-follow\fR"
-Wait for new messages.  This feature is supported only on systems with
-a readable /dev/kmsg (since kernel 3.5.0).
-.IP "\fB\-x\fR, \fB\-\-decode\fR"
-Decode facility and level (priority) numbers to human-readable prefixes.
-.IP "\fB\-\-time\-format\fR \fIformat\fR"
-Print timestamps using the given \fIformat\fR, which can be
-.BR ctime ,
-.BR reltime ,
-.BR delta
-or
-.BR iso .
-The first three formats are aliases of the time-format-specific options.
-The
-.B iso
-format is a
-.B dmesg
-implementation of the ISO-8601 timestamp format.  The purpose of this format is
-to make the comparing of timestamps between two systems, and any other parsing,
-easy.  The definition of the \fBiso\fR timestamp is:
-YYYY-MM-DD<T>HH:MM:SS,<microseconds><-+><timezone offset from UTC>.
-.IP
-The
-.B iso
-format has the same issue as
-.BR ctime :
-the time may be inaccurate when a system is suspended and resumed.
-.SH COLORS
-Implicit coloring can be disabled by an empty file \fI/etc/terminal-colors.d/dmesg.disable\fR.
-See
-.BR terminal-colors.d (5)
-for more details about colorization configuration.
-.PP
-The logical color names supported by
-.B dmesg
-are:
-.TP
-.B subsys
-The message sub-system prefix (e.g. "ACPI:").
-.TP
-.B time
-The message timestamp.
-.TP
-.B alert
-The text of the message with the alert log priority.
-.TP
-.B crit
-The text of the message with the critical log priority.
-.TP
-.B err
-The text of the message with the error log priority.
-.TP
-.B warn
-The text of the message with the warning log priority.
-.TP
-.B segfault
-The text of the message that inform about segmentation fault.
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/"><span itemprop="title">Executable programs or shell commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/dmesg.1.html"><span itemprop="title">dmesg</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
 
-.SH SEE ALSO
-.BR syslogd (8)
-.BR terminal-colors.d (5)
-.SH AUTHORS
-.MT kzak@redhat.com
-Karel Zak
-.ME
+<p><strong>dmesg</strong> [options]</p>
+<p class='spacer'>
 
-.br
-.B dmesg
-was originally written by
-.MT tytso@athena.mit.edu
-Theodore Ts'o
-.ME
-.SH AVAILABILITY
-The dmesg command is part of the util-linux package and is available from
-.UR ftp://\:ftp.kernel.org\:/pub\:/linux\:/utils\:/util-linux/
-Linux Kernel Archive
-.UE .
+<p><strong>dmesg --clear</strong></p>
+<p class='spacer'>
+
+<p><strong>dmesg --read-clear </strong>[options]</p>
+<p class='spacer'>
+
+<p><strong>dmesg --console-level </strong><em>level</em></p>
+<p class='spacer'>
+
+<p><strong>dmesg --console-on</strong></p>
+<p class='spacer'>
+
+<p><strong>dmesg --console-off</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>dmesg</strong> is used to examine or control the kernel ring buffer.</p>
+<p class='spacer'>
+
+<p>The default action is to read all messages from the kernel ring buffer.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>--clear</strong>, <strong>--read-clear</strong>, <strong>--console-on</strong>, <strong>--console-off</strong>, and <strong>--console-level</strong> options are mutually exclusive.</p>
+<p class='spacer'>
+
+  <dl class='dl-horizontal'>
+    <dt><strong>-C</strong>, <strong>--clear</strong></dt>
+    <dd>
+  <p>Clear the ring buffer.</p>
+    </dd>
+    <dt><strong>-c</strong>, <strong>--read-clear</strong></dt>
+    <dd>
+  <p>Clear the ring buffer after first printing its contents.</p>
+    </dd>
+    <dt><strong>-D</strong>, <strong>--console-off</strong></dt>
+    <dd>
+  <p>Disable the printing of messages to the console.</p>
+    </dd>
+    <dt><strong>-d</strong>, <strong>--show-delta</strong></dt>
+    <dd>
+  <p>Display the timestamp and the time delta spent between messages.  If used together with <strong>--notime</strong> then only the time delta without the timestamp is printed.</p>
+    </dd>
+    <dt><strong>-E</strong>, <strong>--console-on</strong></dt>
+    <dd>
+  <p>Enable printing messages to the console.</p>
+    </dd>
+    <dt><strong>-e</strong>, <strong>--reltime</strong></dt>
+    <dd>
+  <p>Display the local time and the delta in human-readable format.</p>
+    </dd>
+    <dt><strong>-F</strong>, --file <em>file</em></dt>
+    <dd>
+  <p>Read the messages from the given <em>file</em>.</p>
+    </dd>
+    <dt><strong>-f</strong>, --facility <em>list</em></dt>
+    <dd>
+  <p>Restrict output to the given (comma-separated) <em>list</em> of facilities.  For example:</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><strong>dmesg --facility=daemon</strong></p>
+<p class='spacer'>
+
+  <p>will print messages from system daemons only.  For all supported facilities see the <strong>--help</strong> output.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-H</strong>, <strong>--human</strong></dt>
+    <dd>
+  <p>Enable human-readable output.  See also <strong>--color</strong>, <strong>--reltime</strong> and <strong>--nopager</strong>.</p>
+    </dd>
+    <dt><strong>-h</strong>, <strong>--help</strong></dt>
+    <dd>
+  <p>Display help text and exit.</p>
+    </dd>
+    <dt><strong>-k</strong>, <strong>--kernel</strong></dt>
+    <dd>
+  <p>Print kernel messages.</p>
+    </dd>
+    <dt><strong>-L</strong>, <strong>--color</strong>[=<em>when</em>]</dt>
+    <dd>
+  <p>Colorize important messages (enabled by default).  The optional argument <em>when</em> can be <strong>auto</strong>, <strong>never</strong> or <strong>always</strong>.  If the <em>when</em> argument is omitted, it defaults to <strong>auto</strong>.</p>
+    </dd>
+    <dt><strong>-l</strong>, --level <em>list</em></dt>
+    <dd>
+  <p>Restrict output to the given (comma-separated) <em>list</em> of levels.  For example:</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><strong>dmesg --level=err,warn</strong></p>
+<p class='spacer'>
+
+  <p>will print error and warning messages only.  For all supported levels see the <strong>--help</strong> output.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-n</strong>, --console-level <em>level</em></dt>
+    <dd>
+  <p>Set the <em>level</em> at which printing of messages is done to the console.  The <em>level</em> is a level number or abbreviation of the level name.  For all supported levels see the <strong>--help</strong> output.</p>
+<p class='spacer'>
+
+  <p>For example, <strong>-n 1</strong> or <strong>-n alert</strong> prevents all messages, except emergency (panic) messages, from appearing on the console.  All levels of messages are still written to <em>/proc/kmsg</em>, so <strong>syslogd</strong>(8) can still be used to control exactly where kernel messages appear.  When the <strong>-n</strong> option is used, <strong>dmesg</strong> will <em>not</em> print or clear the kernel ring buffer.</p>
+    </dd>
+    <dt><strong>-P</strong>, <strong>--nopager</strong></dt>
+    <dd>
+  <p>Do not pipe output into a pager.  A pager is enabled by default for <strong>--human</strong> output.</p>
+    </dd>
+    <dt><strong>-r</strong>, <strong>--raw</strong></dt>
+    <dd>
+  <p>Print the raw message buffer, i.e. do not strip the log-level prefixes.</p>
+<p class='spacer'>
+
+  <p>Note that the real raw format depends on the method how <a href="../man1/dmesg.1.html"><strong>dmesg</strong>(1)</a> reads kernel messages.  The /dev/kmsg device uses a different format than <a href="../man2/syslog.2.html"><strong>syslog</strong>(2)</a><strong>.</strong> For backward compatibility, <a href="../man1/dmesg.1.html"><strong>dmesg</strong>(1)</a> returns data always in the <a href="../man2/syslog.2.html"><strong>syslog</strong>(2)</a> format.  It is possible to read the real raw data from /dev/kmsg by, for example, the command 'dd if=/dev/kmsg iflag=nonblock'.</p>
+    </dd>
+    <dt><strong>-S</strong>, <strong>--syslog</strong></dt>
+    <dd>
+  <p>Force <strong>dmesg</strong> to use the <a href="../man2/syslog.2.html"><strong>syslog</strong>(2)</a> kernel interface to read kernel messages.  The default is to use /dev/kmsg rather than <a href="../man2/syslog.2.html"><strong>syslog</strong>(2)</a> since kernel 3.5.0.</p>
+    </dd>
+    <dt><strong>-s</strong>, --buffer-size <em>size</em></dt>
+    <dd>
+  <p>Use a buffer of <em>size</em> to query the kernel ring buffer.  This is 16392 by default.  (The default kernel syslog buffer size was 4096 at first, 8192 since 1.3.54, 16384 since 2.1.113.)  If you have set the kernel buffer to be larger than the default, then this option can be used to view the entire buffer.</p>
+    </dd>
+    <dt><strong>-T</strong>, <strong>--ctime</strong></dt>
+    <dd>
+  <p>Print human-readable timestamps.</p>
+    </dd>
+<p class='spacer'>
+
+  <p>Be aware that the timestamp could be inaccurate! The <strong>time</strong> source used for the logs is <strong>not updated after</strong> system <strong>SUSPEND</strong>/<strong>RESUME</strong>.</p>
+    </dd>
+    <dt><strong>-t</strong>, <strong>--notime</strong></dt>
+    <dd>
+  <p>Do not print kernel's timestamps.</p>
+    </dd>
+    <dt><strong>-u</strong>, <strong>--userspace</strong></dt>
+    <dd>
+  <p>Print userspace messages.</p>
+    </dd>
+    <dt><strong>-V</strong>, <strong>--version</strong></dt>
+    <dd>
+  <p>Display version information and exit.</p>
+    </dd>
+    <dt><strong>-w</strong>, <strong>--follow</strong></dt>
+    <dd>
+  <p>Wait for new messages.  This feature is supported only on systems with a readable /dev/kmsg (since kernel 3.5.0).</p>
+    </dd>
+    <dt><strong>-x</strong>, <strong>--decode</strong></dt>
+    <dd>
+  <p>Decode facility and level (priority) numbers to human-readable prefixes.</p>
+    </dd>
+    <dt><strong>--time-format</strong> <em>format</em></dt>
+    <dd>
+  <p>Print timestamps using the given <em>format</em>, which can be <strong>ctime</strong>, <strong>reltime</strong>, <strong>delta</strong> or <strong>iso</strong>. The first three formats are aliases of the time-format-specific options. The <strong>iso</strong> format is a <strong>dmesg</strong> implementation of the ISO-8601 timestamp format.  The purpose of this format is to make the comparing of timestamps between two systems, and any other parsing, easy.  The definition of the <strong>iso</strong> timestamp is: YYYY-MM-DD&lt;T&gt;HH:MM:SS,&lt;microseconds&gt;&lt;-+&gt;&lt;timezone offset from UTC&gt;.</p>
+    </dd>
+<p class='spacer'>
+
+  <p>The <strong>iso</strong> format has the same issue as <strong>ctime</strong>: the time may be inaccurate when a system is suspended and resumed.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLORS</h2>
+        <div class="sectioncontent">
+
+<p>Implicit coloring can be disabled by an empty file <em>/etc/terminal-colors.d/dmesg.disable</em>. See <a href="../man5/terminal-colors.d.5.html"><strong>terminal-colors.d</strong>(5)</a> for more details about colorization configuration.</p>
+<p class='spacer'>
+
+  <p>The logical color names supported by <strong>dmesg</strong> are:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>subsys</strong></dt>
+    <dd>
+  <p>The message sub-system prefix (e.g. "ACPI:").</p>
+    </dd>
+    <dt><strong>time</strong></dt>
+    <dd>
+  <p>The message timestamp.</p>
+    </dd>
+    <dt><strong>alert</strong></dt>
+    <dd>
+  <p>The text of the message with the alert log priority.</p>
+    </dd>
+    <dt><strong>crit</strong></dt>
+    <dd>
+  <p>The text of the message with the critical log priority.</p>
+    </dd>
+    <dt><strong>err</strong></dt>
+    <dd>
+  <p>The text of the message with the error log priority.</p>
+    </dd>
+    <dt><strong>warn</strong></dt>
+    <dd>
+  <p>The text of the message with the warning log priority.</p>
+    </dd>
+    <dt><strong>segfault</strong></dt>
+    <dd>
+  <p>The text of the message that inform about segmentation fault.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>syslogd</strong>(8) <a href="../man5/terminal-colors.d.5.html"><strong>terminal-colors.d</strong>(5)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+
+<p><a href="mailto:kzak@redhat.com">kzak@redhat.com</a> Karel Zak</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p><strong>dmesg</strong> was originally written by <a href="mailto:tytso@athena.mit.edu">tytso@athena.mit.edu</a> Theodore Ts'o</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
+        <div class="sectioncontent">
+
+<p>The dmesg command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="dirname.1.html"><span aria-hidden="true">&larr;</span> dirname.1: strip last component from file name</a></li><li class="next"><a href="du.1.html">du.1: estimate file space usage <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
