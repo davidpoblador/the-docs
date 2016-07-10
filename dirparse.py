@@ -65,7 +65,7 @@ class ManDirectoryParser(object):
     def get_pages(self):
         for page, v in self.pages.iteritems():
             if 'errors' not in v and 'missing-parser' not in v:
-                yield v['instance']
+                yield v['instance'], v['final-page']
 
     def get_pages_without_errors(self):
         manpages = set()
@@ -184,9 +184,12 @@ class ManDirectoryParser(object):
 
                 previous = (page, d['subtitle'])
 
-        for mp in self.get_pages():
+        for mp, final_page in self.get_pages():
             out = mp.html(pages_to_link=found_pages)
             self.missing_links.update(mp.broken_links)
+            file = open(final_page, "w")
+            file.write(out)
+            file.close()
 
         # Directory Indexes & Sitemaps
         sm_urls = []
