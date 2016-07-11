@@ -61,6 +61,7 @@ class MacroParser(object):
         raise MissingParser("MACRO %s : %s" % (self.macro,
                                                self.data, ))
 
+
 class BodyMacroParser(MacroParser):
     def __bool__(self):
         return not bool(self.comment)
@@ -81,7 +82,8 @@ class BodyMacroParser(MacroParser):
             self.manpage.table_buffer.append(self.unescaped_data)
         else:
             self.manpage.blank_line = False
-            if self.unescaped_data.startswith(" ") and not self.manpage.preserve_next_line and not self.manpage.in_pre:
+            if self.unescaped_data.startswith(
+                    " ") and not self.manpage.preserve_next_line and not self.manpage.in_pre:
                 self.manpage.spaced_lines_buffer.append(self.unescaped_data)
             else:
                 self.manpage.add_content(self.data)
@@ -110,12 +112,12 @@ class BodyMacroParser(MacroParser):
         self.manpage.end_pre()
 
     def p_UR(self):
-            self.manpage.add_url(self.unescaped_data)
+        self.manpage.add_url(self.unescaped_data)
 
     def p_MT(self):
-            self.manpage.add_mailto(self.unescaped_data)
+        self.manpage.add_mailto(self.unescaped_data)
 
-    def p_TS(self): # Process table quickly
+    def p_TS(self):  # Process table quickly
         self.manpage.in_table = True
 
     def p_TE(self):
@@ -142,13 +144,14 @@ class BodyMacroParser(MacroParser):
     p_P = p_paragraph
 
     def p_TP(self):
-        self.manpage.preserve_next_line = True # FIXME (now we can do better)
+        self.manpage.preserve_next_line = True  # FIXME (now we can do better)
         if self.manpage.in_dl:
             self.manpage.add_text("</dd>", 2)
 
     def p_style(self):
         if self.data:
-            self.manpage.add_content(self.manpage.add_style(self.macro, self.data))
+            self.manpage.add_content(self.manpage.add_style(self.macro,
+                                                            self.data))
 
     # Simple styles
     p_I = p_style
@@ -171,6 +174,7 @@ class BodyMacroParser(MacroParser):
     @property
     def unescaped_data(self):
         return unescape(self.data)
+
 
 class TitleMacroParser(MacroParser):
     def p_SH(self):
@@ -260,7 +264,8 @@ class LineParser(Line):
         super(LineParser, self).__init__(line)
 
         if self:
-            if self.startswith(".") and len(self) > 1: # FIXME: Single dot lines (badblocks)
+            if self.startswith(".") and len(
+                    self) > 1:  # FIXME: Single dot lines (badblocks)
                 chunks = self[1:].split(None, 1)
                 if chunks:
                     self._macro = chunks[0]
