@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>utmpdump - dump UTMP and WTMP files in raw format</title>
+  <title>renice - alter priority of running processes</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -31,8 +31,8 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">utmpdump<small> (1)</small></h1>
-        <p class="lead">dump UTMP and WTMP files in raw format</p>
+        <h1 class="font-effect-destruction">renice<small> (1)</small></h1>
+        <p class="lead">alter priority of running processes</p>
       </div>
 
     <ol class="breadcrumb">
@@ -43,7 +43,7 @@
 		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/"><span itemprop="title">Executable programs or shell commands</span></a>
 	</li>
 	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
-		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/utmpdump.1.html"><span itemprop="title">utmpdump</span></a>
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/renice.1.html"><span itemprop="title">renice</span></a>
 	</li>
 </ol>
     
@@ -51,7 +51,7 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<p><strong>utmpdump</strong> [options] [<em>filename</em>]</p>
+<p><strong>renice</strong> [<strong>-n</strong>] <em>priority</em> [<strong>-g</strong>|<strong>-p</strong>|<strong>-u</strong>] <em>identifier</em>...</p>
         </div>
       </section>
 
@@ -59,7 +59,9 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 
-<p><strong>utmpdump</strong> is a simple program to dump UTMP and WTMP files in raw format, so they can be examined. <strong>utmpdump</strong> reads from stdin unless a <em>filename</em> is passed.</p>
+<p><strong>renice</strong> alters the scheduling priority of one or more running processes.  The first argument is the <em>priority</em> value to be used. The other arguments are interpreted as process IDs (by default), process group IDs, user IDs, or user names. <strong>renice</strong>'ing a process group causes all processes in the process group to have their scheduling priority altered. <strong>renice</strong>'ing a user causes all processes owned by the user to have their scheduling priority altered.</p>
+<p class='spacer'>
+
         </div>
       </section>
 
@@ -67,26 +69,43 @@
         <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-horizontal'>
-    <dt><strong>-f</strong>, <strong>--follow</strong></dt>
+  <dl class='dl-vertical'>
+    <dt><strong>-n</strong>,<strong> --priority </strong><em>priority</em></dt>
     <dd>
-  <p>Output appended data as the file grows.</p>
+  <p>Specify the scheduling <em>priority</em> to be used for the process, process group, or user.  Use of the option <strong>-n</strong> or <strong>--priority</strong> is optional, but when used it must be the first argument.</p>
     </dd>
-    <dt><strong>-o</strong>, <strong>--output</strong> <em>file</em></dt>
+    <dt><strong>-g</strong>,<strong> --pgrp</strong></dt>
     <dd>
-  <p>Write command output to <em>file</em> instead of standard output.</p>
+  <p>Interpret the succeeding arguments as process group IDs.</p>
     </dd>
-    <dt><strong>-r</strong>, <strong>--reverse</strong></dt>
+    <dt><strong>-p</strong>,<strong> --pid</strong></dt>
     <dd>
-  <p>Undump, write back edited login information into the utmp or wtmp files.</p>
+  <p>Interpret the succeeding arguments as process IDs (the default).</p>
     </dd>
-    <dt><strong>-h</strong>, <strong>--help</strong></dt>
+    <dt><strong>-u</strong>,<strong> --user</strong></dt>
+    <dd>
+  <p>Interpret the succeeding arguments as usernames or UIDs.</p>
+    </dd>
+    <dt><strong>-h</strong>,<strong> --help</strong></dt>
     <dd>
   <p>Display help text and exit.</p>
     </dd>
-    <dt><strong>-V</strong>, <strong>--version</strong></dt>
+    <dt><strong>-V</strong>,<strong> --version</strong></dt>
     <dd>
   <p>Display version information and exit.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
+        <div class="sectioncontent">
+
+  <p>The following command would change the priority of the processes with PIDs 987 and 32, plus all processes owned by the users daemon and root:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>       renice +1 987 -u daemon root -p 32</strong></dt>
+    <dd>
     </dd>
   </dl>
         </div>
@@ -96,29 +115,20 @@
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
 
-<p><strong>utmpdump</strong> can be useful in cases of corrupted utmp or wtmp entries.  It can dump out utmp/wtmp to an ASCII file, which can then be edited to remove bogus entries, and reintegrated using:</p>
-<p class='spacer'>
-
-<p><strong>utmpdump -r &lt; ascii_file &gt; wtmp</strong></p>
-<p class='spacer'>
-
-<p>But be warned, <strong>utmpdump</strong> was written for debugging purposes only.</p>
+<p>Users other than the superuser may only alter the priority of processes they own, and can only monotonically increase their ``nice value'' (for security reasons) within the range 0 to 19, unless a nice resource limit is set (Linux 2.6.12 and higher).  The superuser may alter the priority of any process and set the priority to any value in the range -20 to 19. Useful priorities are: 19 (the affected processes will run only when nothing else in the system wants to), 0 (the ``base'' scheduling priority), anything negative (to make things go very fast).</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-<p>You may <strong>not</strong> use the <strong>-r</strong> option, as the format for the utmp/wtmp files strongly depends on the input format.  This tool was <strong>not</strong> written for normal use, but for debugging only.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p>Michael Krapp</p>
+  <dl class='dl-vertical'>
+    <dt><strong>/etc/passwd</strong></dt>
+    <dd>
+  <p>to map user names to user IDs</p>
+    </dd>
+  </dl>
         </div>
       </section>
 
@@ -126,7 +136,26 @@
         <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
         <div class="sectioncontent">
 
-<p><strong>last</strong>(1), <strong>w</strong>(1), <a href="../man1/who.1.html"><strong>who</strong>(1)</a>, <a href="../man5/utmp.5.html"><strong>utmp</strong>(5)</a></p>
+<p><a href="../man2/getpriority.2.html"><strong>getpriority</strong>(2)</a>, <a href="../man2/setpriority.2.html"><strong>setpriority</strong>(2)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>Non-superusers cannot increase scheduling priorities of their own processes, even if they were the ones that decreased the priorities in the first place.</p>
+<p class='spacer'>
+
+<p>The Linux kernel (at least version 2.0.0) and linux libc (at least version 5.2.18) does not agree entirely on what the specifics of the systemcall interface to set nice values is.  Thus causes renice to report bogus previous nice values.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">HISTORY</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>renice</strong> command appeared in 4.0BSD.</p>
         </div>
       </section>
 
@@ -134,12 +163,12 @@
         <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
         <div class="sectioncontent">
 
-<p>The utmpdump command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
+<p>The renice command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-  <li class="previous"><a href="users.1.html"><span aria-hidden="true">&larr;</span> users.1: print the user names of users currently logged in to the current host</a></li><li class="next"><a href="uudecode.1.html">uudecode.1: decode an encoded file <span aria-hidden="true">&rarr;</span></a></li>
+  <li class="previous"><a href="rename.ul.1.html"><span aria-hidden="true">&larr;</span> rename.ul.1: rename files</a></li><li class="next"><a href="reset.1.html">reset.1: terminal initialization <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
   </div>
