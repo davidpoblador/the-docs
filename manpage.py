@@ -12,9 +12,6 @@ except ImportError:
 import logging
 import itertools
 
-package_directory = os.path.dirname(os.path.abspath(__file__))
-
-
 class MacroParser(object):
     # FIXME
     # Revisit ME
@@ -349,7 +346,7 @@ class ManPage(object):
 
         # New stuff
         self.set_state(ManPageStates.HEADER)
-        self.line_iterator = iter(self.line())
+        self.line_iterator = self.line()
 
     def parse(self):
         self.parse_header()
