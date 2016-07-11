@@ -16,9 +16,11 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 class MacroParser(object):
+    # FIXME
+    # Revisit ME
     macros_to_ignore = {
         'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam', 'ne', 'UC', 'nr',
-        'ns', 'ds', 'na', 'DT', 'bp', 'nr', 'll', 'c2', 'ps', 'ta'
+        'ns', 'ds', 'na', 'DT', 'bp', 'nr', 'll', 'c2', 'ps', 'ta', 'in', 'ME'
     }
 
     def __init__(self, line, manpage):
@@ -59,13 +61,118 @@ class MacroParser(object):
         raise MissingParser("MACRO %s : %s" % (self.macro,
                                                self.data, ))
 
-
-class TitleMacroParser(MacroParser):
+class BodyMacroParser(MacroParser):
     def __bool__(self):
-        return bool(self.comment)
+        return not bool(self.comment)
 
     __nonzero__ = __bool__
 
+    def process(self):
+        if self:
+            if self.macro:
+                self.manpage.blank_line = False
+
+            super(BodyMacroParser, self).process()
+
+    def process_text(self):
+        if not self.data:
+            self.p_spacer()
+        elif self.manpage.in_table:
+            self.manpage.table_buffer.append(self.unescaped_data)
+        else:
+            self.manpage.blank_line = False
+            if self.unescaped_data.startswith(" ") and not self.manpage.preserve_next_line and not self.manpage.in_pre:
+                self.manpage.spaced_lines_buffer.append(self.unescaped_data)
+            else:
+                self.manpage.add_content(self.data)
+
+    def p_SH(self):
+        if not self.data:
+            section = next(self.manpage.line_iterator)
+        else:
+            section = self.data
+
+        self.manpage.add_section(section)
+
+    def p_SS(self):
+        if self.data:
+            self.manpage.add_subsection(self.data)
+
+    def p_SM(self):
+        if self.data:
+            # FIXME: Make font smaller
+            self.manpage.add_content(self.data)
+
+    def p_nf(self):
+        self.manpage.start_pre()
+
+    def p_fi(self):
+        self.manpage.end_pre()
+
+    def p_UR(self):
+            self.manpage.add_url(self.unescaped_data)
+
+    def p_MT(self):
+            self.manpage.add_mailto(self.unescaped_data)
+
+    def p_TS(self): # Process table quickly
+        self.manpage.in_table = True
+
+    def p_TE(self):
+        self.manpage.end_table()
+
+    def p_IP(self):
+        if self.manpage.in_li:
+            self.manpage.add_text("</dd>", 2)
+        self.manpage.process_li(self.unescaped_data)
+
+    def p_RS(self):
+        self.manpage.save_state()
+
+    def p_RE(self):
+        self.manpage.restore_state()
+
+    def p_paragraph(self):
+        self.manpage.flush_dl()
+        self.manpage.flush_li()
+        self.p_spacer()
+
+    p_LP = p_paragraph
+    p_PP = p_paragraph
+    p_P = p_paragraph
+
+    def p_TP(self):
+        self.manpage.preserve_next_line = True # FIXME (now we can do better)
+        if self.manpage.in_dl:
+            self.manpage.add_text("</dd>", 2)
+
+    def p_style(self):
+        if self.data:
+            self.manpage.add_content(self.manpage.add_style(self.macro, self.data))
+
+    # Simple styles
+    p_I = p_style
+    p_B = p_style
+
+    # Compound styles
+    p_BR = p_style
+    p_RB = p_style
+    p_BI = p_style
+    p_IB = p_style
+    p_IR = p_style
+    p_RI = p_style
+
+    def p_spacer(self):
+        self.manpage.add_spacer()
+
+    p_br = p_spacer
+    p_sp = p_spacer
+
+    @property
+    def unescaped_data(self):
+        return unescape(self.data)
+
+class TitleMacroParser(MacroParser):
     def p_SH(self):
         if self.joined_data == "NAME":
             self.manpage.line_iterator, tmp_iter = itertools.tee(
@@ -153,7 +260,7 @@ class LineParser(Line):
         super(LineParser, self).__init__(line)
 
         if self:
-            if self.startswith("."):
+            if self.startswith(".") and len(self) > 1: # FIXME: Single dot lines (badblocks)
                 chunks = self[1:].split(None, 1)
                 if chunks:
                     self._macro = chunks[0]
@@ -194,6 +301,7 @@ class ManPageStates(object):
     parser = {
         HEADER: HeaderMacroParser,
         TITLE: TitleMacroParser,
+        BODY: BodyMacroParser,
     }
 
 
@@ -214,6 +322,34 @@ class ManPage(object):
         'man8': "System administration commands",
         'man0': "ERROR. Section 0",
     }
+
+    def __init__(self, filename, redirected_from=False, base_url=""):
+        self.filename = filename
+
+        self.subtitle = ""
+
+        self.sections = []
+        self.current_buffer = None
+
+        self.preserve_next_line = False
+        self.in_if = False
+
+        if redirected_from:
+            self.manpage_name = os.path.basename(redirected_from)
+        else:
+            self.manpage_name = os.path.basename(filename)
+
+        self.style_macros = self.single_styles | self.compound_styles
+
+        self.next_page = None
+        self.previous_page = None
+        self.base_url = base_url
+
+        self.broken_links = set()
+
+        # New stuff
+        self.set_state(ManPageStates.HEADER)
+        self.line_iterator = iter(self.line())
 
     def parse(self):
         self.parse_header()
@@ -250,87 +386,55 @@ class ManPage(object):
             if not self.is_state(ManPageStates.HEADER):
                 break
 
-    def state_parser(self):
-        return ManPageStates.parser[self.parsing_state]
+    def parse_body(self):
+        self.in_dl = False
+        self.in_li = False
+        self.in_pre = False
+        self.in_table = False
+        self.table_buffer = []
+        self.pre_buffer = []
 
-    def must_have_state(self, state):
-        if not self.is_state(state):
+        self.spaced_lines_buffer = []
+        self.blank_line = False  # Previous line was blank
+        self.content_buffer = []
+
+        self.state = []
+        self.depth = 0
+
+        if not self.is_state(ManPageStates.BODY):
             raise UnexpectedState(self.parsing_state)
 
-    def is_state(self, state):
-        return (self.parsing_state == state)
+        for line in self.line_iterator:
+            if self.spaced_lines_buffer:
+                self.process_spaced_lines(line)
 
-    def set_state(self, state):
-        self.parsing_state = state
+            self.state_parser()(line, self).process()
 
-    def line(self):
-        with open(self.filename) as fp:
-            extra_line = False
-            for line in fp:
-                comment_start = line.find("\\\"")
-                if comment_start in (0, 1):
-                    continue
-                elif comment_start > -1 and line[comment_start - 1] != "\\":
-                    line = line[0:comment_start]
-
-                if extra_line:
-                    line = " ".join((extra_line,
-                                     line, ))
-                    extra_line = False
-
-                parsed_line = LineParser(line)
-
-                if parsed_line.extra and (
-                    ((self.is_state(ManPageStates.BODY) and not self.in_pre) or
-                     parsed_line.macro) or self.is_state(ManPageStates.TITLE)):
-                    extra_line = parsed_line.extra
-                    continue
-
-                yield parsed_line
-
-    def __init__(self, filename, redirected_from=False, base_url=""):
-        self.filename = filename
-
-        self.subtitle = ""
-
-        self.sections = []
-        self.current_buffer = None
-
-        self.preserve_next_line = False
-        self.in_if = False
-
-        if redirected_from:
-            self.manpage_name = os.path.basename(redirected_from)
+#
+            #if not line:
+            #    self.add_spacer()
+            #elif self.in_if:
+            #    if "}" in line:
+            #        self.in_if = False
+            #    continue
+            #elif line.macro:
+            #    self.blank_line = False
+            #    self.parse_macro(line[1:])
+            #elif self.in_table:
+            #    self.table_buffer.append(unescape(line))
+            #elif line.startswith(" ") and not self.in_pre:
+            #    self.blank_line = False
+            #    self.spaced_lines_buffer.append(unescape(line))
+            #else:
+            #    self.blank_line = False
+            #    self.add_content(line)
+#
+            #if not self.is_state(ManPageStates.BODY):
+            #    break
         else:
-            self.manpage_name = os.path.basename(filename)
+            self.flush_current_section()
 
-        self.macros_to_space = {'br', 'sp'}
-        self.style_macros = self.single_styles | self.compound_styles
-
-        self.next_page = None
-        self.previous_page = None
-        self.base_url = base_url
-
-        self.broken_links = set()
-
-        # New stuff
-        self.set_state(ManPageStates.HEADER)
-        self.line_iterator = iter(self.line())
-
-    def set_previous(self, manfile, description):
-        self.previous_page = (manfile, description)
-
-    def set_next(self, manfile, description):
-        self.next_page = (manfile, description)
-
-    def process_spaced_lines(self, line):
-        if (not line) or (not line.startswith(" ")):
-            self.blank_line = False
-            self.add_text("\n<pre>%s</pre>\n" %
-                          '\n'.join(self.spaced_lines_buffer))
-            self.spaced_lines_buffer = []
-
-    def parse_body(self):
+    def parse_body_orig(self):
         self.in_dl = False
         self.in_li = False
         self.in_pre = False
@@ -372,19 +476,28 @@ class ManPage(object):
             else:
                 self.blank_line = False
                 self.add_content(line)
+
+            if not self.is_state(ManPageStates.BODY):
+                break
         else:
             self.flush_current_section()
 
-    @property
-    def redirect(self):
-        try:
-            return self._redirect
-        except:
-            return False
+    def state_parser(self):
+        return ManPageStates.parser[self.parsing_state]
 
-    def get_line(self):
+    def must_have_state(self, state):
+        if not self.is_state(state):
+            raise UnexpectedState(self.parsing_state)
+
+    def is_state(self, state):
+        return (self.parsing_state == state)
+
+    def set_state(self, state):
+        self.parsing_state = state
+
+    def line(self):
         with open(self.filename) as fp:
-            extra_line = None
+            extra_line = False
             for line in fp:
                 comment_start = line.find("\\\"")
                 if comment_start in (0, 1):
@@ -392,25 +505,40 @@ class ManPage(object):
                 elif comment_start > -1 and line[comment_start - 1] != "\\":
                     line = line[0:comment_start]
 
-                line = line.rstrip()
-
                 if extra_line:
-                    line = "%s %s" % (extra_line,
-                                      line, )
-                    extra_line = None
+                    line = " ".join((extra_line,
+                                     line, ))
+                    extra_line = False
 
-                if not line:
-                    yield line
-                elif line[-1] == "\\" and (line[0] in self.cc or
-                                           not self.in_pre):
-                    extra_line = line[:-1]
+                parsed_line = LineParser(line)
+
+                if parsed_line.extra and (
+                    ((self.is_state(ManPageStates.BODY) and not self.in_pre) or
+                     parsed_line.macro) or self.is_state(ManPageStates.TITLE)):
+                    extra_line = parsed_line.extra
                     continue
-                elif line[-2:] == "\\c" and (line[0] in self.cc or
-                                             not self.in_pre):
-                    extra_line = line[:-2]
-                    continue
-                else:
-                    yield entitize(line)
+
+                yield parsed_line
+
+    def set_previous(self, manfile, description):
+        self.previous_page = (manfile, description)
+
+    def set_next(self, manfile, description):
+        self.next_page = (manfile, description)
+
+    def process_spaced_lines(self, line):
+        if (not line) or (not line.startswith(" ")):
+            self.blank_line = False
+            self.add_text("\n<pre>%s</pre>\n" %
+                          '\n'.join(self.spaced_lines_buffer))
+            self.spaced_lines_buffer = []
+
+    @property
+    def redirect(self):
+        try:
+            return self._redirect
+        except:
+            return False
 
     def add_spacer(self):
         if self.in_pre:
@@ -468,37 +596,21 @@ class ManPage(object):
         if macro in MacroParser.macros_to_ignore:
             return
 
-        if macro == "SH":
-            if not data:
-                return
-            self.add_section(data)
-            return
-        elif macro == "SS":
+        if macro == "SS":
             if not data:
                 return
             self.add_subsection(data)
             return
 
-        if macro in self.style_macros:
-            if data:
-                self.add_content(self.add_style(macro, data))
-            return
-
         if data:
             data = unescape(data)
 
-        if macro in self.macros_to_space:
-            self.add_spacer()
-        elif macro == 'TS':
+        if macro == 'TS':
             self.in_table = True
         elif macro == 'TE':
             self.end_table()
         elif macro == "TH":
             self.set_header(data)
-        elif macro == "TP":
-            if self.in_dl:
-                self.add_text("</dd>", 2)
-            self.preserve_next_line = True
         elif macro == 'IP':
             if self.in_li:
                 self.add_text("</dd>", 2)
