@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ioprio_get - get/set I/O scheduling class and priority</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">ioprio_get<small> (2)</small></h1>
+        <p class="lead">get/set I/O scheduling class and priority</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/ioprio_get.2.html"><span itemprop="title">ioprio_get</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>int ioprio_get(int </strong><em>which</em><strong>, int </strong><em>who</em><strong>);</strong>
+<strong>int ioprio_set(int </strong><em>which</em><strong>, int </strong><em>who</em><strong>, int </strong><em>ioprio</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p><em>Note</em>: There are no glibc wrappers for these system calls; see NOTES.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>ioprio_get</strong>() and <strong>ioprio_set</strong>() system calls respectively get and set the I/O scheduling class and priority of one or more threads.</p>
+<p class='spacer'>
+
+  <p>The <em>which</em> and <em>who</em> arguments identify the thread(s) on which the system calls operate. The <em>which</em> argument determines how <em>who</em> is interpreted, and has one of the following values:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>IOPRIO_WHO_PROCESS</strong></dt>
+    <dd>
+  <p><em>who</em> is a process ID or thread ID identifying a single process or thread. If <em>who</em> is 0, then operate on the calling thread.</p>
+    </dd>
+    <dt><strong>IOPRIO_WHO_PGRP</strong></dt>
+    <dd>
+  <p><em>who</em> is a process group ID identifying all the members of a process group. If <em>who</em> is 0, then operate on the process group of which the caller is a member.</p>
+    </dd>
+    <dt><strong>IOPRIO_WHO_USER</strong></dt>
+    <dd>
+  <p><em>who</em> is a user ID identifying all of the processes that have a matching real UID.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If <em>which</em> is specified as <strong>IOPRIO_WHO_PGRP</strong> or <strong>IOPRIO_WHO_USER</strong> when calling <strong>ioprio_get</strong>(), and more than one process matches <em>who</em>, then the returned priority will be the highest one found among all of the matching processes. One priority is said to be higher than another one if it belongs to a higher priority class (<strong>IOPRIO_CLASS_RT</strong> is the highest priority class; <strong>IOPRIO_CLASS_IDLE</strong> is the lowest) or if it belongs to the same priority class as the other process but has a higher priority level (a lower priority number means a higher priority level).</p>
+<p class='spacer'>
+
+  <p>The <em>ioprio</em> argument given to <strong>ioprio_set</strong>() is a bit mask that specifies both the scheduling class and the priority to be assigned to the target process(es). The following macros are used for assembling and dissecting <em>ioprio</em> values:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>IOPRIO_PRIO_VALUE(</strong><em>class</em><strong>, </strong><em>data</em><strong>)</strong></dt>
+    <dd>
+  <p>Given a scheduling <em>class</em> and priority (<em>data</em>), this macro combines the two values to produce an <em>ioprio</em> value, which is returned as the result of the macro.</p>
+    </dd>
+    <dt><strong>IOPRIO_PRIO_CLASS(</strong><em>mask</em><strong>)</strong></dt>
+    <dd>
+  <p>Given <em>mask</em> (an <em>ioprio</em> value), this macro returns its I/O class component, that is, one of the values <strong>IOPRIO_CLASS_RT</strong>, <strong>IOPRIO_CLASS_BE</strong>, or <strong>IOPRIO_CLASS_IDLE</strong>.</p>
+    </dd>
+    <dt><strong>IOPRIO_PRIO_DATA(</strong><em>mask</em><strong>)</strong></dt>
+    <dd>
+  <p>Given <em>mask</em> (an <em>ioprio</em> value), this macro returns its priority (<em>data</em>) component.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>See the NOTES section for more information on scheduling classes and priorities, as well as the meaning of specifying <em>ioprio</em> as 0.</p>
+<p class='spacer'>
+
+<p>I/O priorities are supported for reads and for synchronous (<strong>O_DIRECT</strong>, <strong>O_SYNC</strong>) writes. I/O priorities are not supported for asynchronous writes because they are issued outside the context of the program dirtying the memory, and thus program-specific priorities do not apply.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>ioprio_get</strong>() returns the <em>ioprio</em> value of the process with highest I/O priority of any of the processes that match the criteria specified in <em>which</em> and <em>who</em>. On error, -1 is returned, and <em>errno</em> is set to indicate the error.</p>
+<p class='spacer'>
+
+<p>On success, <strong>ioprio_set</strong>() returns 0. On error, -1 is returned, and <em>errno</em> is set to indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>Invalid value for <em>which</em> or <em>ioprio</em>. Refer to the NOTES section for available scheduler classes and priority levels for <em>ioprio</em>.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>The calling process does not have the privilege needed to assign this <em>ioprio</em> to the specified process(es). See the NOTES section for more information on required privileges for <strong>ioprio_set</strong>().</p>
+    </dd>
+    <dt><strong>ESRCH</strong></dt>
+    <dd>
+  <p>No process(es) could be found that matched the specification in <em>which</em> and <em>who</em>.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>These system calls have been available on Linux since kernel 2.6.13.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>These system calls are Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Glibc does not provide a wrapper for these system calls; call them using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>Two or more processes or threads can share an I/O context. This will be the case when <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> was called with the <strong>CLONE_IO</strong> flag. However, by default, the distinct threads of a process will <strong>not</strong> share the same I/O context. This means that if you want to change the I/O priority of all threads in a process, you may need to call <strong>ioprio_set</strong>() on each of the threads. The thread ID that you would need for this operation is the one that is returned by <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a> or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>These system calls have an effect only when used in conjunction with an I/O scheduler that supports I/O priorities. As at kernel 2.6.17 the only such scheduler is the Completely Fair Queuing (CFQ) I/O scheduler.</p>
+<p class='spacer'>
+
+<p>If no I/O scheduler has been set for a thread, then by default the I/O priority will follow the CPU nice value (<a href="../man2/setpriority.2.html"><strong>setpriority</strong>(2)</a>). In Linux kernels before version 2.6.24, once an I/O priority had been set using <strong>ioprio_set</strong>(), there was no way to reset the I/O scheduling behavior to the default. Since Linux 2.6.24, specifying <em>ioprio</em> as 0 can be used to reset to the default I/O scheduling behavior.</p>
+  <h3>Selecting an I/O scheduler</h3>
+<p>I/O schedulers are selected on a per-device basis via the special file <em>/sys/block/&lt;device&gt;/queue/scheduler</em>.</p>
+<p class='spacer'>
+
+<p>One can view the current I/O scheduler via the <em>/sys</em> filesystem. For example, the following command displays a list of all schedulers currently loaded in the kernel:</p>
+<p class='spacer'>
+
+<pre>$<strong> cat /sys/block/sda/queue/scheduler</strong>
+noop anticipatory deadline [cfq]</pre>
+
+<p class='spacer'>
+
+<p>The scheduler surrounded by brackets is the one actually in use for the device (<em>sda</em> in the example). Setting another scheduler is done by writing the name of the new scheduler to this file. For example, the following command will set the scheduler for the <em>sda</em> device to <em>cfq</em>:</p>
+<p class='spacer'>
+
+<pre>$<strong> su</strong>
+Password:
+#<strong> echo cfq &gt; /sys/block/sda/queue/scheduler</strong></pre>
+
+  <h3>The Completely Fair Queuing (CFQ) I/O scheduler</h3>
+  <p>Since version 3 (also known as CFQ Time Sliced), CFQ implements I/O nice levels similar to those of CPU scheduling. These nice levels are grouped into three scheduling classes, each one containing one or more priority levels:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>IOPRIO_CLASS_RT</strong> (1)</dt>
+    <dd>
+  <p>This is the real-time I/O class. This scheduling class is given higher priority than any other class: processes from this class are given first access to the disk every time. Thus, this I/O class needs to be used with some care: one I/O real-time process can starve the entire system. Within the real-time class, there are 8 levels of class data (priority) that determine exactly how much time this process needs the disk for on each service. The highest real-time priority level is 0; the lowest is 7. In the future, this might change to be more directly mappable to performance, by passing in a desired data rate instead.</p>
+    </dd>
+    <dt><strong>IOPRIO_CLASS_BE</strong> (2)</dt>
+    <dd>
+  <p>This is the best-effort scheduling class, which is the default for any process that hasn't set a specific I/O priority. The class data (priority) determines how much I/O bandwidth the process will get. Best-effort priority levels are analogous to CPU nice values (see <a href="../man2/getpriority.2.html"><strong>getpriority</strong>(2)</a>). The priority level determines a priority relative to other processes in the best-effort scheduling class. Priority levels range from 0 (highest) to 7 (lowest).</p>
+    </dd>
+    <dt><strong>IOPRIO_CLASS_IDLE</strong> (3)</dt>
+    <dd>
+  <p>This is the idle scheduling class. Processes running at this level get I/O time only when no-one else needs the disk. The idle class has no class data. Attention is required when assigning this priority class to a process, since it may become starved if higher priority processes are constantly accessing the disk.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Refer to the kernel source file <em>Documentation/block/ioprio.txt</em> for more information on the CFQ I/O Scheduler and an example program.</p>
+  <h3>Required permissions to set I/O priorities</h3>
+  <p>Permission to change a process's priority is granted or denied based on two criteria:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>Process ownership</strong></dt>
+    <dd>
+  <p>An unprivileged process may set the I/O priority only for a process whose real UID matches the real or effective UID of the calling process. A process which has the <strong>CAP_SYS_NICE</strong> capability can change the priority of any process.</p>
+    </dd>
+    <dt><strong>What is the desired priority</strong></dt>
+    <dd>
+  <p>Attempts to set very high priorities (<strong>IOPRIO_CLASS_RT</strong>) require the <strong>CAP_SYS_ADMIN</strong> capability. Kernel versions up to 2.6.24 also required <strong>CAP_SYS_ADMIN</strong> to set a very low priority (<strong>IOPRIO_CLASS_IDLE</strong>), but since Linux 2.6.25, this is no longer required.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>A call to <strong>ioprio_set</strong>() must follow both rules, or the call will fail with the error <strong>EPERM</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>Glibc does not yet provide a suitable header file defining the function prototypes and macros described on this page. Suitable definitions can be found in <em>linux/ioprio.h</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man1/ionice.1.html"><strong>ionice</strong>(1)</a>, <a href="../man2/getpriority.2.html"><strong>getpriority</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a></p>
+<p class='spacer'>
+
+<p><em>Documentation/block/ioprio.txt</em> in the Linux kernel source tree</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="iopl.2.html"><span aria-hidden="true">&larr;</span> iopl.2: change I/O privilege level</a></li><li class="next"><a href="ioprio_set.2.html">ioprio_set.2: get/set I/O scheduling class and priority <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

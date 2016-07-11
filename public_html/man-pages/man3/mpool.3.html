@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mpool - shared memory buffer pool</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">mpool<small> (3)</small></h1>
+        <p class="lead">shared memory buffer pool</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/mpool.3.html"><span itemprop="title">mpool</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;db.h&gt;</strong>
+<strong>#include &lt;mpool.h&gt;</strong>
+
+<strong>MPOOL *mpool_open(DBT *</strong><em>key</em><strong>, int </strong><em>fd</em><strong>, pgno_t </strong><em>pagesize</em><strong>, pgno_t </strong><em>maxcache</em><strong>);</strong>
+
+<strong>void mpool_filter(MPOOL *</strong><em>mp</em><strong>, void (*pgin)(void *, pgno_t, void *),</strong>
+<strong>                  void (*</strong><em>pgout</em><strong>)(void *, pgno_t, void *),</strong>
+<strong>                  void *</strong><em>pgcookie</em><strong>);</strong>
+
+<strong>void *mpool_new(MPOOL *</strong><em>mp</em><strong>, pgno_t *</strong><em>pgnoaddr</em><strong>);</strong>
+
+<strong>void *mpool_get(MPOOL *</strong><em>mp</em><strong>, pgno_t </strong><em>pgno</em><strong>, unsigned int </strong><em>flags</em><strong>);</strong>
+
+<strong>int mpool_put(MPOOL *</strong><em>mp</em><strong>, void *</strong><em>pgaddr</em><strong>, unsigned int </strong><em>flags</em><strong>);</strong>
+
+<strong>int mpool_sync(MPOOL *</strong><em>mp</em><strong>);</strong>
+
+<strong>int mpool_close(MPOOL *</strong><em>mp</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><em>Note well</em>: This page documents interfaces provided in glibc up until version 2.1. Since version 2.2, glibc no longer provides these interfaces. Probably, you are looking for the APIs provided by the <em>libdb</em> library instead.</p>
+<p class='spacer'>
+
+<p><em>Mpool</em> is the library interface intended to provide page oriented buffer management of files. The buffers may be shared between processes.</p>
+<p class='spacer'>
+
+<p>The function <strong>mpool_open</strong>() initializes a memory pool. The <em>key</em> argument is the byte string used to negotiate between multiple processes wishing to share buffers. If the file buffers are mapped in shared memory, all processes using the same key will share the buffers. If <em>key</em> is NULL, the buffers are mapped into private memory. The <em>fd</em> argument is a file descriptor for the underlying file, which must be seekable. If <em>key</em> is non-NULL and matches a file already being mapped, the <em>fd</em> argument is ignored.</p>
+<p class='spacer'>
+
+<p>The <em>pagesize</em> argument is the size, in bytes, of the pages into which the file is broken up. The <em>maxcache</em> argument is the maximum number of pages from the underlying file to cache at any one time. This value is not relative to the number of processes which share a file's buffers, but will be the largest value specified by any of the processes sharing the file.</p>
+<p class='spacer'>
+
+<p>The <strong>mpool_filter</strong>() function is intended to make transparent input and output processing of the pages possible. If the <em>pgin</em> function is specified, it is called each time a buffer is read into the memory pool from the backing file. If the <em>pgout</em> function is specified, it is called each time a buffer is written into the backing file. Both functions are called with the <em>pgcookie</em> pointer, the page number and a pointer to the page to being read or written.</p>
+<p class='spacer'>
+
+<p>The function <strong>mpool_new</strong>() takes an <em>MPOOL</em> pointer and an address as arguments. If a new page can be allocated, a pointer to the page is returned and the page number is stored into the <em>pgnoaddr</em> address. Otherwise, NULL is returned and <em>errno</em> is set.</p>
+<p class='spacer'>
+
+<p>The function <strong>mpool_get</strong>() takes an <em>MPOOL</em> pointer and a page number as arguments. If the page exists, a pointer to the page is returned. Otherwise, NULL is returned and <em>errno</em> is set. The <em>flags</em> argument is not currently used.</p>
+<p class='spacer'>
+
+  <p>The function <strong>mpool_put</strong>() unpins the page referenced by <em>pgaddr</em>. <em>pgaddr</em> must be an address previously returned by <strong>mpool_get</strong>() or <strong>mpool_new</strong>(). The flag value is specified by ORing any of the following values:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>MPOOL_DIRTY</strong></dt>
+    <dd>
+  <p>The page has been modified and needs to be written to the backing file.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><strong>mpool_put</strong>() returns 0 on success and -1 if an error occurs.</p>
+<p class='spacer'>
+
+<p>The function <strong>mpool_sync</strong>() writes all modified pages associated with the <em>MPOOL</em> pointer to the backing file. <strong>mpool_sync</strong>() returns 0 on success and -1 if an error occurs.</p>
+<p class='spacer'>
+
+<p>The <strong>mpool_close</strong>() function free's up any allocated memory associated with the memory pool cookie. Modified pages are <strong>not</strong> written to the backing file. <strong>mpool_close</strong>() returns 0 on success and -1 if an error occurs.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>mpool_open</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>.</p>
+<p class='spacer'>
+
+  <p>The <strong>mpool_get</strong>() function may fail and set <em>errno</em> for the following:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>The requested record doesn't exist.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The <strong>mpool_new</strong>() and <strong>mpool_get</strong>() functions may fail and set <em>errno</em> for any of the errors specified for the library routines <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p>The <strong>mpool_sync</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man2/write.2.html"><strong>write</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>The <strong>mpool_close</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/free.3.html"><strong>free</strong>(3)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>Not in POSIX.1. Present on the BSDs.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man3/btree.3.html"><strong>btree</strong>(3)</a>, <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, <a href="../man3/hash.3.html"><strong>hash</strong>(3)</a>, <a href="../man3/recno.3.html"><strong>recno</strong>(3)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="modfl.3.html"><span aria-hidden="true">&larr;</span> modfl.3: extract signed integral and fractional values from floating-point number</a></li><li class="next"><a href="mprobe.3.html">mprobe.3: heap consistency checking <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

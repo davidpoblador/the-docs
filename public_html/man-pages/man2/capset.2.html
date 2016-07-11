@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>capset - set/get capabilities of thread(s)</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">capset<small> (2)</small></h1>
+        <p class="lead">set/get capabilities of thread(s)</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/capset.2.html"><span itemprop="title">capset</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/capability.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>int capget(cap_user_header_t </strong><em>hdrp</em><strong>, cap_user_data_t </strong><em>datap</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><strong>int capset(cap_user_header_t </strong><em>hdrp</em><strong>, const cap_user_data_t </strong><em>datap</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>As of Linux 2.2, the power of the superuser (root) has been partitioned into a set of discrete capabilities. Each thread has a set of effective capabilities identifying which capabilities (if any) it may currently exercise. Each thread also has a set of inheritable capabilities that may be passed through an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> call, and a set of permitted capabilities that it can make effective or inheritable.</p>
+<p class='spacer'>
+
+<p>These two system calls are the raw kernel interface for getting and setting thread capabilities. Not only are these system calls specific to Linux, but the kernel API is likely to change and use of these system calls (in particular the format of the <em>cap_user_*_t</em> types) is subject to extension with each kernel revision, but old programs will keep working.</p>
+<p class='spacer'>
+
+<p>The portable interfaces are <strong>cap_set_proc</strong>(3) and <strong>cap_get_proc</strong>(3); if possible, you should use those interfaces in applications. If you wish to use the Linux extensions in applications, you should use the easier-to-use interfaces <strong>capsetp</strong>(3) and <strong>capgetp</strong>(3).</p>
+  <h3>Current details</h3>
+<p>Now that you have been warned, some current kernel details. The structures are defined as follows.</p>
+<p class='spacer'>
+
+<pre>#define _LINUX_CAPABILITY_VERSION_1  0x19980330
+#define _LINUX_CAPABILITY_U32S_1     1
+
+        /* V2 added in Linux 2.6.25; deprecated */
+#define _LINUX_CAPABILITY_VERSION_2  0x20071026
+#define _LINUX_CAPABILITY_U32S_2     2
+
+        /* V3 added in Linux 2.6.26 */
+#define _LINUX_CAPABILITY_VERSION_3  0x20080522
+#define _LINUX_CAPABILITY_U32S_3     2
+
+typedef struct __user_cap_header_struct {
+   __u32 version;
+   int pid;
+} *cap_user_header_t;
+
+typedef struct __user_cap_data_struct {
+   __u32 effective;
+   __u32 permitted;
+   __u32 inheritable;
+} *cap_user_data_t;</pre>
+
+<p class='spacer'>
+
+<p>The <em>effective</em>, <em>permitted</em>, and <em>inheritable</em> fields are bit masks of the capabilities defined in <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>. Note that the <strong>CAP_*</strong> values are bit indexes and need to be bit-shifted before ORing into the bit fields. To define the structures for passing to the system call, you have to use the <em>struct __user_cap_header_struct</em> and <em>struct __user_cap_data_struct</em> names because the typedefs are only pointers.</p>
+<p class='spacer'>
+
+<p>Kernels prior to 2.6.25 prefer 32-bit capabilities with version <strong>_LINUX_CAPABILITY_VERSION_1</strong>. Linux 2.6.25 added 64-bit capability sets, with version <strong>_LINUX_CAPABILITY_VERSION_2</strong>. There was, however, an API glitch, and Linux 2.6.26 added <strong>_LINUX_CAPABILITY_VERSION_3</strong> to fix the problem.</p>
+<p class='spacer'>
+
+<p>Note that 64-bit capabilities use <em>datap</em>[0] and <em>datap</em>[1], whereas 32-bit capabilities use only <em>datap</em>[0].</p>
+<p class='spacer'>
+
+<p>On kernels that support file capabilities (VFS capability support), these system calls behave slightly differently. This support was added as an option in Linux 2.6.24, and became fixed (nonoptional) in Linux 2.6.33.</p>
+<p class='spacer'>
+
+<p>For <strong>capget</strong>() calls, one can probe the capabilities of any process by specifying its process ID with the <em>hdrp-&gt;pid</em> field value.</p>
+  <h3>With VFS capability support</h3>
+<p>VFS Capability support creates a file-attribute method for adding capabilities to privileged executables. This privilege model obsoletes kernel support for one process asynchronously setting the capabilities of another. That is, with VFS support, for <strong>capset</strong>() calls the only permitted values for <em>hdrp-&gt;pid</em> are 0 or <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a>, which are equivalent.</p>
+  <h3>Without VFS capability support</h3>
+<p>When the kernel does not support VFS capabilities, <strong>capset</strong>() calls can operate on the capabilities of the thread specified by the <em>pid</em> field of <em>hdrp</em> when that is nonzero, or on the capabilities of the calling thread if <em>pid</em> is 0. If <em>pid</em> refers to a single-threaded process, then <em>pid</em> can be specified as a traditional process ID; operating on a thread of a multithreaded process requires a thread ID of the type returned by <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a>. For <strong>capset</strong>(), <em>pid</em> can also be: -1, meaning perform the change on all threads except the caller and <strong>init</strong>(1); or a value less than -1, in which case the change is applied to all members of the process group whose ID is -<em>pid</em>.</p>
+<p class='spacer'>
+
+<p>For details on the data, see <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+<p class='spacer'>
+
+<p>The calls will fail with the error <strong>EINVAL</strong>, and set the <em>version</em> field of <em>hdrp</em> to the kernel preferred value of <strong>_LINUX_CAPABILITY_VERSION_?</strong> when an unsupported <em>version</em> value is specified. In this way, one can probe what the current preferred capability revision is.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>Bad memory address. <em>hdrp</em> must not be NULL. <em>datap</em> may be NULL only when the user is trying to determine the preferred capability version format supported by the kernel.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>One of the arguments was invalid.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>An attempt was made to add a capability to the Permitted set, or to set a capability in the Effective or Inheritable sets that is not in the Permitted set.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>The caller attempted to use <strong>capset</strong>() to modify the capabilities of a thread other than itself, but lacked sufficient privilege. For kernels supporting VFS capabilities, this is never permitted. For kernels lacking VFS support, the <strong>CAP_SETPCAP</strong> capability is required. (A bug in kernels before 2.6.11 meant that this error could also occur if a thread without this capability tried to change its own capabilities by specifying the <em>pid</em> field as a nonzero value (i.e., the value returned by <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a>) instead of 0.)</p>
+    </dd>
+    <dt><strong>ESRCH</strong></dt>
+    <dd>
+  <p>No such thread.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>These system calls are Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>The portable interface to the capability querying and setting functions is provided by the <em>libcap</em> library and is available here:</p>
+<p class='spacer'>
+
+<p><a href="http://git.kernel.org/cgit/linux/kernel/git/morgan/libcap.git">http://git.kernel.org/cgit/linux/kernel/git/morgan/libcap.git</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="capget.2.html"><span aria-hidden="true">&larr;</span> capget.2: set/get capabilities of thread(s)</a></li><li class="next"><a href="chdir.2.html">chdir.2: change working directory <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>unshare - disassociate parts of the process execution context</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">unshare<small> (2)</small></h1>
+        <p class="lead">disassociate parts of the process execution context</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/unshare.2.html"><span itemprop="title">unshare</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#define _GNU_SOURCE</strong>
+<strong>#include &lt;sched.h&gt;</strong>
+
+<strong>int unshare(int </strong><em>flags</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>unshare</strong>() allows a process (or thread) to disassociate parts of its execution context that are currently being shared with other processes (or threads). Part of the execution context, such as the mount namespace, is shared implicitly when a new process is created using <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> or <a href="../man2/vfork.2.html"><strong>vfork</strong>(2)</a>, while other parts, such as virtual memory, may be shared by explicit request when creating a process or thread using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>The main use of <strong>unshare</strong>() is to allow a process to control its shared execution context without creating a new process.</p>
+<p class='spacer'>
+
+  <p>The <em>flags</em> argument is a bit mask that specifies which parts of the execution context should be unshared. This argument is specified by ORing together zero or more of the following constants:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>CLONE_FILES</strong></dt>
+    <dd>
+  <p>Reverse the effect of the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_FILES</strong> flag. Unshare the file descriptor table, so that the calling process no longer shares its file descriptors with any other process.</p>
+    </dd>
+    <dt><strong>CLONE_FS</strong></dt>
+    <dd>
+  <p>Reverse the effect of the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_FS</strong> flag. Unshare filesystem attributes, so that the calling process no longer shares its root directory (<a href="../man2/chroot.2.html"><strong>chroot</strong>(2)</a>), current directory (<a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a>), or umask (<a href="../man2/umask.2.html"><strong>umask</strong>(2)</a>) attributes with any other process.</p>
+    </dd>
+    <dt><strong>CLONE_NEWCGROUP</strong> (since Linux 4.6)</dt>
+    <dd>
+  <p>This flag has the same effect as the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_NEWCGROUP</strong> flag. Unshare the cgroup namespace. Use of <strong>CLONE_NEWCGROUP</strong> requires the <strong>CAP_SYS_ADMIN</strong> capability.</p>
+    </dd>
+    <dt><strong>CLONE_NEWIPC</strong> (since Linux 2.6.19)</dt>
+    <dd>
+  <p>This flag has the same effect as the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_NEWIPC</strong> flag. Unshare the IPC namespace, so that the calling process has a private copy of the IPC namespace which is not shared with any other process. Specifying this flag automatically implies <strong>CLONE_SYSVSEM</strong> as well. Use of <strong>CLONE_NEWIPC</strong> requires the <strong>CAP_SYS_ADMIN</strong> capability.</p>
+    </dd>
+    <dt><strong>CLONE_NEWNET</strong> (since Linux 2.6.24)</dt>
+    <dd>
+  <p>This flag has the same effect as the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_NEWNET</strong> flag. Unshare the network namespace, so that the calling process is moved into a new network namespace which is not shared with any previously existing process. Use of <strong>CLONE_NEWNET</strong> requires the <strong>CAP_SYS_ADMIN</strong> capability.</p>
+    </dd>
+    <dt><strong>CLONE_NEWNS</strong></dt>
+    <dd>
+  <p>This flag has the same effect as the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_NEWNS</strong> flag. Unshare the mount namespace, so that the calling process has a private copy of its namespace which is not shared with any other process. Specifying this flag automatically implies <strong>CLONE_FS</strong> as well. Use of <strong>CLONE_NEWNS</strong> requires the <strong>CAP_SYS_ADMIN</strong> capability. For further information, see <a href="../man7/mount_namespaces.7.html"><strong>mount_namespaces</strong>(7)</a>.</p>
+    </dd>
+    <dt><strong>CLONE_NEWPID</strong> (since Linux 3.8)</dt>
+    <dd>
+  <p>This flag has the same effect as the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_NEWPID</strong> flag. Unshare the PID namespace, so that the calling process has a new PID namespace for its children which is not shared with any previously existing process. The calling process is <em>not</em> moved into the new namespace. The first child created by the calling process will have the process ID 1 and will assume the role of <strong>init</strong>(1) in the new namespace. <strong>CLONE_NEWPID</strong> automatically implies <strong>CLONE_THREAD</strong> as well. Use of <strong>CLONE_NEWPID</strong> requires the <strong>CAP_SYS_ADMIN</strong> capability. For further information, see <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a>.</p>
+    </dd>
+    <dt><strong>CLONE_NEWUSER</strong> (since Linux 3.8)</dt>
+    <dd>
+  <p>This flag has the same effect as the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_NEWUSER</strong> flag. Unshare the user namespace, so that the calling process is moved into a new user namespace which is not shared with any previously existing process. As with the child process created by <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_NEWUSER</strong> flag, the caller obtains a full set of capabilities in the new namespace.</p>
+<p class='spacer'>
+
+  <p><strong>CLONE_NEWUSER</strong> requires that the calling process is not threaded; specifying <strong>CLONE_NEWUSER</strong> automatically implies <strong>CLONE_THREAD</strong>. Since Linux 3.9, <strong>CLONE_NEWUSER</strong> also automatically implies <strong>CLONE_FS</strong>. <strong>CLONE_NEWUSER</strong> requires that the user ID and group ID of the calling process are mapped to user IDs and group IDs in the user namespace of the calling process at the time of the call.</p>
+<p class='spacer'>
+
+  <p>For further information on user namespaces, see <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>.</p>
+    </dd>
+    <dt><strong>CLONE_NEWUTS</strong> (since Linux 2.6.19)</dt>
+    <dd>
+  <p>This flag has the same effect as the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_NEWUTS</strong> flag. Unshare the UTS IPC namespace, so that the calling process has a private copy of the UTS namespace which is not shared with any other process. Use of <strong>CLONE_NEWUTS</strong> requires the <strong>CAP_SYS_ADMIN</strong> capability.</p>
+    </dd>
+    <dt><strong>CLONE_SYSVSEM</strong> (since Linux 2.6.26)</dt>
+    <dd>
+  <p>This flag reverses the effect of the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_SYSVSEM</strong> flag. Unshare System&nbsp;V semaphore adjustment (<em>semadj</em>) values, so that the calling process has a new empty <em>semadj</em> list that is not shared with any other process. If this is the last process that has a reference to the process's current <em>semadj</em> list, then the adjustments in that list are applied to the corresponding semaphores, as described in <a href="../man2/semop.2.html"><strong>semop</strong>(2)</a>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>In addition, <strong>CLONE_THREAD</strong>, <strong>CLONE_SIGHAND</strong>, and <strong>CLONE_VM</strong> can be specified in <em>flags</em> if the caller is single threaded (i.e., it is not sharing its address space with another process or thread). In this case, these flags have no effect. (Note also that specifying <strong>CLONE_THREAD</strong> automatically implies <strong>CLONE_VM</strong>, and specifying <strong>CLONE_VM</strong> automatically implies <strong>CLONE_SIGHAND</strong>.) If the process is multithreaded, then the use of these flags results in an error.</p>
+<p class='spacer'>
+
+<p>If <em>flags</em> is specified as zero, then <strong>unshare</strong>() is a no-op; no changes are made to the calling process's execution context.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, zero returned. On failure, -1 is returned and <em>errno</em> is set to indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>An invalid bit was specified in <em>flags</em>.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><strong>CLONE_THREAD</strong>, <strong>CLONE_SIGHAND</strong>, or <strong>CLONE_VM</strong> was specified in <em>flags</em>, and the caller is multithreaded.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>Cannot allocate sufficient memory to copy parts of caller's context that need to be unshared.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>The calling process did not have the required privileges for this operation.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p><strong>CLONE_NEWUSER</strong> was specified in <em>flags</em>, but either the effective user ID or the effective group ID of the caller does not have a mapping in the parent namespace (see <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>).</p>
+    </dd>
+    <dt><strong>EPERM</strong> (since Linux 3.9)</dt>
+    <dd>
+  <p><strong>CLONE_NEWUSER</strong> was specified in <em>flags</em> and the caller is in a chroot environment (i.e., the caller's root directory does not match the root directory of the mount namespace in which it resides).</p>
+    </dd>
+    <dt><strong>EUSERS</strong> (since Linux 3.11)</dt>
+    <dd>
+  <p><strong>CLONE_NEWUSER</strong> was specified in <em>flags</em>, and the call would cause the limit on the number of nested user namespaces to be exceeded. See <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>unshare</strong>() system call was added to Linux in kernel 2.6.16.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>unshare</strong>() system call is Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Not all of the process attributes that can be shared when a new process is created using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> can be unshared using <strong>unshare</strong>(). In particular, as at kernel 3.8, <strong>unshare</strong>() does not implement flags that reverse the effects of <strong>CLONE_SIGHAND</strong>, <strong>CLONE_THREAD</strong>, or <strong>CLONE_VM</strong>. Such functionality may be added in the future, if required.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+  <p>The program below provides a simple implementation of the <a href="../man1/unshare.1.html"><strong>unshare</strong>(1)</a> command, which unshares one or more namespaces and executes the command supplied in its command-line arguments. Here's an example of the use of this program, running a shell in a new mount namespace, and verifying that the original shell and the new shell are in separate mount namespaces:</p>
+<pre>
+$ <strong>readlink /proc/$$/ns/mnt</strong>
+mnt:[4026531840]
+$ <strong>sudo ./unshare -m /bin/bash</strong>
+[sudo] password for cecilia:
+# <strong>readlink /proc/$$/ns/mnt</strong>
+mnt:[4026532325]</pre>
+
+<p class='spacer'>
+
+<p>The differing output of the two <a href="../man1/readlink.1.html"><strong>readlink</strong>(1)</a> commands shows that the two shells are in different mount namespaces.</p>
+  <h3>Program source</h3>
+  <p></p>
+<pre>/* unshare.c
+
+   A simple implementation of the <a href="../man1/unshare.1.html"><strong>unshare</strong>(1)</a> command: unshare
+   namespaces and execute a command.
+*/
+#define _GNU_SOURCE
+#include &lt;sched.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+/* A simple error-handling function: print an error message based
+   on the value in &apos;errno&apos; and terminate the calling process */
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); &#92;
+                        } while (0)
+
+static void
+usage(char *pname)
+{
+    fprintf(stderr, "Usage: %s [options] program [arg...]&#92;n", pname);
+    fprintf(stderr, "Options can be:&#92;n");
+    fprintf(stderr, "    -i   unshare IPC namespace&#92;n");
+    fprintf(stderr, "    -m   unshare mount namespace&#92;n");
+    fprintf(stderr, "    -n   unshare network namespace&#92;n");
+    fprintf(stderr, "    -p   unshare PID namespace&#92;n");
+    fprintf(stderr, "    -u   unshare UTS namespace&#92;n");
+    fprintf(stderr, "    -U   unshare user namespace&#92;n");
+    exit(EXIT_FAILURE);
+}
+
+int
+main(int argc, char *argv[])
+{
+    int flags, opt;
+
+    flags = 0;
+
+    while ((opt = getopt(argc, argv, "imnpuU")) != -1) {
+        switch (opt) {
+        case &apos;i&apos;: flags |= CLONE_NEWIPC;        break;
+        case &apos;m&apos;: flags |= CLONE_NEWNS;         break;
+        case &apos;n&apos;: flags |= CLONE_NEWNET;        break;
+        case &apos;p&apos;: flags |= CLONE_NEWPID;        break;
+        case &apos;u&apos;: flags |= CLONE_NEWUTS;        break;
+        case &apos;U&apos;: flags |= CLONE_NEWUSER;       break;
+        default:  usage(argv[0]);
+        }
+    }
+
+    if (optind &gt;= argc)
+        usage(argv[0]);
+
+    if (unshare(flags) == -1)
+        errExit("unshare");
+
+    execvp(argv[optind], &argv[optind]);
+    errExit("execvp");
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man1/unshare.1.html"><strong>unshare</strong>(1)</a>, <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/kcmp.2.html"><strong>kcmp</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/vfork.2.html"><strong>vfork</strong>(2)</a>, <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a></p>
+<p class='spacer'>
+
+<p><em>Documentation/unshare.txt</em> in the Linux kernel source tree</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="unlinkat.2.html"><span aria-hidden="true">&larr;</span> unlinkat.2: delete a name and possibly the file it refers to</a></li><li class="next"><a href="uselib.2.html">uselib.2: load shared library <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

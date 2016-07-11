@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>memfd_create - create an anonymous file</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">memfd_create<small> (2)</small></h1>
+        <p class="lead">create an anonymous file</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/memfd_create.2.html"><span itemprop="title">memfd_create</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/memfd.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>int memfd_create(const char *</strong><em>name</em><strong>, unsigned int </strong><em>flags</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>memfd_create</strong>() creates an anonymous file and returns a file descriptor that refers to it. The file behaves like a regular file, and so can be modified, truncated, memory-mapped, and so on. However, unlike a regular file, it lives in RAM and has a volatile backing storage. Once all references to the file are dropped, it is automatically released. Anonymous memory is used for all backing pages of the file. Therefore, files created by <strong>memfd_create</strong>() have the same semantics as other anonymous memory allocations such as those allocated using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> with the <strong>MAP_ANONYMOUS</strong> flag.</p>
+<p class='spacer'>
+
+<p>The initial size of the file is set to 0. Following the call, the file size should be set using <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a>. (Alternatively, the file may be populated by calls to <a href="../man2/write.2.html"><strong>write</strong>(2)</a> or similar.)</p>
+<p class='spacer'>
+
+<p>The name supplied in <em>name</em> is used as a filename and will be displayed as the target of the corresponding symbolic link in the directory <em>/proc/self/fd/</em>. The displayed name is always prefixed with <em>memfd:</em> and serves only for debugging purposes. Names do not affect the behavior of the file descriptor, and as such multiple files can have the same name without any side effects.</p>
+<p class='spacer'>
+
+  <p>The following values may be bitwise ORed in <em>flags</em> to change the behavior of <strong>memfd_create</strong>():</p>
+  <dl class='dl-vertical'>
+    <dt><strong>MFD_CLOEXEC</strong></dt>
+    <dd>
+  <p>Set the close-on-exec (<strong>FD_CLOEXEC</strong>) flag on the new file descriptor. See the description of the <strong>O_CLOEXEC</strong> flag in <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for reasons why this may be useful.</p>
+    </dd>
+    <dt><strong>MFD_ALLOW_SEALING</strong></dt>
+    <dd>
+  <p>Allow sealing operations on this file. See the discussion of the <strong>F_ADD_SEALS</strong> and <strong>F_GET_SEALS</strong> operations in <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, and also NOTES, below. The initial set of seals is empty. If this flag is not set, the initial set of seals will be <strong>F_SEAL_SEAL</strong>, meaning that no other seals can be set on the file.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Unused bits in <em>flags</em> must be 0.</p>
+<p class='spacer'>
+
+<p>As its return value, <strong>memfd_create</strong>() returns a new file descriptor that can be used to refer to the file. This file descriptor is opened for both reading and writing (<strong>O_RDWR</strong>) and <strong>O_LARGEFILE</strong> is set for the file descriptor.</p>
+<p class='spacer'>
+
+<p>With respect to <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> and <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, the usual semantics apply for the file descriptor created by <strong>memfd_create</strong>(). A copy of the file descriptor is inherited by the child produced by <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> and refers to the same file. The file descriptor is preserved across <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, unless the close-on-exec flag has been set.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>On success, <strong>memfd_create</strong>() returns a new file descriptor. On error, -1 is returned and <em>errno</em> is set to indicate the error.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EFAULT</strong></dt>
+    <dd>
+  <p>The address in <em>name</em> points to invalid memory.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p>An unsupported value was specified in one of the arguments: <em>flags</em> included unknown bits, or <em>name</em> was too long.</p>
+    </dd>
+    <dt><strong>EMFILE</strong></dt>
+    <dd>
+  <p>The per-process limit on the number of open file descriptors has been reached.</p>
+    </dd>
+    <dt><strong>ENFILE</strong></dt>
+    <dd>
+  <p>The system-wide limit on the total number of open files has been reached.</p>
+    </dd>
+    <dt><strong>ENOMEM</strong></dt>
+    <dd>
+  <p>There was insufficient memory to create a new anonymous file.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>memfd_create</strong>() system call first appeared in Linux 3.17.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>memfd_create</strong>() system call is Linux-specific.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>The <strong>memfd_create</strong>() system call provides a simple alternative to manually mounting a <em>tmpfs</em> filesystem and creating and opening a file in that filesystem. The primary purpose of <strong>memfd_create</strong>() is to create files and associated file descriptors that are used with the file-sealing APIs provided by <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>The <strong>memfd_create</strong>() system call also has uses without file sealing (which is why file-sealing is disabled, unless explicitly requested with the <strong>MFD_ALLOW_SEALING</strong> flag). In particular, it can be used as an alternative to creating files in <em>tmp</em> or as an alternative to using the <a href="../man2/open.2.html"><strong>open</strong>(2)</a> <strong>O_TMPFILE</strong> in cases where there is no intention to actually link the resulting file into the filesystem.</p>
+  <h3>File sealing</h3>
+<p>In the absence of file sealing, processes that communicate via shared memory must either trust each other, or take measures to deal with the possibility that an untrusted peer may manipulate the shared memory region in problematic ways. For example, an untrusted peer might modify the contents of the shared memory at any time, or shrink the shared memory region. The former possibility leaves the local process vulnerable to time-of-check-to-time-of-use race conditions (typically dealt with by copying data from the shared memory region before checking and using it). The latter possibility leaves the local process vulnerable to <strong>SIGBUS</strong> signals when an attempt is made to access a now-nonexistent location in the shared memory region. (Dealing with this possibility necessitates the use of a handler for the <strong>SIGBUS</strong> signal.)</p>
+<p class='spacer'>
+
+<p>Dealing with untrusted peers imposes extra complexity on code that employs shared memory. Memory sealing enables that extra complexity to be eliminated, by allowing a process to operate secure in the knowledge that its peer can't modify the shared memory in an undesired fashion.</p>
+<p class='spacer'>
+
+  <p>An example of the usage of the sealing mechanism is as follows:</p>
+  <dl class='dl-horizontal'>
+    <dt>1.</dt>
+    <dd>
+  <p>The first process creates a <em>tmpfs</em> file using <strong>memfd_create</strong>(). The call yields a file descriptor used in subsequent steps.</p>
+    </dd>
+    <dt>2.</dt>
+    <dd>
+  <p>The first process sizes the file created in the previous step using <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a>, maps it using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, and populates the shared memory with the desired data.</p>
+    </dd>
+    <dt>3.</dt>
+    <dd>
+  <p>The first process uses the <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> <strong>F_ADD_SEALS</strong> operation to place one or more seals on the file, in order to restrict further modifications on the file. (If placing the seal <strong>F_SEAL_WRITE</strong>, then it will be necessary to first unmap the shared writable mapping created in the previous step.)</p>
+    </dd>
+    <dt>4.</dt>
+    <dd>
+      <p>A second process obtains a file descriptor for the <em>tmpfs</em> file and maps it. Among the possible ways in which this could happen are the following:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+      <p>The process that called <strong>memfd_create</strong>() could transfer the resulting file descriptor to the second process via a UNIX domain socket (see <a href="../man7/unix.7.html"><strong>unix</strong>(7)</a> and <a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>). The second process then maps the file using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>.</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>The second process is created via <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> and thus automatically inherits the file descriptor and mapping. (Note that in this case and the next, there is a natural trust relationship between the two processes, since they are running under the same user ID. Therefore, file sealing would not normally be necessary.)</p>
+        </dd>
+        <dt>*</dt>
+        <dd>
+      <p>The second process opens the file <em>/proc/&lt;pid&gt;/fd/&lt;fd&gt;</em>, where <em>&lt;pid&gt;</em> is the PID of the first process (the one that called <strong>memfd_create</strong>()), and <em>&lt;fd&gt;</em> is the number of the file descriptor returned by the call to <strong>memfd_create</strong>() in that process. The second process then maps the file using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt>5.</dt>
+    <dd>
+  <p>The second process uses the <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> <strong>F_GET_SEALS</strong> operation to retrieve the bit mask of seals that has been applied to the file. This bit mask can be inspected in order to determine what kinds of restrictions have been placed on file modifications. If desired, the second process can apply further seals to impose additional restrictions (so long as the <strong>F_SEAL_SEAL</strong> seal has not yet been applied).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>Below are shown two example programs that demonstrate the use of <strong>memfd_create</strong>() and the file sealing API.</p>
+<p class='spacer'>
+
+<p>The first program, <em>t_memfd_create.c</em>, creates a <em>tmpfs</em> file using <strong>memfd_create</strong>(), sets a size for the file, maps it into memory, and optionally places some seals on the file. The program accepts up to three command-line arguments, of which the first two are required. The first argument is the name to associate with the file, the second argument is the size to be set for the file, and the optional third argument is a string of characters that specify seals to be set on file.</p>
+<p class='spacer'>
+
+<p>The second program, <em>t_get_seals.c</em>, can be used to open an existing file that was created via <strong>memfd_create</strong>() and inspect the set of seals that have been applied to that file.</p>
+<p class='spacer'>
+
+<p>The following shell session demonstrates the use of these programs. First we create a <em>tmpfs</em> file and set some seals on it:</p>
+<p class='spacer'>
+
+<pre>$ <strong>./t_memfd_create my_memfd_file 4096 sw &</strong>
+[1] 11775
+PID: 11775; fd: 3; /proc/11775/fd/3</pre>
+
+<p class='spacer'>
+
+<p>At this point, the <em>t_memfd_create</em> program continues to run in the background. From another program, we can obtain a file descriptor for the file created by <strong>memfd_create</strong>() by opening the <em>/proc/PID/fd</em> file that corresponds to the file descriptor opened by <strong>memfd_create</strong>(). Using that pathname, we inspect the content of the <em>/proc/PID/fd</em> symbolic link, and use our <em>t_get_seals</em> program to view the seals that have been placed on the file:</p>
+<p class='spacer'>
+
+<pre>$ <strong>readlink /proc/11775/fd/3</strong>
+/memfd:my_memfd_file (deleted)
+$ <strong>./t_get_seals /proc/11775/fd/3</strong>
+Existing seals: WRITE SHRINK</pre>
+
+  <h3>Program source: t_memfd_create.c</h3>
+  <p></p>
+<pre>#include &lt;sys/memfd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); &#92;
+                        } while (0)
+
+int
+main(int argc, char *argv[])
+{
+    int fd;
+    unsigned int seals;
+    char *addr;
+    char *name, *seals_arg;
+    ssize_t len;
+
+    if (argc &lt; 3) {
+        fprintf(stderr, "%s name size [seals]&#92;n", argv[0]);
+        fprintf(stderr, "&#92;t&apos;seals&apos; can contain any of the "
+                "following characters:&#92;n");
+        fprintf(stderr, "&#92;t&#92;tg - F_SEAL_GROW&#92;n");
+        fprintf(stderr, "&#92;t&#92;ts - F_SEAL_SHRINK&#92;n");
+        fprintf(stderr, "&#92;t&#92;tw - F_SEAL_WRITE&#92;n");
+        fprintf(stderr, "&#92;t&#92;tS - F_SEAL_SEAL&#92;n");
+        exit(EXIT_FAILURE);
+    }
+
+    name = argv[1];
+    len = atoi(argv[2]);
+    seals_arg = argv[3];
+
+    /* Create an anonymous file in tmpfs; allow seals to be
+       placed on the file */
+
+    fd = memfd_create(name, MFD_ALLOW_SEALING);
+    if (fd == -1)
+        errExit("memfd_create");
+
+    /* Size the file as specified on the command line */
+
+    if (ftruncate(fd, len) == -1)
+        errExit("truncate");
+
+    printf("PID: %ld; fd: %d; /proc/%ld/fd/%d&#92;n",
+            (long) getpid(), fd, (long) getpid(), fd);
+
+    /* Code to map the file and populate the mapping with data
+       omitted */
+
+    /* If a &apos;seals&apos; command-line argument was supplied, set some
+       seals on the file */
+
+    if (seals_arg != NULL) {
+        seals = 0;
+
+        if (strchr(seals_arg, &apos;g&apos;) != NULL)
+            seals |= F_SEAL_GROW;
+        if (strchr(seals_arg, &apos;s&apos;) != NULL)
+            seals |= F_SEAL_SHRINK;
+        if (strchr(seals_arg, &apos;w&apos;) != NULL)
+            seals |= F_SEAL_WRITE;
+        if (strchr(seals_arg, &apos;S&apos;) != NULL)
+            seals |= F_SEAL_SEAL;
+
+        if (fcntl(fd, F_ADD_SEALS, seals) == -1)
+            errExit("fcntl");
+    }
+
+    /* Keep running, so that the file created by memfd_create()
+       continues to exist */
+
+    pause();
+
+    exit(EXIT_SUCCESS);
+}</pre>
+
+  <h3>Program source: t_get_seals.c</h3>
+  <p></p>
+<pre>#include &lt;sys/memfd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); &#92;
+                        } while (0)
+
+int
+main(int argc, char *argv[])
+{
+    int fd;
+    unsigned int seals;
+
+    if (argc != 2) {
+        fprintf(stderr, "%s /proc/PID/fd/FD&#92;n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    fd = open(argv[1], O_RDWR);
+    if (fd == -1)
+        errExit("open");
+
+    seals = fcntl(fd, F_GET_SEALS);
+    if (seals == -1)
+        errExit("fcntl");
+
+    printf("Existing seals:");
+    if (seals & F_SEAL_SEAL)
+        printf(" SEAL");
+    if (seals & F_SEAL_GROW)
+        printf(" GROW");
+    if (seals & F_SEAL_WRITE)
+        printf(" WRITE");
+    if (seals & F_SEAL_SHRINK)
+        printf(" SHRINK");
+    printf("&#92;n");
+
+    /* Code to map the file and access the contents of the
+       resulting mapping omitted */
+
+    exit(EXIT_SUCCESS);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a>, <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man2/shmget.2.html"><strong>shmget</strong>(2)</a>, <a href="../man3/shm_open.3.html"><strong>shm_open</strong>(3)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="membarrier.2.html"><span aria-hidden="true">&larr;</span> membarrier.2: issue memory barriers on a set of threads</a></li><li class="next"><a href="migrate_pages.2.html">migrate_pages.2: move all pages in a process to another set of nodes <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

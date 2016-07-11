@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>inittab - format of the inittab file used by the sysv-compatible init process</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">inittab<small> (5)</small></h1>
+        <p class="lead">format of the inittab file used by the sysv-compatible init process</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/inittab.5.html"><span itemprop="title">inittab</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+  <p>The <strong>inittab</strong> file describes which processes are started at bootup and during normal operation (e.g. /etc/init.d/boot, /etc/init.d/rc, gettys...). <strong>Init</strong>(8) distinguishes multiple <em>runlevels</em>, each of which can have its own set of processes that are started.  Valid runlevels are <strong>0</strong>-<strong>6</strong> plus <strong>A</strong>, <strong>B</strong>, and <strong>C</strong> for <strong>ondemand</strong> entries.  An entry in the <strong>inittab</strong> file has the following format:</p>
+<p class='spacer'>
+
+  <p><em>id</em>:<em>runlevels</em>:<em>action</em>:<em>process</em></p>
+<p class='spacer'>
+
+  <p>Lines beginning with `#' are ignored.</p>
+  <dl class='dl-horizontal'>
+    <dt><em>id</em></dt>
+    <dd>
+  <p>is a unique sequence of 1-4 characters which identifies an entry in <strong>inittab</strong> (for versions of sysvinit compiled with the <em>old</em> libc5 (&lt; 5.2.18) or a.out libraries the limit is 2 characters).</p>
+<p class='spacer'>
+
+  <p>Note: traditionally, for getty and other login processes, the value of the <em>id</em> field is kept the same as the suffix of the corresponding tty, e.g. <strong>1</strong> for <strong>tty1</strong>. Some ancient login accounting programs might expect this, though I can't think of any.</p>
+    </dd>
+    <dt><em>runlevels</em></dt>
+    <dd>
+  <p>lists the runlevels for which the specified action should be taken.</p>
+    </dd>
+    <dt><em>action</em></dt>
+    <dd>
+  <p>describes which action should be taken.</p>
+    </dd>
+    <dt><em>process</em></dt>
+    <dd>
+  <p>specifies the process to be executed.  If the process field starts with a `+' character, <strong>init</strong> will not do utmp and wtmp accounting for that process.  This is needed for gettys that insist on doing their own utmp/wtmp housekeeping.  This is also a historic bug. The length of this field is limited to 127 characters.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The <em>runlevels</em> field may contain multiple characters for different runlevels.  For example, <strong>123</strong> specifies that the process should be started in runlevels 1, 2, and 3. The <em>runlevels</em> for <strong>ondemand</strong> entries may contain an <strong>A</strong>, <strong>B</strong>, or <strong>C</strong>.  The <em>runlevels</em> field of <strong>sysinit</strong>, <strong>boot</strong>, and <strong>bootwait</strong> entries are ignored.</p>
+<p class='spacer'>
+
+<p>When the system runlevel is changed, any running processes that are not specified for the new runlevel are killed, first with \s-2SIGTERM\s0, then with \s-2SIGKILL\s0.</p>
+<p class='spacer'>
+
+  <p>Valid actions for the <em>action</em> field are:</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>respawn</strong></dt>
+    <dd>
+  <p>The process will be restarted whenever it terminates (e.g. getty).</p>
+    </dd>
+    <dt><strong>wait</strong></dt>
+    <dd>
+  <p>The process will be started once when the specified runlevel is entered and <strong>init</strong> will wait for its termination.</p>
+    </dd>
+    <dt><strong>once</strong></dt>
+    <dd>
+  <p>The process will be executed once when the specified runlevel is entered.</p>
+    </dd>
+    <dt><strong>boot</strong></dt>
+    <dd>
+  <p>The process will be executed during system boot.  The <em>runlevels</em> field is ignored.</p>
+    </dd>
+    <dt><strong>bootwait</strong></dt>
+    <dd>
+  <p>The process will be executed during system boot, while <strong>init</strong> waits for its termination (e.g. /etc/rc). The <em>runlevels</em> field is ignored.</p>
+    </dd>
+    <dt><strong>off</strong></dt>
+    <dd>
+  <p>This does nothing.</p>
+    </dd>
+    <dt><strong>ondemand</strong></dt>
+    <dd>
+  <p>A process marked with an <strong>ondemand</strong> runlevel will be executed whenever the specified <strong>ondemand</strong> runlevel is called.  However, no runlevel change will occur (<strong>ondemand</strong> runlevels are `a', `b', and `c').</p>
+    </dd>
+    <dt><strong>initdefault</strong></dt>
+    <dd>
+  <p>An <strong>initdefault</strong> entry specifies the runlevel which should be entered after system boot.  If none exists, <strong>init</strong> will ask for a runlevel on the console. The <em>process</em> field is ignored.</p>
+    </dd>
+    <dt><strong>sysinit</strong></dt>
+    <dd>
+  <p>The process will be executed during system boot. It will be executed before any <strong>boot</strong> or <strong> bootwait</strong> entries. The <em>runlevels</em> field is ignored.</p>
+    </dd>
+    <dt><strong>powerwait</strong></dt>
+    <dd>
+  <p>The process will be executed when the power goes down. Init is usually informed about this by a process talking to a UPS connected to the computer. <strong>Init</strong> will wait for the process to finish before continuing.</p>
+    </dd>
+    <dt><strong>powerfail</strong></dt>
+    <dd>
+  <p>As for <strong>powerwait</strong>, except that <strong>init</strong> does not wait for the process's completion.</p>
+    </dd>
+    <dt><strong>powerokwait</strong></dt>
+    <dd>
+  <p>This process will be executed as soon as <strong>init</strong> is informed that the power has been restored.</p>
+    </dd>
+    <dt><strong>powerfailnow</strong></dt>
+    <dd>
+  <p>This process will be executed when <strong>init</strong> is told that the battery of the external UPS is almost empty and the power is failing (provided that the external UPS and the monitoring process are able to detect this condition).</p>
+    </dd>
+    <dt><strong>ctrlaltdel</strong></dt>
+    <dd>
+  <p>The process will be executed when <strong>init</strong> receives the SIGINT signal. This means that someone on the system console has pressed the <strong>CTRL-ALT-DEL</strong> key combination. Typically one wants to execute some sort of <strong>shutdown</strong> either to get into single-user level or to reboot the machine.</p>
+    </dd>
+    <dt><strong>kbrequest</strong></dt>
+    <dd>
+  <p>The process will be executed when <strong>init</strong> receives a signal from the keyboard handler that a special key combination was pressed on the console keyboard.</p>
+<p class='spacer'>
+
+    <p>The documentation for this function is not complete yet; more documentation can be found in the kbd-x.xx packages (most recent was kbd-0.94 at the time of this writing). Basically you want to map some keyboard combination to the "KeyboardSignal" action. For example, to map Alt-Uparrow for this purpose use the following in your keymaps file:</p>
+<p class='spacer'>
+
+    <p>alt keycode 103 = KeyboardSignal</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
+        <div class="sectioncontent">
+
+  <p>This is an example of a inittab which resembles the old Linux inittab:</p>
+<p class='spacer'>
+
+<pre># inittab for linux
+id:1:initdefault:
+rc::bootwait:/etc/rc
+1:1:respawn:/etc/getty 9600 tty1
+2:1:respawn:/etc/getty 9600 tty2
+3:1:respawn:/etc/getty 9600 tty3
+4:1:respawn:/etc/getty 9600 tty4</pre>
+
+<p class='spacer'>
+
+<p>This inittab file executes <strong>/etc/rc</strong> during boot and starts gettys on tty1-tty4.</p>
+<p class='spacer'>
+
+  <p>A more elaborate <strong>inittab</strong> with different runlevels (see the comments inside):</p>
+<p class='spacer'>
+
+<pre># Level to run in
+id:2:initdefault:
+
+# Boot-time system configuration/initialization script.
+si::sysinit:/etc/init.d/rcS
+
+# What to do in single-user mode.
+~:S:wait:/sbin/sulogin
+
+# /etc/init.d executes the S and K scripts upon change
+# of runlevel.
+#
+# Runlevel 0 is halt.
+# Runlevel 1 is single-user.
+# Runlevels 2-5 are multi-user.
+# Runlevel 6 is reboot.
+
+l0:0:wait:/etc/init.d/rc 0
+l1:1:wait:/etc/init.d/rc 1
+l2:2:wait:/etc/init.d/rc 2
+l3:3:wait:/etc/init.d/rc 3
+l4:4:wait:/etc/init.d/rc 4
+l5:5:wait:/etc/init.d/rc 5
+l6:6:wait:/etc/init.d/rc 6
+
+# What to do at the "3 finger salute".
+ca::ctrlaltdel:/sbin/shutdown -t1 -h now
+
+# Runlevel 2,3: getty on virtual consoles
+# Runlevel   3: getty on terminal (ttyS0) and modem (ttyS1)
+1:23:respawn:/sbin/getty tty1 VC linux
+2:23:respawn:/sbin/getty tty2 VC linux
+3:23:respawn:/sbin/getty tty3 VC linux
+4:23:respawn:/sbin/getty tty4 VC linux
+S0:3:respawn:/sbin/getty -L 9600 ttyS0 vt320
+S1:3:respawn:/sbin/mgetty -x0 -D ttyS1
+</pre>
+
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+<p>/etc/inittab</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p><strong>Init</strong> was written by Miquel van Smoorenburg (miquels@cistron.nl).  This manual page was written by Sebastian Lederer (lederer@francium.informatik.uni-bonn.de) and modified by Michael Haardt (u31b3hs@pool.informatik.rwth-aachen.de).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man8/init.8.html"><strong>init</strong>(8)</a>, <a href="../man8/telinit.8.html"><strong>telinit</strong>(8)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="initscript.5.html"><span aria-hidden="true">&larr;</span> initscript.5: script that executes inittab commands.</a></li><li class="next"><a href="intro.5.html">intro.5: introduction to file formats <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

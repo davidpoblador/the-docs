@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>kcmp - compare two processes to determine if they share a kernel resource</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">kcmp<small> (2)</small></h1>
+        <p class="lead">compare two processes to determine if they share a kernel resource</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/"><span itemprop="title">System calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man2/kcmp.2.html"><span itemprop="title">kcmp</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;linux/kcmp.h&gt;</strong>
+
+<strong>int kcmp(pid_t </strong><em>pid1</em><strong>, pid_t </strong><em>pid2</em><strong>, int </strong><em>type</em><strong>,</strong>
+<strong>         unsigned long </strong><em>idx1</em><strong>, unsigned long </strong><em>idx2</em><strong>);</strong></pre>
+
+<p class='spacer'>
+
+<p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>kcmp</strong>() system call can be used to check whether the two processes identified by <em>pid1</em> and <em>pid2</em> share a kernel resource such as virtual memory, file descriptors, and so on.</p>
+<p class='spacer'>
+
+<p>Permission to employ <strong>kcmp</strong>() is governed by ptrace access mode <strong>PTRACE_MODE_READ_REALCREDS</strong> checks against both <em>pid1</em> and <em>pid2</em>; see <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>.</p>
+<p class='spacer'>
+
+  <p>The <em>type</em> argument specifies which resource is to be compared in the two processes. It has one of the following values:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>KCMP_FILE</strong></dt>
+    <dd>
+  <p>Check whether a file descriptor <em>idx1</em> in the process <em>pid1</em> refers to the same open file description (see <a href="../man2/open.2.html"><strong>open</strong>(2)</a>) as file descriptor <em>idx2</em> in the process <em>pid2</em>.</p>
+    </dd>
+    <dt><strong>KCMP_FILES</strong></dt>
+    <dd>
+  <p>Check whether the process share the same set of open file descriptors. The arguments <em>idx1</em> and <em>idx2</em> are ignored.</p>
+    </dd>
+    <dt><strong>KCMP_FS</strong></dt>
+    <dd>
+  <p>Check whether the processes share the same filesystem information (i.e., file mode creation mask, working directory, and filesystem root). The arguments <em>idx1</em> and <em>idx2</em> are ignored.</p>
+    </dd>
+    <dt><strong>KCMP_IO</strong></dt>
+    <dd>
+  <p>Check whether the processes share I/O context. The arguments <em>idx1</em> and <em>idx2</em> are ignored.</p>
+    </dd>
+    <dt><strong>KCMP_SIGHAND</strong></dt>
+    <dd>
+  <p>Check whether the processes share the same table of signal dispositions. The arguments <em>idx1</em> and <em>idx2</em> are ignored.</p>
+    </dd>
+    <dt><strong>KCMP_SYSVSEM</strong></dt>
+    <dd>
+  <p>Check whether the processes share the same list of System&nbsp;V semaphore undo operations. The arguments <em>idx1</em> and <em>idx2</em> are ignored.</p>
+    </dd>
+    <dt><strong>KCMP_VM</strong></dt>
+    <dd>
+  <p>Check whether the processes share the same address space. The arguments <em>idx1</em> and <em>idx2</em> are ignored.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Note the <strong>kcmp</strong>() is not protected against false positives which may occur if the processes are currently running. One should stop the processes by sending <strong>SIGSTOP</strong> (see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>) prior to inspection with this system call to obtain meaningful results.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>The return value of a successful call to <strong>kcmp</strong>() is simply the result of arithmetic comparison of kernel pointers (when the kernel compares resources, it uses their memory addresses).</p>
+<p class='spacer'>
+
+    <p>The easiest way to explain is to consider an example. Suppose that <em>v1</em> and <em>v2</em> are the addresses of appropriate resources, then the return value is one of the following:</p>
+    <dl class='dl-horizontal'>
+      <dt>0</dt>
+      <dd>
+    <p><em>v1</em> is equal to <em>v2</em>; in other words, the two processes share the resource.</p>
+      </dd>
+      <dt>1</dt>
+      <dd>
+    <p><em>v1</em> is less than <em>v2</em>.</p>
+      </dd>
+      <dt>2</dt>
+      <dd>
+    <p><em>v1</em> is greater than <em>v2</em>.</p>
+      </dd>
+      <dt>3</dt>
+      <dd>
+    <p><em>v1</em> is not equal to <em>v2</em>, but ordering information is unavailable.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<p>On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+<p class='spacer'>
+
+<p><strong>kcmp</strong>() was designed to return values suitable for sorting. This is particularly handy if one needs to compare a large number of file descriptors.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>EBADF</strong></dt>
+    <dd>
+  <p><em>type</em> is <strong>KCMP_FILE</strong> and <em>fd1</em> or <em>fd2</em> is not an open file descriptor.</p>
+    </dd>
+    <dt><strong>EINVAL</strong></dt>
+    <dd>
+  <p><em>type</em> is invalid.</p>
+    </dd>
+    <dt><strong>EPERM</strong></dt>
+    <dd>
+  <p>Insufficient permission to inspect process resources. The <strong>CAP_SYS_PTRACE</strong> capability is required to inspect processes that you do not own. Other ptrace limitations may also apply, such as <strong>CONFIG_SECURITY_YAMA</strong>, which, when <em>/proc/sys/kernel/yama/ptrace_scope</em> is 2, limits <strong>kcmp</strong>() to child processes; see <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>.</p>
+    </dd>
+    <dt><strong>ESRCH</strong></dt>
+    <dd>
+  <p>Process <em>pid1</em> or <em>pid2</em> does not exist.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>kcmp</strong>() system call first appeared in Linux 3.5.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p><strong>kcmp</strong>() is Linux-specific and should not be used in programs intended to be portable.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>This system call is available only if the kernel was configured with <strong>CONFIG_CHECKPOINT_RESTORE</strong>. The main use of the system call is for the checkpoint/restore in user space (CRIU) feature. The alternative to this system call would have been to expose suitable process information via the <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> filesystem; this was deemed to be unsuitable for security reasons.</p>
+<p class='spacer'>
+
+<p>See <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> for some background information on the shared resources referred to on this page.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="isastream.2.html"><span aria-hidden="true">&larr;</span> isastream.2: unimplemented system calls</a></li><li class="next"><a href="kexec_file_load.2.html">kexec_file_load.2: load a new kernel for later execution <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

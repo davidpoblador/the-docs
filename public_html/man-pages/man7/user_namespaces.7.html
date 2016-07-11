@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>user_namespaces - overview of Linux user namespaces</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="${metadescription}">
+  
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">user_namespaces<small> (7)</small></h1>
+        <p class="lead">overview of Linux user namespaces</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/user_namespaces.7.html"><span itemprop="title">user_namespaces</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>For an overview of namespaces, see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>.</p>
+<p class='spacer'>
+
+<p>User namespaces isolate security-related identifiers and attributes, in particular, user IDs and group IDs (see <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>), the root directory, keys (see <a href="../man2/keyctl.2.html"><strong>keyctl</strong>(2)</a>), and capabilities (see <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>). A process's user and group IDs can be different inside and outside a user namespace. In particular, a process can have a normal unprivileged user ID outside a user namespace while at the same time having a user ID of 0 inside the namespace; in other words, the process has full privileges for operations inside the user namespace, but is unprivileged for operations outside the namespace.</p>
+  <h3>Nested namespaces, namespace membership</h3>
+<p>User namespaces can be nested; that is, each user namespace&ndash;except the initial ("root") namespace&ndash;has a parent user namespace, and can have zero or more child user namespaces. The parent user namespace is the user namespace of the process that creates the user namespace via a call to <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_NEWUSER</strong> flag.</p>
+<p class='spacer'>
+
+<p>The kernel imposes (since version 3.11) a limit of 32 nested levels of user namespaces. Calls to <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> that would cause this limit to be exceeded fail with the error <strong>EUSERS</strong>.</p>
+<p class='spacer'>
+
+<p>Each process is a member of exactly one user namespace. A process created via <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> without the <strong>CLONE_NEWUSER</strong> flag is a member of the same user namespace as its parent. A single-threaded process can join another user namespace with <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> if it has the <strong>CAP_SYS_ADMIN</strong> in that namespace; upon doing so, it gains a full set of capabilities in that namespace.</p>
+<p class='spacer'>
+
+<p>A call to <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWUSER</strong> flag makes the new child process (for <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>) or the caller (for <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>) a member of the new user namespace created by the call.</p>
+  <h3>Capabilities</h3>
+<p>The child process created by <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_NEWUSER</strong> flag starts out with a complete set of capabilities in the new user namespace. Likewise, a process that creates a new user namespace using <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> or joins an existing user namespace using <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> gains a full set of capabilities in that namespace. On the other hand, that process has no capabilities in the parent (in the case of <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>) or previous (in the case of <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> and <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>) user namespace, even if the new namespace is created or joined by the root user (i.e., a process with user ID 0 in the root namespace).</p>
+<p class='spacer'>
+
+<p>Note that a call to <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> will cause a process's capabilities to be recalculated in the usual way (see <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>). Consequently, unless the process has a user ID of 0 within the namespace, or the executable file has a nonempty inheritable capabilities mask, the process will lose all capabilities. See the discussion of user and group ID mappings, below.</p>
+<p class='spacer'>
+
+<p>A call to <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, or <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> using the <strong>CLONE_NEWUSER</strong> flag sets the "securebits" flags (see <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>) to their default values (all flags disabled) in the child (for <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>) or caller (for <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, or <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>). Note that because the caller no longer has capabilities in its original user namespace after a call to <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, it is not possible for a process to reset its "securebits" flags while retaining its user namespace membership by using a pair of <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> calls to move to another user namespace and then return to its original user namespace.</p>
+<p class='spacer'>
+
+  <p>The rules for determining whether or not a process has a capability in a particular user namespace are as follows:</p>
+  <dl class='dl-horizontal'>
+    <dt>1.</dt>
+    <dd>
+  <p>A process has a capability inside a user namespace if it is a member of that namespace and it has the capability in its effective capability set. A process can gain capabilities in its effective capability set in various ways. For example, it may execute a set-user-ID program or an executable with associated file capabilities. In addition, a process may gain capabilities via the effect of <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, or <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, as already described.</p>
+    </dd>
+    <dt>2.</dt>
+    <dd>
+  <p>If a process has a capability in a user namespace, then it has that capability in all child (and further removed descendant) namespaces as well.</p>
+    </dd>
+    <dt>3.</dt>
+    <dd>
+  <p>When a user namespace is created, the kernel records the effective user ID of the creating process as being the "owner" of the namespace. A process that resides in the parent of the user namespace and whose effective user ID matches the owner of the namespace has all capabilities in the namespace. By virtue of the previous rule, this means that the process has all capabilities in all further removed descendant user namespaces as well.</p>
+    </dd>
+  </dl>
+  <h3>Effect of capabilities within a user namespace</h3>
+<p>Having a capability inside a user namespace permits a process to perform operations (that require privilege) only on resources governed by that namespace. In other words, having a capability in a user namespace permits a process to perform privileged operations on resources that are governed by (nonuser) namespaces associated with the user namespace (see the next subsection).</p>
+<p class='spacer'>
+
+<p>On the other hand, there are many privileged operations that affect resources that are not associated with any namespace type, for example, changing the system time (governed by <strong>CAP_SYS_TIME</strong>), loading a kernel module (governed by <strong>CAP_SYS_MODULE</strong>), and creating a device (governed by <strong>CAP_MKNOD</strong>). Only a process with privileges in the <em>initial</em> user namespace can perform such operations.</p>
+<p class='spacer'>
+
+<p>Holding <strong>CAP_SYS_ADMIN</strong> within the user namespace associated with a process's mount namespace allows that process to create bind mounts and mount the following types of filesystems:</p>
+<p class='spacer'>
+
+    <dl class='dl-horizontal'>
+      <dt>*</dt>
+      <dd>
+    <p><em>/proc</em> (since Linux 3.8)</p>
+      </dd>
+      <dt>*</dt>
+      <dd>
+    <p><em>/sys</em> (since Linux 3.8)</p>
+      </dd>
+      <dt>*</dt>
+      <dd>
+    <p><em>devpts</em> (since Linux 3.9)</p>
+      </dd>
+      <dt>*</dt>
+      <dd>
+    <p><em>tmpfs</em> (since Linux 3.9)</p>
+      </dd>
+      <dt>*</dt>
+      <dd>
+    <p><em>ramfs</em> (since Linux 3.9)</p>
+      </dd>
+      <dt>*</dt>
+      <dd>
+    <p><em>mqueue</em> (since Linux 3.9)</p>
+      </dd>
+      <dt>*</dt>
+      <dd>
+    <p><em>bpf</em> (since Linux 4.4)</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<p>Holding <strong>CAP_SYS_ADMIN</strong> within the user namespace associated with a process's cgroup namespace allows (since Linux 4.6) that process to the mount cgroup version 2 filesystem and cgroup version 1 named hierarchies (i.e., cgroup filesystems mounted with the <strong>none,name=</strong> option).</p>
+<p class='spacer'>
+
+<p>Holding <strong>CAP_SYS_ADMIN</strong> within the user namespace associated with a process's PID namespace allows (since Linux 3.8) that process to mount <em>/proc</em> filesystems.</p>
+<p class='spacer'>
+
+<p>Note however, that mounting block-based filesystems can be done only by a process that holds <strong>CAP_SYS_ADMIN</strong> in the initial user namespace.</p>
+  <h3>Interaction of user namespaces and other types of namespaces</h3>
+<p>Starting in Linux 3.8, unprivileged processes can create user namespaces, and other the other types of namespaces can be created with just the <strong>CAP_SYS_ADMIN</strong> capability in the caller's user namespace.</p>
+<p class='spacer'>
+
+<p>When a non-user-namespace is created, it is owned by the user namespace in which the creating process was a member at the time of the creation of the namespace. Actions on the non-user-namespace require capabilities in the corresponding user namespace.</p>
+<p class='spacer'>
+
+<p>If <strong>CLONE_NEWUSER</strong> is specified along with other <strong>CLONE_NEW*</strong> flags in a single <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> call, the user namespace is guaranteed to be created first, giving the child (<a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>) or caller (<a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>) privileges over the remaining namespaces created by the call. Thus, it is possible for an unprivileged caller to specify this combination of flags.</p>
+<p class='spacer'>
+
+<p>When a new namespace (other than a user namespace) is created via <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, the kernel records the user namespace of the creating process against the new namespace. (This association can't be changed.) When a process in the new namespace subsequently performs privileged operations that operate on global resources isolated by the namespace, the permission checks are performed according to the process's capabilities in the user namespace that the kernel associated with the new namespace. For example, suppose that a process attempts to change the hostname (<a href="../man2/sethostname.2.html"><strong>sethostname</strong>(2)</a>), a resource governed by the UTS namespace. In this case, the kernel will determine which user namespace is associated with the process's UTS namespace, and check whether the process has the required capability (<strong>CAP_SYS_ADMIN</strong>) in that user namespace.</p>
+  <h3>Restrictions on mount namespaces</h3>
+<p class='spacer'>
+
+  <p>Note the following points with respect to mount namespaces:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>A mount namespace has an owner user namespace. A mount namespace whose owner user namespace is different from the owner user namespace of its parent mount namespace is considered a less privileged mount namespace.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>When creating a less privileged mount namespace, shared mounts are reduced to slave mounts. This ensures that mappings performed in less privileged mount namespaces will not propagate to more privileged mount namespaces.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Mounts that come as a single unit from more privileged mount are locked together and may not be separated in a less privileged mount namespace. (The <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> <strong>CLONE_NEWNS</strong> operation brings across all of the mounts from the original mount namespace as a single unit, and recursive mounts that propagate between mount namespaces propagate as a single unit.)</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>The <a href="../man2/mount.2.html"><strong>mount</strong>(2)</a> flags <strong>MS_RDONLY</strong>, <strong>MS_NOSUID</strong>, <strong>MS_NOEXEC</strong>, and the "atime" flags (<strong>MS_NOATIME</strong>, <strong>MS_NODIRATIME</strong>, <strong>MS_RELATIME</strong>) settings become locked when propagated from a more privileged to a less privileged mount namespace, and may not be changed in the less privileged mount namespace.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>A file or directory that is a mount point in one namespace that is not a mount point in another namespace, may be renamed, unlinked, or removed (<a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a>) in the mount namespace in which it is not a mount point (subject to the usual permission checks).</p>
+    </dd>
+<p class='spacer'>
+
+  <p>Previously, attempting to unlink, rename, or remove a file or directory that was a mount point in another mount namespace would result in the error <strong>EBUSY</strong>. That behavior had technical problems of enforcement (e.g., for NFS) and permitted denial-of-service attacks against more privileged users. (i.e., preventing individual files from being updated by bind mounting on top of them).</p>
+    </dd>
+  </dl>
+  <h3>User and group ID mappings: uid_map and gid_map</h3>
+<p>When a user namespace is created, it starts out without a mapping of user IDs (group IDs) to the parent user namespace. The <em>/proc/[pid]/uid_map</em> and <em>/proc/[pid]/gid_map</em> files (available since Linux 3.5) expose the mappings for user and group IDs inside the user namespace for the process <em>pid</em>. These files can be read to view the mappings in a user namespace and written to (once) to define the mappings.</p>
+<p class='spacer'>
+
+<p>The description in the following paragraphs explains the details for <em>uid_map</em>; <em>gid_map</em> is exactly the same, but each instance of "user ID" is replaced by "group ID".</p>
+<p class='spacer'>
+
+<p>The <em>uid_map</em> file exposes the mapping of user IDs from the user namespace of the process <em>pid</em> to the user namespace of the process that opened <em>uid_map</em> (but see a qualification to this point below). In other words, processes that are in different user namespaces will potentially see different values when reading from a particular <em>uid_map</em> file, depending on the user ID mappings for the user namespaces of the reading processes.</p>
+<p class='spacer'>
+
+  <p>Each line in the <em>uid_map</em> file specifies a 1-to-1 mapping of a range of contiguous user IDs between two user namespaces. (When a user namespace is first created, this file is empty.) The specification in each line takes the form of three numbers delimited by white space. The first two numbers specify the starting user ID in each of the two user namespaces. The third number specifies the length of the mapped range. In detail, the fields are interpreted as follows:</p>
+  <dl class='dl-horizontal'>
+    <dt>(1)</dt>
+    <dd>
+  <p>The start of the range of user IDs in the user namespace of the process <em>pid</em>.</p>
+    </dd>
+    <dt>(2)</dt>
+    <dd>
+      <p>The start of the range of user IDs to which the user IDs specified by field one map. How field two is interpreted depends on whether the process that opened <em>uid_map</em> and the process <em>pid</em> are in the same user namespace, as follows:</p>
+      <dl class='dl-horizontal'>
+        <dt>a)</dt>
+        <dd>
+      <p>If the two processes are in different user namespaces: field two is the start of a range of user IDs in the user namespace of the process that opened <em>uid_map</em>.</p>
+        </dd>
+        <dt>b)</dt>
+        <dd>
+      <p>If the two processes are in the same user namespace: field two is the start of the range of user IDs in the parent user namespace of the process <em>pid</em>. This case enables the opener of <em>uid_map</em> (the common case here is opening <em>/proc/self/uid_map</em>) to see the mapping of user IDs into the user namespace of the process that created this user namespace.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt>(3)</dt>
+    <dd>
+  <p>The length of the range of user IDs that is mapped between the two user namespaces.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>System calls that return user IDs (group IDs)&ndash;for example, <a href="../man2/getuid.2.html"><strong>getuid</strong>(2)</a>, <a href="../man2/getgid.2.html"><strong>getgid</strong>(2)</a>, and the credential fields in the structure returned by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>&ndash;return the user ID (group ID) mapped into the caller's user namespace.</p>
+<p class='spacer'>
+
+<p>When a process accesses a file, its user and group IDs are mapped into the initial user namespace for the purpose of permission checking and assigning IDs when creating a file. When a process retrieves file user and group IDs via <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, the IDs are mapped in the opposite direction, to produce values relative to the process user and group ID mappings.</p>
+<p class='spacer'>
+
+<p>The initial user namespace has no parent namespace, but, for consistency, the kernel provides dummy user and group ID mapping files for this namespace. Looking at the <em>uid_map</em> file (<em>gid_map</em> is the same) from a shell in the initial namespace shows:</p>
+<p class='spacer'>
+
+<pre>$ <strong>cat /proc/$$/uid_map</strong>
+         0          0 4294967295</pre>
+
+<p class='spacer'>
+
+<p>This mapping tells us that the range starting at user ID 0 in this namespace maps to a range starting at 0 in the (nonexistent) parent namespace, and the length of the range is the largest 32-bit unsigned integer. This leaves 4294967295 (the 32-bit signed -1 value) unmapped. This is deliberate: <em>(uid_t)&nbsp;-1</em> is used in several interfaces (e.g., <a href="../man2/setreuid.2.html"><strong>setreuid</strong>(2)</a>) as a way to specify "no user ID". Leaving <em>(uid_t)&nbsp;-1</em> unmapped and unusable guarantees that there will be no confusion when using these interfaces.</p>
+  <h3>Defining user and group ID mappings: writing to uid_map and gid_map</h3>
+<p class='spacer'>
+
+<p>After the creation of a new user namespace, the <em>uid_map</em> file of <em>one</em> of the processes in the namespace may be written to <em>once</em> to define the mapping of user IDs in the new user namespace. An attempt to write more than once to a <em>uid_map</em> file in a user namespace fails with the error <strong>EPERM</strong>. Similar rules apply for <em>gid_map</em> files.</p>
+<p class='spacer'>
+
+  <p>The lines written to <em>uid_map</em> (<em>gid_map</em>) must conform to the following rules:</p>
+  <dl class='dl-horizontal'>
+    <dt>*</dt>
+    <dd>
+  <p>The three fields must be valid numbers, and the last field must be greater than 0.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>Lines are terminated by newline characters.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>There is an (arbitrary) limit on the number of lines in the file. As at Linux 3.18, the limit is five lines. In addition, the number of bytes written to the file must be less than the system page size, and the write must be performed at the start of the file (i.e., <a href="../man2/lseek.2.html"><strong>lseek</strong>(2)</a> and <a href="../man2/pwrite.2.html"><strong>pwrite</strong>(2)</a> can't be used to write to nonzero offsets in the file).</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>The range of user IDs (group IDs) specified in each line cannot overlap with the ranges in any other lines. In the initial implementation (Linux 3.8), this requirement was satisfied by a simplistic implementation that imposed the further requirement that the values in both field 1 and field 2 of successive lines must be in ascending numerical order, which prevented some otherwise valid maps from being created. Linux 3.9 and later fix this limitation, allowing any valid set of nonoverlapping maps.</p>
+    </dd>
+    <dt>*</dt>
+    <dd>
+  <p>At least one line must be written to the file.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Writes that violate the above rules fail with the error <strong>EINVAL</strong>.</p>
+<p class='spacer'>
+
+  <p>In order for a process to write to the <em>/proc/[pid]/uid_map</em> (<em>/proc/[pid]/gid_map</em>) file, all of the following requirements must be met:</p>
+  <dl class='dl-horizontal'>
+    <dt>1.</dt>
+    <dd>
+  <p>The writing process must have the <strong>CAP_SETUID</strong> (<strong>CAP_SETGID</strong>) capability in the user namespace of the process <em>pid</em>.</p>
+    </dd>
+    <dt>2.</dt>
+    <dd>
+  <p>The writing process must either be in the user namespace of the process <em>pid</em> or be in the parent user namespace of the process <em>pid</em>.</p>
+    </dd>
+    <dt>3.</dt>
+    <dd>
+  <p>The mapped user IDs (group IDs) must in turn have a mapping in the parent user namespace.</p>
+    </dd>
+    <dt>4.</dt>
+    <dd>
+      <p>One of the following two cases applies:</p>
+      <dl class='dl-horizontal'>
+        <dt>*</dt>
+        <dd>
+          <p><em>Either</em> the writing process has the <strong>CAP_SETUID</strong> (<strong>CAP_SETGID</strong>) capability in the <em>parent</em> user namespace.</p>
+          <dl class='dl-horizontal'>
+            <dt>+</dt>
+            <dd>
+          <p>No further restrictions apply: the process can make mappings to arbitrary user IDs (group IDs) in the parent user namespace.</p>
+            </dd>
+          </dl>
+        </dd>
+        <dt>*</dt>
+        <dd>
+          <p><em>Or</em> otherwise all of the following restrictions apply:</p>
+          <dl class='dl-horizontal'>
+            <dt>+</dt>
+            <dd>
+          <p>The data written to <em>uid_map</em> (<em>gid_map</em>) must consist of a single line that maps the writing process's effective user ID (group ID) in the parent user namespace to a user ID (group ID) in the user namespace.</p>
+            </dd>
+            <dt>+</dt>
+            <dd>
+          <p>The writing process must have the same effective user ID as the process that created the user namespace.</p>
+            </dd>
+            <dt>+</dt>
+            <dd>
+          <p>In the case of <em>gid_map</em>, use of the <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> system call must first be denied by writing &quot;<em>deny</em>&quot; to the <em>/proc/[pid]/setgroups</em> file (see below) before writing to <em>gid_map</em>.</p>
+            </dd>
+          </dl>
+        </dd>
+      </dl>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Writes that violate the above rules fail with the error <strong>EPERM</strong>.</p>
+  <h3>Interaction with system calls that change process UIDs or GIDs</h3>
+<p>In a user namespace where the <em>uid_map</em> file has not been written, the system calls that change user IDs will fail. Similarly, if the <em>gid_map</em> file has not been written, the system calls that change group IDs will fail. After the <em>uid_map</em> and <em>gid_map</em> files have been written, only the mapped values may be used in system calls that change user and group IDs.</p>
+<p class='spacer'>
+
+<p>For user IDs, the relevant system calls include <a href="../man2/setuid.2.html"><strong>setuid</strong>(2)</a>, <a href="../man2/setfsuid.2.html"><strong>setfsuid</strong>(2)</a>, <a href="../man2/setreuid.2.html"><strong>setreuid</strong>(2)</a>, and <a href="../man2/setresuid.2.html"><strong>setresuid</strong>(2)</a>. For group IDs, the relevant system calls include <a href="../man2/setgid.2.html"><strong>setgid</strong>(2)</a>, <a href="../man2/setfsgid.2.html"><strong>setfsgid</strong>(2)</a>, <a href="../man2/setregid.2.html"><strong>setregid</strong>(2)</a>, <a href="../man2/setresgid.2.html"><strong>setresgid</strong>(2)</a>, and <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>Writing &quot;<em>deny</em>&quot; to the <em>/proc/[pid]/setgroups</em> file before writing to <em>/proc/[pid]/gid_map</em> will permanently disable <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> in a user namespace and allow writing to <em>/proc/[pid]/gid_map</em> without having the <strong>CAP_SETGID</strong> capability in the parent user namespace.</p>
+  <h3>The /proc/[pid]/setgroups file</h3>
+<p>The <em>/proc/[pid]/setgroups</em> file displays the string &quot;<em>allow</em>&quot; if processes in the user namespace that contains the process <em>pid</em> are permitted to employ the <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> system call; it displays &quot;<em>deny</em>&quot; if <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> is not permitted in that user namespace. Note that regardless of the value in the <em>/proc/[pid]/setgroups</em> file (and regardless of the process's capabilities), calls to <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> are also not permitted if <em>/proc/[pid]/gid_map</em> has not yet been set.</p>
+<p class='spacer'>
+
+<p>A privileged process (one with the <strong>CAP_SYS_ADMIN</strong> capability in the namespace) may write either of the strings &quot;<em>allow</em>&quot; or &quot;<em>deny</em>&quot; to this file <em>before</em> writing a group ID mapping for this user namespace to the file <em>/proc/[pid]/gid_map</em>. Writing the string &quot;<em>deny</em>&quot; prevents any process in the user namespace from employing <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a>.</p>
+<p class='spacer'>
+
+<p>The essence of the restrictions described in the preceding paragraph is that it is permitted to write to <em>/proc/[pid]/setgroups</em> only so long as calling <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> is disallowed because <em>/proc/[pid]gid_map</em> has not been set. This ensures that a process cannot transition from a state where <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> is allowed to a state where <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> is denied; a process can only transition from <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> being disallowed to <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> being allowed.</p>
+<p class='spacer'>
+
+<p>The default value of this file in the initial user namespace is &quot;<em>allow</em>&quot;.</p>
+<p class='spacer'>
+
+<p>Once <em>/proc/[pid]/gid_map</em> has been written to (which has the effect of enabling <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> in the user namespace), it is no longer possible to disallow <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> by writing &quot;<em>deny</em>&quot; to <em>/proc/[pid]/setgroups</em> (the write fails with the error <strong>EPERM</strong>).</p>
+<p class='spacer'>
+
+<p>A child user namespace inherits the <em>/proc/[pid]/setgroups</em> setting from its parent.</p>
+<p class='spacer'>
+
+<p>If the <em>setgroups</em> file has the value &quot;<em>deny</em>&quot;, then the <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> system call can't subsequently be reenabled (by writing &quot;<em>allow</em>&quot; to the file) in this user namespace. (Attempts to do so will fail with the error <strong>EPERM</strong>.) This restriction also propagates down to all child user namespaces of this user namespace.</p>
+<p class='spacer'>
+
+<p>The <em>/proc/[pid]/setgroups</em> file was added in Linux 3.19, but was backported to many earlier stable kernel series, because it addresses a security issue. The issue concerned files with permissions such as "rwx---rwx". Such files give fewer permissions to "group" than they do to "other". This means that dropping groups using <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> might allow a process file access that it did not formerly have. Before the existence of user namespaces this was not a concern, since only a privileged process (one with the <strong>CAP_SETGID</strong> capability) could call <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a>. However, with the introduction of user namespaces, it became possible for an unprivileged process to create a new namespace in which the user had all privileges. This then allowed formerly unprivileged users to drop groups and thus gain file access that they did not previously have. The <em>/proc/[pid]/setgroups</em> file was added to address this security issue, by denying any pathway for an unprivileged process to drop groups with <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a>.</p>
+  <h3>Unmapped user and group IDs</h3>
+<p class='spacer'>
+
+<p>There are various places where an unmapped user ID (group ID) may be exposed to user space. For example, the first process in a new user namespace may call <strong>getuid</strong>() before a user ID mapping has been defined for the namespace. In most such cases, an unmapped user ID is converted to the overflow user ID (group ID); the default value for the overflow user ID (group ID) is 65534. See the descriptions of <em>/proc/sys/kernel/overflowuid</em> and <em>/proc/sys/kernel/overflowgid</em> in <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>.</p>
+<p class='spacer'>
+
+<p>The cases where unmapped IDs are mapped in this fashion include system calls that return user IDs (<a href="../man2/getuid.2.html"><strong>getuid</strong>(2)</a>, <a href="../man2/getgid.2.html"><strong>getgid</strong>(2)</a>, and similar), credentials passed over a UNIX domain socket, credentials returned by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, <a href="../man2/waitid.2.html"><strong>waitid</strong>(2)</a>, and the System V IPC "ctl" <strong>IPC_STAT</strong> operations, credentials exposed by <em>/proc/PID/status</em> and the files in <em>/proc/sysvipc/*</em>, credentials returned via the <em>si_uid</em> field in the <em>siginfo_t</em> received with a signal (see <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>), credentials written to the process accounting file (see <a href="../man5/acct.5.html"><strong>acct</strong>(5)</a>), and credentials returned with POSIX message queue notifications (see <a href="../man3/mq_notify.3.html"><strong>mq_notify</strong>(3)</a>).</p>
+<p class='spacer'>
+
+<p>There is one notable case where unmapped user and group IDs are <em>not</em> converted to the corresponding overflow ID value. When viewing a <em>uid_map</em> or <em>gid_map</em> file in which there is no mapping for the second field, that field is displayed as 4294967295 (-1 as an unsigned integer);</p>
+  <h3>Set-user-ID and set-group-ID programs</h3>
+<p class='spacer'>
+
+<p>When a process inside a user namespace executes a set-user-ID (set-group-ID) program, the process's effective user (group) ID inside the namespace is changed to whatever value is mapped for the user (group) ID of the file. However, if either the user <em>or</em> the group ID of the file has no mapping inside the namespace, the set-user-ID (set-group-ID) bit is silently ignored: the new program is executed, but the process's effective user (group) ID is left unchanged. (This mirrors the semantics of executing a set-user-ID or set-group-ID program that resides on a filesystem that was mounted with the <strong>MS_NOSUID</strong> flag, as described in <a href="../man2/mount.2.html"><strong>mount</strong>(2)</a>.)</p>
+  <h3>Miscellaneous</h3>
+<p class='spacer'>
+
+<p>When a process's user and group IDs are passed over a UNIX domain socket to a process in a different user namespace (see the description of <strong>SCM_CREDENTIALS</strong> in <a href="../man7/unix.7.html"><strong>unix</strong>(7)</a>), they are translated into the corresponding values as per the receiving process's user and group ID mappings.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>Namespaces are a Linux-specific feature.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>Over the years, there have been a lot of features that have been added to the Linux kernel that have been made available only to privileged users because of their potential to confuse set-user-ID-root applications. In general, it becomes safe to allow the root user in a user namespace to use those features because it is impossible, while in a user namespace, to gain more privilege than the root user of a user namespace has.</p>
+  <h3>Availability</h3>
+<p>Use of user namespaces requires a kernel that is configured with the <strong>CONFIG_USER_NS</strong> option. User namespaces require support in a range of subsystems across the kernel. When an unsupported subsystem is configured into the kernel, it is not possible to configure user namespaces support.</p>
+<p class='spacer'>
+
+<p>As at Linux 3.8, most relevant subsystems supported user namespaces, but a number of filesystems did not have the infrastructure needed to map user and group IDs between user namespaces. Linux 3.9 added the required infrastructure support for many of the remaining unsupported filesystems (Plan 9 (9P), Andrew File System (AFS), Ceph, CIFS, CODA, NFS, and OCFS2). Linux 3.12 added support the last of the unsupported major filesystems, XFS.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The program below is designed to allow experimenting with user namespaces, as well as other types of namespaces. It creates namespaces as specified by command-line options and then executes a command inside those namespaces. The comments and <em>usage()</em> function inside the program provide a full explanation of the program. The following shell session demonstrates its use.</p>
+<p class='spacer'>
+
+<p>First, we look at the run-time environment:</p>
+<p class='spacer'>
+
+<pre>$ <strong>uname -rs</strong>     # Need Linux 3.8 or later
+Linux 3.8.0
+$ <strong>id -u</strong>         # Running as unprivileged user
+1000
+$ <strong>id -g</strong>
+1000</pre>
+
+<p class='spacer'>
+
+<p>Now start a new shell in new user (<em>-U</em>), mount (<em>-m</em>), and PID (<em>-p</em>) namespaces, with user ID (<em>-M</em>) and group ID (<em>-G</em>) 1000 mapped to 0 inside the user namespace:</p>
+<p class='spacer'>
+
+<pre>$ <strong>./userns_child_exec -p -m -U -M '0 1000 1' -G '0 1000 1' bash</strong></pre>
+
+<p class='spacer'>
+
+<p>The shell has PID 1, because it is the first process in the new PID namespace:</p>
+<p class='spacer'>
+
+<pre>bash$ <strong>echo $$</strong>
+1</pre>
+
+<p class='spacer'>
+
+<p>Inside the user namespace, the shell has user and group ID 0, and a full set of permitted and effective capabilities:</p>
+<p class='spacer'>
+
+<pre>bash$ <strong>cat /proc/$$/status | egrep '^[UG]id'</strong>
+Uid:	0	0	0	0
+Gid:	0	0	0	0
+bash$ <strong>cat /proc/$$/status | egrep '^Cap(Prm|Inh|Eff)'</strong>
+CapInh:	0000000000000000
+CapPrm:	0000001fffffffff
+CapEff:	0000001fffffffff</pre>
+
+<p class='spacer'>
+
+<p>Mounting a new <em>/proc</em> filesystem and listing all of the processes visible in the new PID namespace shows that the shell can't see any processes outside the PID namespace:</p>
+<p class='spacer'>
+
+<pre>bash$ <strong>mount -t proc proc /proc</strong>
+bash$ <strong>ps ax</strong>
+  PID TTY      STAT   TIME COMMAND
+    1 pts/3    S      0:00 bash
+   22 pts/3    R+     0:00 ps ax</pre>
+
+  <h3>Program source</h3>
+  <p></p>
+<pre>/* userns_child_exec.c
+
+   Licensed under GNU General Public License v2 or later
+
+   Create a child process that executes a shell command in new
+   namespace(s); allow UID and GID mappings to be specified when
+   creating a user namespace.
+*/
+#define _GNU_SOURCE
+#include &lt;sched.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;sys/wait.h&gt;
+#include &lt;signal.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;limits.h&gt;
+#include &lt;errno.h&gt;
+
+/* A simple error-handling function: print an error message based
+   on the value in &apos;errno&apos; and terminate the calling process */
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); &#92;
+                        } while (0)
+
+struct child_args {
+    char **argv;        /* Command to be executed by child, with args */
+    int    pipe_fd[2];  /* Pipe used to synchronize parent and child */
+};
+
+static int verbose;
+
+static void
+usage(char *pname)
+{
+    fprintf(stderr, "Usage: %s [options] cmd [arg...]&#92;n&#92;n", pname);
+    fprintf(stderr, "Create a child process that executes a shell "
+            "command in a new user namespace,&#92;n"
+            "and possibly also other new namespace(s).&#92;n&#92;n");
+    fprintf(stderr, "Options can be:&#92;n&#92;n");
+#define fpe(str) fprintf(stderr, "    %s", str);
+    fpe("-i          New IPC namespace&#92;n");
+    fpe("-m          New mount namespace&#92;n");
+    fpe("-n          New network namespace&#92;n");
+    fpe("-p          New PID namespace&#92;n");
+    fpe("-u          New UTS namespace&#92;n");
+    fpe("-U          New user namespace&#92;n");
+    fpe("-M uid_map  Specify UID map for user namespace&#92;n");
+    fpe("-G gid_map  Specify GID map for user namespace&#92;n");
+    fpe("-z          Map user&apos;s UID and GID to 0 in user namespace&#92;n");
+    fpe("            (equivalent to: -M &apos;0 &lt;uid&gt; 1&apos; -G &apos;0 &lt;gid&gt; 1&apos;)&#92;n");
+    fpe("-v          Display verbose messages&#92;n");
+    fpe("&#92;n");
+    fpe("If -z, -M, or -G is specified, -U is required.&#92;n");
+    fpe("It is not permitted to specify both -z and either -M or -G.&#92;n");
+    fpe("&#92;n");
+    fpe("Map strings for -M and -G consist of records of the form:&#92;n");
+    fpe("&#92;n");
+    fpe("    ID-inside-ns   ID-outside-ns   len&#92;n");
+    fpe("&#92;n");
+    fpe("A map string can contain multiple records, separated"
+        " by commas;&#92;n");
+    fpe("the commas are replaced by newlines before writing"
+        " to map files.&#92;n");
+
+    exit(EXIT_FAILURE);
+}
+
+/* Update the mapping file &apos;map_file&apos;, with the value provided in
+   &apos;mapping&apos;, a string that defines a UID or GID mapping. A UID or
+   GID mapping consists of one or more newline-delimited records
+   of the form:
+
+       ID_inside-ns    ID-outside-ns   length
+
+   Requiring the user to supply a string that contains newlines is
+   of course inconvenient for command-line use. Thus, we permit the
+   use of commas to delimit records in this string, and replace them
+   with newlines before writing the string to the file. */
+
+static void
+update_map(char *mapping, char *map_file)
+{
+    int fd, j;
+    size_t map_len;     /* Length of &apos;mapping&apos; */
+
+    /* Replace commas in mapping string with newlines */
+
+    map_len = strlen(mapping);
+    for (j = 0; j &lt; map_len; j++)
+        if (mapping[j] == &apos;,&apos;)
+            mapping[j] = &apos;&#92;n&apos;;
+
+    fd = open(map_file, O_RDWR);
+    if (fd == -1) {
+        fprintf(stderr, "ERROR: open %s: %s&#92;n", map_file,
+                strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    if (write(fd, mapping, map_len) != map_len) {
+        fprintf(stderr, "ERROR: write %s: %s&#92;n", map_file,
+                strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd);
+}
+
+/* Linux 3.19 made a change in the handling of <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> and the
+   &apos;gid_map&apos; file to address a security issue. The issue allowed
+   *unprivileged* users to employ user namespaces in order to drop
+   The upshot of the 3.19 changes is that in order to update the
+   &apos;gid_maps&apos; file, use of the setgroups() system call in this
+   user namespace must first be disabled by writing "deny" to one of
+   the /proc/PID/setgroups files for this namespace.  That is the
+   purpose of the following function. */
+
+static void
+proc_setgroups_write(pid_t child_pid, char *str)
+{
+    char setgroups_path[PATH_MAX];
+    int fd;
+
+    snprintf(setgroups_path, PATH_MAX, "/proc/%ld/setgroups",
+            (long) child_pid);
+
+    fd = open(setgroups_path, O_RDWR);
+    if (fd == -1) {
+
+        /* We may be on a system that doesn&apos;t support
+           /proc/PID/setgroups. In that case, the file won&apos;t exist,
+           and the system won&apos;t impose the restrictions that Linux 3.19
+           added. That&apos;s fine: we don&apos;t need to do anything in order
+           to permit &apos;gid_map&apos; to be updated.
+
+           However, if the error from open() was something other than
+           the ENOENT error that is expected for that case,  let the
+           user know. */
+
+        if (errno != ENOENT)
+            fprintf(stderr, "ERROR: open %s: %s&#92;n", setgroups_path,
+                strerror(errno));
+        return;
+    }
+
+    if (write(fd, str, strlen(str)) == -1)
+        fprintf(stderr, "ERROR: write %s: %s&#92;n", setgroups_path,
+            strerror(errno));
+
+    close(fd);
+}
+
+static int              /* Start function for cloned child */
+childFunc(void *arg)
+{
+    struct child_args *args = (struct child_args *) arg;
+    char ch;
+
+    /* Wait until the parent has updated the UID and GID mappings.
+       See the comment in main(). We wait for end of file on a
+       pipe that will be closed by the parent process once it has
+       updated the mappings. */
+
+    close(args-&gt;pipe_fd[1]);    /* Close our descriptor for the write
+                                   end of the pipe so that we see EOF
+                                   when parent closes its descriptor */
+    if (read(args-&gt;pipe_fd[0], &ch, 1) != 0) {
+        fprintf(stderr,
+                "Failure in child: read from pipe returned != 0&#92;n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Execute a shell command */
+
+    printf("About to exec %s&#92;n", args-&gt;argv[0]);
+    execvp(args-&gt;argv[0], args-&gt;argv);
+    errExit("execvp");
+}
+
+#define STACK_SIZE (1024 * 1024)
+
+static char child_stack[STACK_SIZE];    /* Space for child&apos;s stack */
+
+int
+main(int argc, char *argv[])
+{
+    int flags, opt, map_zero;
+    pid_t child_pid;
+    struct child_args args;
+    char *uid_map, *gid_map;
+    const int MAP_BUF_SIZE = 100;
+    char map_buf[MAP_BUF_SIZE];
+    char map_path[PATH_MAX];
+
+    /* Parse command-line options. The initial &apos;+&apos; character in
+       the final getopt() argument prevents GNU-style permutation
+       of command-line options. That&apos;s useful, since sometimes
+       the &apos;command&apos; to be executed by this program itself
+       has command-line options. We don&apos;t want getopt() to treat
+       those as options to this program. */
+
+    flags = 0;
+    verbose = 0;
+    gid_map = NULL;
+    uid_map = NULL;
+    map_zero = 0;
+    while ((opt = getopt(argc, argv, "+imnpuUM:G:zv")) != -1) {
+        switch (opt) {
+        case &apos;i&apos;: flags |= CLONE_NEWIPC;        break;
+        case &apos;m&apos;: flags |= CLONE_NEWNS;         break;
+        case &apos;n&apos;: flags |= CLONE_NEWNET;        break;
+        case &apos;p&apos;: flags |= CLONE_NEWPID;        break;
+        case &apos;u&apos;: flags |= CLONE_NEWUTS;        break;
+        case &apos;v&apos;: verbose = 1;                  break;
+        case &apos;z&apos;: map_zero = 1;                 break;
+        case &apos;M&apos;: uid_map = optarg;             break;
+        case &apos;G&apos;: gid_map = optarg;             break;
+        case &apos;U&apos;: flags |= CLONE_NEWUSER;       break;
+        default:  usage(argv[0]);
+        }
+    }
+
+    /* -M or -G without -U is nonsensical */
+
+    if (((uid_map != NULL || gid_map != NULL || map_zero) &&
+                !(flags & CLONE_NEWUSER)) ||
+            (map_zero && (uid_map != NULL || gid_map != NULL)))
+        usage(argv[0]);
+
+    args.argv = &argv[optind];
+
+    /* We use a pipe to synchronize the parent and child, in order to
+       ensure that the parent sets the UID and GID maps before the child
+       calls execve(). This ensures that the child maintains its
+       capabilities during the execve() in the common case where we
+       want to map the child&apos;s effective user ID to 0 in the new user
+       namespace. Without this synchronization, the child would lose
+       its capabilities if it performed an execve() with nonzero
+       user IDs (see the <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a> man page for details of the
+       transformation of a process&apos;s capabilities during execve()). */
+
+    if (pipe(args.pipe_fd) == -1)
+        errExit("pipe");
+
+    /* Create the child in new namespace(s) */
+
+    child_pid = clone(childFunc, child_stack + STACK_SIZE,
+                      flags | SIGCHLD, &args);
+    if (child_pid == -1)
+        errExit("clone");
+
+    /* Parent falls through to here */
+
+    if (verbose)
+        printf("%s: PID of child created by clone() is %ld&#92;n",
+                argv[0], (long) child_pid);
+
+    /* Update the UID and GID maps in the child */
+
+    if (uid_map != NULL || map_zero) {
+        snprintf(map_path, PATH_MAX, "/proc/%ld/uid_map",
+                (long) child_pid);
+        if (map_zero) {
+            snprintf(map_buf, MAP_BUF_SIZE, "0 %ld 1", (long) getuid());
+            uid_map = map_buf;
+        }
+        update_map(uid_map, map_path);
+    }
+
+    if (gid_map != NULL || map_zero) {
+        proc_setgroups_write(child_pid, "deny");
+
+        snprintf(map_path, PATH_MAX, "/proc/%ld/gid_map",
+                (long) child_pid);
+        if (map_zero) {
+            snprintf(map_buf, MAP_BUF_SIZE, "0 %ld 1", (long) getgid());
+            gid_map = map_buf;
+        }
+        update_map(gid_map, map_path);
+    }
+
+    /* Close the write end of the pipe, to signal to the child that we
+       have updated the UID and GID maps */
+
+    close(args.pipe_fd[1]);
+
+    if (waitpid(child_pid, NULL, 0) == -1)      /* Wait for child */
+        errExit("waitpid");
+
+    if (verbose)
+        printf("%s: terminating&#92;n", argv[0]);
+
+    exit(EXIT_SUCCESS);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>newgidmap</strong>(1), <strong>newuidmap</strong>(1), <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man5/subgid.5.html"><strong>subgid</strong>(5)</a>, <a href="../man5/subuid.5.html"><strong>subuid</strong>(5)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>, <a href="../man7/cgroup_namespaces.7.html"><strong>cgroup_namespaces</strong>(7)</a> <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a></p>
+<p class='spacer'>
+
+<p>The kernel source file <em>Documentation/namespaces/resource-control.txt</em>.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="urn.7.html"><span aria-hidden="true">&larr;</span> urn.7: uniform resource identifier (URI), including a URL or URN</a></li><li class="next"><a href="utf-8.7.html">utf-8.7: an ASCII compatible multibyte Unicode encoding <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
