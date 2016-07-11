@@ -306,7 +306,6 @@ class ManPageStates(object):
 
 
 class ManPage(object):
-    cc = ("'", ".")
     single_styles = {'B', 'I'}
     compound_styles = {'IR', 'RI', 'BR', 'RB', 'BI', 'IB'}
 
@@ -325,21 +324,17 @@ class ManPage(object):
 
     def __init__(self, filename, redirected_from=False, base_url=""):
         self.filename = filename
-
         self.subtitle = ""
 
         self.sections = []
         self.current_buffer = None
 
         self.preserve_next_line = False
-        self.in_if = False
 
         if redirected_from:
             self.manpage_name = os.path.basename(redirected_from)
         else:
             self.manpage_name = os.path.basename(filename)
-
-        self.style_macros = self.single_styles | self.compound_styles
 
         self.next_page = None
         self.previous_page = None
@@ -410,75 +405,6 @@ class ManPage(object):
 
             self.state_parser()(line, self).process()
 
-#
-            #if not line:
-            #    self.add_spacer()
-            #elif self.in_if:
-            #    if "}" in line:
-            #        self.in_if = False
-            #    continue
-            #elif line.macro:
-            #    self.blank_line = False
-            #    self.parse_macro(line[1:])
-            #elif self.in_table:
-            #    self.table_buffer.append(unescape(line))
-            #elif line.startswith(" ") and not self.in_pre:
-            #    self.blank_line = False
-            #    self.spaced_lines_buffer.append(unescape(line))
-            #else:
-            #    self.blank_line = False
-            #    self.add_content(line)
-#
-            #if not self.is_state(ManPageStates.BODY):
-            #    break
-        else:
-            self.flush_current_section()
-
-    def parse_body_orig(self):
-        self.in_dl = False
-        self.in_li = False
-        self.in_pre = False
-        self.in_table = False
-        self.table_buffer = []
-        self.pre_buffer = []
-
-        self.spaced_lines_buffer = []
-        self.blank_line = False  # Previous line was blank
-        self.content_buffer = []
-
-        self.state = []
-        self.depth = 0
-
-        if not self.is_state(ManPageStates.BODY):
-            raise UnexpectedState(self.parsing_state)
-
-        for line in self.line_iterator:
-            if line.comment:
-                continue
-
-            if self.spaced_lines_buffer:
-                self.process_spaced_lines(line)
-
-            if not line:
-                self.add_spacer()
-            elif self.in_if:
-                if "}" in line:
-                    self.in_if = False
-                continue
-            elif line.macro:
-                self.blank_line = False
-                self.parse_macro(line[1:])
-            elif self.in_table:
-                self.table_buffer.append(unescape(line))
-            elif line.startswith(" ") and not self.in_pre:
-                self.blank_line = False
-                self.spaced_lines_buffer.append(unescape(line))
-            else:
-                self.blank_line = False
-                self.add_content(line)
-
-            if not self.is_state(ManPageStates.BODY):
-                break
         else:
             self.flush_current_section()
 
@@ -579,75 +505,6 @@ class ManPage(object):
             self.add_text("</dl>", 1)
             self.in_li = False
             self.restore_state()
-
-    def parse_macro(self, line):
-        if " " in line:
-            macro, data = line.split(None, 1)
-        else:
-            macro, data = line, None
-
-        if macro in {'if', 'ie', 'el'}:
-            data = unescape(data)
-            if "{" in data:
-                self.in_if = True
-
-            return
-
-        if macro in MacroParser.macros_to_ignore:
-            return
-
-        if macro == "SS":
-            if not data:
-                return
-            self.add_subsection(data)
-            return
-
-        if data:
-            data = unescape(data)
-
-        if macro == 'TS':
-            self.in_table = True
-        elif macro == 'TE':
-            self.end_table()
-        elif macro == "TH":
-            self.set_header(data)
-        elif macro == 'IP':
-            if self.in_li:
-                self.add_text("</dd>", 2)
-            self.process_li(data)
-        elif macro in {'LP', 'PP', 'P'}:
-            self.flush_dl()
-            self.flush_li()
-            self.add_spacer()
-        elif macro == 'in':
-            # We do not mess with indents
-            pass
-        elif macro == "nf":
-            self.start_pre()
-        elif macro == 'fi':
-            self.end_pre()
-        elif macro == "RS":
-            self.save_state()
-        elif macro == "RE":
-            self.restore_state()
-        elif macro == 'UR':
-            self.add_url(data)
-        elif macro == 'MT':  # Fixme: process MT and ME properly
-            self.add_mailto(data)
-        elif macro == 'ME':
-            # End mail
-            pass
-        elif macro == 'SM':
-            # FIXME: Make font smaller
-            if data:
-                self.add_content(data)
-            pass
-        elif not macro:
-            pass
-        else:
-            raise MissingParser("MACRO %s : %s" % (macro,
-                                                   data, ))
-            pass
 
     def add_url(self, data):
         if re.match("[^@]+@[^@]+\.[^@]+", data):
