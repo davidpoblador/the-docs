@@ -6,6 +6,8 @@ try:
 except ImportError:
     import re
 
+import collections
+
 
 class MacroParser(object):
     # FIXME
@@ -20,6 +22,19 @@ class MacroParser(object):
         self.macro = line.macro
         self.comment = line.comment
         self.manpage = manpage
+        self.lines = manpage.line_iterator
+
+    def skip_until(self, items):
+        # Make more idiomatic
+        for line in self.lines:
+            if line in items:
+                break
+
+    def skip_until_contains(self, item):
+        # Make more idiomatic
+        for line in self.lines:
+            if item in line:
+                break
 
     def process(self):
         getattr(self, "p_%s" % self.macro, self.default)()
@@ -28,14 +43,14 @@ class MacroParser(object):
         raise NotSupportedFormat
 
     def p_ig(self):
-        self.manpage.skip_until({'..', '.end'})
+        self.skip_until({'..', '.end'})
 
     def p_de(self):
-        self.manpage.skip_until({'..'})
+        self.skip_until({'..'})
 
     def p_if(self):
         if "{" in self.data:
-            self.manpage.skip_until_contains('}')
+            self.skip_until_contains('}')
 
     p_ie = p_if
     p_el = p_if
@@ -82,7 +97,7 @@ class BodyMacroParser(MacroParser):
 
     def p_SH(self):
         if not self.data:
-            section = next(self.manpage.line_iterator)
+            section = next(self.lines)
         else:
             section = self.data
 
@@ -171,8 +186,7 @@ class BodyMacroParser(MacroParser):
 class TitleMacroParser(MacroParser):
     def p_SH(self):
         if self.joined_data == "NAME":
-            self.manpage.line_iterator, tmp_iter = itertools.tee(
-                self.manpage.line_iterator)
+            self.manpage.line_iterator, tmp_iter = itertools.tee(self.manpage.line_iterator)
 
             c = 0
             name_section = []
@@ -184,8 +198,7 @@ class TitleMacroParser(MacroParser):
                 c += 1
 
             del (tmp_iter)
-            self.manpage.line_iterator = itertools.islice(
-                self.manpage.line_iterator, c, None)
+            consume(self.manpage.line_iterator, c)
 
             self.extract_title(name_section)
             self.manpage.set_state(ManPageStates.BODY)
@@ -414,3 +427,13 @@ class NotSupportedFormat(Exception):
 
 class RedirectedPage(Exception):
     pass
+
+def consume(iterator, n):
+    "Advance the iterator n-steps ahead. If n is none, consume entirely."
+    # Use functions that consume iterators at C speed.
+    if n is None:
+        # feed the entire iterator into a zero-length deque
+        collections.deque(iterator, maxlen=0)
+    else:
+        # advance to the empty slice starting at position n
+        next(itertools.islice(iterator, n, n), None)

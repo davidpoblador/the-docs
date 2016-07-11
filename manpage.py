@@ -36,8 +36,6 @@ class ManPage(object):
         self.filename = filename
         self.subtitle = ""
 
-        self.current_buffer = None
-
         self.preserve_next_line = False
 
         if redirected_from:
@@ -59,18 +57,6 @@ class ManPage(object):
         self.parse_header()
         self.parse_title()
         self.parse_body()
-
-    def skip_until(self, items):
-        # Make more idiomatic
-        for line in self.line_iterator:
-            if line in items:
-                break
-
-    def skip_until_contains(self, item):
-        # Make more idiomatic
-        for line in self.line_iterator:
-            if item in line:
-                break
 
     def parse_title(self):
         self.must_have_state(ManPageStates.TITLE)
@@ -97,6 +83,8 @@ class ManPage(object):
         self.in_table = False
         self.table_buffer = []
         self.pre_buffer = []
+
+        self.current_buffer = []
 
         self.spaced_lines_buffer = []
         self.blank_line = False  # Previous line was blank
