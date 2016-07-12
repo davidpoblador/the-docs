@@ -459,19 +459,14 @@ def load_template(template):
     fp.close()
     return out
 
-style_trans = {
-    'I': 'em',
-    'B': 'strong',
-}
-
 def stylize(style, text):
+    style_trans = {    'I': 'em',    'B': 'strong',}
     if style == 'R':
         return text
     else:
         return "<%s>%s</%s>" % (style_trans[style],
                                 text,
                                 style_trans[style], )
-
 
 def stylize_odd_even(style, args):
     buff = ""

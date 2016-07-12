@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from manpage import ManPage
-from parsers import MissingParser, NotSupportedFormat, RedirectedPage
+from parsers import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
 import glob
 import os
 from collections import defaultdict, Counter
