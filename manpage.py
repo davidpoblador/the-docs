@@ -14,7 +14,6 @@ from parsers import LineParser, ManPageStates
 from parsers import RedirectedPage
 from parsers import tagify, unescape, toargs, entitize
 
-
 class ManPage(object):
     single_styles = {'B', 'I'}
     compound_styles = {'IR', 'RI', 'BR', 'RB', 'BI', 'IB'}

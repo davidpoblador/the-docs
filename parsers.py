@@ -64,6 +64,13 @@ class MacroParser(object):
     def process_text(self):  # FIXME: Rewrite in body
         pass
 
+    def consume_iterator(self, steps):
+        next(itertools.islice(self.manpage.line_iterator, steps, steps), None)
+
+    def split_iterator(self):
+        self.manpage.line_iterator, tmp_iter = itertools.tee(self.manpage.line_iterator)
+        return tmp_iter
+
     def missing_parser(self):
         raise MissingParser("MACRO %s : %s" % (self.macro,
                                                self.data, ))
@@ -186,20 +193,16 @@ class BodyMacroParser(MacroParser):
 class TitleMacroParser(MacroParser):
     def p_SH(self):
         if self.joined_data == "NAME":
-            self.manpage.line_iterator, tmp_iter = itertools.tee(self.manpage.line_iterator)
-
             c = 0
             name_section = []
-            for name_section_line in tmp_iter:
+            for name_section_line in self.split_iterator():
                 if name_section_line.macro == "SH":
                     break
 
                 name_section.append(unescape(name_section_line))
                 c += 1
 
-            del (tmp_iter)
-            consume(self.manpage.line_iterator, c)
-
+            self.consume_iterator(c)
             self.extract_title(name_section)
             self.manpage.set_state(ManPageStates.BODY)
         else:
@@ -427,14 +430,3 @@ class NotSupportedFormat(Exception):
 
 class RedirectedPage(Exception):
     pass
-
-
-def consume(iterator, n):
-    "Advance the iterator n-steps ahead. If n is none, consume entirely."
-    # Use functions that consume iterators at C speed.
-    if n is None:
-        # feed the entire iterator into a zero-length deque
-        collections.deque(iterator, maxlen=0)
-    else:
-        # advance to the empty slice starting at position n
-        next(itertools.islice(iterator, n, n), None)
