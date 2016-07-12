@@ -415,17 +415,11 @@ class ManPage(object):
 
     def html(self, pages_to_link=set()):
         section_tpl = load_template('section')
-        section_contents = ""
+        contents = []
         for title, content in self.sections:
-            section_contents += section_tpl.safe_substitute(
-                title=title,
-                content=''.join(content), )
+            contents.append(section_tpl.substitute(title=title, content=''.join(content), ))
 
-        section_contents = self.linkify(section_contents, pages_to_link)
-
-        header_tpl = load_template('header')
-        base_tpl = load_template('base')
-        breadcrumb_tpl = load_template('breadcrumb')
+        section_contents = self.linkify(''.join(contents), pages_to_link)
 
         if self.next_page or self.previous_page:
             links = ""
@@ -437,17 +431,12 @@ class ManPage(object):
                 links += "<li class=\"next\"><a href=\"%s.html\">%s: %s <span aria-hidden=\"true\">&rarr;</span></a></li>" % (
                     self.next_page[0], self.next_page[0], self.next_page[1])
 
-            pager_tpl = load_template('pager')
-            pager_contents = pager_tpl.safe_substitute(links=links, )
-
+            pager_contents = load_template('pager').substitute(links=links, )
             section_contents += pager_contents
 
         title, section = self.manpage_name.rsplit('.', 1)
-        return base_tpl.safe_substitute(
-            # TODO: Fix canonical, nav, breadcrumb
-            canonical="",
-            nav="",
-            breadcrumb=breadcrumb_tpl.substitute(
+        return load_template('base').substitute(
+            breadcrumb=load_template('breadcrumb').substitute(
                 section=section,
                 section_name=self.SECTIONS["man" + section],
                 manpage=title,
@@ -455,14 +444,14 @@ class ManPage(object):
                 page=self.manpage_name,
             ),
             title="%s - %s" % (title, self.subtitle, ),
-            header=header_tpl.safe_substitute(
+            metadescription = self.subtitle.capitalize(),
+            header=load_template('header').substitute(
                 section=section,
-                title=title,  # FIXME: Mess
-                subtitle=self.subtitle,
+                title=title,
+                subtitle=self.subtitle.capitalize(),
             ),
             content=section_contents,
         )
-
 
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))
@@ -470,12 +459,10 @@ def load_template(template):
     fp.close()
     return out
 
-
 style_trans = {
     'I': 'em',
     'B': 'strong',
 }
-
 
 def stylize(style, text):
     if style == 'R':
