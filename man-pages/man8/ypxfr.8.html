@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ypxfr - transfer NIS database from remote server to local host</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Transfer nis database from remote server to local host">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">ypxfr<small> (8)</small></h1>
+        <p class="lead">Transfer nis database from remote server to local host</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/ypxfr.8.html"><span itemprop="title">ypxfr</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>/usr/lib/yp/ypxfr</strong> [ <strong>-f</strong> ] [ <strong>-c</strong> ] [ <strong>-d</strong> <em>target domain</em> ] [ <strong>-h</strong> <em>source host</em> ] [ <strong>-s</strong> <em>source domain</em> ] [ <strong>-C</strong> <em>taskid</em> <em>program-number</em> <em>ipaddr port</em> ] [ <strong>-p</strong> <em>yp_path</em> ] mapname ...</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>ypxfr</strong> copies an NIS database from one NIS server to the local host by using the NIS service. <strong>ypxfr</strong> is generally invoked by <strong>ypinit</strong> or by <strong>ypserv,</strong> when <strong>ypserv</strong> receives a map transfer request from <strong>yppush.</strong> It creates a temporary map in the directory <strong>/var/yp/domain</strong> (this  directory  must already  exist; <em>domain</em> is the default domainname for the local host), fills it by getting the map's entries and fetches the map parameters (master and order number). If the transfer was successful, the old version of the map will be deleted and the temporary copy will be moved into its place. Then, <strong>ypxfr</strong> will attempt to send a "clear current map" request to the local <strong>ypserv.</strong></p>
+<p class='spacer'>
+
+<p>If  run interactively, <strong>ypxfr</strong> writes its output to stderr. However, if it is invoked without a controlling terminal, it will log the output to syslog.</p>
+<p class='spacer'>
+
+<p><strong>ypxfr</strong> is used primarily in environments where several NIS servers are in use. For all maps, you have a NIS master server, which  maintains a canonical copy of the NIS map, and all the other servers, the NIS slaves, copy the new version of the map from the master whenever a update was made. Normally, you have one NIS master for all maps.</p>
+<p class='spacer'>
+
+<p>In order to maintain consistency across all NIS servers, <strong>ypxfr</strong> can be run periodically in a <strong>cron</strong> job. Maps which change infrequently need only be updated once a day (preferably late at night when system usage is lowest), where those with frequent changes (such as <em>passwd.byname</em> and <em>passwd.byuid )</em> should be updated perhaps once every hour. Examples are in <strong>/usr/lib/yp: ypxfr_1perday, ypxfr_2perday,</strong> and <strong>ypxfr_1perhour.</strong> They can serve as reasonable first cuts.</p>
+<p class='spacer'>
+
+<p>Normally all updates should be propagated by <strong>yppush</strong> when <strong>/var/yp/Makefile</strong> is run on the NIS master server, however it is a good practice on large networks where possible outages could cause NIS slaves to fall out of sync with the master.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+  <p>The following options are supported:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>-f</strong></dt>
+    <dd>
+  <p>Force a map transfer. Normally, <strong>ypxfr</strong> will not transfer a map if it determines that the NIS master's copy is not newer than the existing copy already on the local host. This flag forces a transfer regardless of which server's version is more recent.</p>
+    </dd>
+    <dt><strong>-c</strong></dt>
+    <dd>
+  <p>Do not send a "clear current map" request to the <strong>ypserv</strong> process running on the local host. This flag is normally used when invoking <strong>ypxfr</strong> by <strong>ypinit</strong> or if <strong>ypserv</strong> is not  running  locally  at  the time you are running <strong>ypxfr.</strong> Otherwise, <strong>ypxfr</strong> will complain that it cannot talk to the local <strong>ypserv,</strong> and the transfer will fail.</p>
+    </dd>
+    <dt><strong>-d</strong><em> domain</em></dt>
+    <dd>
+  <p>Specify a domain other than the default NIS domain.</p>
+    </dd>
+    <dt><strong>-h</strong><em> source host</em></dt>
+    <dd>
+  <p>Get the map from <em>host</em>, regardless of what the map says the master is.  If <em>host</em> is not specified, <strong>ypxfr</strong> asks the NIS service for the name of the master, and tries to get the map from there. This option is used to insure that ypxfr only copies maps from the NIS master server.</p>
+    </dd>
+    <dt><strong>-s</strong><em> source domain</em></dt>
+    <dd>
+  <p>Specify a source domain from which to transfer a map that should be the same across domains.</p>
+    </dd>
+    <dt><strong>-C</strong><em> taskid progam-number ipaddr port</em></dt>
+    <dd>
+  <p>This option is <strong>only</strong> for use by <strong>ypserv .</strong> When <strong>ypserv</strong> invokes <strong>ypxfr</strong>, it specifies that <strong>ypxfr</strong> should call back a <strong>yppush</strong> process at the host with IP address <em>ipaddr</em>, registered as program number <em>progam-number</em>, listening on port <em>port</em>, and waiting for a response to transaction <em>taskid</em>.</p>
+    </dd>
+    <dt><strong>-p</strong><em> yp_path</em></dt>
+    <dd>
+  <p>Change the directory for the maps to <em>yp_path/[domainname]/</em>, the default is <em>/var/yp/[domainname]</em>.</p>
+    </dd>
+    <dt><em>mapname</em></dt>
+    <dd>
+  <p>One or more names of the map to transfer.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+<p>/var/yp/[domainname]/[maps]</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>ypserv</strong>(8), <a href="../man8/yppush.8.html"><strong>yppush</strong>(8)</a>, <a href="../man8/ypinit.8.html"><strong>ypinit</strong>(8)</a>, <strong>cron</strong>(8), <strong>crontab</strong>(5)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p>Thorsten Kukuk &lt;kukuk@suse.de&gt;</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="yptest.8.html"><span aria-hidden="true">&larr;</span> yptest.8: test NIS configuration</a></li><li class="next"><a href="ypxfrd.8.html">ypxfrd.8: NIS map transfer server <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
