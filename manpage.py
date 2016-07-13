@@ -17,8 +17,14 @@ from collections import namedtuple
 
 LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
 
+
 class ManPageLine(LineItems):
-    pass
+    def line(self):
+        return ".%s %s" % (self.macro,
+                           self.data, )
+
+    def contains(self, piece):
+        return (piece in self.line())
 
 
 class Lines(object):
@@ -26,38 +32,75 @@ class Lines(object):
         self._current = 0
         self._data = []
 
-
+        extra = []
         for line in iterator:
-            if line.startswith(".") and len(line) > 1:
-                macro, _, data = line.partition(" ")
-                macro = macro[1:]
-            else:
-                macro = None
-                data = line
+            if line and len(line) > 2:
+                if line[-1] == "\\" and line[
+                        -2] != "\\":  # FIXME: Possibly rsplit might work better
+                    extra.append(line[:-1])
+                    continue
+                elif line[-2:] == "\\c":
+                    extra.append(line[:-2])
+                    continue
 
-            comment = (macro == "\\\"")
+            if extra:
+                extra.append(line)
+                line = ' '.join(extra)
+                extra = []
+
+            if line.startswith(".") and len(line) > 1 and line != "..":
+                if len(line) > 2 and line[1:3] == "\\\"":
+                    # Comment
+                    comment = True
+                    macro = None
+                    data = line[3:]
+                else:
+                    comment = False
+                    if "\\\"" in line:
+                        line = line.split("\\\"", 1)[0]
+
+                    chunks = line.split(None, 1)
+                    if len(chunks) == 2:
+                        macro, data = chunks
+                    else:
+                        macro, data = chunks[0], None
+
+                    macro = macro[1:]
+            else:
+                comment = False
+                macro = None
+                if "\\\"" in line and "\\\\\"" not in line:
+                    data = line.split("\\\"", 1)[0]
+                    if not data:
+                        continue
+                else:
+                    data = line
+
+            if data:
+                data = entitize(data)
 
             self._data.append(ManPageLine(macro, data, comment))
 
     def get(self):
-        data = self._data[self._current]
+        current = self._data[self._current]
         self.fwd()
-        return data
+        return current
 
     def curr(self):
-        return self._data[self._current]        
+        return self._data[self._current]
 
     def prev(self):
-        return self._data[self._current-1]        
+        return self._data[self._current - 1]
 
     def next(self):
-        return self._data[self._current+1]        
+        return self._data[self._current + 1]
 
     def fwd(self):
         self._current += 1
 
     def rwd(self):
         self._current -= 1
+
 
 class ManPage(object):
     single_styles = {'B', 'I'}
@@ -88,17 +131,23 @@ class ManPage(object):
         self.pre_buffer = []
 
         self.content_buffer = []
+        self.spaced_lines_buffer = []
         self.preserve_next_line = False
 
         self.depth = 0
         self.state = []
 
+        self.current_buffer = []
+
         # Needed
         self.sections = []
+        self.subtitle = ""
 
         self.next_page = None
         self.previous_page = None
         self.base_url = base_url
+
+        self.broken_links = set()
 
         if redirected_from:
             self.manpage_name = os.path.basename(redirected_from)
@@ -107,36 +156,31 @@ class ManPage(object):
 
         self.filename = filename
         with open(self.filename) as fp:
-            self.lines = Lines(fp.read().splitlines())
+            self.lines = Lines([line.rstrip() for line in fp])
 
-
-        #self.subtitle = ""
-
-        #self.broken_links = set()
-#
-        ## New stuff
-        #self.set_state(ManPageStates.HEADER)
-        #self.line_iterator = self.line()
-
-    def parse(self):
         self.set_state(ManPageStates.HEADER)
 
+    def parse(self):
         while True:
             try:
                 line = self.lines.get()
                 #print "DEBUG", line.macro, line.data, line.comment
-                self.state_parser()(line, self).process()
             except IndexError:
                 break
 
+            if self.spaced_lines_buffer:
+                self.process_spaced_lines(line.data)
+
+            self.state_parser()(line, self).process()
+
         self.flush_current_section()
 
-    def parse_orig(self): # FIXME
+    def parse_orig(self):  # FIXME
         self.parse_header()
         self.parse_title()
         self.parse_body()
 
-    def parse_title(self):
+    def parse_title_orig(self):
         self.must_have_state(ManPageStates.TITLE)
 
         for line in self.line_iterator:
@@ -145,7 +189,7 @@ class ManPage(object):
             if not self.is_state(ManPageStates.TITLE):
                 break
 
-    def parse_header(self):
+    def parse_header_orig(self):
         self.must_have_state(ManPageStates.HEADER)
 
         for line in self.line_iterator:
@@ -154,11 +198,7 @@ class ManPage(object):
             if not self.is_state(ManPageStates.HEADER):
                 break
 
-    def parse_body(self):
-
-        self.current_buffer = []
-
-        self.spaced_lines_buffer = []
+    def parse_body_orig(self):
         self.blank_line = False  # Previous line was blank
 
         self.must_have_state(ManPageStates.BODY)
@@ -483,9 +523,9 @@ class ManPage(object):
         section_tpl = load_template('section')
         contents = []
 
-        print self.sections
         for title, content in self.sections:
-            contents.append(section_tpl.substitute(title=title, content=''.join(content), ))
+            contents.append(section_tpl.substitute(title=title,
+                                                   content=''.join(content), ))
 
         section_contents = self.linkify(''.join(contents), pages_to_link)
 
@@ -509,17 +549,16 @@ class ManPage(object):
                 section_name=self.SECTIONS["man" + section],
                 manpage=title,
                 base_url=self.base_url,
-                page=self.manpage_name,
-            ),
-            title="%s - %s" % (title, self.subtitle, ),
-            metadescription = self.subtitle.capitalize(),
+                page=self.manpage_name, ),
+            title="%s - %s" % (title,
+                               self.subtitle, ),
+            metadescription=self.subtitle.capitalize(),
             header=load_template('header').substitute(
                 section=section,
                 title=title,
-                subtitle=self.subtitle.capitalize(),
-            ),
-            content=section_contents,
-        )
+                subtitle=self.subtitle.capitalize(), ),
+            content=section_contents, )
+
 
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))
@@ -527,14 +566,17 @@ def load_template(template):
     fp.close()
     return out
 
+
 def stylize(style, text):
-    style_trans = {    'I': 'em',    'B': 'strong',}
+    style_trans = {'I': 'em',
+                   'B': 'strong', }
     if style == 'R':
         return text
     else:
         return "<%s>%s</%s>" % (style_trans[style],
                                 text,
                                 style_trans[style], )
+
 
 def stylize_odd_even(style, args):
     buff = ""

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>yppush - force propagation of changed NIS databases</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Force propagation of changed nis databases">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">yppush<small> (8)</small></h1>
+        <p class="lead">Force propagation of changed nis databases</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/yppush.8.html"><span itemprop="title">yppush</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>/usr/sbin/yppush</strong> [ <strong>-d</strong> <em>domain</em> ] [ <strong>-t</strong> <em>timeout</em> ] [ <strong>--parallel</strong> <em>#</em> | <strong>--port</strong> <em>port</em> ] [ <strong>-h</strong> <em>host</em> ] [ <strong>-v</strong> ] mapname ...</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><strong>yppush</strong> copies updated NIS databases (or maps) from the master NIS server to the slave servers within a NIS domain. It is normally run only on the NIS master by <em>/var/yp/Makefile</em> after the master databases are changed. <em>/var/yp/Makefile</em> does not invoke <strong>yppush</strong> by default, the <strong>NOPUSH=true</strong> line must be commented out.</p>
+<p class='spacer'>
+
+<p><strong>yppush</strong> first constructs a list of NIS slave servers by reading the NIS map <strong>ypservers</strong> within the <em>domain.</em> A destination host (or a list of hosts with multiple -h commands) can also be specified on the command line. A "transfer map" request is sent to the NIS serger at each slave, along with the information needed by the transfer agent <a href="../man8/ypxfr.8.html"><strong>ypxfr</strong>(8)</a> to callback to yppush, which may be printed the result to stderr. Messages are also printed when a transfer is not possible; for instance when the request message is undeliverable.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>-d </strong><em>domain</em></dt>
+    <dd>
+  <p>Specify a particular domain. The NIS domain of the local host system is used by default. If the local host's domain name is not set, the domain name must be specified with this flag.</p>
+    </dd>
+    <dt><strong>-t </strong><em>timeout</em></dt>
+    <dd>
+  <p>The timeout flag is used to specify a timeout value in seconds. This timeout controls how long <strong>yppush</strong> will wait for a response from a slave server before sending a map transfer request to the next slave server in the list. By default, <strong>yppush</strong> will wait 90 seconds. For big maps, this is not long enough.</p>
+    </dd>
+    <dt><strong>-^-parallel</strong><em> #</em><strong>, -p </strong><em>#</em></dt>
+    <dd>
+  <p><strong>yppush</strong> normally performs transfers serially, meaning that it will send a map transfer request to one slave server and then wait for it to respond before sending the next map transfer request to the next slave server. In environments with many slaves, it is more efficient to initiate several map transfers at once so that the transfers can take place in parallel. It is not possible to run in parallel and assign a fixed port with the <strong>--port</strong> flag</p>
+    </dd>
+    <dt><strong>--port </strong><em>port</em></dt>
+    <dd>
+  <p>specify a port for <strong>yppush</strong> to  listen  on.   By default, <strong>yppush</strong> will ask <strong>portmap</strong>(8)</strong> to assign it a random port number. It is not possible to assign a port with this option and run in parallel with the <strong>--parallel</strong> or <strong>-p</strong> flag</p>
+    </dd>
+    <dt><strong>-h </strong><em>host</em></dt>
+    <dd>
+  <p>The host flag can be used to transfer a map to a user-specified machine or group of machines instead of the list of servers contained in the <strong>ypservers</strong> map. A list of hosts can be specified by using multiple instances of the <strong>-h</strong> flag.</p>
+    </dd>
+    <dt><strong>-v</strong></dt>
+    <dd>
+  <p>Verbose mode: causes <strong>yppush</strong> to print debugging messages as it runs. Note specifying this flag twice makes <strong>yppush</strong> even more verbose.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>domainname</strong>(1), <strong>ypserv</strong>(8), <a href="../man8/ypxfr.8.html"><strong>ypxfr</strong>(8)</a></p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>The mechanism for transferring NIS maps in NIS v1 is different that that in NIS version 2. This version of <strong>yppush</strong> has support for transferring maps to NIS v2 systems only.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p>Thorsten Kukuk &lt;kukuk@suse.de&gt;</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="yppoll.8.html"><span aria-hidden="true">&larr;</span> yppoll.8: return version and master server of a NIS map</a></li><li class="next"><a href="ypset.8.html">ypset.8: bind ypbind to a particular NIS server <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

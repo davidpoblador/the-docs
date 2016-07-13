@@ -93,6 +93,7 @@ class ManDirectoryParser(object):
         p = self.pages
 
         for item in list(glob.iglob("%s/*/man?/*.?" % self.source_dir)):
+            #print "DEBUG", item
             page_directory, basename = os.path.split(item)
             redirection_base_dir, section_directory = os.path.split(
                 page_directory)
@@ -134,15 +135,12 @@ class ManDirectoryParser(object):
                             redirected_from=fp)
 
                     try:
-                        mp.parse_header()
+                        mp.parse()
+                        subtitle = cp['subtitle'] = mp.subtitle
                     except NotSupportedFormat:
                         raise NotSupportedFormat
                     except RedirectedPage:
                         continue
-                    else:
-                        mp.parse_title()
-                        subtitle = cp['subtitle'] = mp.subtitle
-                        mp.parse_body()
 
             except MissingParser as e:
                 macro = str(e).split(" ", 2)[1]

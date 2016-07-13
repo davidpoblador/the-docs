@@ -27,16 +27,13 @@ class MacroParser(object):
         self.manpage.set_state(state)
 
     def skip_until(self, items):
-        # Make more idiomatic
-        for line in self.lines:
-            if line in items:
-                break
+        while not self.manpage.lines.get().data in items:
+            pass
 
     def skip_until_contains(self, item):
-        # Make more idiomatic
-        for line in self.lines:
-            if item in line:
-                break
+        #while not item in self.manpage.lines.get().data: pass
+        while not self.manpage.lines.get().contains(item):
+            pass
 
     def process(self):
         getattr(self, "p_%s" % self.macro, self.default)()
@@ -58,7 +55,9 @@ class MacroParser(object):
     p_el = p_if
 
     def default(self):
-        if not self.macro:
+        if self.comment:
+            pass
+        elif not self.macro:
             self.process_text()
         elif self.macro not in self.macros_to_ignore:
             self.missing_parser()
@@ -70,7 +69,8 @@ class MacroParser(object):
         next(itertools.islice(self.manpage.line_iterator, steps, steps), None)
 
     def split_iterator(self):
-        self.manpage.line_iterator, tmp_iter = itertools.tee(self.manpage.line_iterator)
+        self.manpage.line_iterator, tmp_iter = itertools.tee(
+            self.manpage.line_iterator)
         return tmp_iter
 
     def missing_parser(self):
@@ -197,7 +197,9 @@ class TitleMacroParser(MacroParser):
         if self.joined_data == "NAME":
             name_section = []
             while True:
-                name_section.append(unescape(self.manpage.lines.get().data))
+                line = self.manpage.lines.get().data
+                if line:
+                    name_section.append(unescape(line))
 
                 if self.manpage.lines.curr().macro == "SH":
                     break
@@ -205,13 +207,14 @@ class TitleMacroParser(MacroParser):
             self.extract_title(name_section)
             self.manpage.set_state(ManPageStates.BODY)
         else:
-            raise
+            raise NotSupportedFormat
 
     @property
     def joined_data(self):
         return ' '.join(toargs(self.data))
 
-    def extract_title(self, title_buffer):
+    def extract_title(self,
+                      title_buffer):  # FIXME: big format difference in ext2.5
         try:
             self.manpage.title, self.manpage.subtitle = map(
                 str.strip, " ".join(title_buffer).split(' - ', 1))
