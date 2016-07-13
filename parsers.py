@@ -243,6 +243,8 @@ class HeaderMacroParser(MacroParser):
 
     __nonzero__ = __bool__
 
+    valid_macros = ("TH", "so", "Dd")
+
     def p_TH(self):
         headers = toargs(self.data)
 
@@ -268,7 +270,7 @@ class HeaderMacroParser(MacroParser):
             (self.manpage.filename, "/".join(self.manpage.redirect)))
 
     def process(self):
-        if self:
+        if self.macro in self.valid_macros:
             super(HeaderMacroParser, self).process()
 
 class ManPageStates(object):

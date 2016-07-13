@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>manpath - format of the /etc/manpath.config file</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Format of the /etc/manpath.config file">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">manpath<small> (5)</small></h1>
+        <p class="lead">Format of the /etc/manpath.config file</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/manpath.5.html"><span itemprop="title">manpath</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The manpath configuration file is used by the manual page utilities to assess users' manpaths at run time, to indicate which manual page hierarchies (manpaths) are to be treated as system hierarchies and to assign them directories to be used for storing cat files.</p>
+<p class='spacer'>
+
+<p>If the environment variable $<strong>MANPATH</strong> is already set, the information contained within /etc/manpath.config will not override it.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FORMAT</h2>
+        <div class="sectioncontent">
+
+  <p>The following field types are currently recognised:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>#</strong><em>&nbsp;comment</em></dt>
+    <dd>
+  <p>Blank lines or those beginning with a <strong>#</strong> will be treated as comments and ignored.</p>
+    </dd>
+    <dt><strong>MANDATORY_MANPATH</strong><em>&nbsp;manpath_element</em></dt>
+    <dd>
+  <p>Lines of this form indicate manpaths that every automatically generated $<strong>MANPATH</strong> should contain. This will typically include <em>/usr/man</em>.</p>
+    </dd>
+    <dt><strong>MANPATH_MAP</strong><em>&nbsp;path_element&nbsp;manpath_element</em></dt>
+    <dd>
+  <p>Lines of this form set up $<strong>PATH</strong> to $<strong>MANPATH</strong> mappings. For each <em>path_element</em> found in the user's $<strong>PATH</strong>, <em>manpath_element</em> will be added to the $<strong>MANPATH</strong>.</p>
+    </dd>
+    <dt>MANDB_MAP <em>manpath_element </em>\|[\| <em>catpath_element</em> \|]</dt>
+    <dd>
+  <p>Lines of this form indicate which manpaths are to be treated as system manpaths, and optionally where their cat files should be stored. This field type is particularly important if <strong>man</strong> is a setuid program, as (when in the system configuration file /etc/manpath.config rather than the per-user configuration file .manpath) it indicates which manual page hierarchies to access as the setuid user and which as the invoking user.</p>
+<p class='spacer'>
+
+  <p>The system manual page hierarchies are usually those stored under <em>/usr</em> such as <em>/usr/man</em>, <em>/usr/local/man</em> and <em>/usr/X11R6/man</em>.</p>
+<p class='spacer'>
+
+  <p>If cat pages from a particular <em>manpath_element</em> are not to be stored or are to be stored in the traditional location, <em>catpath_element</em> may be omitted.</p>
+<p class='spacer'>
+
+  <p>Traditional cat placement would be impossible for read only mounted manual page hierarchies and because of this it is possible to specify any valid directory hierarchy for their storage. To observe the <strong>Linux FSSTND</strong> the keyword `<strong>FSSTND</strong> can be used in place of an actual directory.</p>
+<p class='spacer'>
+
+  <p>Unfortunately, it is necessary to specify <strong>all</strong> system man tree paths, including alternate operating system paths such as <em>/usr/man/sun</em> and any <strong>NLS locale</strong> paths such as <em>/usr/man/de_DE.88591</em>.</p>
+<p class='spacer'>
+
+  <p>As the information is parsed line by line in the order written, it is necessary for any manpath that is a sub-hierarchy of another hierarchy to be listed first, otherwise an incorrect match will be made. An example is that <em>/usr/man/de_DE.88591</em> must come before <em>/usr/man</em>.</p>
+    </dd>
+    <dt><strong>DEFINE</strong><em>&nbsp;key&nbsp;value</em></dt>
+    <dd>
+  <p>Lines of this form define miscellaneous configuration variables; see the default configuration file for those variables used by the manual pager utilities. They include default paths to various programs (such as <em>grep</em> and <em>tbl</em>), and default sets of arguments to those programs.</p>
+    </dd>
+    <dt><strong>SECTION</strong> <em>section</em> .\|.\|.</dt>
+    <dd>
+    <p>Lines of this form define the order in which manual sections should be searched. If there are no <strong>SECTION</strong> directives in the configuration file, the default is:</p>
+<p class='spacer'>
+
+<pre>SECTION 1 n l 8 3 0 2 5 4 9 6 7</pre>
+
+<p class='spacer'>
+
+    <p>If multiple <strong>SECTION</strong> directives are given, their section lists will be concatenated.</p>
+<p class='spacer'>
+
+    <p>If a particular extension is not in this list (say, 1mh) it will be displayed with the rest of the section it belongs to. The effect of this is that you only need to explicitly list extensions if you want to force a particular order. Sections with extensions should usually be adjacent to their main section (e.g. "1 1mh 8 ...").</p>
+<p class='spacer'>
+
+  <p><strong>SECTIONS</strong> is accepted as an alternative name for this directive.</p>
+    </dd>
+    <dt><strong>MINCATWIDTH</strong><em>&nbsp;width</em></dt>
+    <dd>
+  <p>If the terminal width is less than <em>width</em>, cat pages will not be created (if missing) or displayed. The default is 80.</p>
+    </dd>
+    <dt><strong>MAXCATWIDTH</strong><em>&nbsp;width</em></dt>
+    <dd>
+  <p>If the terminal width is greater than <em>width</em>, cat pages will not be created (if missing) or displayed. The default is 80.</p>
+    </dd>
+    <dt><strong>CATWIDTH</strong><em>&nbsp;width</em></dt>
+    <dd>
+  <p>If <em>width</em> is non-zero, cat pages will always be formatted for a terminal of the given width, regardless of the width of the terminal actually being used. This should generally be within the range set by <strong>MINCATWIDTH</strong> and <strong>MAXCATWIDTH</strong>.</p>
+    </dd>
+    <dt><strong>NOCACHE</strong></dt>
+    <dd>
+  <p>This flag prevents <a href="../man1/man.1.html"><strong>man</strong>(1)</a> from creating cat pages automatically.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>Unless the rules above are followed and observed precisely, the manual pager utilities will not function as desired. The rules are overly complicated.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="login.defs.5.html"><span aria-hidden="true">&larr;</span> login.defs.5: shadow password suite configuration</a></li><li class="next"><a href="mke2fs.conf.5.html">mke2fs.conf.5: Configuration file for mke2fs <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
