@@ -22,7 +22,9 @@ class MacroParser(object):
         self.macro = line.macro
         self.comment = line.comment
         self.manpage = manpage
-        self.lines = manpage.line_iterator
+
+    def state(self, state):
+        self.manpage.set_state(state)
 
     def skip_until(self, items):
         # Make more idiomatic
@@ -104,7 +106,7 @@ class BodyMacroParser(MacroParser):
 
     def p_SH(self):
         if not self.data:
-            section = next(self.lines)
+            section = self.manpage.lines.get().data
         else:
             section = self.data
 
@@ -193,16 +195,13 @@ class BodyMacroParser(MacroParser):
 class TitleMacroParser(MacroParser):
     def p_SH(self):
         if self.joined_data == "NAME":
-            c = 0
             name_section = []
-            for name_section_line in self.split_iterator():
-                if name_section_line.macro == "SH":
+            while True:
+                name_section.append(unescape(self.manpage.lines.get().data))
+
+                if self.manpage.lines.curr().macro == "SH":
                     break
 
-                name_section.append(unescape(name_section_line))
-                c += 1
-
-            self.consume_iterator(c)
             self.extract_title(name_section)
             self.manpage.set_state(ManPageStates.BODY)
         else:
@@ -235,8 +234,14 @@ class HeaderMacroParser(MacroParser):
     __nonzero__ = __bool__
 
     def p_TH(self):
-        self.manpage.set_header(self.data)
-        self.manpage.set_state(ManPageStates.TITLE)
+        headers = toargs(self.data)
+
+        self.manpage.header = {
+            "title": headers[0],
+            "section": headers[1],
+        }
+
+        self.state(ManPageStates.TITLE)
 
     def p_so(self):
         chunks = self.data.split("/", 1)

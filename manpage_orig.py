@@ -13,51 +13,6 @@ from parsers import MacroParser, BodyMacroParser, TitleMacroParser, HeaderMacroP
 from parsers import LineParser, ManPageStates
 from parsers import RedirectedPage
 from parsers import tagify, unescape, toargs, entitize
-from collections import namedtuple
-
-LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
-
-class ManPageLine(LineItems):
-    pass
-
-
-class Lines(object):
-    def __init__(self, iterator):
-        self._current = 0
-        self._data = []
-
-
-        for line in iterator:
-            if line.startswith(".") and len(line) > 1:
-                macro, _, data = line.partition(" ")
-                macro = macro[1:]
-            else:
-                macro = None
-                data = line
-
-            comment = (macro == "\\\"")
-
-            self._data.append(ManPageLine(macro, data, comment))
-
-    def get(self):
-        data = self._data[self._current]
-        self.fwd()
-        return data
-
-    def curr(self):
-        return self._data[self._current]        
-
-    def prev(self):
-        return self._data[self._current-1]        
-
-    def next(self):
-        return self._data[self._current+1]        
-
-    def fwd(self):
-        self._current += 1
-
-    def rwd(self):
-        self._current -= 1
 
 class ManPage(object):
     single_styles = {'B', 'I'}
@@ -77,61 +32,27 @@ class ManPage(object):
     }
 
     def __init__(self, filename, redirected_from=False, base_url=""):
+        self.filename = filename
+        self.subtitle = ""
 
-        # PORTED
-        self.in_pre = False
-        self.in_dl = False
-        self.in_li = False
-        self.in_table = False
-
-        self.table_buffer = []
-        self.pre_buffer = []
-
-        self.content_buffer = []
         self.preserve_next_line = False
-
-        self.depth = 0
-        self.state = []
-
-        # Needed
-        self.sections = []
-
-        self.next_page = None
-        self.previous_page = None
-        self.base_url = base_url
 
         if redirected_from:
             self.manpage_name = os.path.basename(redirected_from)
         else:
             self.manpage_name = os.path.basename(filename)
 
-        self.filename = filename
-        with open(self.filename) as fp:
-            self.lines = Lines(fp.read().splitlines())
+        self.next_page = None
+        self.previous_page = None
+        self.base_url = base_url
 
+        self.broken_links = set()
 
-        #self.subtitle = ""
-
-        #self.broken_links = set()
-#
-        ## New stuff
-        #self.set_state(ManPageStates.HEADER)
-        #self.line_iterator = self.line()
+        # New stuff
+        self.set_state(ManPageStates.HEADER)
+        self.line_iterator = self.line()
 
     def parse(self):
-        self.set_state(ManPageStates.HEADER)
-
-        while True:
-            try:
-                line = self.lines.get()
-                #print "DEBUG", line.macro, line.data, line.comment
-                self.state_parser()(line, self).process()
-            except IndexError:
-                break
-
-        self.flush_current_section()
-
-    def parse_orig(self): # FIXME
         self.parse_header()
         self.parse_title()
         self.parse_body()
@@ -155,11 +76,23 @@ class ManPage(object):
                 break
 
     def parse_body(self):
+        self.in_dl = False
+        self.in_li = False
+        self.in_pre = False
+        self.in_table = False
+        self.table_buffer = []
+        self.pre_buffer = []
 
         self.current_buffer = []
 
         self.spaced_lines_buffer = []
         self.blank_line = False  # Previous line was blank
+        self.content_buffer = []
+
+        self.state = []
+        self.depth = 0
+
+        self.sections = []
 
         self.must_have_state(ManPageStates.BODY)
 
@@ -482,8 +415,6 @@ class ManPage(object):
     def html(self, pages_to_link=set()):
         section_tpl = load_template('section')
         contents = []
-
-        print self.sections
         for title, content in self.sections:
             contents.append(section_tpl.substitute(title=title, content=''.join(content), ))
 
