@@ -10,7 +10,7 @@ except ImportError:
     import re
 import logging
 from parsers import MacroParser, BodyMacroParser, TitleMacroParser, HeaderMacroParser
-from parsers import LineParser, ManPageStates
+from parsers import ManPageStates
 from parsers import RedirectedPage
 from parsers import tagify, unescape, toargs, entitize
 from collections import namedtuple
@@ -175,43 +175,6 @@ class ManPage(object):
 
         self.flush_current_section()
 
-    def parse_orig(self):  # FIXME
-        self.parse_header()
-        self.parse_title()
-        self.parse_body()
-
-    def parse_title_orig(self):
-        self.must_have_state(ManPageStates.TITLE)
-
-        for line in self.line_iterator:
-            self.state_parser()(line, self).process()
-
-            if not self.is_state(ManPageStates.TITLE):
-                break
-
-    def parse_header_orig(self):
-        self.must_have_state(ManPageStates.HEADER)
-
-        for line in self.line_iterator:
-            self.state_parser()(line, self).process()
-
-            if not self.is_state(ManPageStates.HEADER):
-                break
-
-    def parse_body_orig(self):
-        self.blank_line = False  # Previous line was blank
-
-        self.must_have_state(ManPageStates.BODY)
-
-        for line in self.line_iterator:
-            if self.spaced_lines_buffer:
-                self.process_spaced_lines(line)
-
-            self.state_parser()(line, self).process()
-
-        else:
-            self.flush_current_section()
-
     def state_parser(self):
         return ManPageStates.parser[self.parsing_state]
 
@@ -224,31 +187,6 @@ class ManPage(object):
 
     def set_state(self, state):
         self.parsing_state = state
-
-    def line(self):
-        with open(self.filename) as fp:
-            extra_line = False
-            for line in fp:
-                comment_start = line.find("\\\"")
-                if comment_start in (0, 1):
-                    continue
-                elif comment_start > -1 and line[comment_start - 1] != "\\":
-                    line = line[0:comment_start]
-
-                if extra_line:
-                    line = " ".join((extra_line,
-                                     line, ))
-                    extra_line = False
-
-                parsed_line = LineParser(entitize(line.rstrip()))
-
-                if parsed_line.extra and (
-                    ((self.is_state(ManPageStates.BODY) and not self.in_pre) or
-                     parsed_line.macro) or self.is_state(ManPageStates.TITLE)):
-                    extra_line = parsed_line.extra
-                    continue
-
-                yield parsed_line
 
     def set_previous(self, manfile, description):
         self.previous_page = (manfile, description)

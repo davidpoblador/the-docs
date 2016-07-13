@@ -14,7 +14,7 @@ class MacroParser(object):
     # Revisit ME
     macros_to_ignore = {
         'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam', 'ne', 'UC', 'nr',
-        'ns', 'ds', 'na', 'DT', 'bp', 'nr', 'll', 'c2', 'ps', 'ta', 'in', 'ME'
+        'ns', 'ds', 'na', 'DT', 'bp', 'nr', 'll', 'c2', 'ps', 'ta', 'in', 'ME', 'tr'
     }
 
     def __init__(self, line, manpage):
@@ -271,53 +271,6 @@ class HeaderMacroParser(MacroParser):
         if self:
             super(HeaderMacroParser, self).process()
 
-
-class LineParser(str):
-    _empty = False
-    _macro = None
-    _data = None
-    _comment = False
-
-    def __init__(self, line):
-        super(LineParser, self).__init__(line)
-
-        if self:
-            if self.startswith(".") and len(
-                    self) > 1:  # FIXME: Single dot lines (badblocks)
-                chunks = self[1:].split(None, 1)
-                if chunks:
-                    self._macro = chunks[0]
-                    if len(chunks) == 2:
-                        self._data = chunks[1]
-
-                    self._comment = (self.macro == "\\\"")
-            else:
-                self._data = self
-
-    @property
-    def macro(self):
-        return self._macro
-
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def comment(self):
-        return self._comment
-
-    @property
-    def extra(self):
-        if not self:
-            return False
-        elif self[-1] == "\\":
-            return self[:-1]
-        elif len(self) > 1 and self[-2:] == "\\c":
-            return self[:-2]
-        else:
-            return False
-
-
 class ManPageStates(object):
     HEADER, TITLE, BODY = range(3)
 
@@ -328,8 +281,6 @@ class ManPageStates(object):
     }
 
 # Helper functions
-
-
 def entitize(line):
     return line.replace("<", "&lt;").replace(">", "&gt;")
 
