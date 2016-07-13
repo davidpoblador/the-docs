@@ -164,7 +164,7 @@ class ManPage(object):
         while True:
             try:
                 line = self.lines.get()
-                #print "DEBUG", line.macro, line.data, line.comment
+                #print "DEBUG", (line.macro, line.data, line.comment, self.parsing_state)
             except IndexError:
                 break
 

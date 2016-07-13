@@ -193,13 +193,20 @@ class BodyMacroParser(MacroParser):
 
 
 class TitleMacroParser(MacroParser):
+    def __bool__(self):
+        return bool(not self.comment)
+
+    def process(self):
+        if self:
+            super(TitleMacroParser, self).process()
+
     def p_SH(self):
         if self.joined_data == "NAME":
             name_section = []
             while True:
-                line = self.manpage.lines.get().data
-                if line:
-                    name_section.append(unescape(line))
+                line = self.manpage.lines.get()
+                if line.data and not line.comment:
+                    name_section.append(unescape(line.data))
 
                 if self.manpage.lines.curr().macro == "SH":
                     break
