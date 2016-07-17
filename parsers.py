@@ -165,7 +165,7 @@ class BodyMacroParser(MacroParser):
     p_Sp = p_paragraph
 
     def p_TP(self):
-        self.manpage.preserve_next_line = True  # FIXME (now we can do better)
+        self.manpage.preserve_next_line = 1  # FIXME (now we can do better)
         if self.manpage.in_dl:
             self.manpage.add_text("</dd>", 2)
 

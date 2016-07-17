@@ -132,7 +132,7 @@ class ManPage(object):
 
         self.content_buffer = []
         self.spaced_lines_buffer = []
-        self.preserve_next_line = False
+        self.preserve_next_line = 0
 
         self.depth = 0
         self.state = []
@@ -346,7 +346,7 @@ class ManPage(object):
 
         self.append_to_current_buffer("<dt>%s</dt>" % unescape(data), 2)
         self.append_to_current_buffer("<dd>", 2)
-        self.preserve_next_line = False
+        self.preserve_next_line = 0
 
     def start_pre(self):
         if not self.in_pre:
