@@ -49,6 +49,7 @@ class DebianManpageFetcher(object):
                 return False
 
         for section, package in self.packages:
+            logging.info("Processing %s - %s", section, package)
             if package in self.packages_to_ignore:
                 logging.info(
                     "Ignoring page %s, it was already fetched (package %s)",
@@ -61,6 +62,7 @@ class DebianManpageFetcher(object):
 
     @classmethod
     def fetch_manpages(cls, section, package):
+        logging.info("Fetching %s - %s", section, package)
         for b in deb822.Packages.iter_paragraphs(sequence=open(packages_file)):
             if b["Package"] == package and b["Section"] == section:
                 if "Source" not in b:
@@ -71,7 +73,7 @@ class DebianManpageFetcher(object):
                 filename = b["Filename"]
                 break
 
-        logging.debug("Fetching package %s", filename)
+        logging.info("Fetching package %s", filename)
 
         r = requests.get("%s%s" % (repo_base_url, filename,))
         _, tmpfile = mkstemp()
@@ -99,7 +101,7 @@ class DebianManpageFetcher(object):
                         basename = basename.rsplit('.', 1)[0]
 
                     final_page_directory = os.path.join(output_dir, namespace, mandir)
-
+    
                     try:
                         os.makedirs(final_page_directory)
                     except OSError:
@@ -111,6 +113,7 @@ class DebianManpageFetcher(object):
                         file_contents = gzip.GzipFile(fileobj=file_contents)
 
                     logging.debug("Writing new page %s", final_path)
+
                     fp = open(final_path, "w")
                     fp.write(file_contents.read())
                     fp.close()
