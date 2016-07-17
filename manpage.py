@@ -424,6 +424,8 @@ class ManPage(object):
         if self.content_buffer:
             self.flush_paragraph()
 
+        self.flush_containers()
+
         if self.sections:
             self.sections[-1][1] = self.current_buffer
 
