@@ -24,7 +24,8 @@ def main():
         fetcher = DebianManpageFetcher(page,
                                        packages_to_ignore=packages_to_ignore)
         if fetcher.fetch():
-            packages_to_ignore.add(fetcher.package)
+            for section, package in fetcher.packages:
+                packages_to_ignore.add(package)
         else:
             pages_to_ignore.add(page)
 
