@@ -81,7 +81,10 @@ class DebianManpageFetcher(object):
 
         for file in data_file:
             if file.startswith("./usr/share/man/man"):
-                file_contents = data_file.get_file(file)
+                try:
+                    file_contents = data_file.get_file(file)
+                except:
+                    continue
 
                 if file_contents:
                     self.extract_file(file, file_contents)
