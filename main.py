@@ -26,8 +26,10 @@ def main():
         if fetcher.fetch():
             for section, package in fetcher.packages:
                 packages_to_ignore.add(package)
-        else:
-            pages_to_ignore.add(page)
+
+        # Temporary hack to mitigate the problem with case insensitive filesystems
+        # Should only ocurr on error fetching
+        pages_to_ignore.add(page)
 
     ignore_page_file = open('ignore_page_file.dat', 'wb')
     marshal.dump(pages_to_ignore, ignore_page_file)
