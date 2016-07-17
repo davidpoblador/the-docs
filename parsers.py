@@ -13,7 +13,7 @@ class MacroParser(object):
     # FIXME
     # Revisit ME
     macros_to_ignore = {
-        'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam', 'ne', 'UC', 'nr', 'IX', 
+        'ad', 'PD', 'nh', 'hy', 'HP', 'UE', 'ft', 'fam', 'ne', 'UC', 'nr', 'IX', 'fi',
         'ns', 'ds', 'na', 'DT', 'bp', 'nr', 'll', 'c2', 'ps', 'ta', 'in', 'ME', 'tr'
     }
 

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>virtual - Postfix virtual alias table format</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Postfix virtual alias table format">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">virtual<small> (5)</small></h1>
+        <p class="lead">Postfix virtual alias table format</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/virtual.5.html"><span itemprop="title">virtual</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>postmap /etc/postfix/virtual</strong>
+
+postmap -q "<em>string" /etc/postfix/virtual</em>
+
+postmap -q - /etc/postfix/virtual &lt;<em>inputfile</em></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The optional <a href="../man5/virtual.5.html"><strong>virtual</strong>(5)</a> alias table rewrites recipient addresses for all local, all virtual, and all remote mail destinations. This is unlike the <a href="../man5/aliases.5.html"><strong>aliases</strong>(5)</a> table which is used only for <strong>local</strong>(8) delivery.  Virtual aliasing is recursive, and is implemented by the Postfix <strong>cleanup</strong>(8) daemon before mail is queued.</p>
+<p class='spacer'>
+
+  <p>The main applications of virtual aliasing are:</p>
+  <dl class='dl-horizontal'>
+    <dt>&bull;</dt>
+    <dd>
+  <p>To redirect mail for one address to one or more addresses.</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>To implement virtual alias domains where all addresses are aliased to addresses in other domains.</p>
+<p class='spacer'>
+
+  <p>Virtual alias domains are not to be confused with the virtual mailbox domains that are implemented with the Postfix <strong>virtual</strong>(8) mail delivery agent. With virtual mailbox domains, each recipient address can have its own mailbox.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Virtual aliasing is applied only to recipient envelope addresses, and does not affect message headers. Use <a href="../man5/canonical.5.html"><strong>canonical</strong>(5)</a> mapping to rewrite header and envelope addresses in general.</p>
+<p class='spacer'>
+
+<p>Normally, the <a href="../man5/virtual.5.html"><strong>virtual</strong>(5)</a> alias table is specified as a text file that serves as input to the <a href="../man1/postmap.1.html"><strong>postmap</strong>(1)</a> command. The result, an indexed file in <strong>dbm</strong> or <strong>db</strong> format, is used for fast searching by the mail system. Execute the command "<strong>postmap /etc/postfix/virtual</strong>" to rebuild an indexed file after changing the corresponding text file.</p>
+<p class='spacer'>
+
+<p>When the table is provided via other means such as NIS, LDAP or SQL, the same lookups are done as for ordinary indexed files.</p>
+<p class='spacer'>
+
+<p>Alternatively, the table can be provided as a regular-expression map where patterns are given as regular expressions, or lookups can be directed to TCP-based server. In those case, the lookups are done in a slightly different way as described below under "REGULAR EXPRESSION TABLES" or "TCP-BASED TABLES".</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CASE FOLDING</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+<p>The search string is folded to lowercase before database lookup. As of Postfix 2.3, the search string is not case folded with database types such as regexp: or pcre: whose lookup fields can match both upper and lower case.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">TABLE FORMAT</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <p>The input format for the <a href="../man1/postmap.1.html"><strong>postmap</strong>(1)</a> command is as follows:</p>
+  <dl class='dl-horizontal'>
+    <dt><em>pattern address, address, ...</em></dt>
+    <dd>
+  <p>When <em>pattern</em> matches a mail address, replace it by the corresponding <em>address</em>.</p>
+    </dd>
+    <dt>blank lines and comments</dt>
+    <dd>
+  <p>Empty lines and whitespace-only lines are ignored, as are lines whose first non-whitespace character is a `#'.</p>
+    </dd>
+    <dt>multi-line text</dt>
+    <dd>
+  <p>A logical line starts with non-whitespace text. A line that starts with whitespace continues a logical line.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">TABLE SEARCH ORDER</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <p>With lookups from indexed files such as DB or DBM, or from networked tables such as NIS, LDAP or SQL, patterns are tried in the order as listed below:</p>
+  <dl class='dl-horizontal'>
+    <dt><em>user</em>@<em>domain address, address, ...</em></dt>
+    <dd>
+  <p>Redirect mail for <em>user</em>@<em>domain</em> to <em>address</em>. This form has the highest precedence.</p>
+    </dd>
+    <dt><em>user address, address, ...</em></dt>
+    <dd>
+  <p>Redirect mail for <em>user</em>@<em>site</em> to <em>address</em> when <em>site</em> is equal to $<strong>myorigin</strong>, when <em>site</em> is listed in $<strong>mydestination</strong>, or when it is listed in $<strong>inet_interfaces</strong> or $<strong>proxy_interfaces</strong>.</p>
+<p class='spacer'>
+
+  <p>This functionality overlaps with functionality of the local <a href="../man5/aliases.5.html"><strong>aliases</strong>(5)</a> database. The difference is that <a href="../man5/virtual.5.html"><strong>virtual</strong>(5)</a> mapping can be applied to non-local addresses.</p>
+    </dd>
+    <dt>@<em>domain address, address, ...</em></dt>
+    <dd>
+  <p>Redirect mail for other users in <em>domain</em> to <em>address</em>. This form has the lowest precedence.</p>
+<p class='spacer'>
+
+  <p>Note: @<em>domain</em> is a wild-card. With this form, the Postfix SMTP server accepts mail for any recipient in <em>domain</em>, regardless of whether that recipient exists.  This may turn your mail system into a backscatter source: Postfix first accepts mail for non-existent recipients and then tries to return that mail as "undeliverable" to the often forged sender address.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RESULT ADDRESS REWRITING</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <p>The lookup result is subject to address rewriting:</p>
+  <dl class='dl-horizontal'>
+    <dt>&bull;</dt>
+    <dd>
+  <p>When the result has the form @<em>otherdomain</em>, the result becomes the same <em>user</em> in <em>otherdomain</em>. This works only for the first address in a multi-address lookup result.</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>When "<strong>append_at_myorigin=yes</strong>", append "<strong>@$myorigin</strong>" to addresses without "@domain".</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>When "<strong>append_dot_mydomain=yes</strong>", append "<strong>.$mydomain</strong>" to addresses without ".domain".</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ADDRESS EXTENSION</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+<p>When a mail address localpart contains the optional recipient delimiter (e.g., <em>user+foo</em>@<em>domain</em>), the lookup order becomes: <em>user+foo</em>@<em>domain</em>, <em>user</em>@<em>domain</em>, <em>user+foo</em>, <em>user</em>, and @<em>domain</em>.</p>
+<p class='spacer'>
+
+<p>The <strong>propagate_unmatched_extensions</strong> parameter controls whether an unmatched address extension (<em>+foo</em>) is propagated to the result of table lookup.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">VIRTUAL ALIAS DOMAINS</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+<p>Besides virtual aliases, the virtual alias table can also be used to implement virtual alias domains. With a virtual alias domain, all recipient addresses are aliased to addresses in other domains.</p>
+<p class='spacer'>
+
+<p>Virtual alias domains are not to be confused with the virtual mailbox domains that are implemented with the Postfix <strong>virtual</strong>(8) mail delivery agent. With virtual mailbox domains, each recipient address can have its own mailbox.</p>
+<p class='spacer'>
+
+<p>With a virtual alias domain, the virtual domain has its own user name space. Local (i.e. non-virtual) usernames are not visible in a virtual alias domain. In particular, local <a href="../man5/aliases.5.html"><strong>aliases</strong>(5)</a> and local mailing lists are not visible as <em>localname@virtual-alias.domain</em>.</p>
+<p class='spacer'>
+
+<p>Support for a virtual alias domain looks like:</p>
+<p class='spacer'>
+
+<pre>/etc/postfix/main.cf:
+    virtual_alias_maps = hash:/etc/postfix/virtual</pre>
+
+<p class='spacer'>
+
+<p>Note: some systems use <strong>dbm</strong> databases instead of <strong>hash</strong>. See the output from "<strong>postconf -m</strong>" for available database types.</p>
+<p class='spacer'>
+
+<pre>/etc/postfix/virtual:
+    <em>virtual-alias.domain     anything</em> (right-hand content does not matter)
+    <em>postmaster@virtual-alias.domain  postmaster</em>
+    <em>user1@virtual-alias.domain       address1</em>
+    <em>user2@virtual-alias.domain       address2, address3</em></pre>
+
+<p class='spacer'>
+
+<p>The <em>virtual-alias.domain anything</em> entry is required for a virtual alias domain. <strong>Without this entry, mail is rejected with "relay access denied", or bounces with "mail loops back to myself".</strong></p>
+<p class='spacer'>
+
+<p>Do not specify virtual alias domain names in the <strong>main.cf mydestination</strong> or <strong>relay_domains</strong> configuration parameters.</p>
+<p class='spacer'>
+
+<p>With a virtual alias domain, the Postfix SMTP server accepts mail for <em>known-user@virtual-alias.domain</em>, and rejects mail for <em>unknown-user</em>@<em>virtual-alias.domain</em> as undeliverable.</p>
+<p class='spacer'>
+
+<p>Instead of specifying the virtual alias domain name via the <strong>virtual_alias_maps</strong> table, you may also specify it via the <strong>main.cf virtual_alias_domains</strong> configuration parameter. This latter parameter uses the same syntax as the <strong>main.cf mydestination</strong> configuration parameter.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">REGULAR EXPRESSION TABLES</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+<p>This section describes how the table lookups change when the table is given in the form of regular expressions. For a description of regular expression lookup table syntax, see <a href="../man5/regexp_table.5.html"><strong>regexp_table</strong>(5)</a> or <a href="../man5/pcre_table.5.html"><strong>pcre_table</strong>(5)</a>.</p>
+<p class='spacer'>
+
+<p>Each pattern is a regular expression that is applied to the entire address being looked up. Thus, <em>user@domain</em> mail addresses are not broken up into their <em>user</em> and <em>@domain</em> constituent parts, nor is <em>user+foo</em> broken up into <em>user</em> and <em>foo</em>.</p>
+<p class='spacer'>
+
+<p>Patterns are applied in the order as specified in the table, until a pattern is found that matches the search string.</p>
+<p class='spacer'>
+
+<p>Results are the same as with indexed file lookups, with the additional feature that parenthesized substrings from the pattern can be interpolated as <strong>$1</strong>, <strong>$2</strong> and so on.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">TCP-BASED TABLES</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+<p>This section describes how the table lookups change when lookups are directed to a TCP-based server. For a description of the TCP client/server lookup protocol, see <a href="../man5/tcp_table.5.html"><strong>tcp_table</strong>(5)</a>. This feature is not available up to and including Postfix version 2.4.</p>
+<p class='spacer'>
+
+<p>Each lookup operation uses the entire address once.  Thus, <em>user@domain</em> mail addresses are not broken up into their <em>user</em> and <em>@domain</em> constituent parts, nor is <em>user+foo</em> broken up into <em>user</em> and <em>foo</em>.</p>
+<p class='spacer'>
+
+<p>Results are the same as with indexed file lookups.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>The table format does not understand quoting conventions.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFIGURATION PARAMETERS</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <p>The following <strong>main.cf</strong> parameters are especially relevant to this topic. See the Postfix <strong>main.cf</strong> file for syntax details and for default values. Use the "<strong>postfix reload</strong>" command after a configuration change.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>virtual_alias_maps</strong></dt>
+    <dd>
+  <p>List of virtual aliasing tables.</p>
+    </dd>
+    <dt><strong>virtual_alias_domains</strong></dt>
+    <dd>
+  <p>List of virtual alias domains. This uses the same syntax as the <strong>mydestination</strong> parameter.</p>
+    </dd>
+    <dt><strong>propagate_unmatched_extensions</strong></dt>
+    <dd>
+  <p>A list of address rewriting or forwarding mechanisms that propagate an address extension from the original address to the result. Specify zero or more of <strong>canonical</strong>, <strong>virtual</strong>, <strong>alias</strong>, <strong>forward</strong>, <strong>include</strong>, or <strong>generic</strong>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>Other parameters of interest:</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>inet_interfaces</strong></dt>
+    <dd>
+  <p>The network interface addresses that this system receives mail on. You need to stop and start Postfix when this parameter changes.</p>
+    </dd>
+    <dt><strong>mydestination</strong></dt>
+    <dd>
+  <p>List of domains that this mail system considers local.</p>
+    </dd>
+    <dt><strong>myorigin</strong></dt>
+    <dd>
+  <p>The domain that is appended to any address that does not have a domain.</p>
+    </dd>
+    <dt><strong>owner_request_special</strong></dt>
+    <dd>
+  <p>Give special treatment to owner-<em>xxx</em> and <em>xxx-request</em> addresses.</p>
+    </dd>
+    <dt><strong>proxy_interfaces</strong></dt>
+    <dd>
+  <p>Other interfaces that this machine receives mail on by way of a proxy agent or network address translator.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<strong>cleanup</strong>(8), canonicalize and enqueue mail
+<a href="../man1/postmap.1.html"><strong>postmap</strong>(1)</a>, Postfix lookup table manager
+<a href="../man5/postconf.5.html"><strong>postconf</strong>(5)</a>, configuration parameters
+<a href="../man5/canonical.5.html"><strong>canonical</strong>(5)</a>, canonical address mapping</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">README FILES</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <p>Use "<strong>postconf readme_directory</strong>" or "<strong>postconf html_directory</strong>" to locate this information.</p>
+<pre>ADDRESS_REWRITING_README, address rewriting guide
+DATABASE_README, Postfix lookup table overview
+VIRTUAL_README, domain hosting guide</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">LICENSE</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+<p>The Secure Mailer license must be distributed with this software.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR(S)</h2>
+        <div class="sectioncontent">
+
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="uuencode.5.html"><span aria-hidden="true">&larr;</span> uuencode.5: format of an encoded uuencode file</a></li><li class="next"><a href="wtmp.5.html">wtmp.5: login records <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

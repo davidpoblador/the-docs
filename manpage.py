@@ -349,17 +349,13 @@ class ManPage(object):
         self.preserve_next_line = False
 
     def start_pre(self):
-        if self.in_pre:
-            raise
-        else:
+        if not self.in_pre:
             self.save_state()
             self.in_pre = True
             self.pre_buffer = []
 
     def end_pre(self):
-        if not self.in_pre:
-            pass
-        else:
+        if self.in_pre:
             self.in_pre = False
             self.add_text("\n<pre>%s</pre>\n" %
                           tagify('*NEWLINE*'.join(self.pre_buffer)))

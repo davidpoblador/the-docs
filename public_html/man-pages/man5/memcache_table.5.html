@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>memcache_table - Postfix memcache client configuration</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Postfix memcache client configuration">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">memcache_table<small> (5)</small></h1>
+        <p class="lead">Postfix memcache client configuration</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/memcache_table.5.html"><span itemprop="title">memcache_table</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre>postmap -q "<em>string" memcache:/etc/postfix/filename</em>
+
+postmap -q - memcache:/etc/postfix/<em>filename &lt;inputfile</em></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The Postfix mail system uses optional tables for address rewriting or mail routing. These tables are usually in <strong>dbm</strong> or <strong>db</strong> format.</p>
+<p class='spacer'>
+
+<p>Alternatively, lookup tables can be specified as memcache instances.  To use memcache lookups, define a memcache source as a lookup table in main.cf, for example:</p>
+<p class='spacer'>
+
+<pre>    virtual_alias_maps = memcache:/etc/postfix/memcache-aliases.cf</pre>
+
+<p class='spacer'>
+
+<p>The file /etc/postfix/memcache-aliases.cf has the same format as the Postfix main.cf file, and specifies the parameters described below.</p>
+<p class='spacer'>
+
+<p>The Postfix memcache client supports the lookup, update, delete and sequence (first/next) operations. The sequence operation requires a backup database that supports the operation.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">MEMCACHE MAIN PARAMETERS</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <dl class='dl-horizontal'>
+    <dt><strong>memcache (default: inet:localhost:11211)</strong></dt>
+    <dd>
+  <p>The memcache server (note: singular) that Postfix will try to connect to.  For a TCP server specify "inet:" followed by a hostname or address, ":", and a port name or number. Specify an IPv6 address inside "[]". For a UNIX-domain server specify "unix:" followed by the socket pathname. Examples:</p>
+<p class='spacer'>
+
+<pre>    memcache = inet:memcache.example.com:11211
+    memcache = inet:127.0.0.1:11211
+    memcache = inet:[fc00:8d00:189::3]:11211
+    memcache = unix:/path/to/socket</pre>
+
+<p class='spacer'>
+
+  <p>NOTE: to access a UNIX-domain socket with the <strong>proxymap</strong>(8) server, the socket must be accessible by the unprivileged postfix user.</p>
+    </dd>
+    <dt><strong>backup (default: undefined)</strong></dt>
+    <dd>
+  <p>An optional Postfix database that provides persistent backup for the memcache database. The Postfix memcache client will update the memcache database whenever it looks up or changes information in the persistent database. Specify a Postfix "type:table" database. Examples:</p>
+<p class='spacer'>
+
+<pre>    # Non-shared postscreen cache.
+    backup = btree:/var/lib/postfix/postscreen_cache_map
+
+    # Shared postscreen cache for processes on the same host.
+    backup = proxy:btree:/var/lib/postfix/postscreen_cache_map</pre>
+
+<p class='spacer'>
+
+  <p>Access to remote proxymap servers is under development.</p>
+<p class='spacer'>
+
+  <p>NOTE 1: When sharing a persistent <strong>postscreen</strong>(8) or <strong>verify</strong>(8) cache, disable automatic cache cleanup (set *_cache_cleanup_interval = 0) except with one Postfix instance that will be responsible for cache cleanup.</p>
+<p class='spacer'>
+
+  <p>NOTE 2: When multiple tables share the same memcache database, each table should use the <strong>key_format</strong> feature (see below) to prepend its own unique string to the lookup key.  Otherwise, automatic <strong>postscreen</strong>(8) or <strong>verify</strong>(8) cache cleanup may not work.</p>
+<p class='spacer'>
+
+  <p>NOTE 3: When the backup database is accessed with "proxy:" lookups, the full backup database name (including the "proxy:" prefix) must be specified in the proxymap server's proxy_read_maps or proxy_write_maps setting (depending on whether the access is read-only or read-write).</p>
+    </dd>
+    <dt><strong>flags (default: 0)</strong></dt>
+    <dd>
+  <p>Optional flags that should be stored along with a memcache update. The flags are ignored when looking up information.</p>
+    </dd>
+    <dt><strong>ttl (default: 3600)</strong></dt>
+    <dd>
+  <p>The expiration time in seconds of memcache updates.</p>
+<p class='spacer'>
+
+  <p>NOTE 1: When using a memcache table as <strong>postscreen</strong>(8) or <strong>verify</strong>(8) cache without persistent backup, specify a zero *_cache_cleanup_interval value with all Postfix instances that use the memcache, and specify the largest <strong>postscreen</strong>(8) *_ttl value or <strong>verify</strong>(8) *_expire_time value as the memcache table's <strong>ttl</strong> value.</p>
+<p class='spacer'>
+
+  <p>NOTE 2: According to memcache protocol documentation, a value greater than 30 days (2592000 seconds) specifies absolute UNIX time. Smaller values are relative to the time of the update.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">MEMCACHE KEY PARAMETERS</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <dl class='dl-horizontal'>
+    <dt>key_format (default: %s)</dt>
+    <dd>
+  <p>Format of the lookup and update keys that the Postfix memcache client sends to the memcache server. By default, these are the same as the lookup and update keys that the memcache client receives from Postfix applications.</p>
+<p class='spacer'>
+
+  <p>NOTE 1: The <strong>key_format</strong> feature is not used for <strong>backup</strong> database requests.</p>
+<p class='spacer'>
+
+  <p>NOTE 2: When multiple tables share the same memcache database, each table should prepend its own unique string to the lookup key.  Otherwise, automatic <strong>postscreen</strong>(8) or <strong>verify</strong>(8) cache cleanup may not work.</p>
+<p class='spacer'>
+
+  <p>Examples:</p>
+<p class='spacer'>
+
+<pre>    key_format = aliases:%s
+    key_format = verify:%s
+    key_format = postscreen:%s</pre>
+
+<p class='spacer'>
+
+      <p>The <strong>key_format</strong> parameter supports the following '%' expansions:</p>
+      <dl class='dl-horizontal'>
+        <dt><strong>%%</strong></dt>
+        <dd>
+      <p>This is replaced by a literal '%' character.</p>
+        </dd>
+        <dt><strong>%s</strong></dt>
+        <dd>
+      <p>This is replaced by the memcache client input key.</p>
+        </dd>
+        <dt><strong>%u</strong></dt>
+        <dd>
+      <p>When the input key is an address of the form user@domain, <strong>%u</strong> is replaced by the SQL quoted local part of the address.  Otherwise, <strong>%u</strong> is replaced by the entire search string.  If the localpart is empty, a lookup is silently suppressed and returns no results (an update is skipped with a warning).</p>
+        </dd>
+        <dt><strong>%d</strong></dt>
+        <dd>
+      <p>When the input key is an address of the form user@domain, <strong>%d</strong> is replaced by the domain part of the address. Otherwise, a lookup is silently suppressed and returns no results (an update is skipped with a warning).</p>
+        </dd>
+        <dt><strong>%[SUD]</strong></dt>
+        <dd>
+      <p>The upper-case equivalents of the above expansions behave in the <strong>key_format</strong> parameter identically to their lower-case counter-parts.</p>
+        </dd>
+        <dt><strong>%[1-9]</strong></dt>
+        <dd>
+      <p>The patterns %1, %2, ... %9 are replaced by the corresponding most significant component of the input key's domain. If the input key is <em>user@mail.example.com</em>, then %1 is <strong>com</strong>, %2 is <strong>example</strong> and %3 is <strong>mail</strong>. If the input key is unqualified or does not have enough domain components to satisfy all the specified patterns, a lookup is silently suppressed and returns no results (an update is skipped with a warning).</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><strong>domain (default: no domain list)</strong></dt>
+    <dd>
+  <p>This feature can significantly reduce database server load. Specify a list of domain names, paths to files, or "type:table" databases. When specified, only fully qualified search keys with a *non-empty* localpart and a matching domain are eligible for lookup or update: bare 'user' lookups, bare domain lookups and "@domain" lookups are silently skipped (updates are skipped with a warning).  Example:</p>
+<p class='spacer'>
+
+<pre>    domain = example.com, hash:/etc/postfix/searchdomains</pre>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">MEMCACHE ERROR CONTROLS</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <dl class='dl-horizontal'>
+    <dt><strong>data_size_limit (default: 10240)</strong></dt>
+    <dd>
+  <p>The maximal memcache reply data length in bytes.</p>
+    </dd>
+    <dt><strong>line_size_limit (default: 1024)</strong></dt>
+    <dd>
+  <p>The maximal memcache reply line length in bytes.</p>
+    </dd>
+    <dt><strong>max_try (default: 2)</strong></dt>
+    <dd>
+  <p>The number of times to try a memcache command before giving up.  The memcache client does not retry a command when the memcache server accepts no connection.</p>
+    </dd>
+    <dt><strong>retry_pause (default: 1)</strong></dt>
+    <dd>
+  <p>The time in seconds before retrying a failed memcache command.</p>
+    </dd>
+    <dt><strong>timeout (default: 2)</strong></dt>
+    <dd>
+  <p>The time limit for sending a memcache command and for receiving a memcache reply.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p>The Postfix memcache client cannot be used for security-sensitive tables such as <strong>alias_maps</strong> (these may contain "<em>|command</em> and "<em>/file/name</em>" destinations), or <strong>virtual_uid_maps</strong>, <strong>virtual_gid_maps</strong> and <strong>virtual_mailbox_maps</strong> (these specify UNIX process privileges or "<em>/file/name</em>" destinations).  In a typical deployment a memcache database is writable by any process that can talk to the memcache server; in contrast, security-sensitive tables must never be writable by the unprivileged Postfix user.</p>
+<p class='spacer'>
+
+<p>The Postfix memcache client requires additional configuration when used as <strong>postscreen</strong>(8) or <strong>verify</strong>(8) cache. For details see the <strong>backup</strong> and <strong>ttl</strong> parameter discussions in the MEMCACHE MAIN PARAMETERS section above.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<a href="../man1/postmap.1.html"><strong>postmap</strong>(1)</a>, Postfix lookup table manager
+<a href="../man5/postconf.5.html"><strong>postconf</strong>(5)</a>, configuration parameters</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">README FILES</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+  <p>Use "<strong>postconf readme_directory</strong>" or "<strong>postconf html_directory</strong>" to locate this information.</p>
+<pre>DATABASE_README, Postfix lookup table overview
+MEMCACHE_README, Postfix memcache client guide</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">LICENSE</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+<p>The Secure Mailer license must be distributed with this software.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">HISTORY</h2>
+        <div class="sectioncontent">
+
+<pre></pre>
+
+<p>Memcache support was introduced with Postfix version 2.9.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR(S)</h2>
+        <div class="sectioncontent">
+
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="master.5.html"><span aria-hidden="true">&larr;</span> master.5: Postfix master process configuration file format</a></li><li class="next"><a href="mke2fs.conf.5.html">mke2fs.conf.5: Configuration file for mke2fs <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
