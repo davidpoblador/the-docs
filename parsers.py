@@ -148,6 +148,10 @@ class BodyMacroParser(MacroParser):
             self.manpage.add_text("</dd>", 2)
         self.manpage.process_li(self.unescaped_data)
 
+    def p_bP(self):
+        self.data = "\\(bu"
+        self.p_IP()
+
     def p_RS(self):
         self.manpage.save_state()
 
