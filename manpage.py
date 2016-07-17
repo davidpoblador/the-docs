@@ -357,8 +357,8 @@ class ManPage(object):
     def end_pre(self):
         if self.in_pre:
             self.in_pre = False
-            self.add_text("\n<pre>%s</pre>\n" %
-                          tagify('*NEWLINE*'.join(self.pre_buffer)))
+            if self.pre_buffer:
+                self.add_text("\n<pre>%s</pre>\n" % tagify('*NEWLINE*'.join(self.pre_buffer)))
             self.pre_buffer = []
             self.restore_state()
 
