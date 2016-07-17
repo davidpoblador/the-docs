@@ -1,0 +1,380 @@
+.TH "FBB::Stat" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Characteristics of object in the filesystem"
+
+.PP 
+.SH "NAME"
+FBB::Stat \- Determines File Characteristics
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/stat>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+\fBStat\fP is a wrapper around the \fBstat\fP(2) system function\&. In
+particular, it offers features to test directly for object
+characteristics offered by \fBstat\fP(2)\&. To determine whether an object exists
+the \fIStat bool\fP conversion operator can be used\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "ENUMERATIONS"
+
+.PP 
+\fBStat::Combine\fP: 
+.br 
+This enumeration defines the following values:
+.IP o 
+\fBALL\fP: require all of the specified \fBMode\fP or 
+\fBSpecialMode\fP values to match;
+.IP o 
+\fBANY\fP: require any match of the specified \fBMode\fP or 
+\fBSpecialMode\fP values (one match suffices);
+
+.PP 
+\fBStat::Mode\fP: 
+.br 
+This enumeration defines the following values:
+.IP o 
+\fBUR\fP: the owner of the object has read permissions
+.IP o 
+\fBUW\fP: the owner of the object has write permissions
+.IP o 
+\fBUX\fP: the owner of the object has execute permissions
+.IP o 
+\fBGR\fP: the group to which the object belongs has read permissions
+.IP o 
+\fBGW\fP: the group to which the object belongs has write
+permissions
+.IP o 
+\fBGX\fP: the group to which the object belongs has execute
+permissions
+.IP o 
+\fBOR\fP: others have read permissions
+.IP o 
+\fBOW\fP: others have write permissions
+.IP o 
+\fBOX\fP: others have execute permissions
+.IP o 
+\fBREAD\fP: equal to \fIUR | GR | OR\fP
+.IP o 
+\fBWRITE\fP: equal to \fIUW | GW | OW\fP
+.IP o 
+\fBEXEC\fP: equal to \fIUX | GX | OX\fP
+.IP o 
+\fBRWX\fP: all of the above\&.
+
+.PP 
+\fBStat::SpecialMode\fP: 
+.br 
+This enumeration defines the following values:
+.IP o 
+\fBSUID\fP: set UID bit is up
+.IP o 
+\fBSGID\fP: set GID bit is up
+.IP o 
+\fBSB\fP: sticky bit is up
+
+.PP 
+\fBStat::Type\fP: 
+.br 
+This enumeration, which is identical to the \fBglob\fP(3bobcat) \fIType\fP
+enumeration,  defines the following values:
+.IP o 
+\fBBLOCK_DEVICE\fP: the object represents a block device
+.IP o 
+\fBCHARACTER_DEVICE\fP: the object represents a character device
+.IP o 
+\fBDIRECTORY\fP: the object represents a directory
+.IP o 
+\fBFIFO\fP: the object represents a named pipe (a queue)
+.IP o 
+\fBREGULAR_FILE\fP: the object represents a regular file
+.IP o 
+\fBSOCKET\fP: the object represents a socket
+.IP o 
+\fBSYMBOLIC_LINK\fP: the object represents a symbolic link
+.IP o 
+\fBANY\fP: any of the above types
+
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBStat()\fP:
+.br 
+The default constructor, creating an empty \fBStat\fP object\&.
+.IP o 
+\fBStat(std::string const &fname)\fP:
+.br 
+Initializes a \fBStat\fP with a given object name\&.
+.IP o 
+\fBStat(std::string const &fname, std::string const &searchPath)\fP:
+.br 
+Initializes a \fBStat\fP with a given object name, where the object is
+searched in the \fIsearchPath\fP directories, which is a colon\-separated
+string of directory names\&. The filenames are constructed by appending
+\fIfname\fP to each of the elements of \fIsearchPath\fP until an existing
+object is found\&. This object is then used\&. If \fIfname\fP is an absolute
+path, \fIsearchPath\fP is ignored\&.
+The copy constructor is available\&.
+.PP 
+.SH "OVERLOADED OPERATORS"
+.IP o 
+\fBoperator bool() const\fP:
+.br 
+This operator returns \fItrue\fP if the \fIStat\fP object holds information
+about an existing object\&. Otherwise \fIfalse\fP is returned\&.
+
+.PP 
+The default assignment operator is available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+.IP o 
+\fBbool access(FBB::User const &user, size_t spec, bool useEffective =
+true) const\fP:
+.br 
+Returns \fItrue\fP if \fIuser\fP has the permissions as specified at
+\fIspec\fP (of which only the defined \fIMode\fP bits are interpreted)\&. If
+a combination of read, write and/or execute permissions are specified,
+then at least one of the read permissions, one of the write
+permissions and one of the execute permissions must be granted or the
+function returns \fIfalse\fP\&. E\&.g, when specifying \fIaccess(user, UW |
+UR | GR)\fP then the user \fImust\fP have write permissions, but either
+the user or the user\(cq\&s group must have read permissions\&. If multiple
+read, multiple write or multiple execute permissions are specified
+(like \fIUR | GR\fP) then this member returns \fItrue\fP if at least one
+of the requested read, write, or execute permissions are granted for
+\fIuser\fP\&.
+.IP o 
+\fBsize_t blockSize() const\fP:
+.br 
+Returns the blocksize (\fIst_blksize\fP) for filesystem I/O
+.IP o 
+\fBsize_t device() const\fP:
+.br 
+Returns the device id (\fIst_dev\fP)\&.
+.IP o 
+\fBsize_t deviceType() const\fP:
+.br 
+Returns the device type number, but only if the object type is
+\fBDEVICE\fP (\fIst_rdev\fP)\&.
+.IP o 
+\fBsize_t error() const\fP:
+.br 
+Returns the error number associated with an error, in cases where
+\fBoperator bool()\fP returns \fBfalse\fP\&. A returned value of 0 indicates
+`no errors\(cq\&\&.
+.IP o 
+\fBbool isType(Stat::Type probe)\fP:
+.br 
+Returns \fItrue\fP if the object has the probed type otherwise \fIfalse\fP
+is returned\&.
+.IP o 
+\fBsize_t inode() const\fP:
+.br 
+Returns the inode number (\fIst_ino\fP)\&.
+.IP o 
+\fBsize_t gid() const\fP:
+.br 
+Returns the group ID of the object\(cq\&s owner (\fIst_gid\fP)\&.
+.IP o 
+\fBFBB::DateTime lastAccess() const\fP:
+.br 
+Returns a \fBFBB::DateTime\fP object holding information about the
+object\(cq\&s time of last access (\fIst_atime\fP) (using UTC)\&.
+.IP o 
+\fBFBB::DateTime lastChange() const\fP:
+.br 
+Returns a \fBFBB::DateTime\fP object holding information about the
+object\(cq\&s time of last status change (\fIst_ctime\fP) (using UTC)\&.
+.IP o 
+\fBFBB::DateTime lastModification() const\fP:
+.br 
+Returns a \fBFBB::DateTime\fP object holding information about the
+object\(cq\&s last modification time (\fIst_mtime\fP) (using UTC)\&.
+.IP o 
+\fBsize_t mode() const\fP:
+.br 
+Returns the object\(cq\&s raw, uninterpreted mode (\fIst_mode & RWX\fP)\&. Note
+that this value is usually displayed (and is processed most easily) as
+an octal value\&.
+.IP o 
+\fBbool mode(size_t mode, Combine combine = ALL)\fP:
+.br 
+Returns true if the object has the indicated mode\&. Multiple modes may
+be set, which can be combined by the logical \fBbitor\fP operator\&. By
+default, if multiple modes are specified, the resulting pattern must
+exactly represent the object\(cq\&s mode for the member function to return
+\fBtrue\fP\&. An optional argument \fIANY\fP may be specified if the
+function should return true if at least one specified mode matches the
+object\(cq\&s actual mode\&. An \fIException\fP exception is thrown if the
+specified \fImode\fP contains other values than the defined \fBMode\fP
+or \fBSpecialMode\fP values\&. 
+.IP o 
+\fBstd::string modeStr() const\fP:
+.br 
+Returns the standard string\-representation of the object\(cq\&s mode (e\&.g\&.,
+\fIrw\-r\-\-r\-\-\fP)\&. Special modes (e\&.g\&., suid) are indicated by \fIs\fP
+instead of \fIx\fP when the object is user and/or group executable and
+by \fIS\fP if the object has the special mode bit(s) set, but is not
+executable\&. For the `other\(cq\& executable mode flag \fIt\fP is used
+(`sticky\(cq\& bit) and \fIT\fP if the object is not `other\(cq\& executable\&.
+.IP o 
+\fBstd::string const &name() const\fP:
+.br 
+Returns the object\(cq\&s name as specified in the constructor or \fBset()\fP
+member function\&.
+.IP o 
+\fBsize_t nBlocks() const\fP:
+.br 
+Returns the object\(cq\&s number of allocated blocks (\fIst_blocks\fP)\&.
+.IP o 
+\fBsize_t nLinks() const\fP:
+.br 
+Returns the object\(cq\&s number of hard links (\fIst_nlink\fP)\&.
+.IP o 
+\fBstd::string path() const\fP:
+.br 
+Returns the object\(cq\&s full pathname\&. If the full pathname could not be
+determined, an empty string is returned\&.
+.IP o 
+\fBbool set(std::string const &name)\fP:
+.br 
+Redefine the \fBStat\fP object to represent the information about
+the indicated object name\&.
+.IP o 
+\fBbool set(std::string const &name, std::string const &pathlist)\fP:
+.br 
+Redefine the \fBStat\fP object to represent the information about the
+indicated object name, where the object is searched in the
+\fIpathlist\fP directories, which is a colon\-separated string of
+directory names\&. The object names are constructed by appending
+\fIfname\fP to each of the elements of \fIsearchPath\fP until an existing
+object is found\&. This object is then used\&. If \fIfname\fP is an absolute
+path, \fIsearchPath\fP is ignored\&.
+.IP o 
+\fBoff_t size() const\fP:
+.br 
+Returns the object\(cq\&s size in number of bytes (\fIst_size\fP)\&.
+.IP o 
+\fBbool specialMode(size_t special, Combine combine = ALL)\fP:
+.br 
+Returns true if the object has the indicated special modes\&.  Multiple
+special modes may be specified, which can be combined by the logical
+\fBbitor\fP operator\&. By default, if multiple modes are specified, the
+resulting pattern must exactly represent the object\(cq\&s mode for the
+member function to return \fBtrue\fP\&. An optional argument \fIANY\fP may
+be specified if the function should return true if at least one
+specified mode matches the object\(cq\&s actual mode\&. The non\-special modes
+are ignored but a \fIException\fP exception is thrown if \fIspecial\fP
+contains other values than those defined by the \fBSpecialMode\fP enum\&. 
+.IP o 
+\fBStat::stat const &statStruct() const\fP:
+.br 
+Returns a reference to the object\(cq\&s \fBstat struct\fP\&.
+.IP o 
+\fBStat::Type type() const\fP:
+.br 
+Returns the \fIStat::Type\fP value of the object\&.
+.IP o 
+\fBstd::string typeStr() const\fP:
+.br 
+Returns a textual representation of the object\(cq\&s type as returned by
+the \fIStat::type()\fP member function\&.
+.IP o 
+\fBsize_t uid() const\fP:
+.br 
+Returns the user ID of the object\(cq\&s owner (\fIst_uid\fP)\&.
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+/*
+                              driver\&.cc
+*/
+
+#include <iostream>
+#include <string>
+
+#include <bobcat/stat>
+#include <bobcat/datetime>
+
+using namespace std;
+using namespace FBB;
+
+int main(int argc, char **argv)
+{
+    if (argc == 1)
+    {
+        cout << \(dq\&Usage: driver object [colon\-separated searchpath]\en\(dq\&;
+        return 1;
+    }
+
+    Stat st;
+    if (argc == 2)
+        st\&.set(argv[1]);
+    else if (argc == 3)
+        st\&.set(argv[1], argv[2]);
+
+    if (!st)
+    {
+        cout << \(dq\&Can\(cq\&t stat \(dq\& << argv[1] << \(dq\&, errno = \(dq\& << st\&.error() << endl;
+        return 1;
+    }
+
+    cout << st\&.name() << \(dq\&: access: \(dq\& << st\&.lastAccess() << \(dq\&\en\(dq\& <<
+            st\&.name() << \(dq\&: change: \(dq\& << st\&.lastChange() << \(dq\&\en\(dq\& <<
+            st\&.name() << \(dq\&: modif:  \(dq\& << st\&.lastModification() << \(dq\&\en\(dq\&   
+            \(dq\&Mode: \(dq\& << oct << st\&.mode() <<  \(dq\& (\(dq\& << st\&.modeStr() << \(dq\&)\en\(dq\& 
+            \(dq\&Type: \(dq\& << st\&.type() << \(dq\& (\(dq\& << st\&.typeStr() << \(dq\&)\en\(dq\&
+            \(dq\&Full path:  \(dq\& << st\&.path()  << endl;
+
+    return 0;
+}
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/stat\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBglob\fP(3bobcat), \fBstat\fP(3)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

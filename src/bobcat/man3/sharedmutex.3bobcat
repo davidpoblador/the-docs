@@ -1,0 +1,159 @@
+.TH "FBB::SharedMutex" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Shared Memory Mutex"
+
+.PP 
+.SH "NAME"
+FBB::SharedMutex \- Mutex for shared memory
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/sharedmutex>\fP
+.br 
+Linking option: \fI\-lpthread, \-lbobcat \fP 
+.PP 
+.SH "DESCRIPTION"
+Shared memory may be used by multiple processes\&. To synchronize access to
+shared memory an \fBFBB::SharedMutex\fP may be defined inside a shared memory
+segment\&. \fBSharedMutex\fP objects allows clients to lock a shared memory
+segment before reading or writing its contents\&. E\&.g\&., the Bobcat class
+\fIFBB::SharedSegment\fP defines a \fBSharedMutex\fP in its shared memory segment\&.
+.PP 
+The \fBSharedMutex\fP class uses the facilities offered by the
+\fIPThread\fP library to implement (non recursive) shared memory locking\&. To
+force unlocking a (possibly) locked shared memory segment, its destructor can
+be called\&. 
+.PP 
+\fBSharedMutex\fP mutexes are non\-recursive, resulting in deadlocks if their
+\fIlock\fP member is called twice from the same thread of execution without an
+intermediate call to \fIunlock\fP the mutex\&. If this causes concern, a variable
+can be defined indicating whether the lock has already been obtained\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "CONSTRUCTORS, DESTRUCTOR "
+.IP o 
+\fBSharedMutex()\fP:
+.br 
+The default constructor initializes an \fBFBB::SharedMutex\fP object to a
+shared memory mutex (using the \fIPTHREAD_PROCESS_SHARED\fP
+attribute)\&. As an \fBFBB::SharedMutex\fP object will normally be defined
+inside a shared memory segment the object\(cq\&s memory is already
+available\&. In this case placement new should be used to call the
+constructor\&. E\&.g\&., if a shared memory segment is attached to the
+current process at \fId_shared\fP, and an \fBFBB::SharedMutex\fP should be
+defined at \fId_shared\fP\(cq\&s address, then the \fBFBB::SharedMutex\fP
+object can be initialized like this: 
+.nf 
+
+    new (d_shared) FBB::SharedMutex;
+       
+.fi 
+Caveat: when using placement new to initialize a \fBSharedMutex\fP make
+sure that the \fBSharedMutex\fP fits inside a block (i\&.e\&.,
+\fIshared\&.blockOffset() + sizeof(SharedMemory) <
+shared\&.dataSegmentSize()\fP)\&. If not, use \fIseek\fP to switch to an
+offset where this equality holds true, or simply use
+\fISharedMemory::create\fP like this:
+.nf 
+
+    FBB::SharedMemory::create<FBB::SharedMutex>();
+       
+.fi 
+
+.IP 
+.IP o 
+\fB~SharedMutex()\fP:
+.br 
+The class\(cq\&s destructor releases all of the current process\(cq\&s nested
+shared memory segment locks\&. To destroy an \fBFBB::SharedMutex\fP object
+that has been constructed using the placement \fInew\fP operator use
+.nf 
+
+d_sharedMutex\->~SharedMutex();
+       
+.fi 
+(assuming \fISharedMutex *d_sharedMutex\fP points to the location where
+placement new has previously initialized the \fBFBB::SharedMutex\fP
+object\&.) 
+.IP 
+Copy and move constructors are not available\&. 
+.PP 
+.SH "MEMBER FUNCTIONS"
+.IP o 
+\fBvoid lock() const\fP:
+.br 
+When returning from this member, the current process has locked the
+shared memory segment\&. Note that \fBSharedMutex\fP objects are
+non\-recursive\&. 
+.IP 
+.IP o 
+\fBvoid unlock() const\fP:
+.br 
+The object\(cq\&s lock of the shared memory segment is released\&. This member
+can also be called if the \fBSharedMutex\(cq\&s\fP lock has not been
+obtained\&. 
+
+.PP 
+.SH "PROTECTED MEMBER FUNCTION"
+.IP o 
+\fBpthread_mutex_t *mutexPtr()\fP:
+.br 
+A pointer is returned to the \fIpthread_mutex_t\fP object used by
+the \fBSharedMutex\fP object;
+
+.PP 
+.SH "EXAMPLE"
+See the \fBsharedstream\fP(3bobcat) man page\&.
+.PP 
+.SH "FILES"
+\fIbobcat/sharedmutex\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7)
+\fBisharedstream\fP(3bobcat),
+\fBosharedstream\fP(3bobcat),
+\fBsharedblock\fP(3bobcat), 
+\fBsharedcondition\fP(3bobcat), 
+\fBsharedmemory\fP(3bobcat),
+(e\&.g\&.,) \fBpthread_mutex_init\fP(3posix),
+\fBsharedpos\fP(3bobcat), 
+\fBsharedreadme\fP(7bobcat), 
+\fBsharedsegment\fP(3bobcat), 
+\fBsharedstream\fP(3bobcat), 
+\fBsharedstreambuf\fP(3bobcat)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

@@ -1,0 +1,193 @@
+.TH "FBB::HMacBuf" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Compute HMAC Message Digests"
+
+.PP 
+.SH "NAME"
+FBB::HMacBuf \- Computes HMAC Message Digests from information inserted into a
+std::ostream 
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/hmacbuf>\fP
+.br 
+Linking option: \fI \-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+\fBFBB::HMacBuf\fP objects are \fBstd::streambuf\fP objects that can be used
+to initialize \fIstd::ostream\fP objects with\&.
+.PP 
+All information inserted into such a \fIstd::ostream\fP is used to compute a
+message HMAC from\&. 
+.PP 
+All the message digest algorithms defined by the OpenSSL library that can
+be selected by name may be used in combination with \fIHMacBuf\fP objects\&.
+.PP 
+The following message hmac algorithms are currently supported: mull, md2,
+md5, sha, sha1, sha224, sha256, sha384, sha512, dss, dss1, ecdsa, mdc2,
+ripemd160\&. These very names are the ones to use to select the particular
+digest algorithm for the class\(cq\&s constructor, below\&. It is quite possible that
+future releases of the openssl library will support additional message digest
+algorithms\&. The header file \fIopenssl/evp\&.h\fP lists all available hmac
+algorithms (in that file look for \fIEVP_MD *EVP_\fP: a message digest algorithm
+immediately follows the 2nd underscore\&. E\&.g\&., \fIconst EVP_MD *EVP_md4(void)\fP
+which refers to the md4 message digest algorithm)\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBstd::streambuf\fP
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBHMacBuf(std::string const &key, char const *type, 
+size_t bufsize = 1024)\fP:
+.br 
+This constructor initializes the streambuf, setting it up for the
+message digest algorithm specified with \fItype\fP\&. The message hmac
+algorithms specified in the \fBDESCRIPTION\fP section may be used here\&. E\&.g\&., to
+use the sha256 algorithm specify \fI\(dq\&sha256\(dq\&\fP\&. 
+.IP 
+The constructor\(cq\&s first argument defines the key to be used when computing
+the HMAC message digest\&.
+.IP 
+The \fIbufsize\fP argument specifies the internal buffer used by
+\fIHMacBuf\fP to store incoming characters temporarily\&. The provided default
+argument should be OK in all normal cases\&. 
+There is no copy constructor\&.
+.PP 
+.SH "OVERLOADED OPERATOR"
+
+.PP 
+.IP o 
+\fBstd::ostream &operator<<(std::ostream &out, 
+HMacBuf const &hmacbuf)\fP:
+.br 
+The insertion operator is a free function defined in the namespace
+\fIFBB\fP\&. It inserts a hash value as a series of hexadecimally displayed values
+into the provided \fIostream\fP\&. See the example below for an illustration\&.
+The overloaded assignment operator is not available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+
+.PP 
+All members of \fBstd::streambuf\fP are available, as \fBFBB::HMacBuf\fP
+inherits from this class\&. Some of the \fBstd::streambuf\fP\(cq\&s member are
+overridden or are hidden by \fIHMacBuf\fP\&. In normal situations these
+inherited members will not be used by programs using \fIHMacBuf\fP objects\&.
+.PP 
+.IP o 
+\fBvoid close()\fP:
+.br 
+This member finishes the computation of the  message digest
+computation\&. It is needed as the \fIHMacBuf\fP object has no external means
+for deciding whether all information to compute the digest for has yet been
+received or not\&. The general approach to follow when computing a message
+hmac is therefore:
+.nf 
+
+    create a HMacBuf object
+    use it to create a std::ostream object
+    insert information into the ostream object
+    call the HMacBuf object\(cq\&s close() member
+    obtain/process the hash value from the HMacBuf object\&.
+        
+.fi 
+.IP o 
+\fBstd::string const &hash() const\fP:
+.br 
+This member returns the hash value computed by the \fIHMacBuf\fP
+object\&. Its value is only defined after having called \fIclose()\fP\&. The hash
+value is returned in a \fIstd::string\fP object\&. This string\(cq\&s \fIlength()\fP
+member contains the number of characters used by the hash value, and its
+\fIdata()\fP member refers to the hash value\(cq\&s characters\&. Note that a hash
+value\(cq\&s character value may be 0 (not to be confused with \fI\(cq\&0\(cq\&\fP)\&.
+.IP o 
+\fBvoid open()\fP:
+.br 
+This member reinitializes the message hmac computation\&. One a
+message hmac has been computed for, say a stream \fIstreamA\fP this member can
+be called after which the hmac for a stream \fIstreamB\fP can be computed
+using the same \fIHMacBuf\fP object\&.
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+#include <iostream>
+#include <ostream>
+#include <cstring>
+#include <iomanip>
+#include <bobcat/errno>
+#include <bobcat/hmacbuf>
+
+using namespace std;
+using namespace FBB;
+
+int main(int argc, char **argv)
+try
+{
+    if (argc < 3)
+        throw Errno(1, \(dq\&Arg1: key, arg2: digest method required\(dq\&);
+
+    string key(argv[1]);
+
+    HMacBuf hmacbuf(key, argv[2]);
+    ostream out(&hmacbuf);
+
+    string hw(\(dq\&hello world\en\(dq\&);
+
+    out << hw;
+    hmacbuf\&.close();
+    cout << \(dq\&>\(dq\& << hmacbuf << \(dq\&<\(dq\& << endl;
+
+    hmacbuf\&.open();
+    out\&.write(hw\&.c_str(), hw\&.length());
+    hmacbuf\&.close();
+    cout << \(dq\&>\(dq\& << hmacbuf << \(dq\&<\(dq\& << endl;
+}
+catch(Errno const &err)
+{
+    cout << err\&.why() << endl;
+    return 1;
+}
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/hmacbuf\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBdigestbuf\fP(3bobcat), \fBstd::streambuf\fP
+.PP 
+.SH "BUGS"
+None reported
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

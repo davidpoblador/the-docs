@@ -1,0 +1,243 @@
+.TH "FBB::OSharedStream" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "std::ostream on shared memory"
+
+.PP 
+.SH "NAME"
+FBB::OSharedStream \- std::ostream operations on shared memory
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/osharedstream>\fP
+.br 
+Linking option: \fI\-lpthread \-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+
+.PP 
+This class offers the features of the \fBstd::ostream\fP class, operating on
+shared memory\&. 
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBFBB::OSharedStreambuf\fP (private inheritance),
+.br 
+\fBstd::ostream\fP,
+.br 
+\fBFBB::SharedEnum__\fP (cf\&. \fBsharedmemory(3bobcat)\fP for a description of
+this last base class)\&.
+.PP 
+.SH "SIZEUNIT ENUMERATION"
+
+.PP 
+The \fBenum SizeUnit\fP defines the following symbolic constants:
+.IP o 
+\fBkB\fP, representing 1024 (2**10) bytes of memory;
+.IP o 
+\fBMB\fP, representing 1048576 (2**20 bytes of memory;
+.IP o 
+\fBGB\fP, representing 1073741824 (2**30) bytes of memory
+)
+.IP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBOSharedStream()\fP:
+.br 
+The default constructor defines a stub a \fBOSharedStream\fP object that
+cannot immediately be used to access shared memory\&. To use it, its
+member \fIopen\fP must first be called\&.
+.IP 
+.IP o 
+\fBOSharedStream(size_t maxSize, SizeUnit sizeUnit, 
+std::ios::openmode openMode = std::ios::out,
+size_t access = 0600)\fP:
+.br 
+This constructor creates an \fIstd::ostream\fP that interfaces to a
+shared memory segment having a capacity of at least \fImaxSize *
+sizeUnit\fP bytes\&. By default, the shared memory segment is opened for
+writing\&. The shared memory\(cq\&s access rights are defined by the
+\fIaccess\fP parameter, using the well\-known (\fBchmod\fP(1)) way to
+define the access rights for the owner, the group and others, using
+octal digits\&. If construction succeeds the shared memory is ready for
+use\&. If construction fails, an \fIFBB::Exception\fP is thrown\&.
+.IP 
+.IP o 
+\fBOSharedStreambuf(int id, std::ios::openmode openMode = std::ios::out |
+std::ios::in)\fP:
+.br 
+This constructor creates an \fIstd::istream\fP that connects to a shared
+memory segment having ID \fIid\fP\&. If construction succeeds the shared
+memory is ready for use\&. If construction fails (e\&.g\&., no shared memory
+segment having ID \fIid\fP exists), an \fIFBB::Exception\fP is thrown\&.
+Copy and move constructors are not available\&.
+.IP 
+.SH "OVERLOADED OPERATORS"
+
+.IP 
+The overloaded move and copy assignment operators are not available\&.
+.IP 
+.SH "MEMBER FUNCTIONS"
+
+.IP 
+All members of \fIstd::istream\fP and \fIstd::ostream\fP and the \fIenum\fP
+values \fIkB, MB\fP, and \fIGB\fP, defined by \fIFBB::OSharedEnum__\fP are available\&. 
+.IP 
+.IP o 
+\fBFBB::SharedCondition attachSharedCondition(std::ios::off_type offset,
+std::ios::seekdir origin)\fP:
+.br 
+Returns an \fBFBB::SharedCondition\fP(3) object, interfacing to a shared
+condition variable located at offset \fIoffset\fP (relative to
+\fIorigin\fP) in the \fISharedMemory\fP object to which the
+\fBOSharedStream\fP object interfaces\&.  This member does not alter the
+value returned by the stream\(cq\&s \fItellp\fP member\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fIFBB::SharedCondition\fP object
+could not be constructed\&.
+.IP 
+.IP o 
+\fBFBB::SharedCondition createSharedCondition()\fP:
+.br 
+Returns an \fBFBB::SharedCondition\fP(3) object, interfacing to a newly
+created shared condition variable which is created at the current
+offset of the \fISharedMemory\fP object to which the \fBOSharedStream\fP
+object interfaces (or at the first offset of the next physical shared
+memory data block, cf\&. \fBsharedcondition\fP(3bobcat))\&.  Creating a
+\fISharedCondition\fP object does not alter the value returned by the
+stream\(cq\&s \fItellp\fP member\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fIFBB::SharedCondition\fP object
+could not be constructed\&.
+.IP 
+.IP o 
+\fBint id() const\fP:
+.br 
+The ID of the shared memory segment is returned\&.
+.IP 
+.IP o 
+\fBvoid kill()\fP:
+.br 
+Without locking the shared memory first,  all shared memory is returned
+to the operating system\&. The \fBFBB::OSharedStream\fP object is unusable
+after returning from \fIkill\fP\&. Other processes that were using the
+shared memory can continue to do so\&.
+.IP 
+.IP o 
+\fBvoid memInfo(std::ostream &out, char const *end = \(dq\&\en\(dq\&)\fP:
+.br 
+Information about the \fIOSharedMemory\fP object is inserted into the
+provide \fIostream\fP object\&. The IDs of the shared segments, their
+sizes, the maximum number of shared memory segments, the number of
+bytes that can be read from the shared memory, and its actual storage
+capacity, etc\&., are displayed\&. Following the information about the
+shaed memory, \fIend\fP is inserted into \fIout\fP\&.
+.IP 
+.IP o 
+\fBvoid open(size_t maxSize, SizeUnit sizeUnit,
+std::ios::openmode openMode = std::ios::out,
+size_t access = 0600)\fP:
+.br 
+This member creates a shared memory segment having a capacity of at
+least \fImaxSize * sizeUnit\fP bytes, and connects the shared memory
+segment to the \fBFBB::OSharedStream\fP\&. A matching \fIclose\fP member
+does not exist and is not required\&. By default, the shared memory
+segment is opened for reading\&. Different from the open modes used for
+file streams, creating a shared memory stream with open modes
+\fIios::in\fP is OK\&. In this case the shared memory segment is created
+and once information has been written to the shared memory by another
+process it can be read\&. The shared memory\(cq\&s access rights are defined
+by the \fIaccess\fP parameter, using the well\-known (\fBchmod\fP(1)) way
+to define the access rights for the owner, the group and others, using
+octal digits\&. If opening succeeds the shared memory is ready for
+use\&. If opening fails, an \fIFBB::Exception\fP is thrown\&.
+.IP 
+.IP o 
+\fBvoid open(int id, std::ios::openmode openMode = std::ios::in |
+std::ios::out)\fP:
+.br 
+This member connects the \fBFBB::OSharedStream\fP object to a shared
+memory segment having ID \fIid\fP\&. A matching \fIclose\fP member does
+not exist and is not required\&. If opening succeeds the shared
+memory is ready for use\&. If opening fails (e\&.g\&., no shared memory
+segment having ID \fIid\fP exists), an \fIFBB::Exception\fP is
+thrown\&.
+.IP 
+.IP o 
+\fBvoid remove()\fP:
+.br 
+The shared memory is first locked\&. Next, all shared memory is returned
+to the operating system\&. The \fBFBB::OSharedStream\fP object is unusable
+after returning from \fIremove\fP\&. Other processes that were using the
+shared memory can continue to do so\&.
+.IP 
+.IP o 
+\fBbool truncate(std::streamsize offset)\fP:
+.br 
+If \fIoffset\fP is not exceeding the value returned by \fIseekp(0,
+std::ios::end)\fP this latter value is changed to \fIoffset\fP and
+\fItrue\fP is returned\&. Otherwise \fIfalse\fP is returned, and the value
+returned by \fIseekp\fP is not altered\&. If the value returned by
+\fItellp\fP exceeded \fIoffset\fP, \fItellp\fP\(cq\&s return value is reduced to
+\fIoffset\fP as well\&.
+
+.PP 
+.SH "EXAMPLE"
+See the \fBsharedstream\fP(3bobcat) man page\&.
+.PP 
+.SH "FILES"
+\fIbobcat/osharedstream\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7),  \fBchmod\fP(1),
+\fBisharedstream\fP(3bobcat),
+\fBsharedblock\fP(3bobcat), 
+\fBsharedcondition\fP(3bobcat), 
+\fBsharedmemory\fP(3bobcat)
+\fBsharedmutex\fP(3bobcat), 
+\fBsharedpos\fP(3bobcat), 
+\fBsharedreadme\fP(7bobcat), 
+\fBsharedsegment\fP(3bobcat),
+\fBsharedstream\fP(3bobcat),
+\fBsharedstreambuf\fP(3bobcat)
+.PP 
+.SH "BUGS"
+Note that by default exceptions thrown from within a \fBstd::stream\fP
+object are caught by the stream object, setting its \fIios::failbit\fP flag\&. To
+allow exceptions to leave a stream object, its \fIexceptions\fP member can be
+called, e\&.g\&., using:
+.nf 
+
+    myStream\&.exceptions(ios::failbit | ios::badbit | ios::eofbit);
+        
+.fi 
+
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

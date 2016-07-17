@@ -1,0 +1,178 @@
+.TH "FBB::A2x" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Error handler"
+
+.PP 
+.SH "NAME"
+FBB::A2x \- Objects performing ascii\-to\-x (anything) conversions
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/a2x>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+\fBFBB::A2x\fP objects offer the \fBC++\fP equivalent of the standard \fBC\fP
+conversion functions \fBatoi\fP(3), \fBatol\fP(3), \fBatof\fP(3) etc\&.  \fIA2x\fP
+objects generalize these \fBC\fP functions to \fIany\fP type that can be extracted
+from an \fBistream\fP object\&. Since \fBFBB::A2x\fP represents the object\-variant
+of the \fBC\fP functions, and is therefore \fItype\-safe\fP and \fIextensible\fP,
+their use is greatly preferred over using the standard \fBC\fP functions\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, and operators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBstd::istringstream\fP
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBA2x()\fP:
+.br 
+This constructor constructs an empty \fIA2x\fP object\&. No
+information can be converted from a  thus constructed \fIA2x\fP object\&.
+.IP o 
+\fBA2x(char const *text)\fP:
+.br 
+This constructor stores \fItext\fP\&. If \fItext\fP represents a textual
+value of some type, the \fIA2x\fP object may be used to initialize or assign
+this value to a variable of that particular type\&. Extraction, however is also
+still possible\&.
+.IP o 
+\fBA2x(std::string const &str)\fP:
+.br 
+This constructor stores the text contained in \fIstr\fP\&. If this text
+represents a textual value of some type, the \fIA2x\fP object may be used to
+initialize or assign this value to a variable of that particular
+type\&. Extraction is also still possible\&.
+The copy constructor is available\&.
+.PP 
+.SH "STATIC MEMBER FUNCTION"
+.IP o 
+\fBbool lastFail()\fP:
+.br 
+This member returns \fItrue\fP if the last conversion failed (i\&.e\&., the
+object\(cq\&s \fIfail()\fP member returned \fItrue\fP and returns \fIfalse\fP otherwise)\&.
+This member allows checks on the success of the extraction/conversion using
+anonymous \fIA2x\fP objects\&. The member also returns \fItrue\fP when no
+conversions have as yet been performed\&.
+.br 
+Note that this member is a thread\-unsafe \fIstatic\fP member: in a
+multithreaded program locks may be required to ensure that the proper
+conversion result is inspected\&.
+
+.PP 
+.SH "MEMBER FUNCTION"
+All members of the \fBistringstream\fP class are available\&.
+.PP 
+.IP o 
+\fBType to()\fP:
+.br 
+This member returns any type \fIType\fP supporting extractions from
+\fIi[string]streams\fP\&. If the extraction fails, the \fIA2x\fP object\(cq\&s
+\fIgood()\fP member will return \fIfalse\fP, and the \fIType\fP\(cq\&s default value is
+returned\&. This operator was implemented as a template member function\&. There
+is also a type conversion operator available (see below), but the member
+function variant may be preferred over the conversion operator in situations
+where explicit disambiguation is required (e\&.g\&., in cases where a
+conversion has no obvious type solution such as direct insertions) An example
+is provided in the \fBEXAMPLE\fP section below\&.
+
+.PP 
+.SH "OVERLOADED OPERATORS"
+.IP o 
+\fBoperator Type()\fP:
+.br 
+Conversion to any type \fIType\fP supporting
+extractions from \fIi[string]streams\fP\&. If the extraction fails, the \fIA2x\fP
+object\(cq\&s \fIgood()\fP member will return \fIfalse\fP, and the \fIType\fP\(cq\&s default
+value is returned\&. This operator was implemented as a template member
+function\&.
+.IP o 
+\fBistream &operator>>(istream &, Type &)\fP:
+.br 
+Extraction to any type \fIType\fP supporting extractions from
+\fIi[string]streams\fP\&. If the extraction fails, the \fIA2x\fP object\(cq\&s
+\fIgood()\fP member will return \fIfalse\fP, and the \fIType\fP\(cq\&s default value is
+returned (this facility is implied by the fact that this class inherits from
+\fBistringstream\fP, but it\(cq\&s probably useful to stress that the extraction
+operation is still available)\&.
+.IP o 
+\fBA2x &operator=(char const *)\fP:
+.br 
+Stores new text in the \fIA2x\fP object, resets the status flags to
+\fIios::good\fP\&. If a 0\-pointer is passed, an empty string is stored\&.
+.IP o 
+\fBA2x &operator=(std::string const &)\fP:
+.br 
+Stores the text stored in the \fIstd::string\fP argument in the
+\fIA2x\fP object, resets the status flags to \fIios::good\fP\&.
+.IP o 
+\fBA2x &operator=(A2x const &)\fP:
+.br 
+The standard overloaded assignment operator is available
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+
+    int x = A2x(\(dq\&12\(dq\&);
+
+    A2x a2x(\(dq\&12\&.50\(dq\&);
+
+    double d;
+
+    d = a2x;
+
+    a2x = \(dq\&err\(dq\&;
+
+    d = a2x;        // d now 0
+
+    a2x = \(dq\& a\(dq\&;
+
+    char c = a2x;   // c now \(cq\&a\(cq\&
+
+                    // explicit conversion to `double\(cq\&
+    cout << A2x(\(dq\&12\&.4\(dq\&)\&.to<double>() << endl;
+        
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/a2x\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBx2a\fP(3bobcat), \fBatoi\fP(3), \fBatol\fP(3), \fBatof\fP(3),
+\fBstrtod\fP(3), \fBstrtol\fP(3), \fBstrdoul\fP(3)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

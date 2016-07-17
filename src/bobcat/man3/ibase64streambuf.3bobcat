@@ -1,0 +1,170 @@
+.TH "FBB::IBase64Streambuf" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Base64 converting Stream Buffer"
+
+.PP 
+.SH "NAME"
+FBB::IBase64Streambuf \- Input Filtering stream buffer doing base64 conversion
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/ibase64streambuf>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+The information made available by \fBIBase64Streambuf\fP objects has been
+subject to base64 encoding or decoding\&. The information to be converted is
+made available to \fBIBase64Streambuf\fP object via \fIstd::istream\fP objects\&.
+.PP 
+The \fIclass IBase64Streambuf\fP is a class template, using a
+\fIFBB::CryptType\fP template non\-type parameter\&. Objects of the class
+\fIFBB::IBase64Streambuf<FBB::ENCRYPT>\fP base64 encode the information they
+receive, objects of the class \fIFBB::IBase64Streambuf<FBB::DECRYPT>\fP base64
+decode the information they receive\&. See also section \fBENUMERATION\fP below\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBFBB::IFilterStreambuf\fP
+.PP 
+.SH "MEMBER FUNCTIONS"
+All members of \fBFBB::IFilterStreambuf\fP are available, as
+\fBIBase64Streambuf\fP inherits from this class\&.
+.PP 
+Overloaded move and/or copy assignment operators are not available\&.
+.PP 
+.SH "ENUMERATION"
+
+.PP 
+\fBIBase64Streambuf\fP objects either base64 encode or decode
+information\&. \fBIBase64Streambuf\fP objects of the class
+\fBFBB::IBase64Streambuf<FBB::ENCRYPT>\fP base64 encode the data they receive,
+\fBIBase64Streambuf\fP objects of the class
+\fBFBB::IBase64Streambuf<FBB::DECRYPT>\fP base64 decode the data they receive\&.
+.PP 
+The values \fIENCRYPT\fP and \fIDECRYPT\fP are defined in the \fIenum CryptType\fP,
+which is defined in the \fIFBB\fP namespace\&.
+.PP 
+.SH "CONSTRUCTOR"
+.IP o 
+\fBIBase64Streambuf<CryptType>(std::istream &in, size_t bufSize = 1000)\fP:
+.br 
+This constructor initializes the streambuf\&.
+.IP 
+\- \fIIBase64Streambuf<ENCRYPT>\fP objects perform base64 encoding;
+.br 
+\- \fIIBase64Streambuf<DECRYPT>\fP objects perform base64 decoding;
+.br 
+\- \fIIBase64Streambuf<CryptType>\fP objects obtain the bytes to encode or
+decode from \fIstd::istream &in\fP;
+.br 
+\- The \fIIFilterStreambuf\fP base class is initialized with a buffer of
+size \fIbufSize\fP, using a lower bound of 100\&.
+Copy\- and move constructors are not available\&.
+.PP 
+.SH "EXAMPLE"
+
+.PP 
+The example shows the construction of \fIIBase64Streambuf<ENCRYPT>\fP
+objects \fIencode\fP which are used to initialize a \fIstd::istream\fP object\&. The
+information read from this \fIistream\fP is base64 encoded\&. 
+.PP 
+\fIIBase64Streambuf<DECRYPT>\fP objects (\fIdecode\fP reads base64 encoded
+information from \fIstd::istream\fP objects and decodes it again)\&. 
+.PP 
+The \fIstd::istream din\fP object is initialized with the
+\fIIBase64Streambuf<DECRYPT>\fP object, and its contents is sent to
+\fIstd::cout\fP\&. The information that is presented at \fIstd::cin\fP and that
+appears at \fIstd::cout\fP should be identical\&.
+.PP 
+.nf 
+#include <iostream>
+#include <istream>
+
+#include <bobcat/ibase64streambuf>
+
+using namespace std;
+using namespace FBB;
+
+int main(int argc, char **argv)
+{
+    switch (argv[1][0])
+    {
+        case \(cq\&e\(cq\&:
+        {
+            IBase64Streambuf<ENCRYPT> encode(cin);
+            istream ein(&encode);
+            cout << ein\&.rdbuf();
+        }
+        break;
+
+        case \(cq\&d\(cq\&:
+        {
+            IBase64Streambuf<DECRYPT> decode(cin);
+            istream din(&decode);
+            cout << din\&.rdbuf();
+        }
+        break;
+    
+        case \(cq\&b\(cq\&:
+        {
+            IBase64Streambuf<ENCRYPT> encode(cin);
+            istream ein(&encode);
+
+            IBase64Streambuf<DECRYPT> decode(ein);
+            istream din(&decode);
+            cout << din\&.rdbuf();
+        }
+        break;
+
+        default:
+            cout << \(dq\&Usage: \(dq\& << argv[0] << \(dq\& [edb] < infile > outfile\en\(dq\&
+                    \(dq\&to base64 \-e\-ncode, \-d\-ecode or \-b\-oth\en\(dq\&;
+        break;
+    }
+}
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/ibase64streambuf\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBisymcryptstreambuf\fP(3bobcat),
+\fBibase64stream\fP(3bobcat), \fBifilterstreambuf\fP(3bobcat),
+\fBofilterstreambuf\fP(3bobcat), \fBstd::streambuf\fP\&.
+.PP 
+.SH "BUGS"
+None reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

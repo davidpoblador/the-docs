@@ -1,0 +1,230 @@
+.TH "FBB::Exception" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Error handler"
+
+.PP 
+.SH "NAME"
+FBB::Exception \- std::exception objects acception stream insertions
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/exception>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+\fBFBB::Exception\fP objects derived from \fIstd::exception\fP, but accept
+stream insertions\&. Their intended use consists of throwing an anonymous
+object, into which the text of the \fIstd::exception::what\fP 
+message has been inserted\&.
+.PP 
+\fIException\fP exceptions are thrown by several Bobcat classes\&. These
+classes are \fI
+Arg, 
+ArgConfig,
+BigInt,
+Cgi,
+Cidr,
+ClientSocket,
+CmdFinderBase,
+ConfigFile,
+DateTime,
+DecryptBuf,
+DigestBuf,
+EncryptBuf,
+Fork,
+GetHostent,
+Glob,
+HMacBuf,
+Hostname,
+LocalClientSocket,
+LocalServerSocket,
+LocalSocketBase,
+Log,
+MailHeaders,
+Mbuf,
+Milter,
+Mstream,
+OFoldStreambuf,
+OneKey,
+Pattern,
+Pipe,
+Process,
+Redirector,
+Selector,
+ServerSocket,
+Signal,
+SocketBase,
+Stat,
+TempStream,
+User,
+Xpointer\fP
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBstd::exception\fP
+.PP 
+.SH "ENUMERATION"
+The enumeration \fIProtection\fP is used by the member \fIprotection\fP
+described below\&. The enumeration has two values:
+.IP o 
+\fIANY\fP: an existing file may have any set of protection bits;
+.IP o 
+\fIEQUAL\fP: an existing file mut have exactly the set of protection bits
+as specified when calling \fIException::protection\fP\&.
+
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBException()\fP:
+.br 
+The default constructor
+.IP o 
+\fBException(int errnoValue)\fP:
+.br 
+This constructor stores the provided \fIerrnoValue\fP value in the global
+\fI::errno\fP variable, provided by the run\-time support system\&.
+Move and copy constructors are available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+All members of \fBstd::exception\fP are
+available, as \fBFBB::Exception\fP inherits from this class\&.
+.IP o 
+\fBchar const *what() const noexcept(true) override\fP:
+.br 
+Returns the text that was inserted into the \fBFBB::Exception\fP object\&.
+
+.PP 
+.SH "OVERLOADED OPERATORS"
+.IP o 
+\fBException &&operator<<(Exception &&in, Type const &t)\fP:
+.br 
+A function template implementing the overloaded insertion operator\&. It
+can be used to insert values of any type that can also be inserted into an
+\fIostringstream\fP object\&.
+The overloaded assignment and move assignment operators are  available\&.
+.PP 
+.SH "STATIC MEMBERS"
+
+.PP 
+The following convenience functions can be used for controlled opening of
+stream\-type objects, like \fIstd::ofstream\fP and \fIstd::ifstream\fP\&. These
+stream\-type objects must support \fIopen\fP and \fIclose\fP members, like those
+provided by \fIstd::ifstream\fP and \fIstd::ofstream\fP\&. 
+.PP 
+If the stream  was already open it is first closed\&.
+.PP 
+If opening fails an \fIFBB::Exception\fP exception is thrown containing a
+short message stating that the named stream could not be opened\&. 
+.PP 
+.IP o 
+\fBstatic void open(StreamType &stream, std::string const &name)\fP:
+.br 
+Opens the stream object, using its default \fIopen\fP member\&.
+.IP 
+.IP o 
+\fBstatic void open(int errnoValue, 
+StreamType &stream, std::string const &name)\fP:
+.br 
+Opens the stream object, using its default \fIopen\fP member\&. If opening
+the stream fails, then the thrown \fBFBB::Exception\fP assigns
+\fIerrnoValue\fP to \fI::errno\fP\&.
+.IP 
+.IP o 
+\fBstatic void open(StreamType &stream, std::string const &name,
+std::ios::openmode mode)\fP:
+.br 
+Opens the stream object, using its \fIopen\fP member, passing \fImode\fP to
+\fIopen\fP\&.
+.IP 
+.IP o 
+\fBstatic void open(int errnoValue, StreamType &stream,
+std::string const &name, std::ios::openmode mode)\fP:
+.br 
+Opens the stream object, using its \fIopen\fP member, passing \fImode\fP to
+\fIopen\fP\&. If opening the stream fails, then the thrown
+\fBFBB::Exception\fP assigns \fIerrnoValue\fP to \fI::errno\fP\&.
+.IP 
+.IP o 
+\fBstatic size_t protection(std::string const &path, size_t protect, 
+Protection type = EQUAL)\fP:
+.br 
+Returns the protection bits (cf\&. \fBopen\fP(2)) of \fIpath\fP\&. The
+\fIprotect\fP parameter is used to specify the requested protection
+bits\&. This value is usually specified as an octal value\&. If the
+specified value exceeds 0777 an exception is thrown\&. The third
+parameter is only used in combination with already existing files\&. If
+specified as \fIANY\fP the file\(cq\&s actual permission bits are not
+compared with \fIprotect\fP; if specified as \fIEQUAL\fP the file\(cq\&s
+permission bits must be identical to \fIprotect\fP, or an exception is
+thrown\&. If \fIpath\fP does not yet exist a file \fIpath\fP with permission
+\fIprotect\fP is created\&. This member returns \fIpath\fP\(cq\&s permission
+bits\&. 
+.IP 
+If \fIpath\fP is created by \fIprotection\fP, then opening a stream for
+\fIpath\fP does not change \fIpath\fP\(cq\&s protection\&. 
+
+.PP 
+.SH "MANIPULATOR"
+
+.PP 
+The following manipulator (which is \fInot\fP part of the
+\fBFBB::Exception\fP, class, but \fIis\fP defined in the \fBFBB\fP namespace) can be
+inserted into the \fBFBB::Exception\fP object:
+.IP o 
+\fBFBB::errnodescr\fP:
+.br 
+The descriptive text associated with the current \fIerrno\fP value is
+inserted into the \fBFBB::Exception\fP object (it can also be used to insert the
+descriptive text in a \fIstd::ostream\fP object)\&. No text is inserted if
+\fIerrno\fP equals zero\&. This manipulator is thread\-safe (but \fIerrno\fP may be
+modified when \fIerrno\fP holds an invalid value)\&.
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+
+    if (exceptionalCondition)
+        throw FBB::Exception(1) << \(dq\&Exceptional condition occurred\(dq\&;
+        
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/exception\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

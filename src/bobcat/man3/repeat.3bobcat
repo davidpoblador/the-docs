@@ -1,0 +1,166 @@
+.TH "FBB::repeat" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "repeated function calls"
+
+.PP 
+.SH "NAME"
+FBB::repeat \- call a (member) function a fixed number of times
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/repeat>\fP
+.br 
+
+.PP 
+.SH "DESCRIPTION"
+
+.PP 
+The \fBFBB::repeat\fP function template allows a function or member function to
+be called a certain number of times\&. The functions or member functions may
+define arguments\&. Arguments to these functions are specified when \fIrepeat\fP
+is called, and are perfectly forwarded by the \fIrepeat\fP function
+template to the (member) function called by \fIrepeat\fP\&.
+.PP 
+The first argument of the \fIrepeat\fP function template defines the number of 
+times the (member) function must be called\&.
+.PP 
+The \fIFBB::repeat\fP function template are defined \fIinline\fP,
+allowing the compiler to `optimize away\(cq\& the \fIrepeat\fP function call 
+itself\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "REPEAT FUNCTION TEMPLATE"
+The \fIrepeat\fP function template is declared as:
+.nf 
+
+template <typename Counter, typename First, typename \&.\&.\&.Params>
+void repeat(Counter counter, First &&first, Params &&\&.\&.\&.params);
+    
+.fi 
+In this declaration,
+.IP o 
+\fBCounter\fP represents the counter\(cq\&s type\&. Usually an \fIint\fP or
+\fIsize_t\fP\&. When calling \fIrepeat\fP \fIcounter\fP must be initialized to
+the number of times \fIrepeat\fP must call the (member) function (see
+below);
+.IP o 
+\fBFirst\fP represents the prototype of a function or the name of a
+class\&.  name of a class\&. Likewise, \fIfirst\fP either is the address
+(name) of the function to be called or the name of an object of class
+type \fIFirst\fP\&. In the latter case the object may or may not be a
+\fIconst\fP object\&.
+.IP o 
+\fB\&.\&.\&.Params\fP represents the set of parameter types of arguments
+which must be perfectly forwarded to the called function\&. If \fIfirst\fP
+represents a class type object, the first argument \fImust\fP be the
+address of a member function of the class \fIFirst\fP\&.
+
+.PP 
+.SH "EXAMPLES"
+.nf 
+#include <iostream>
+#include <iterator>
+#include <algorithm>
+
+#include \(dq\&\&.\&./repeat\(dq\&
+
+using namespace std;
+using namespace FBB;
+
+class Object
+{
+    public:
+        void member(int argc, char **argv) const;
+        void member2(size_t &rept, int argc, char **argv);
+};
+
+void Object::member(int argc, char **argv) const
+{
+    cout << \(dq\&member called\en\(dq\&;
+    copy(argv, argv + argc, ostream_iterator<char const *>(cout, \(dq\&\en\(dq\&));
+}
+
+void Object::member2(size_t &rept, int argc, char **argv)
+{
+    cout << \(dq\&member2 called, iteration \(dq\& << rept++ << \(dq\&\en\(dq\&;
+    copy(argv, argv + argc, ostream_iterator<char const *>(cout, \(dq\&\en\(dq\&));
+}
+
+void fun()
+{
+    cout << \(dq\&Fun called\en\(dq\&;
+}
+
+int main(int argc, char **argv)
+{
+    Object object;
+
+    cout << \(dq\&\en\(dq\&
+            \(dq\&*** The number of arguments determines the repeat\-count ***\en\en\(dq\&;
+
+    cout << \(dq\&Fun without arguments:\en\(dq\&;
+    repeat(argc, fun);
+
+    cout << \(dq\&Object receiving argc and argv:\en\(dq\&;
+    repeat(argc, object, &Object::member, argc, argv);
+
+    cout << \(dq\&Object receiving argc and argv, showing the iteration count:\en\(dq\&;
+    size_t count = 0;
+    repeat(argc, object, &Object::member2, count, argc, argv);
+
+    Object const obj;
+    cout << \(dq\&Const Object receiving argc and argv:\en\(dq\&;
+    repeat(argc, obj, &Object::member, argc, argv);
+
+}
+
+
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/repeat\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7)
+.PP 
+.SH "BUGS"
+Be careful when using overloaded functions, as the template argument
+resolution mechanism may be unable to determine which function to
+call\&. If overloaded functions must be used, a \fIstatic_cast\fP is
+likely required to disambiguate your intentions\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

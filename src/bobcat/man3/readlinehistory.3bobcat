@@ -1,0 +1,289 @@
+.TH "FBB::ReadLineHistory" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Editing input lines"
+
+.PP 
+.SH "NAME"
+FBB::ReadLineHistory \- std::streambuf offering line\-editing and history
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/readlinebuf>\fP
+.br 
+Linking option: \-lreadline \-lbobcat
+.PP 
+.SH "DESCRIPTION"
+\fBFBB::ReadLineHistory\fP objects offer access to the history maintained by
+\fBFBB::ReadLineBuf\fP and \fBReadLineStream\fP objects\&.
+.PP 
+The latter two classes use Gnu\(cq\&s readline library to allow editing of
+input lines\&. The accumulated history of these objects can be accessed 
+from the \fBReadLineHistory\fP object\&.
+.PP 
+Since Gnu\(cq\&s readline library maintains global data there can only be one
+history\&. The \fBReadLineHistory\fP class is therefore, like \fBReadLineBuf\fP a
+singleton\&.  (Gnu\(cq\&s readline library does, however, offer functions allowing
+programs to use multiple histories\&. So it would in principle be possible to
+design a non\-singleton \fIReadLineHistory\fP class\&. Since programs normally only
+interact with a single terminal, there is probably little use for
+non\-singleton \fBReadLineHistory\fP class)\&.
+.PP 
+The \fBReadLineHistory\fP class encapsulates history access\&. It offers limited
+facilities: either forward or backward iterations over the history are offered
+as well as reading and writing the history from/to streams\&. The contents of
+the history lines and \-\-if defined\-\- the timestamps of the lines in the
+history can be obtained using iterators defined by \fBReadLineHistory\fP\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "NESTED TYPES"
+
+.PP 
+The class \fBReadLineHistory\fP defines the following nested types:
+.PP 
+\fBHistoryElement\fP
+.PP 
+The iterators made available by the \fBReadLineHistory\fP object provide access
+to a \fBHistoryElement\fP object\&. These objects can be copied and assigned to
+each other, but user programs cannot otherwise construct \fBHistoryElement\fP
+objects\&.
+.PP 
+The class \fBHistoryElement\fP has but two members:
+.IP o 
+\fIchar const *line() const\fP returns the contents of the 
+history line to which a \fBReadLineHistory\fP iterator refers;
+.IP o 
+\fIchar const *timestamp() const\fP returns the timestamp (if defined) of
+the history line to which a \fBReadLineHistory\fP iterator refers;
+
+.PP 
+\fBconst_iterator\fP and \fBconst_reverse_iterator\fP
+.PP 
+The iterators returned by members of the class \fBReadLineHistory\fP are input
+iterators, pointing to \fBHistoryElement\fP objects\&. As they are input
+iterators modification of the history elements to which they refer is not
+allowed\&. 
+.PP 
+The class \fBconst_iterator\fP allows iterations from the first to the last
+history element, the class \fBconst_reverse_iterator\fP allows iterations from
+the last back to the first history element\&.
+.PP 
+The iterators can be incremented, compared for (in)equality and offer
+\fIoperator*\fP and \fIoperator\->\fP members, offering access to, respectively,
+\fBHistoryElement\fP objects and their addresses\&.
+.PP 
+.SH "CONSTRUCTORS"
+
+.PP 
+As the class \fBReadLineBuf\fP is a singleton class, there are no publicly
+available constructors\&.
+.PP 
+.SH "STATIC MEMBER FUNCTIONS"
+
+.PP 
+.IP o 
+\fBReadLineHistory &instance()\fP:
+.br 
+A reference to the \fBReadLineHistory\fP object is returned\&. If any
+history has been accumulated it can immediately be retrieved\&. Using this
+static member will not affect the way the \fBReadLineHistory\fP object handles
+timestamps when saving or retrieving history lines\&. When initially constructed
+the \fIReadLineHistory\fP object assumes that timestamps are not used\&.
+.IP o 
+\fBReadLineHistory &instance(bool useTimestamps)\fP:
+.br 
+A reference to the \fBReadLineHistory\fP object is returned\&. If any
+history has been accumulated it can immediately be retrieved\&. The
+\fIuseTimestamps\fP parameter defines the way history lines are read from or
+written to a stream\&. When specifying \fItrue\fP the history inserted into a
+stream will include timestamps (which may be empty if no timestamps were
+recorded)\&. Likewise, when extracting the history timestamps are extracted too
+(which may also be empty)\&. When specifying \fIfalse\fP no timestamps are read
+or written\&. A mismatch between the actual contents of the stream from which
+the history is extracted and the \fIuseTimestamps\fP parameter will 
+results in unexpected behavior\&.
+
+.PP 
+.SH "MEMBER FUNCTIONS"
+.IP o 
+\fBReadLineHistory::const_iterator begin() const\fP:
+.br 
+An input iterator pointing to the first history line is returned\&.
+.IP o 
+\fBReadLineHistory::const_iterator end() const\fP:
+.br 
+An input iterator pointing beyond the last history line is returned\&.
+.IP o 
+\fBsize_t maxSize() const\fP:
+.br 
+The maximum number of lines that can be stored in the history is
+returned\&. After collecting a history of \fImaxSize\fP lines, the next
+line entered will cause the initial history line to be removed from
+the history, making room for the next line to be added at the end of
+the history\&.
+.IP o 
+\fBReadLineHistory::const_reverse_iterator rbegin() const\fP:
+.br 
+An input iterator pointing to the last history line is
+returned\&. Incrementing this iterator will access the previous line in
+the history\&.
+.IP o 
+\fBReadLineHistory::const_reverse_iterator rend() const\fP:
+.br 
+An input iterator pointing before the first history line is returned\&.
+.IP o 
+\fBReadLineHistory &setTimestamps(bool useTimestamps)\fP:
+.br 
+xThe current status of the timestamps usage is set according to the
+value of its parameter\&. When \fItrue\fP inserting and extracting history
+will include the timestamps\&. No timestamps are inserted or extracted
+when \fIfalse\fP\&. It returns a reference to the updated 
+\fBReadLineHistory\fP object, allowing constructions like (assuming
+the availability of \fIReadLineHistory &history\fP):
+.nf 
+
+    cout << history\&.setTimestamps(true);
+        
+.fi 
+.IP o 
+\fBsize_t size() const\fP:
+.br 
+The number of lines currently stored in the history is returned\&.
+.IP o 
+\fBbool timestamps() const\fP:
+.br 
+The current status of the timestamps usage is returned\&. When returning
+\fItrue\fP inserting and extracting history will include the
+timestamps\&. No timestamps are inserted or extracted when this member
+returns \fIfalse\fP
+
+.PP 
+.SH "OVERLOADED OPERATORS"
+.IP o 
+\fBstd::istream &FBB::operator>>(std::istream &in, ReadLineHistory &his)\fP:
+.br 
+The history available at the \fIin\fP stream is extracted as the current
+history\&. The existing history is removed first\&. The \fIuseTimestamp\fP 
+status determines whether timestams are extracted (if \fItrue\fP) or not
+(if \fIfalse\fP)\&. A mismatch between the actual contents of the stream
+and the \fIuseTimestamp\fP status will result in unexpected behavior\&.
+.IP o 
+\fBstd::ostream &FBB::operator<<(std::ostream &out, 
+ReadLineHistory &his)\fP:
+.br 
+The current history is inserted into \fIout\fP stream\&. The
+\fIuseTimestamp\fP status determines whether timestams are inserted (if
+\fItrue\fP) or not (if \fIfalse\fP)\&.
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+#include <iostream>
+#include <algorithm>
+#include <fstream>
+
+#include <bobcat/datetime>
+#include <bobcat/readlinestream>
+#include <bobcat/readlinehistory>
+
+using namespace std;
+using namespace FBB;
+
+void showHis(ReadLineHistory::HistoryElement const &element)
+{
+    cout << element\&.timestamp() << \(dq\&: \(dq\& << element\&.line() << \(cq\&\en\(cq\&;
+}
+
+string timestamp()
+{
+    return DateTime()\&.rfc2822();
+};
+
+int main(int argc, char **argv)
+{
+    ReadLineStream in(\(dq\&? \(dq\&, ReadLineBuf::EXPAND_HISTORY);
+    in\&.useTimestamps(&timestamp);
+
+    cout << \(dq\&Enter some lines, end the input using ctrl\-d\en\(dq\&;
+    string line;
+    while (getline(in, line))
+        ;
+                                            // argument means: write/read
+                                            // history timestamps
+    ReadLineHistory &history = ReadLineHistory::instance(argc > 1);
+
+    cout << \(dq\&All lines, from the first to the last:\en\(dq\&;
+    for_each(history\&.begin(), history\&.end(), showHis);
+
+    cout << \(dq\&\en\(dq\&
+            \(dq\&All lines, from the last to the first:\en\(dq\&;
+    for_each(history\&.rbegin(), history\&.rend(), showHis);
+
+    cout << \(dq\&\en\(dq\&
+            \(dq\&History out and in:\en\(dq\&
+            \(dq\&\en\(dq\&;
+
+    ofstream hisout(\(dq\&history\&.out\(dq\&);
+
+    hisout << history;
+
+    hisout\&.close();
+
+    ifstream hisin(\(dq\&history\&.out\(dq\&);
+    hisin >> history;
+
+    cout << \(dq\&All lines, from the first to the last:\en\(dq\&;
+    for_each(history\&.begin(), history\&.end(), showHis);
+}
+
+
+
+
+
+
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/readlinehistory\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBreadline\fP(3), \fBreadlinebuf\fP(3), 
+\fBreadlinestream\fP(3)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

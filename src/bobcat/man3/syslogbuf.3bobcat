@@ -1,0 +1,335 @@
+.TH "FBB::Syslogbuf" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Stream Buffer for Syslog"
+
+.PP 
+.SH "NAME"
+FBB::Syslogbuf \- A streambuf object inserting syslog messages
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/syslogbuf>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+Addresses of \fBFBB::Syslogbuf\fP objects can be passed as
+\fBstd::streambuf\fP addresses to \fIstd::ostream\fP objects to write messages to
+the syslog daemon using stream facilities\&.
+.PP 
+Multiple separate insertions can be used to create a single syslog message:
+the message is only sent to the syslog daemon after receiving a \fIflush\fP
+command (e\&.g\&., after inserting \fIstd::flush\fP or \fIstd::endl\fP)\&. Non\-printable
+characters (like \fI\(cq\&\en\(cq\&\fP) show up in the syslog message as octal values,
+preceded by \fI#\fP (e\&.g\&., \fI#012\fP for \fI\(cq\&\en\(cq\&\fP)\&. The newline normally inserted
+by \fIstd::endl\fP is ignored: \fBSyslogStream\fP objects interpret \fIstd::endl\fP
+like \fIstd::flush\fP\&. 
+.PP 
+One series of insertions may contain multiple \fIstd::endl\fP or \fIstd::flush\fP
+manipulators\&. At each of these manipulators a new message is sent to the
+syslog daemon, containing all info that has so far been buffered\&. After
+sending a message to the syslog daemon, the \fBSyslogStream\fP\(cq\&s internal buffer
+is cleared\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBstd::streambuf\fP
+.PP 
+.SH "ENUMERATIONS"
+
+.PP 
+The following enumerations are defined in the namespace \fBFBB\fP:
+.PP 
+\fBPriority\fP:
+.PP 
+The values of this enumeration match the corresponding priority
+\fBLOG_xxx\fP values used with \fBsyslog\fP(3):
+.IP o 
+\fBEMERG\fP:
+.br 
+system is unusable;
+.IP o 
+\fBALERT\fP:
+.br 
+action must be taken immediately;
+.IP o 
+\fBCRIT\fP:
+.br 
+critical conditions;
+.IP o 
+\fBERR\fP:
+.br 
+error conditions;
+.IP o 
+\fBWARNING\fP:
+.br 
+warning conditions;
+.IP o 
+\fBNOTICE\fP:
+.br 
+normal, but significant, condition;
+.IP o 
+\fBINFO\fP:
+.br 
+informational message;
+.IP o 
+\fBDEBUG\fP:
+.br 
+debug\-level message;
+
+.PP 
+\fBPriorityType\fP:
+.PP 
+This enumberation has two values fine\-tuning the type of messages that
+are actually processed by the syslog daemon:
+.IP o 
+\fBSINGLE\fP:
+.br 
+Only messages of the priority specified at the \fIsetMask\fP call are
+processed by the syslog daemon;
+.IP o 
+\fBUPTO\fP:
+.br 
+Messages of priority \fIEMERG\fP up to the the priority specified at the
+\fIsetMask\fP call are processed by the syslog daemon;
+By default, the syslog daemon processes all messages it receives\&.
+.PP 
+\fBFacility\fP:
+.PP 
+The values of this enumeration match the corresponding facility
+\fBLOG_xxx\fP values used with \fBsyslog\fP(3):
+.IP o 
+\fBAUTHPRIV\fP:
+.br 
+security/authorization messages (private)
+.IP o 
+\fBCRON\fP:
+.br 
+clock daemon (\fIcron\fP and \fIat\fP)
+.IP o 
+\fBDAEMON\fP:
+.br 
+other system daemons
+.IP o 
+\fBKERN\fP:
+.br 
+kernel messages
+.IP o 
+\fBLOCAL0\fP:
+.br 
+reserved for local use\&. \fBLOCAL1\fP through \fBLOCAL7\fP are
+available as well\&.
+.IP o 
+\fBLPR\fP:
+.br 
+line printer subsystem
+.IP o 
+\fBMAIL\fP:
+.br 
+mail subsystem
+.IP o 
+\fBNEWS\fP:
+.br 
+\fIUSENET\fP news subsystem
+.IP o 
+\fBSYSLOGBUF\fP:
+.br 
+messages generated internally by \fIsyslogbufd\fP
+.IP o 
+\fBUSER\fP:
+.br 
+generic user\-level messages
+.IP o 
+\fBUUCP\fP:
+.br 
+UUCP subsystem
+
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBSyslogbuf(string const &ident = \(dq\&\(dq\&,
+FBB::Priority priority = FBB::NOTICE, 
+FBB::Facility facility = FBB::USER,
+int option = 0)\fP:
+.br 
+This constructor initializes a \fBSyslogbuf\fP object\&.  The
+\fIident\fP parameter is usually the name of the program\&. Its contents are
+prepended to syslog messages\&. 
+.IP 
+The \fIpriority\fP parameter determines the default importance of the message
+sent to the syslog daemon\&. By default messages are sent to the syslog daemon
+with priority \fBFBB::NOTICE\fP\&. Syslog messages may be given different priority
+by inserting a \fBSyslogStream\fP(3bobcat) manipulator\&. The priority set at
+construction time may also be modified using the \fIsetPriority\fP and
+\fIsetDefaultPriority\fP members\&.
+.IP 
+Which messages actually appear in log facilities is not determined by
+the messages\(cq\& priorities, but by syslog\(cq\&s \fIlog mask\fP\&. The log mask can be
+set by the static member \fIsetMask\fP (see below)\&.
+.IP 
+The \fIfacility\fP parameter determines the type of program doing the
+logging\&. By default \fBFBB::USER\fP is used\&.
+.IP 
+The \fIoption\fP parameter may be used to specify various options (use the
+binary `\fIbitor\fP\(cq\& (`\fI|\fP\(cq\&) operator to combine options):
+.IP 
+\fBLOG_CONS\fP:
+write directly to system console  if  there  is  an
+error while sending to system logger 
+.br 
+\fBLOG_NDELAY\fP:
+open the connection immediately (normally, the con\-
+nection is opened when the first message is logged) 
+.br 
+\fBLOG_PERROR\fP:
+print to stderr as well 
+.br 
+\fBLOG__PID\fP:
+include PID with each message 
+.br 
+
+.IP 
+By default no options are used\&.
+.IP 
+.IP o 
+\fBSyslogbuf(char const *ident,
+FBB::Priority priority = FBB::NOTICE, 
+FBB::Facility facility = FBB::USER,
+int option = 0)\fP:
+.br 
+This constructor is kept for backward compatibility\&. Its parameters
+have the same meanings as those of the abovementioned constructor\&. A
+\fInullptr\fP indicates that no text needs to be prepended to syslog messages\&.
+
+.PP 
+Copy and move constructors are not available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+
+.PP 
+All members of \fBstd::streambuf\fP are available, as \fBFBB::Syslogbuf\fP
+inherits from this class\&.
+.PP 
+.IP o 
+\fBvoid close()\fP:
+.br 
+If the \fBSyslogStream\fP\(cq\&s internal buffer is not empty it is flushed to
+the syslog daemon\&. Thereafer \fBcloselog\fP(3) is called\&.
+.IP o 
+\fBPriority defaultPriority() const\fP:
+.br 
+Returns the current default priority\&. I\&.e\&., the priority that will be
+used for the messages after inserting \fIendl\fP or \fIflush\fP\&.
+.IP o 
+\fBvoid open(string const &ident,
+FBB::Priority priority = FBB::NOTICE, 
+FBB::Facility facility = FBB::USER,
+int option = 0)\fP:
+.br 
+Redefines the current identifier, priority, facility and options that
+are used when sending messages to the syslog daemon\&. If the
+\fBSyslogStream\fP\(cq\&s internal buffer is not empty it is first flushed to
+the syslog daemon using the identifier, priority and options that were
+active just before calling \fIopen\fP\&.
+.IP o 
+\fBPriority priority() const\fP:
+.br 
+Returns the next priority\&. I\&.e\&., the priority that will be used for
+the next message that is sent to the syslog daemon\&.
+.IP o 
+\fBPriority setDefaultPriority(Priority priority)\fP:
+.br 
+Changes the default priority of the next message that is sent to the
+syslog daemon after inserting \fIstd::eoln\fP or
+\fIstd::flush\fP\&. The previously active default priority is
+returned\&.
+.IP o 
+\fBPriority setPriority(Priority priority)\fP:
+.br 
+Changes the priority for the
+next message that is sent to the syslog daemon after inserting
+\fIstd::eoln\fP or \fIstd::flush\fP\&. Subsequent messages will again use
+the default priority\&. The previously active priority setting is
+returned\&.
+
+.PP 
+.SH "PROTECTED MEMBER FUNCTION"
+
+.PP 
+The member listed in this section implements the tasks of the comparably
+named virtual function in the class\(cq\&s private interface\&. This separates the
+redefinable interface from the user\-interface\&. The class \fBSyslogbuf\fP
+can, in accordance with Liskov\(cq\&s Substitution Principle, be used as a
+\fIstd:streambuf\fP; but it also offers a facility for classes deriving from
+\fBSyslogbuf\fP\&.
+.IP o 
+\fBint pSync()\fP:
+.br 
+The contents of the \fBSyslogbuf\fP\(cq\&s internal buffer are flushed to the
+syslog daemon\&.
+
+.PP 
+.SH "EXAMPLE"
+See also \fBsyslogstream\fP(3bobcat)
+.PP 
+.nf 
+
+#include <iostream>
+#include <bobcat/syslogstream>
+
+using namespace std;
+using namespace FBB;
+
+int main(int argc, char **argv)
+{
+    ostream sls(new Syslogbuf(argv[0]));
+
+    sls << SyslogStream::debug << \(dq\&Hello world\(dq\& << flush <<
+           SyslogStream::strerrno << endl;
+}
+    
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/syslogbuf\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBcloselog\fP(3), \fBopenlog\fP(3), \fBrsyslogd\fP(8)
+\fBsyslog\fP(3), \fBsyslogstream\fP(3bobcat)
+.PP 
+.SH "BUGS"
+The constructor\(cq\&s \fIoption\fP parameter is an \fIint\fP\&. Because of this,
+\fIint\fP values rather than enumeration values are passed to the
+constructor\&. It is the responsibility of the programmer to pass defined option
+values only\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

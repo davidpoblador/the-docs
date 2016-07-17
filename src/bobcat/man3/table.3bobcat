@@ -1,0 +1,312 @@
+.TH "FBB::Table" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Table\-formatter"
+
+.PP 
+.SH "NAME"
+FBB::Table \- Generates row\- or column\-wise filled tables
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/table>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+
+.PP 
+\fBFBB::Table\fP objects can be used to create tables\&. The tables are filled
+either column\-wise or row\-wise\&. Many of the table\(cq\&s characteristics may be
+fine\-tuned using a separate \fBFBB::TableSupport\fP object, described in a
+separate man\-page (\fBTableSupport\fP(3bobcat))\&. When no \fBFBB::TableSupport\fP
+object is used, a plain row\-wise or column\-wise table is constructed
+which can be inserted into a \fBstd::ostream\fP\&.
+.PP 
+Tables defined by \fITable\fP consist of a (number of element dependent)
+number of rows and a fixed number of columns, the latter value is specified at
+construction time\&. Columns and rows are normally addressed using index values
+(starting at 0)\&. Before the leftmost column, between the columns and beyond
+the last column \fIseparators\fP are defined\&. By default the separators are
+empty, but each separator may be given a (fixed) width or content\&. The
+separator before column \fIcol\fP is addressed as separator \fIcol\fP, the
+rightmost separator is addressed as separator \fInColummns\fP\&. 
+.PP 
+Likewise, rows can be separated from each other using separators\&. These
+separating rows are also empty by default\&. The row\-separator before row
+\fIrow\fP is addressed as row\-separator \fIrow\fP\&. The row\-separator following the
+final row is addressed as row\-separator \fInRows\fP, where \fInRows\fP is the
+value returned by the \fInRows\fP member function\&.
+.PP 
+Non\-default (i\&.e\&., non\-empty) separators are defined using
+\fIFBB::TableSupport\fP objects (cf\&. \fBtablesupport\fP(3bobcat))\&.
+.PP 
+\fITable\fP objects look a lot like \fIostream\fP objects, but they also adopt
+a fairly rigid way to define new elements: each new insertion defines another
+table element, and it is difficult to end a row before it has received its
+\fInColumn\fP number of elements\&. \fITable\fP\(cq\&s sister\-class, \fITableBuf\fP, is a
+\fIstd::streambuf\fP type of class, offering additional control through the use
+of a wrapping \fIostream\fP class object\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+
+.PP 
+\fBstd::ostringstream\fP \- \fITable\fP inherits from \fBstd::ostringstream\fP,
+allowing insertions into a \fBTable\fP object\&. Each separate insertion adds
+another element to the \fBTable\fP object\&.
+.PP 
+\fBFBB::TableBase\fP \- This class implements common elements of the
+table implementation (the \fIFBB::TableBuf\fP class is also derived from
+\fITableBase\fP\&. The \fITableBase\fP class is not intended to be used otherwise,
+and no separate man\-page is provided\&. All facilities provided by \fITable\fP
+inherited from \fITableBase\fP are described in this man\-page\&.
+.PP 
+.SH "ENUMERATIONS"
+The following enumerations are defined by the class \fBFBB::Table\fP:
+\fBenum FillDirection\fP
+.br 
+This enumeration defines two values:
+.IP o 
+\fBROWWISE\fP:
+.br 
+When this value is specified at construction time, elements are added
+row\-wise to the table\&. I\&.e\&., the second element inserted into the \fBTable\fP
+will be found in the second column of the first row\&.
+.IP o 
+\fBCOLUMNWISE\fP:
+.br 
+When this value is specified at construction time, elements are added
+column\-wise to the table\&. I\&.e\&., the second element will be found in the second
+row of the first column\&.
+
+.PP 
+\fBenum WidthType\fP
+.br 
+This enumeration defines two values:
+.IP o 
+\fBCOLUMNWIDTH\fP:
+.br 
+This value may be specified when the columns should be allowed
+variable widths\&. In this case each column will be as wide as its widest
+element\&. This is the default \fBWidthType\fP used by \fBTable\fP objects\&. 
+.IP o 
+\fBEQUALWIDTH\fP:
+.br 
+This value may be specified when all the table\(cq\&s columns should have
+equal width (i\&.e\&., equal to the width of the widest table element), 
+
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBTable(size_t nColumns, Table::FillDirection direction,
+Table::WidthType widthType = Table::COLUMNWIDTH)\fP:
+.br 
+The table\(cq\&s number of columns, the fill directions and the column
+width\-type must be provided\&.  The number of rows is implied by the combination
+of this parameter and the number of elements that is actually inserted into
+the \fBTable\fP object\&.  The \fBdirection\fP parameter specifies the way new
+elements are added to the \fBTable\fP object: row\-wise or column\-wise\&. Finally,
+the \fIwidthType\fP parameter is used to specify the way the width of the
+table\(cq\&s columns is determined\&. Each column either defines its own width or all
+columns have equal widths\&.
+.IP o 
+\fBTable(TableSupport &tableSupport, size_t nColumns, 
+Table::FillDirection direction,
+Table::WidthType widthType = Table::COLUMNWIDTH)\fP:
+.br 
+This constructor operates identically to the previous constructor, but
+expects an additional reference to a \fBTableSupport\fP object\&. A
+\fBTableSupport\fP object offers additional formatting features used by the
+table defining elements like horizontal lines between rows, additional
+separators, etc, etc\&. The \fBTableSupport\fP object is passed as a non\-const
+reference as the \fBTable\fP object must be able to manipulate its data\&. See
+\fBtablesuppport\fP(3bobcat) for more information about \fITableSupport\fP\&.
+The copy constructor is not available\&.
+.PP 
+.SH "OVERLOADED OPERATORS"
+
+.PP 
+.IP o 
+\fBstd::ostream &operator<<(std::ostream &str, Table &table)\fP:
+.br 
+This operator inserts a \fBTable\fP into a \fIstd::ostream\fP object\&.
+This operator requires a non\-const table as it may have to complete the table
+by adding empty elements (i\&.e\&., empty strings) to obtain a completely filled
+rectangular table\&.
+.IP o 
+\fBTable &operator<<(Table &obj, Align const &align)\fP:
+.br 
+This operator is used to change the default alignment of either a
+column or an element\&. It is a wrapper around the member \fIsetAlign()\fP (see
+below for its description)\&. By default, all elements are right\-aligned\&. See
+\fBalign\fP(3bobcat) for more information about the \fIAlign\fP class\&.
+.IP o 
+\fBTable &operator<<(Table &obj, Type const &x)\fP:
+.br 
+This overloaded operator is defined as a function template: \fBType\fP
+is a template type parameter instantiated to a type for which
+\fBstd::ostringstream\fP insertions are possible\&.  It inserts the value/object
+\fIx\fP into the \fBTable\fP\(cq\&s \fBstd::ostringstream\fP base class object as the
+next element of the table\&.
+The overloaded assignment operator is not available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+.IP o 
+\fBTable &append(std::string const &text
+char const *sep = \(dq\& \et\(dq\&, bool addEmpty = false)\fP:
+.br 
+Fields in \fItext\fP separated by one of the characters in \fIsep\fP are
+added as additional elements to the \fBTable\fP object\&. Empty fields are ignored
+unless the parameter \fIaddEmpty\fP is initialized to \fItrue\fP\&.
+.IP o 
+\fBvoid clear()\fP:
+.br 
+The contents of the table are erased\&. All existing elements are
+removed, and the table will be empty\&.
+.IP o 
+\fBvoid clearStr()\fP:
+.br 
+The contents of its \fIstd::ostringstream\fP base class buffer are
+erased\&.
+.IP o 
+\fBvoid fill(InputIterator begin, InputIterator end)\fP:
+.br 
+This member is defined as a member template; \fIInputIterator\fP is a
+template type parameter representing any input iterator\&. It can also be, e\&.g\&.,
+a pointer to an insertable type\&. The iterators must point to data elements
+which can be inserted into an \fIstd::ostream\fP\&. The range of values implied by
+the member\(cq\&s iterator pair are inserted into the table as new elements\&.
+.IP o 
+\fBvoid push_back(std::string const &element)\fP:
+.br 
+New elements can be added to the table using \fIpush_back\fP\&. It is,
+e\&.g\&., called from a \fIback_inserter\fP adaptor\&.
+.IP o 
+\fBsize_t nRows()\fP:
+.br 
+The currently available number of rows in the table is returned\&. Its
+value is only defined after calling \fBdef()\fP\&.
+.IP o 
+\fBTable &setAlign(Align const &align)\fP:
+.br 
+The alignment type of either a column or an element of the \fBTable\fP
+object is defined using \fIsetAlign\fP\&. The standard alignments \fIstd::left,
+std::right\fP and \fIstd::internal\fP may be specified, but in addition the
+alignment \fIFBB::center\fP may be used if elements should be centered into
+their column\&. A construction like
+.nf 
+tab << Align(2, FBB::center)
+.fi 
+requests centering of all elements in the table\(cq\&s column having index
+value 2 (i\&.e\&., the table\(cq\&s 3rd column), whereas a construction like
+.nf 
+tab << Align(2, 3, FBB::center)
+.fi 
+requests centering of element [2][3]\&. It is the responsibility of the
+programmer to ensure that such elements exist\&. By default, all elements are
+right\-aligned\&.
+.IP o 
+\fBTable &def()\fP:
+.br 
+After inserting elements into a \fITable\fP object its number of
+elements may or may not be an integral multiple of the number of columns
+specified at construction time\&. To `complete\(cq\& a \fBTable\fP object to a
+rectangular object, for which all column widths and alignments have been
+determined \fIdef\fP may be called\&. It is automatically called by
+\fIoperator<<(ostream, Table)\fP\&. In other situations it may be called
+explicitly to force the insertion of another row in a table using \fIROWWISE\fP
+insertions\&. With \fICOLUMNWISE\fP insertions its working is complex, since new
+elements added to a \fICOLUMNWISE\fP filled table will reshuffle its elements
+over the table\(cq\&s columns\&.
+)
+.PP 
+.SH "MANPULATORS"
+.IP o 
+\fBTable &def(Table &table)\fP:
+.br 
+This manipulator can be inserted into a table to call the table\(cq\&s
+\fBdef()\fP member\&.
+
+.PP 
+.SH "EXAMPLE"
+
+.PP 
+.nf 
+#include <iostream>
+
+#include <bobcat/table>
+#include <bobcat/tablelines>
+
+using namespace std;
+using namespace FBB;
+
+int main(int argc, char **argv)
+{
+    TableLines tablelines;
+                                // width/separators of cols 0, 1 and 2
+    tablelines << 0 << \(dq\& | \(dq\& << \(dq\& | \(dq\&;
+
+                                // hline over cols 1 and 2 of row 1
+    tablelines << TableLines::HLine(1, 1, 3); 
+
+    Table tab(tablelines, 3, Table::ROWWISE, Table::EQUALWIDTH);
+    // or: Table tab(tablelines, 3, Table::ROWWISE);
+ 
+    tab << Align(0, std::left);     // set column non\-default alignment
+    tab\&.fill(argv + 1, argv + argc);// fill range of values
+    cout << tab << \(cq\&\en\(cq\&;            // complete the table and insert
+ 
+    tab << \(dq\&hello\(dq\& << \(dq\&\(dq\& << \(dq\&wo\(dq\&;   // add additional elements\&.
+    if (tab\&.nRows() > 2)
+        tab << Align(2, 2, center); // set the layout of a specific element
+ 
+    cout << tab << \(cq\&\en\(cq\&;
+}
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/table\fP \- defines the class interface;
+.br 
+
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBalign\fP(3bobcat), \fBmanipulator\fP(3bobcat),
+\fBtablebuf\fP(3bobcat), \fBtablelines\fP(3bobcat), 
+\fBtablesupport\fP(3bobcat)
+.PP 
+.SH "BUGS"
+Note that \fIdef()\fP will reshuffle elements over the table\(cq\&s
+columns when new elements are added to the table subsequent to calling
+\fIdef()\fP
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

@@ -1,0 +1,362 @@
+.TH "FBB::Fork" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Template Design Pattern around fork(2)"
+
+.PP 
+.SH "NAME"
+FBB::Fork \- Implements \fBfork\fP(2) using the Template Design Pattern
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/fork>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+\fBFBB::Fork\fP objects may be used to implement the \fBfork\fP(2) call as part
+of the Template Algorithm Design Pattern\&. The class was designed as a virtual
+base class for classes implementing the essential parts of the forking
+process\&. The class is a virtual base class\&. Derived classes \fImust\fP implement
+the members \fIchildProcess\fP and \fIparentProcess\fP as part of the
+`Template Method Design Pattern\(cq\& (see Gamma \fIet al\&.\fP, 1995)\&.
+.PP 
+Terminating child processes send \fISIGCHLD\fP signals to their parents\&. The
+\fBC\fP library offers the following \fImacros\fP to analyze the \fIstatus\fP values
+received by the parent process using a \fBwait\fP(2) or \fBwaitpid\fP(2) system
+call: 
+.IP o 
+\fBint WIFEXITED(int status)\fP:
+.br 
+This macro returns a nonzero value if the child process terminated
+normally with `exit\(cq\& or `_exit\(cq\&\&.
+.IP o 
+\fBint WEXITSTATUS(int status)\fP:
+.br 
+If `WIFEXITED\(cq\& is true of `\fIstatus\fP\(cq\&, this macro returns the
+low\-order 8 bits of the exit status value from the child process\&.  
+.IP o 
+\fBint WIFSIGNALED(int status)\fP:
+.br 
+This macro returns a nonzero value if the child process terminated
+because it received a signal that was not handled\&.  
+.IP o 
+\fBint WTERMSIG(int status)\fP:
+.br 
+If `WIFSIGNALED\(cq\& is true of `\fIstatus\fP\(cq\&, this macro returns the
+signal number of the signal that terminated the child process\&.
+.IP o 
+\fBint WCOREDUMP(int status)\fP:
+.br 
+This macro returns a nonzero value if the child process terminated
+and produced a core dump\&.
+.IP o 
+\fBint WIFSTOPPED(int status)\fP:
+.br 
+This macro returns a nonzero value if the child process is stopped\&.
+.IP o 
+\fBint WSTOPSIG(int status)\fP:
+.br 
+If `WIFSTOPPED\(cq\& is true of `\fIstatus\fP\(cq\&, this macro returns the signal 
+number of the signal that caused the child process to stop\&.
+
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBFork()\fP:
+.br 
+This is the only available constructor\&. 
+Note that there is no copy constructor\&.
+.PP 
+.SH "DESTRUCTOR"
+.IP o 
+\fBvirtual ~Fork()\fP:
+.br 
+Derived classes may define their own destructor, which is called when
+the \fIFork\fP destructor is activated\&.
+
+.PP 
+.SH "MEMBER FUNCTIONS"
+.IP o 
+\fBvoid fork()\fP:
+.br 
+Performs the actual forking\&. It is implemented in such a way that the
+corresponding parent\- and child\- processes are activated from virtual members
+of \fBFork\fP\&. If the forking operation fails, an \fIFBB::Exception\fP exception
+is thrown\&.
+
+.PP 
+.SH "PROTECTED MEMBER FUNCTIONS"
+.IP o 
+\fBvirtual void childProcess() = 0\fP:
+.br 
+This member \fImust\fP be implemented by derived classes\&. It defines the
+actions that are performed by the child process, following the \fBfork\fP(2)
+system call\&. Just before \fIchildProcess\fP is called, \fIchildRedirections\fP
+(see below) has been executed\&. The \fIchildProcess()\fP function should
+terminate the child process\&. A good way to do this is to throw an exeption
+which is caught by \fImain()\fP\(cq\&s function try block\&. Terminating a process 
+using \fBexit\fP(2) is deprecated in \fBC++\fP\&.
+.IP o 
+\fBvirtual void childRedirections()\fP:
+.br 
+This function \fImay\fP be redefined in derived classes to set up the
+redirections that are necessary to communicate with the parent process\&. See
+also the classes \fBredirector\fP(3bobcat), \fBpipe\fP(3bobcat),
+\fBipipe\fP(3bobcat) and \fBopipe\fP(3bobcat)\&. By default, \fIchildRedirections\fP
+does nothing\&.
+.IP o 
+\fBvirtual void parentProcess() = 0\fP:
+.br 
+This member \fImust\fP be implemented by derived classes\&. It defines the
+actions that are performed by the parent process, following the \fBfork\fP(2)
+system call\&. Just before \fIparentProcess\fP is called,
+\fIparentRedirections\fP (see below) has been executed\&.
+.IP o 
+\fBvirtual void parentRedirections()\fP:
+.br 
+This function \fImay\fP be redefined in derived classes to set up the
+redirections that are necessary to communicate with, e\&.g\&., the parent\&. See,
+e\&.g\&., the classes \fBredirector\fP(3bobcat), \fBpipe\fP(3bobcat),
+\fBipipe\fP(3bobcat) and \fBopipe\fP(3bobcat)\&. By default,
+\fIparentRedirections\fP does nothing\&.
+.IP o 
+\fBpid_t pid() const\fP:
+.br 
+Returns the child\(cq\&s process id in the parent\(cq\&s code (i\&.e\&., in the
+\fBparent\-\fPmembers below), and 0 in the child\(cq\&s code (i\&.e\&., in the
+\fBchild\-\fPmembers below)\&. Note that the value of \fIpid\fP is \fBundefined\fP
+when called \fIbefore\fP the member \fIfork\fP has been called\&.
+.IP o 
+\fBvoid prepareDaemon() const\fP:
+.br 
+Prepares for a daemon childprocess\&. This function may (should) be
+called from \fIchildProcess\fP to ensure that the child process changes its
+current working directory to the root (/) directory, thus freeing up mount
+points; that the child process starts a new session/process group to allow the
+parent (group leader) to kill all its processes without terminating the
+daemon; and makes sure that the child process closes and reopens the standard
+streams by associating them with \fI/dev/null\fP to prevent ghost input and
+output actions from interfering with the daemon\(cq\&s actions\&. An
+\fIFBB::Exception\fP is thrown if changing directory to the root directory
+fails\&.
+.IP o 
+\fBvoid prepareDaemon(std::string const &out, std::string const &err,
+mode_t mode = 0600) const\fP:
+.br 
+Prepares for a daemon childprocess like the previous member function,
+but allows redirection of the standard output (\fIout\fP) and standard error
+(\fIerr\fP) streams to files\&. Specify empty strings to redirect these streams to
+\fI/dev/null\fP\&. With non\-empty strings the specified files are opened in
+append\-mode (and created if not yet existing), by default using mode 0600
+(read/write mode for the user only)\&. An \fIFBB::Exception\fP is thrown if
+changing directory to the root directory or if using the specified \fBs\fP
+fails\&.
+.IP o 
+\fBint waitForChild()\fP:
+.br 
+This member may be called by \fIparentProcess\fP to wait for the
+completion of the child\-process\&. The return value (exit\-code) of the child
+process is returned as a value between 0 and 255\&. If the child process
+terminates before the completion of the parent process, then
+\fIwaitForChild\fP should be called to prevent \fIzombies\fP from
+occurring\&. Alternatively, the parent process may terminate (e\&.g\&., using
+\fBexit\fP(2)) while the child process is still alive\&. This is the normal way to
+create a \fIdaemon\fP process\&.
+
+.PP 
+.SH "EXAMPLES"
+.nf 
+#include <iostream>
+#include <unistd\&.h>
+
+#include <bobcat/fork>
+
+using namespace std;
+using namespace FBB;
+
+class Background: public Fork
+{
+    public:
+        void childProcess()     override;
+        void parentProcess()    override;
+};
+
+void Background::childProcess()
+{
+    for (int idx = 0; idx < 3; ++idx)
+    {
+        cout << \(dq\&Hello world # \(dq\& << idx << endl;
+        sleep(1);
+    }
+    throw 0;    // caught in main()
+}    
+
+void Background::parentProcess()
+{
+    cout << \(dq\&Waiting for the child process to end\&.\&.\&.\en\(dq\&;
+
+    cout << \(dq\&The child returns value \(dq\& << waitForChild() << endl;
+}    
+
+int main()
+try
+{
+    Background bg;
+
+    bg\&.fork();
+    cout << \(dq\&This is from the parent\en\(dq\&;
+
+    return 0;
+}
+catch(int x)
+{
+    cout << \(dq\&The child terminates with: \(dq\& << x << endl;
+    return x;
+}
+
+
+
+.fi 
+
+.PP 
+Here\(cq\&s a more extensive example:
+.PP 
+.nf 
+#include <iostream>
+#include <string>
+
+#include <signal\&.h>
+#include <unistd\&.h>
+
+#include <sys/types\&.h>
+
+#include <bobcat/pipe>
+#include <bobcat/ofdstream>
+#include <bobcat/ifdstream>
+#include <bobcat/process>
+#include <bobcat/fork>
+
+class ChildIO: public FBB::Fork
+{
+    FBB::Pipe childInput;   // child reads this
+    FBB::Pipe childOutput;   // child writes this
+
+    public:
+        void childRedirections()    override;
+        void childProcess()         override;
+        void parentProcess()        override;
+};
+
+using namespace std;
+using namespace FBB;
+
+
+void ChildIO::childRedirections()
+{
+    childInput\&.readFrom(Redirector::STDIN);
+    childOutput\&.writtenBy(Redirector::STDOUT);
+}
+
+void ChildIO::childProcess()
+{
+        // The /bin/cat program replaces the
+        // child process started by Fork::fork()
+    Process process(Process::DIRECT, \(dq\&/bin/cat\(dq\&);
+    process\&.start();
+   
+    // this point is never reached
+}
+
+void ChildIO::parentProcess()
+{
+        // Set up the parent\(cq\&s sides of the pipes
+    IFdStream fromChild(childOutput\&.readOnly());
+    OFdStream toChild(childInput\&.writeOnly());
+
+        // write lines to the child, read its output
+    string line;
+    while (true)
+    {
+        cout << \(dq\&? \(dq\&;
+        line\&.clear();
+        getline(cin, line);
+
+        if (line\&.empty())
+        {
+            kill(pid(), SIGTERM);
+            break;
+        }
+
+        toChild << line << endl;
+
+        getline(fromChild, line);
+        cout << \(dq\&Got: \(dq\& << line << endl;
+    }
+    cout << \(dq\&The child returns value \(dq\& << waitForChild() << endl;
+}
+
+int main()
+try
+{
+    ChildIO io;
+
+    io\&.fork();
+
+    return 0;
+}
+catch(exception const &exc)
+{
+    cerr << \(dq\&Exception: \(dq\& << exc\&.what() << endl;
+}
+catch(int x)
+{
+    cout << \(dq\&The child terminates with: \(dq\& << x << endl;
+    return x;
+}
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/fork\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBipipe\fP(3bobcat), \fBfork\fP(2), \fBopipe\fP(3bobcat),
+\fBpipe\fP(3bobcat), \fBredirector\fP(3bobcat), \fBwait\fP(2), \fBwaitpid\fP(2)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

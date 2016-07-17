@@ -1,0 +1,336 @@
+.TH "FBB::String" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Operations on std::string objects"
+
+.PP 
+.SH "NAME"
+FBB::String \- Several operations on \fBstd::string\fP objects
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/string>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+This class offers facilities for often used transformations on
+\fIstd::string\fP objects, but which are not supported by the \fIstd::string\fP
+class itself\&. All members of \fBFBB::String\fP are static\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All members, operators and manipulators, mentioned in this man\-page, are
+defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-\-
+.PP 
+.SH "ENUMERATION"
+.IP o 
+\fBType\fP:
+.br 
+This enumeration indicates the nature of the contents of an element in
+the array returned by the overloaded \fIsplit\fP members (see below)\&.
+.IP 
+\fBDQUOTE\fP, a subset of the characters in the matching \fIstring\fP
+element was delimited by double quotes in the in the string that was parsed by
+the \fIsplit\fP members\&.
+.IP 
+\fBDQUOTE_UNTERMINATED\fP, the contents of the string that was
+parsed by the \fIsplit\fP members started at some point with a double quote, but
+the matching ending double quote was lacking\&.
+.IP 
+\fBESCAPED_END\fP,  the contents of the string that was
+parsed by the \fIsplit\fP members ended in a mere backslash\&.
+.IP 
+\fBNORMAL\fP, a normal string; 
+.IP 
+\fBSEPARATOR\fP, a separator;
+.IP 
+\fBSQUOTE\fP, a subset of the characters in the matching \fIstring\fP
+element was delimited by quotes in the in the string that was parsed by
+the \fIsplit\fP members\&.
+.IP 
+\fBSQUOTE_UNTERMINATED\fP, the contents of the string that was
+parsed by the \fIsplit\fP members started at some point with a quote, but
+the matching ending quote was lacking\&.
+
+.PP 
+.SH "TYPEDEF"
+
+.PP 
+The \fBtypedef SplitPair\fP represents \fBstd::pair<std::string,
+String::Type>\fP and is used in the second variant of the \fBsplit\fP member (see
+below)\&.
+.PP 
+.SH "HISTORY"
+Initially this class was derived from \fBstd::string\fP\&. Deriving from
+\fIstd::string\fP, however, is considerd bad design as \fIstd::string\fP was
+not designed as a base\-class\&. 
+.PP 
+\fBFBB::String\fP offers a series of \fIstatic\fP member functions
+providing the facilities originally implemented as non\-static members\&.
+.PP 
+.SH "STATIC MEMBER FUNCTIONS"
+
+.IP 
+.IP o 
+\fBchar const **argv(std::vector<std::string> const &words)\fP:
+.br 
+Returns a pointer to an allocated series of pointers to the \fBC\fP
+strings stored in the vector \fIwords\fP\&. The caller is responsible for
+returning the array of pointers to the common pool, but should \fInot\fP delete
+the \fBC\fP\-strings to which the pointers point\&. The last element of the
+returned array is guaranteed to be a 0\-pointer\&. 
+.IP 
+.IP o 
+\fBint casecmp(std::string const &lhs, std::string const &rhs)\fP:
+.br 
+Performs a case\-insensitive comparison between the two \fIstd::string\fP
+objects\&. A negative value is returned if \fIlhs\fP should be ordered before
+\fIrhs\fP; 0 is returned if the two strings have identical contents; a
+positive value is returned if the \fIlhs\fP object should be ordered beyond
+\fIrhs\fP\&.
+.IP 
+.IP o 
+\fBstd::string escape(std::string const &str, 
+char const *series = \(dq\&\(cq\&\e\(dq\&\e\e\(dq\&)\fP:
+.br 
+Returns a copy of the \fIstr\fP object in which all characters in
+\fIseries\fP are prefixed by a backslash character\&.
+.IP 
+.IP o 
+\fBstd::string lc(std::string const &str) const\fP:
+.br 
+Returns a copy of the \fIstr\fP object in which all letters were
+transformed to lower case letters\&.
+.IP 
+.IP o 
+\fBstd::string trim(std::string const &str)\fP:
+.br 
+Returns a copy of the \fIstr\fP object from which the leading and
+trailing blanks have been removed\&.
+.IP 
+.IP o 
+\fBstd::vector<std::string> split(Type *type, std::string const
+&str, char const *separators = \(dq\& \et\(dq\&, bool addEmpty = false)\fP:
+.br 
+Returns a vector containing the elements in \fIstr\fP which are
+separated from each other by at least one of the characters found in
+\fI*separators\fP\&. The member\(cq\&s first parameter points to a \fIType\fP variable,
+which will show \fIDQUOTE_UNTERMINATED, SQUOTE_UNTERMINATED,\fP or
+\fIESCAPED_END\fP in cases where the contents of \fIstr\fP are ill\-formed, or
+\fINORMAL\fP if \fIstr\fP\(cq\&s contents shows not syntactic errors (i\&.e\&., ill\-formed
+strings or escape\-sequences)\&. If the corresponding argument equals 0 then no
+\fIType\fP indication is provided\&.
+.IP 
+If the parameter \fIaddEmpty\fP is set to \fItrue\fP, then individual separators
+encountered in \fIstr\fP are stored as empty strings in \fIwords\fP (e\&.g\&., if two
+elements are separated by three blank spaces, then the returned vector
+contains three empty strings between the two elements)\&.
+.IP 
+If an element in \fIstr\fP contains a double quote (\fI\(dq\&\fP), then all characters
+from the initial double quote through the matching double quote character are
+processed as follows: the surrounding double quotes are removed, and the
+remaining characters are \fIunescaped\fP using the \fIString::unescape\fP
+member\&. The resulting unescaped string is added to the element currently under
+construction\&. E\&.g\&., if \fIstr\fP contains
+.nf 
+
+    string=\(dq\&\e\(dq\&hello world\e\(dq\&\(dq\&
+        
+.fi 
+then the element becomes 
+.nf 
+
+    string=\(dq\&hello world\(dq\&
+        
+.fi 
+
+.IP 
+If an element in \fIstr\fP contains a single quote (\fI\(cq\&\fP), then all characters
+between the initial quote and the matching quote character are literally
+appended to the element currently under construction\&. E\&.g\&., if \fIstr\fP
+contains
+.nf 
+
+    string=\(cq\&\(dq\&hello\e world\(dq\&\(cq\&
+        
+.fi 
+then the element becomes 
+.nf 
+
+    string=\(dq\&hello\e world\(dq\&
+        
+.fi 
+
+.IP 
+Backslash characters encountered in \fIstr\fP outside of single or double quoted
+strings are unescaped (using \fIString::unescape\fP) and the resulting character
+is appended to the element currently under construction\&. 
+.IP 
+E\&.g\&., if \fIstr\fP
+contains
+.nf 
+
+    string=\e\(dq\&hello\e world\e\(dq\&
+        
+.fi 
+then the element becomes 
+.nf 
+
+    string=\(dq\&hello world\(dq\&
+        
+.fi 
+
+.IP 
+.IP o 
+\fBstd::vector<SplitPair> split(std::string const &str,
+char const *separators = \(dq\& \et\(dq\&, bool addEmpty = false)\fP:
+.br 
+Same functionality as the previous \fIsplit\fP member, but the \fIwords\fP
+vector is filled with pairs, of which the first elements represent the
+recognized strings, and the second elements are values of the \fIString::Type\fP
+enumeration\&. If \fBaddEmpty\fP is requested, then the \fBstring\fP elements
+contain the actual contents of the separator, while the \fBType\fP elements are
+set to \fBSEPARATOR\fP\&. If the returned vector is not empty then the \fIsecond\fP
+member of the last element may be \fIDQUOTE_UNTERMINATED,
+SQUOTE_UNTERMINATED,\fP or \fIESCAPED_END\fP in cases where the contents of
+\fIstr\fP are ill\-formed\&.
+.IP 
+.IP o 
+\fBsize_t split(std::vector<std::string> *words,
+std::string const &str,
+char const *separators = \(dq\& \et\(dq\&, bool addEmpty = false)\fP:
+.br 
+Fills \fIwords\fP with all elements of the \fIstr\fP object, separated by
+any of the characters in \fIseparators\fP\&. If the parameter \fIaddEmpty\fP is set
+to \fItrue\fP, the individual separators are stored as empty strings in
+\fIwords\fP\&. If a word starts with \fI\(dq\&\fP or \fI\(cq\&\fP all characters until a
+matching terminating \fI\(dq\&\fP or \fI\(cq\&\fP at the end of a word are considered as one
+word\&.  The surrounding quotes are not stored\&. The function returns the number
+of elements in the vector pointed to by \fIwords\fP\&. This vector is initially
+cleared\&.
+.IP 
+.IP o 
+\fBsize_t  split(std::vector<SplitPair> *words,
+std::string const &str,
+char const *separators = \(dq\& \et\(dq\&, bool addEmpty = false)\fP:
+.br 
+Same functionality as the former member, but the \fIwords\fP vector is
+filled with pairs, of which the first elements are the recognized strings, and
+the second elements values of the \fIString::Type\fP enumeration\&. If
+\fBaddEmpty\fP is requested, then the \fBstring\fP elements contain the actual
+contents of the separator, while the \fBType\fP elements are set to
+\fBSEPARATOR\fP\&.
+.IP 
+.IP o 
+\fBstd::string unescape(std::string const &str)\fP:
+.br 
+Returns a copy of the \fIstr\fP object in which the escaped (i\&.e\&.,
+prefixed by a backslash) characters have been interpreted\&. All standard escape
+characters (\fI\ea\fP, \fI\eb\fP, \fI\ef\fP, \fI\en\fP, \fI\er\fP, \fI\et\fP, \fI\ev\fP) are
+recognized\&. If an escape character is followed by \fIx\fP the next two
+characters are interpreted as a hexadecimal number\&. If an escape character is
+followed by an octal digit, then the next three characters following the
+backslash are interpreted as an octal number\&. In all other cases, the
+backslash is removed and the character following the backslash is kept\&.
+.IP 
+.IP o 
+\fBstd::string uc(std::string const &str)\fP:
+.br 
+Returns a copy of the \fIstr\fP object in which all letters were
+capitalized\&. 
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+
+#include <iostream>
+#include <vector>
+
+#include <bobcat/string>
+
+using namespace std;
+using namespace FBB;
+
+char const *type[] = 
+{
+    \(dq\&DQUOTE_UNTERMINATED\(dq\&,
+    \(dq\&SQUOTE_UNTERMINATED\(dq\&,
+    \(dq\&ESCAPED_END\(dq\&,
+    \(dq\&SEPARATOR\(dq\&,
+    \(dq\&NORMAL\(dq\&,
+    \(dq\&DQUOTE\(dq\&,
+    \(dq\&SQUOTE\(dq\&,
+};
+
+int main(int argc, char **argv)
+{
+    cout << \(dq\&Program\(cq\&s name in uppercase: \(dq\& << String::uc(argv[0]) << endl;
+
+    if (argc == 1)
+        cout << \(dq\&Provide any argument to suppress SEPARATOR fields\en\(dq\&;
+
+    while (true)
+    {
+        cout << \(dq\&Enter a line, or empty line to stop:\(dq\& << endl;
+
+        String line;
+        if (!getline(cin, line) || !line\&.length())
+            break;
+
+        vector<String::SplitPair> splitpair;
+        cout << \(dq\&Split into \(dq\& << line\&.split(&splitpair, \(dq\& \et\(dq\&, argc == 1) << 
+                \(dq\& fields\en\(dq\&; 
+        for 
+        (
+            vector<String::SplitPair>::iterator it = splitpair\&.begin();
+                it != splitpair\&.end();
+                    ++it
+        )
+            cout << (it \- splitpair\&.begin() + 1) << \(dq\&: \(dq\& <<
+                    type[it\->second] << \(dq\&: `\(dq\& << it\->first << 
+                    \(dq\&\(cq\&, unescaped: `\(dq\& << String(it\->first)\&.unescape() << 
+                    \(dq\&\(cq\&\(dq\& << endl;
+    }
+    return 0;
+}
+    
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/string\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

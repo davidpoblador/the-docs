@@ -1,0 +1,368 @@
+.TH "FBB::TableSupport" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Table Support Base class"
+
+.PP 
+.SH "NAME"
+FBB::TableSupport \- Defines protocols for Table\-support classes
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/tableSupport>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+This class is designed as a (non\-pure) base class for objects handling
+some of the functionality of \fIFBB::Table\fP and \fIFBB::TableBuf\fP objects\&. By
+overriding its virtual functions users have control over the way the actual
+layout of tables is defined\&. By default the virtual members of this class
+do not separate the columns of the table from each other
+.PP 
+The Bobcat library offers the specialized class \fITableLines\fP extending the
+basic facilities of \fITableSupport\fP by allowing rows to be separated from
+each other by (partial) horizontal lines (see the \fBtablelines\fP(3bobcat)
+man\-page for a description)\&.
+.PP 
+When more specialized handling is required a class should be derived from
+\fBFBB::TableSupport\fP overriding those members that violate the programmer\(cq\&s
+current intentions\&. An object of this derived class may be presented to a
+\fIFBB::Table\fP or \fIFBB::TableBuf\fP constructor, to activate the special
+handling\&. 
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "ENUMERATION"
+
+.PP 
+The enum \fIColumnType\fP defines the following values (see also the
+description of the \fIstruct HLine\fP, below):
+.IP o 
+\fBSKIP\fP:
+.br 
+a section of a row\-separating line should remain empty\&. This
+value is normally not used by applications;
+.IP o 
+\fBUSE\fP:
+.br 
+a section of a row\-separating line should be used (e\&.g\&., by
+writing a (horizontal) line);
+.IP o 
+\fBLEFT_FULL\fP:
+.br 
+a (horizontal) line should be written over the total width
+of the separator to the left of a series of columns
+.IP o 
+\fBRIGHT_FULL\fP:
+.br 
+a (horizontal) line should be written over the total width
+of the separator to the right of a series of columns;
+.IP o 
+\fBLEFT_MID\fP:
+.br 
+a (horizontal) line should be written over the right\-half
+part of the width of the separator to the left of a series of
+columns; the left\-hand part remains blank;
+.IP o 
+\fBRIGHT_MID\fP:
+.br 
+a (horizontal) line should be written over the left\-half
+part of the width of the separator to the right of a series of
+columns; the right\-hand part remains blank;
+The value \fISKIP\fP should always be used by itself; remaining values of
+the enum may be combined using the binary or (\fI|\fP) operator\&.
+.PP 
+.SH "PUBLIC TYPE"
+
+.PP 
+.IP o 
+\fBstruct HLine\fP:
+.br 
+This struct has the following fields:
+.nf 
+
+    size_t d_row;
+    size_t d_begin;
+    size_t d_end;
+    size_t d_type;
+        
+.fi 
+It offers two constructors:
+.IP o 
+\fBHLine(size_t row, size_t begin, size_t end)\fP:
+.br 
+.IP o 
+\fBHLine(ColumnType type, size_t row, size_t begin, size_t end)\fP:
+.br 
+Objects of type \fBTableSupport::HLine\fP may be inserted into a
+\fBTableSupport\fP object to indicate section(s) of a horizontal separator
+between table rows that should be displayed or skipped\&. E\&.g\&., to specify that
+a separator should be written in row 1 between columns 2 up to (not including)
+5, extending the separator to the left by half the width of the separator
+between columns 1 and 2 and to the right by the full width of the separator
+between columns 4 and 5 the following \fIHLine\fP object should be inserted into
+the \fITableSupport ts\fP object:
+.nf 
+ts << HLine(LEFT_MID | RIGHT_FULL, 1, 2, 5);
+.fi 
+Multiple \fIHLine\fP objects may be inserted into a \fITableSupport\fP object,
+their ordering is irrelevant\&. When colum ranges overlap then their
+\fIColumType\fPs are merged\&. 
+
+.PP 
+.SH "PROTECTED TYPES"
+
+.PP 
+.IP o 
+\fBconst_iterator\fP:
+.br 
+This type is defined in the class\(cq\&s protected
+section\&. \fBTableSupport::const_iterator\fP is an input\-iterator returning
+pointers to \fBstruct Field\fP (see below) objects for table columns and column
+separators (see below at the \fIbegin\fP and \fIend\fP members)
+.IP o 
+\fBstruct Field\fP:
+.br 
+This type has two data members: \fIwidth\fP and \fItype\fP, representing,
+respectively, the width and \fIColumnType\fP of a column or
+separating column\&. Although column types can be combined when inserting them
+using \fIHLine\fP objects, \fItype\fP values of \fIField\fP objects returned by
+\fITableSupport\fP members only contain single values (like \fISKIP\fP or
+\fILEFT_MID\fP)\&. 
+
+.PP 
+.SH "CONSTRUCTORS"
+
+.PP 
+The default, copy and move constructors are available\&.
+.PP 
+.SH "OVERLOADED OPERATORS"
+
+.PP 
+.IP o 
+\fBTableSupport &operator<<(TableSupport &support, size_t width)\fP:
+.br 
+This operator defines a column\-separator of \fIwidth\fP space
+characters\&. The argument \fIwidth\fP may be zero, in which case no visible
+separator is used\&. The first separator inserted refers to the separator to the
+left of the table\(cq\&s leftmost column\&. Subsequent separators separate subsequent
+columns\&. At most \fInColumns + 1\fP separators can sensibly be inserted\&. 
+Additional separators are ignored when a table is inserted into an
+\fIostream\fP\&. 
+.IP o 
+\fBTableSupport &operator<<(TableSupport &support, 
+std::string const &sep)\fP:
+.br 
+This operator defines a separator as a piece of text\&. The string may
+be empty, in which case no visible separator is inserted into the table\&. The
+first separator inserted refers to the separator to the left of the table\(cq\&s
+leftmost column\&. Subsequent separators separate subsequent columns\&. Textual
+and numeric separator may be intermixed\&. At most \fInColumns + 1\fP separators
+can sensibly be inserted\&.  Additional separators are ignored when a table is
+inserted into an \fIostream\fP\&.
+.IP o 
+\fBTableSupport &operator<<(TableSupport &support, HLine const &hsep)\fP:
+.br 
+This operator defines how a section of a horizontal separator of a
+specified row should be displayed (see the description of \fIColumnType\fP in
+the \fIENUMERATION\fP section)\&.
+The overloaded copy and move assignment operators are available\&.
+.PP 
+.SH "PUBLIC MEMBER FUNCTIONS"
+.IP o 
+\fBvoid hline(size_t row) const\fP:
+.br 
+When inserting a table into a \fIstd::ostream\fP \fITable\fP and
+\fITableBuf\fP objects call this member just before the indicated row (offset)
+is inserted into a \fIstd::ostream\fP\&. It calls \fIv_hline\fP, passing it \fIrow\fP\&.
+.IP o 
+\fBvoid hline() const\fP:
+.br 
+When inserting a table into a \fIstd::ostream\fP \fITable\fP and
+\fITableBuf\fP objects call this member just after inserting the table\(cq\&s final
+row\&. It calls \fIv_hline\fP without arguments\&.
+.IP o 
+\fBvoid setParam(std::ostream &ostr, size_t nRows, size_t nColumns,
+std::vector<Align> const &align)\fP:
+.br 
+This member provides the \fBTableSupport\fP object with values that are
+essential for its proper functioning\&.  It is called from the \fITable\fP and
+\fITableBuf\fP\(cq\&s \fIdef\fP member or manipulator\&.  A \fITableSupport\fP object can
+be used before that to specify widths and types of separators, though\&. This
+member\(cq\&s parameters are initialized by the \fITable\fP and \fITableBuf\fP class
+objects as follows:
+.br 
+\fBostr\fP is a reference to the \fBstd::ostream\fP into which the table
+will be inserted; 
+.br 
+\fBnRows\fP specifies  the number of rows used by the table;
+.br 
+\fBnColumns\fP specifies  the number of columns if the table;
+.br 
+\fBalign\fP is a reference to a constant vector of (column) alignment
+specifications\&.
+.IP o 
+\fBvoid vline(size_t col) const\fP:
+.br 
+When inserting the data elements of the rows of a table into a
+\fIstd::ostream\fP \fITable\fP and \fITableBuf\fP objects call this member just
+before inserting the data elements of column \fIcol\fP\&.  Its intended task is to
+write a column separator just before the data elements themselves\&. It calls
+\fIv_vline\fP passing it its \fIcol\fP parameter\&.
+.IP o 
+\fBvirtual void vline() const\fP:
+.br 
+When inserting a table into a \fIstd::ostream\fP \fITable\fP and
+\fITableBuf\fP objects call this member after inserting the data elements of the
+rows of the table\&. It is called at the end of each row\&. It calls \fIv_vline\fP
+without arguments\&.
+.IP o 
+\fBsize_t width() const\fP:
+.br 
+Returns the total width of the table\&.
+
+.PP 
+.SH "PROTECTED MEMBER FUNCTIONS"
+
+.PP 
+The following members are available to classes derived from
+\fBTableSupport\fP\&. Except for \fIsep\fP and \fIsepWidth\fP their values are only
+defined after \fIsetParam\fP has been called\&. This latter function is called
+from the \fIdef\fP member or manipulator of \fITable\fP or \fITableBuf\fP objects\&. 
+.PP 
+.IP o 
+\fBstd::vector<Align> const &align() const\fP:
+.br 
+A reference to a vector of \fIAlign\fP objects, defining the alignments
+and widths of the table\(cq\&s columns is returned\&.
+.IP o 
+\fBconst_iterator begin(size_t row) const\fP:
+.br 
+An iterator returning information about the first column element when
+displaying the horizontal separator preceding line \fIrow\fP is returned\&.  To
+obtain the information about the separator beyond the last row \fInRows()\fP
+should be used as its argument\&.  The `column elements\(cq\& of the table are its
+separators and data columns\&.
+.IP 
+Dereferencing the returned \fIconst_iterator\fP provides access to a
+\fIField\fP struct defining the type and width of a column
+element\&. Dereferencing the iterator returned by \fIbegin\fP provides information
+about the leftmost column separator\&. By incrementing the iterator all
+subsequent column elements are visited\&. The iterator\(cq\&s value becomes undefined
+once it reaches the value returned by \fIend\fP (see below)\&.
+.IP o 
+\fBsize_t colWidth(size_t col) const\fP:
+.br 
+The width of the indicated column is returned\&.
+.IP o 
+\fBconst_iterator end(size_t row) const\fP:
+.br 
+An iterator indicating the end of the iterator range starting at
+\fIbegin(row)\fP is returned\&.
+.IP o 
+\fBsize_t nColumns() const\fP:
+.br 
+The number of columns of the table is returned\&.
+.IP o 
+\fBsize_t nRows() const\fP:
+.br 
+The number of rows of the table is returned\&.
+.IP o 
+\fBstd::ostream &out() const\fP:
+.br 
+A reference to the stream into which the table is inserted is
+returned\&.
+.IP o 
+\fBstd::vector<std::string> const &sep()\fP:
+.br 
+A reference to the separators that are defined for the table\(cq\&s columns
+is returned\&. Element \fIcol\fP refers to the separator to the left of the
+table column \fIcol\fP, element \fInColumns()\fP refers to the separator to the
+right of the rightmost table column\&.
+.IP o 
+\fBsize_t sepWidth(size_t col) const\fP:
+.br 
+The width of the indicated separator is returned\&. Element \fIcol\fP
+refers to the separator to the left of the table column \fIcol\fP, element
+\fInColumns()\fP refers to the separator to the right of the rightmost table
+column\&.
+
+.PP 
+.SH "VIRTUAL MEMBER FUNCTIONS"
+
+.PP 
+The following member functions can be overridden by derived classes to
+redefine the way horizontal and vertical separators are displayed\&.
+.IP o 
+\fBvirtual void v_hline(size_t row) const\fP:
+.br 
+This member is called from \fIhline(size_t row)\fP, receiving its \fIrow\fP
+parameter\&. Its task is to write a horizonal separator for row \fIrow\fP\&.  By
+default nothing is inserted\&. It may do so by iterating over the range defined
+by the \fIbegin\fP and \fIend\fP members, deciding what to do on the basis of the
+\fIField\fP objects referred to by the iterators\&.
+.IP o 
+\fBvirtual void v_hline() const\fP:
+.br 
+This member is called from \fIhline()\fP\&.  Its intended task is to write
+a (partial) horizontal line beyond the table\(cq\&s last line of data elements\&. By
+default it calls \fIhline(nRows)\fP\&.
+.IP o 
+\fBvirtual void v_vline(size_t col) const\fP:
+.br 
+This member is called from \fIvline(size_t col)\fP, receiving its
+\fIcol\fP parameter\&. Its task is to write a separator  before data column
+\fIcol\fP\&. By default it inserts \fIseparator[col]\fP if if is available\&. If that
+separator is not defined, no action is performed\&.
+.IP o 
+\fBvirtual void v_vline() const\fP:
+.br 
+This member is called from \fIvline()\fP\&.  Its intended task is to write
+a column separator, terminating a line of the table\&. By default it inserts a
+new\-line (\fI\en\fP) character\&.
+
+.PP 
+.SH "EXAMPLE"
+See the example in the \fBtable\fP(3bobcat) man\-page\&.
+.PP 
+.SH "FILES"
+\fIbobcat/tableSupport\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBalign\fP(3bobcat), \fBtable\fP(3bobcat), 
+\fBtablebuf\fP(3bobcat), \fBtablelines\fP(3bobcat)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

@@ -1,0 +1,229 @@
+.TH "FBB::Mbuf" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Message handler"
+
+.PP 
+.SH "NAME"
+FBB::Mbuf \- std::streambuf handling messages
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/mbuf>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+Objects of this class implement a \fIstd::streambuf\fP class that are used
+to handle messages in a standardized way\&. Messages may be prefixed with order
+numbers and labels and/or line numbers\&. 
+.PP 
+By default all messages are inserted into the standard output stream, but
+other destinations (standard error, a named file, etc\&.) can easily be
+configured\&. 
+.PP 
+\fBFBB::Mbuf\fP objects themselves are \fIstd::streambuf\fP objects, so they
+can be used to construct \fIstd::ostream\fP objects\&. However, they are intended
+to be used by \fBmstream\fP(3bobcat) objects\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All elements mentioned in this man\-page, are defined in the namespace
+\fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBstd::streambuf\fP
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBMbuf()\fP:
+.br 
+The default constructor handles messages using the \fIstd::streambuf\fP
+also used by \fIstd::cout\fP\&. There is no limit to the number of messages that
+may be inserted\&. No message or line numbers are shown, no exception are thrown
+when inserting messages\&.
+.IP o 
+\fBexplicit Mbuf(std::streambuf *buf, 
+size_t maxCount = std::numeric_limits<size_t>::max(), 
+std::string const &tag = \(dq\&\(dq\&, bool throwing = false)\fP:
+.br 
+This constructor uses \fIbuf\fP to handle messages\&. By default (using
+the default argument values) there is no limit to the number of messages that
+may be inserted\&. No message or line numbers are shown, no exception are thrown
+when inserting messages\&. Specifying any other value than
+\fIstd::numeric_limits<size_t>::max()\fP sets the maximum number of messages
+that can be inserted to that value\&. The \fItag\fP defines the text of the
+message label (e\&.g\&., \fIError\fP)\&. When \fIthrowing\fP is specified as \fItrue\fP an
+\fIFBB::Exception\fP exception is thrown after completing a message\&. The generated
+exception holds the id (see below for the member \fIid\fP) of the \fBFBB::Mbuf\fP
+object from which the exception was thrown as well as the text \fIFBB::Mbuf\fP\&.
+.IP o 
+\fBexplicit Mbuf(std::string const &name, size_t maxCount =
+std::numeric_limits<size_t>::max(),  
+std::string const &tag = \(dq\&\(dq\&, bool throwing = false)\fP:
+.br 
+This constructor creates a \fIstd::ofstream\fP from the provided
+\fIname\fP parameter that receives the messages handled by the constructed
+\fBFBB:Mbuf\fP object\&. It throws an \fIFBB::Exception\fP exception if the stream
+cannot be opened for writing\&. If a file by that name already exists it is
+rewritten\&.  The remaining parameters are identical to those of the previous
+two constructors\&.
+As \fBFBB::Mbuf\fP inherits from \fIstd::streambuf\fP the copy constructor is
+not available\&. Neither is the move constructor\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+
+.PP 
+.IP o 
+\fBsize_t count() const\fP:
+.br 
+returns the number of inserted messages (if \fIsetCount\fP has been
+called: the value set by the last \fIsetCount\fP call plus the number of
+inserted messages since that call)\&.
+.IP 
+.IP o 
+\fBbool lineExcess() const\fP:
+.br 
+returns \fBtrue\fP after attempting to insert an additional message
+after \fImaxCount()\fP number of messages have been inserted\&.
+.IP 
+.IP o 
+\fBstd::string const &lineTag() const\fP:
+.br 
+returns the currently used line\-tag (by default `\fILine\fP\(cq\&)\&.
+.IP 
+.IP o 
+\fBsize_t maxCount() const\fP:
+.br 
+returns the maximum number of messages that can be inserted\&. If the
+returned value equals \fIstd::numeric_limits<size_t>::max()\fP then there is no
+limit to the number of messages that can be inserted\&.
+.IP 
+.IP o 
+\fBvoid noLineNr()\fP:
+.br 
+calling this member will suppress the display of a line number if it
+is called after calling \fIsetLineNr\fP (see below) but before a message is
+being (or has been) inserted\&.
+.IP 
+.IP o 
+\fBvoid reset(std::streambuf *buf, size_t maxCount, 
+std::string const &tag, bool throwing)\fP:
+.br 
+messages inserted into \fBFBB::Mbuf\fP objects are handled by
+\fIstd::streambuf buf\fP\&.  By specifying \fIstd::numeric_limits<size_t>::max()\fP
+for \fImaxCount\fP there is no limit to the number of messages that may be
+handled by this \fIstd::streambuf\fP\&. The \fItag\fP defines the text of the
+message label (e\&.g\&., \fIError\fP or the empty string for no message label)\&. When
+\fIthrowing\fP is specified as \fItrue\fP an \fIFBB::Exception\fP exception is thrown
+after completing a message\&.
+.IP 
+.IP o 
+\fBvoid reset(std::string const &name, size_t maxCount, 
+std::string const &tag, bool throwing)\fP:
+.br 
+messages inserted into \fBFBB::Mbuf\fP objects are handled by a
+\fIstd::ofstream\fP created using the provided \fIname\fP parameter\&. It throws an
+\fIFBB::Exception\fP exception if the stream cannot be opened for writing\&. If a file
+by that name already exists it is rewritten\&.  The remaining parameters are
+identical to those of the previous \fIreset\fP members\&.
+.IP 
+.IP o 
+\fBvoid reset(FBB::Mbuf const &mbuf)\fP:
+.br 
+the current object is reset using the parameters of the \fImbuf\fP
+parameter\&. Following the reset all of the current object\(cq\&s parameters can
+independently be modified from those used by \fImbuf\fP\&.
+.IP 
+.IP o 
+\fBvoid setCount(size_t count)\fP:
+.br 
+assigns the value \fIcount\fP to the object\(cq\&s message counter\&.
+.IP 
+.IP o 
+\fBvoid setLineNr(size_t lineNr)\fP:
+.br 
+specifies the value \fIlineNr\fP as the message\(cq\&s line number when the
+next line is displayed (see also \fInoLineNr\fP)\&. This value is \fInot\fP changed
+by the \fBFBB::Mbuf\fP object\&. To display another line number the member will
+have to be called again (i\&.e\&., the line number is not displayed automatically
+again at every new line)\&.
+.IP 
+.IP o 
+\fBvoid setLineTag(std::string const &tag)\fP:
+.br 
+specifies the tag prefixing line numbers\&. By default the line tag
+equals `\fILine\fP\(cq\&\&.
+.IP 
+.IP o 
+\fBvoid setMaxCount(size_t maxCount)\fP:
+.br 
+defines \fImaxCount\fP as the maximum number of messages that can be
+inserted into the \fBFBB::Mbuf\fP object\&.
+.IP 
+.IP o 
+\fBvoid setTag(std::string const &tag)\fP:
+.br 
+specifies the tag prefixing messages\&. By default the tag is empty\&. If
+not empty the tag is enclosed by square brackets\&. E\&.g\&., specifying the tag
+`\fIError\fP\(cq\& will prefix messages with \fI[Error]\fP\&.
+.IP 
+.IP o 
+\fBstd::string const &tag() const\fP:
+.br 
+returns the currently used message tag (by default an empty string)\&.
+.IP 
+.IP o 
+\fBbool throws()\fP:
+.br 
+returns \fItrue\fP when the \fBFBB::Mbuf\fP object will throw an
+\fIFBB::Exception\fP exception at the next completed message\&. The generated
+exception holds the id (see earlier for the member \fIid\fP) of the
+\fBFBB::Mbuf\fP object from which the exception was thrown as well as the
+text \fIFBB::Mbuf\fP\&.
+.IP 
+.IP o 
+\fBvoid throwing(bool ifTrue)\fP:
+.br 
+modifies the behavior of \fBFBB::Mbuf\fP objects at completed
+messages\&. After passing \fItrue\fP \fBFBB::Mbuf\fP objects will throw an
+\fIFBB::Exception\fP exception at the next completed message, otherwise this
+exception is not thrown\&.
+
+.PP 
+.SH "EXAMPLE"
+See the \fBmstream\fP(3bobcat) example\&.
+.PP 
+.SH "FILES"
+\fIbobcat/mbuf\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBexception\fP(3bobcat), \fBmstream\fP(3bobcat)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

@@ -1,0 +1,264 @@
+.TH "binops" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Binary Operators"
+
+.PP 
+.SH "NAME"
+binops \- Template functions for class\-type binary operators
+.PP 
+.SH "SYNOPSIS"
+\fB#include <utility>\fP
+.br 
+\fB#include <bobcat/typetrait>\fP
+.br 
+\fB#include <bobcat/binops>\fP
+.br 
+
+.PP 
+.SH "DESCRIPTION"
+Classes can overload binary operators\&. A class named \fIClass\fP may
+overload these binary operators to suit its own needs, allowing, e\&.g\&., two
+\fIClass\fP type objects to be added after overloading \fIoperator+\fP\&. Operators
+for the binary operators *, /, %, +, \-, <<, >>, &, |, and ^ (in this man\-page
+they are generically indicated as the `\fI@\fP\(cq\& operator) can be overloaded by
+defining the \fIoperator@\fP function\&.
+.PP 
+If a class supports copy construction and if it offers binary assignment
+operators (i\&.e\&., it offers members of the form \fIoperator@=\fP), then the
+matching binary operators can all be implemented identically\&. The
+\fImove\-aware\fP \fIClass &operator@(Class &&lhs, Class const &rhs)\fP is easily
+implemented in terms of \fIoperator@=\fP (note that the class itself doesn\(cq\&t
+have to be `move\-aware\(cq\& to define this function)\&. The move\-aware binary
+operator one requires a one line implementation, and as its
+implementation never changes it could safely be defined \fIinline\fP:
+.nf 
+
+Class operator@(Class &&lhs, Class const &rhs)
+{
+    return std::move(lhs @= rhs);
+}
+        
+.fi 
+The traditional binary operator can be implemented using its standard
+form:
+.nf 
+
+Class operator@(Class const &lhs, Class const &rhs)
+{
+    Class tmp(lhs);
+    tmp @= rhs;
+    return tmp;
+}
+        
+.fi 
+The implementation in \fIbobcat/binops\fP is slightly more complex as it
+allows from lhs or rhs promotions\&.
+.PP 
+As the binary operators can all be implemented alike their definitions are
+perfectly suited for templates: A class offering a particular \fIoperator@=\fP
+then automatically also offers the matching binary operators after including
+\fIbobcat/binops\fP\&. Since the binary function templates are not instantiated
+until used their definitions can be processed by the compiler even if a class
+implements only a subset of the available binary assignment operators\&.
+.PP 
+.SH "NAMESPACE"
+
+.PP 
+The binary operator functions templates in \fIbobcat/binops\fP are \fInot\fP
+implemented in a particular namespace\&. This allows sources to include
+\fIbobcat/binops\fP in multiple namespaces\&. 
+.PP 
+If \fIbobcat/binops\fP is to be used in multiple namespaces then the include
+safeguard (using the identifier \fIINCLUDED_BOBCAT_BINOPS_\fP) must be
+suppressed between inclusions of \fIbobcat/binops\fP in different
+namespaces\&. 
+.PP 
+E\&.g\&., to make the binary operator function templates available in a source
+file using the \fInamespace FBB\fP and in a source file using the default
+namespace the following scheme can be used:
+.nf 
+
+#include <utility>              // ensure std::move is available
+#include <bobcat/typetrait>     // required by binops
+
+namespace MY_NAMESPACE
+{
+    #include <bobcat/binops>    // binary operators available in MY_NAMESPACE
+}
+#undef INCLUDED_BOBCAT_BINOPS_  // suppress the include guard
+
+#include <bobcat/binops>        // read binops again so the binary
+                                // operators can be used in the
+                                // default namespace as well
+    
+.fi 
+
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "OVERLOADED OPERATORS"
+The function templates in \fIbobcat/binops\fP implement all arithmetic
+binary operators, both move\-aware and the traditional binary operators,
+expecting constant lvalue references\&. They can be used if the matching binary
+assignment operators were implemented in the classes for which the templates
+must be instantiated\&. The following operators are available:
+.PP 
+Move\-aware operators, using temporary objects for its left\-hand side operands:
+.IP o 
+\fBClass operator*(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator/(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator%(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator+(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator\-(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator<<(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator>>(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator&(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator|(Class &&lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator^(Class &&lhs, Class const &rhs)\fP:
+.br 
+
+.PP 
+`Traditional\(cq\& operators, using lvalue references to constant objects 
+for its left\-hand side operands:
+.IP o 
+\fBClass operator*(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator/(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator%(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator+(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator\-(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator<<(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator>>(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator&(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator|(Class const &lhs, Class const &rhs)\fP:
+.br 
+.IP o 
+\fBClass operator^(Class const &lhs, Class const &rhs)\fP:
+.br 
+The latter group of operators also support promotions\&.
+.PP 
+.SH "EXAMPLE"
+.nf 
+#include <iostream>
+#include <utility>
+
+#include \(dq\&\&.\&./\&.\&./typetrait/typetrait\(dq\&
+#include \(dq\&\&.\&./binops\(dq\&
+
+class Demo
+{
+    friend std::ostream &operator<<(std::ostream &out, Demo const &demo);
+    int d_value;
+
+    public:
+        Demo(int value = 0)
+        :
+            d_value(value)
+        {}
+    
+        Demo(Demo const &other)
+        :
+            d_value(other\&.d_value)
+        {
+            std::cout << \(dq\&Demo CC called\en\(dq\&;
+        }
+    
+        Demo &operator+=(Demo const &rhs)
+        {
+            d_value += rhs\&.d_value;
+            return *this;
+        }
+};
+std::ostream &operator<<(std::ostream &out, Demo const &demo)
+{
+    return out << demo\&.d_value;
+}
+
+using namespace std;
+
+int main()
+{
+    Demo four(4);
+    Demo five(5);
+
+    cout << four + five << \(cq\&\en\(cq\& <<
+            four + 5 << \(cq\&\en\(cq\& <<
+            4  + five << \(cq\&\en\(cq\&;
+}
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/binops\fP \- defines the binary operator function templates
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7)
+.PP 
+.SH "BUGS"
+.IP o 
+The header files \fIutility\fP, defining \fIstd::move\fP, and
+\fIbobcat/typetrait\fP are required by, but are not included by
+\fIbobcat/binops\fP\&. This was a design decision, see the \fBNAMESPACE\fP
+section\&.
+
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

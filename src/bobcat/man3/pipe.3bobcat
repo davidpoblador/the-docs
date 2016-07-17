@@ -1,0 +1,254 @@
+.TH "FBB::Pipe" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "System Level Communication Pipe"
+
+.PP 
+.SH "NAME"
+FBB::Pipe \- Defines a system level communication pipe
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/pipe>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+\fBFBB::Pipe\fP objects may be used to construct a \fIpipe\fP\&. \fIPipe\fP
+objects offer a simple interface to the reading and writing ends of
+pipes\&. \fIPipe\fP objects are object\-wrappers around the \fBpipe\fP(2) system
+call\&. 
+.PP 
+A \fIPipe\fP which is created just before a program forks can be used to set
+up a line of communication between the parent and child process\&. Information
+which is written by the child process to its standard output stream can be
+redirected to the writing end of the pipe (using the \fIwrittenBy\fP
+member)\&. The information appearing at the reading end of the pipe can then be
+extracted using, e\&.g\&., an \fIIFdStream\fP object, initialized with the
+\fIPipe\fP\(cq\&s reading file descriptor, or the reading end of the pipe can be
+redirected to an existing stream whose file descriptor is known, like \fIcin\fP
+(which uses the \fISTDIN_FILENO\fP file descriptor)\&.
+.PP 
+When a \fIPipe\fP object goes out of scope, no \fBclose\fP(2) operation is
+performed on the pipe\(cq\&s file descriptors\&. After setting up the pipe using the
+\fIPipe\(cq\&s\fP member functions and passing the \fIPipe\(cq\&s\fP file descriptors to
+code that uses the \fIPipe\(cq\&s\fP descriptors, the \fIPipe\fP object could in fact
+safely be destroyed\&. If the pipe should be closed at destruction time, a class
+could be derived from \fBPipe\fP(3bobcat), whose destructor performs the
+required closing\-operation\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBPipe()\fP:
+.br 
+The default \fIPipe\fP constructor constructs a basic pipe, calling
+\fBpipe\fP(2)\&. 
+.IP 
+This constructor throws an \fIException\fP exception if the default \fIPipe\fP
+constructor did not properly complete\&.  The thrown \fBException\fP object\(cq\&s
+\fIwhich()\fP member shows the system\(cq\&s \fIerrno\fP value set by the failing
+\fBpipe\fP(2) function\&.
+.IP 
+.IP o 
+\fBPipe(int const *fd)\fP:
+.br 
+This constructor expects two file descriptors, which already define a
+pipe, stored at \fIfd\fP\&. Following the construction of the \fIPipe\fP object 
+the array at by \fIfd\fP is no longer used by the \fIPipe\fP object\&.
+The copy constructor is available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+
+.PP 
+.IP o 
+\fBint readFd() const\fP:
+.br 
+Returns the pipe\(cq\&s file descriptor that is used for reading
+.IP 
+.IP o 
+\fBvoid readFrom(int filedescriptor)\fP:
+.br 
+Sets up redirection from the internal \fIread\fP filedescriptor to the
+given filedescriptor: information written to the write\-end of the pipe may be
+retrieved by extracting the information from the stream that is associated
+with the indicated file descriptor\&. E\&.g\&., after the call
+\fIreadFrom(STDIN_FILENO)\fP information  inserted into the
+write\-end of the pipe can be retrieved from \fIcin\fP\&.
+.IP 
+.IP o 
+\fBvoid readFrom(int const *filedescriptors, size_t n)\fP:
+.br 
+Sets up redirection from the internal \fIread\fP filedescriptor to the
+given filedescriptors: information is read from the \fIPipe\fP object when
+reading from any of the \fBn\fP provided filedescriptors (experimental)\&.
+.IP 
+.IP o 
+\fBint readOnly()\fP:
+.br 
+Closes the writing end of the pipe, returns the reading end\(cq\&s file
+descriptor\&. This member can be used, e\&.g\&., to construct an \fIIFdStream\fP
+object to extract the information that is inserted into the write\-end of the
+pipe\&. 
+.IP 
+.IP o 
+\fBvoid verify() const\fP:
+.br 
+Obsoleted, can safely be removed from source files\&.
+.IP 
+.IP o 
+\fBint writeFd() const\fP:
+.br 
+Returns the pipe\(cq\&s file descriptor that is used for writing\&.
+.IP 
+.IP o 
+\fBvoid writtenBy(int filedescriptor)\fP:
+.br 
+Sets up redirection from the internal \fIwrite\fP filedescriptor to the
+given filedescriptor: information is  written to the \fIPipe\fP object when
+writing to the provided filedescriptor\&. E\&.g\&., after the call
+\fIwrittenBy(STDOUT_FILENO)\fP information sent to the standard output stream (by
+either \fIcout\fP or by a child process (cf\&. \fBexec\fP(3))) is inserted into the
+write\-end of the pipe\&.
+.IP 
+.IP o 
+\fBvoid writtenBy(int const *filedescriptors, size_t n)\fP:
+.br 
+Sets up redirection from the internal \fIwrite\fP filedescriptor to the
+given filedescriptors: information is inserted into the write\-end of the
+\fIPipe\fP object when writing to each of the \fBn\fP provided filedescriptors\&.
+E\&.g\&., when passing an array of two \fIint\fP values, respectively equal to
+\fISTDOUT_FILENO\fP and \fISTDERR_FILENO\fP to this member, all information which
+is thereafter sent to the standard output or error streams is inserted into
+the write\-end of the pipe\&.
+.IP 
+.IP o 
+\fBint writeOnly()\fP:
+.br 
+Closes the reading end of the pipe, returns the writing end\(cq\&s file
+descriptor\&. 
+
+.PP 
+.SH "PROTECTED ENUMERATION"
+The \fBRW\fP protected enumeration has the following elements:
+.PP 
+.IP o 
+\fBREAD\fP:
+.br 
+The index in \fBd_fd[]\fP (see below) of the element holding the pipe\(cq\&s
+reading file descriptor;
+.IP 
+.IP o 
+\fBWRITE\fP:
+.br 
+The index in \fBd_fd[]\fP (see below) of the element holding the pipe\(cq\&s
+writing file descriptor
+
+.PP 
+.SH "PROTECTED DATA"
+.IP o 
+\fBint d_fd[2]\fP:
+.br 
+The array holding the pipe\(cq\&s file descriptors\&. The \fBREAD\fP element
+contains the pipe\(cq\&s reading file descriptor, the \fBWRITE\fP element
+contains the pipe\(cq\&s writing file descriptor,
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+
+    #include <bobcat/pipe>
+    #include <sys/types\&.h>
+    #include <sys/wait\&.h>
+    #include <unistd\&.h>
+    #include <iostream>
+    #include <string>
+    
+    using namespace std;
+    using namespace FBB;
+    
+    int main()
+    {
+        Pipe p;                         // construct a pipe
+    
+        cout << \(dq\&Read file descriptor: \(dq\& << p\&.getReadFd() << endl;
+        cout << \(dq\&Write file descriptor: \(dq\& << p\&.getWriteFd() << endl;
+    
+        int pid = fork();
+    
+        if (pid == \-1)
+            return 1;
+    
+        if (!pid)                       //child
+        {
+            p\&.readFrom(STDIN_FILENO);   // read what goes into the pipe
+    
+            string s;
+
+            getline(cin, s);
+            cout << \(dq\&CHILD: Got `\(dq\& << s << \(dq\&\(cq\&\(dq\& << endl;    
+    
+            getline(cin, s);
+            cout << \(dq\&CHILD: Got `\(dq\& << s << \(dq\&\(cq\&\(dq\& << endl;    
+    
+            return 0;
+        }
+    
+        p\&.writtenBy(STDOUT_FILENO);      // write to the pipe via cout
+    
+        cout << \(dq\&first line\(dq\& << endl;
+        cout << \(dq\&second line\(dq\& << endl;
+    
+        waitpid(pid, 0, 0);
+    
+        return 0;
+    }
+        
+.fi 
+
+.PP 
+See also the 2nd example at \fBfork\fP(3bobcat)
+.PP 
+.SH "FILES"
+\fIbobcat/pipe\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBfork\fP(3bobcat), \fBpipe\fP(2), \fBmkfifo\fP(3)
+.PP 
+.SH "BUGS"
+Note that when the pipe goes out of scope, no \fBclose\fP(2) operation is
+performed on the pipe\(cq\&s ends\&. If the pipe should be closed by the desctructor,
+derive a class from \fBPipe\fP(3bobcat), whose destructor performs the required
+closing\-operation\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

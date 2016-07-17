@@ -1,0 +1,301 @@
+.TH "FBB::Cidr" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "CIDR matching"
+
+.PP 
+.SH "NAME"
+FBB::Cidr \- Compares IP4 addresses to CIDR specifications
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/cidr>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+
+.PP 
+Objects of the class \fICidr\fP can be used for testing whether IP4 Internet
+addresses belong to address ranges defined by Classless Inter\-Domain Routing
+(CIDR) address block specifications\&. CIDR blocks are specified as
+\fIa\&.b\&.c\&.d/m\fP where \fIa\&.b\&.c\&.d\fP are the four octets of a dotted decimal IP4
+address specification (e\&.g\&., 129\&.125\&.14\&.80) and \fIm\fP is a mask\-size (ranging
+from 0 to 32) defining the number of most significant bits to remain
+as\-is\&. The CIDR specification 129\&.125\&.14\&.80/16 defines a class B network,
+with addresses ranging from 129\&.125\&.0\&.0 to 129\&.125\&.255\&.255\&.
+.PP 
+The mask size does not have to be a multiple of 8\&. E\&.g\&., when specifying
+129\&.125\&.14\&.80/5 only the most significant 5 bits of the first octed are fixed,
+resulting in an address range ranging from 128\&.0\&.0\&.0 to 135\&.255\&.255\&.255\&.
+.PP 
+CIDR specifications passed to a \fICidr\fP object must be of the form
+\fIa\&.b\&.c\&.d\fP or \fIa\&.b\&.c\&.d/m\fP\&. If the mask is not specified a mask\-size of 32
+is used, effectively defining an address range of only one address\&. Mask
+values of 0 are ignored\&.  Mask values of 0 are ignored by \fICidr\fP objects\&.
+.PP 
+When specifying CIDRs on a stream, empty lines and comment lines (having a
+hash\-character (#) as their first non\-blank character) are ignored\&. 
+Non\-empty lines must start with a CIDR specification, and the \fICidr\fP object
+will ignore all information on a line trailing a CIDR specification\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBCidr(std::string const &cidrPattern)\fP:
+.br 
+The \fICidr\fP object is initialized with a single CIDR specification\&.
+.IP 
+.IP o 
+\fBCidr(std::istream &cidrStream)\fP:
+.br 
+The \fICidr\fP object is initialized with CIDR specifications
+read from the \fIstd::istream cidrStream\fP\&. 
+The default, copy and move constructors are available\&.
+.PP 
+.SH "OVERLOADED OPERATORS"
+
+.PP 
+The copy and move assignment operators are available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+
+.PP 
+The return valuess of the accessors (i\&.e\&., the \fIconst\fP members) are only
+defined following a successful match (see below, the \fImatch\fP members)\&.
+.PP 
+.IP o 
+\fBstd::string const &address() const\fP:
+.br 
+returns the address matching a CIDR\&. 
+.IP 
+.IP o 
+\fBstd::string cidr() const\fP:
+.br 
+returns the CIDR containing a specified address\&.
+.IP 
+.IP o 
+\fBstd::string first() const\fP:
+.br 
+returns the first address of the range of addresses defined by the
+CIDR specification\&.
+.IP 
+.IP o 
+\fBstd::string last() const\fP:
+.br 
+returns the last address of the range of addresses defined by the
+CIDR specification\&. Note that \fIfirst, last\fP do not define an
+iterator range\&. The address returned by \fIlast\fP still belongs to the
+CIDR\-range\&. 
+.IP 
+.IP o 
+\fBbool match(std::istream &in)\fP:
+.br 
+The value \fItrue\fP is returned when an IP4 address found in the lines
+of \fIin\fP belongs to a CIDR range inspected by the \fICidr\fP
+object\&. The \fImatch\fP function returns \fItrue\fP at the first matching
+address\&.  E\&.g\&., if a line contains the text 
+.nf 
+
+    This is address 1\&.2\&.3\&.4 and this is 5\&.6\&.7\&.8
+            
+.fi 
+and the CIDR specifications
+.nf 
+
+        5\&.1\&.1\&.1/8
+        1\&.2\&.1\&.1/16
+            
+.fi 
+were provided to the \fICidr\fP object, then the object will report a
+match for \fI5\&.6\&.7\&.8\fP\&. 
+.IP 
+As soon as a match is found \fImatch\fP returns
+\fItrue\fP\&. If none of the addresses found in the lines of \fIin\fP
+matches any of the object\(cq\&s CIDR specifications, \fIfalse\fP is
+returned\&.
+.IP 
+.IP o 
+\fBstd::string mask() const\fP:
+.br 
+returns the mask used by the \fICIDR\fP specification\&.
+.IP 
+.IP o 
+\fBbool match(std::string const &line)\fP:
+.br 
+The value \fItrue\fP is returned when an IP4 address found in \fIline\fP
+belongs to a CIDR range inspected by the \fICidr\fP object\&. The
+\fImatch\fP function returns \fItrue\fP at the first matching address\&.
+.IP 
+If none of the addresses found in \fIline\fP matches any of the object\(cq\&s
+CIDR specifications, \fIfalse\fP is returned\&.
+.IP 
+.IP o 
+\fBvoid setCidr(std::istream &cidrStream)\fP:
+.br 
+A new set of CIDR specification is loaded into the \fICidr\fP object,
+reading the specifications from \fIcidrStream\fP\&.
+.IP 
+.IP o 
+\fBvoid setCidr(std::string const &cidrPattern)\fP:
+.br 
+A new CIDR specification is loaded into the \fICidr\fP object, using the
+specification found in \fIcidrPattern\fP\&.  The
+\fICidr\fP object is initialized with a single CIDR specification which
+must be of the form \fIa\&.b\&.c\&.d\fP or \fIa\&.b\&.c\&.d/m\fP\&. If the mask is not
+specified a mask\-size of 32 is used, effectively defining an address
+range of only one address\&. Mask values of 0 are ignored\&.
+
+.PP 
+.SH "STATIC MEMBERS"
+.IP o 
+\fBsize_t dotted2binary(std::string const &dotted)\fP:
+.br 
+Converts \(dq\&a\&.b\&.c\&.d\(dq\& to a 32\-bits value
+.IP 
+.IP o 
+\fBstd::string binary2dotted(size_t binary)\fP:
+.br 
+Converts a 32\-bits value to a dotted decimal IP4 address
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+
+#include <fstream>
+#include <iostream>
+
+#include <bobcat/errno>
+#ifdef BOBCAT
+    #include <bobcat/cidr>
+#else
+    #include \(dq\&cidr\(dq\&
+#endif
+
+using namespace std;
+using namespace FBB;
+
+int main(int argc, char **argv)
+{
+    enum Spec
+    {
+        NONE,
+        FILE,
+        CIN
+    };
+    
+    Spec spec = CIN;
+    ifstream in;
+
+    if (argc > 1)
+    {
+        Errno::open(in, argv[1]);       // file containing cidr\-specs
+        spec = FILE;
+    }
+    
+    while (true)
+    {
+        string cidrSpec;
+        if (spec == CIN)
+        {
+            cout << \(dq\&Specify cidr (empty to quit): \(dq\&;
+            if (!getline(cin, cidrSpec) || cidrSpec\&.empty())
+                break;
+        }
+        try
+        {
+            Cidr cidr;
+
+            switch (spec)
+            {
+                case NONE:
+                return 0;
+
+                case FILE:
+                    cidr\&.setCidr(in);
+                    spec = NONE;
+                break;
+
+                case CIN:
+                    cidr\&.setCidr(cidrSpec);
+            }
+        
+            while (true)
+            {
+                cout << \(dq\&Specify address to test (empty to \(dq\& <<
+                    (spec == CIN ? \(dq\&respec\&. CIDR\(dq\& : \(dq\&quit\(dq\&) << \(dq\&): \(dq\&;
+                string address;
+                if (!getline(cin, address) || address\&.empty())
+                    break;
+            
+                if (!cidr\&.match(address))
+                {
+                    cout << \(dq\&Address \(dq\& << address << \(dq\& not in \(dq\&;
+                    if (spec == CIN)
+                        cout << cidrSpec << \(cq\&\en\(cq\&;
+                    else
+                        cout << \(dq\&specifications in \(dq\& << argv[1] << \(cq\&\en\(cq\&;
+                }
+                else
+                    cout << \(dq\&Address \(dq\& << address << \(dq\& in \(dq\& << cidr\&.cidr() << 
+                                                                        \(dq\&\en\(dq\&
+                        \(dq\&Lowest address: \(dq\& << cidr\&.first() << \(dq\&\en\(dq\&
+                        \(dq\&Highest address: \(dq\& << cidr\&.last() << \(dq\&\en\(dq\&
+                        \(dq\&CIDR mask: \(dq\& << cidr\&.mask() << \(dq\&\en\(dq\&
+                        \(dq\&Address: \(dq\& << cidr\&.address() << \(cq\&\en\(cq\&;
+            }
+        }
+        catch (Errno const &err)
+        {
+            cout << \(dq\&Oops\&.\&.\&. \(dq\& << err\&.why() << \(dq\&\en\(dq\&
+                    \(dq\&Try again\&.\&.\&.\en\(dq\&;
+        }
+    }
+}
+
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/cidr\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7)
+.PP 
+.SH "BUGS"
+Members of \fICidr\fP use static data\&. The current implementation of 
+\fICidr\fP is therefore not thread\-safe\&. 
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

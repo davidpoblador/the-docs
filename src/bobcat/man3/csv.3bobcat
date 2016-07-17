@@ -1,0 +1,384 @@
+.TH "FBB::CSV" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "CSV convertor"
+
+.PP 
+.SH "NAME"
+FBB::CSV \- Convertor for comma separated values
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/csv>\fP
+.br 
+
+.PP 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+
+.PP 
+Objects of the class \fBCSV\fP can be used to convert series of comma separated
+values to the individual separated values\&. These values may be converted
+(individually or as a group) to standard integral types \fIint, size_t, long
+long,\fP etc\&., to floating point types (\fIfloat, double, long double\fP), or they
+can be accessed as \fIstd::string\fP values\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "TYPEDEFS AND ENUMS"
+
+.PP 
+The \fBenum Mode\fP specifies how a \fBCSV\fP is extracted from
+\fIstd::istream\fP objects:
+.IP o 
+\fITRAILINGCOMMA\fP  a series of comma\-separated values ends at a final
+comma, which is removed from the \fIistream\fP by the \fBCSV\fP extraction
+operator\&. 
+.IP o 
+\fILINE\fP after extracting a \fBCSV\fP object any remaining characters on
+the current \fIstd::istream\fP line are ignored (i\&.e\&., the extraction
+operator reads full lines of input)\&.
+These enumeration values may be combined using the \fIbit\-or\fP operator\&.
+.PP 
+The \fBenum InsertType\fP specifies how a \fBCSV\fP is inserted into
+\fIstd::ostream\fP objects:
+.IP o 
+\fILENGTH\fP indicates that all specifications (i\&.e\&., the \fIlength\fP of the
+type\-specifications, see the member \fIlength\fP below), are inserted
+into the \fIstd::ostream\fP as a series of comma\-separated values\&.
+.IP o 
+\fISIZE\fP indicates that all (not ignored) comma\-separated fields (i\&.e\&.,
+the \fIsize\fP of the fields vector, see the member \fIsize\fP
+below), are inserted into the \fIstd::ostream\fP as a series of
+comma\-separated values\&.
+.IP o 
+\fICOUNT\fP indicates that all valid (i\&.e\&., the \fIcount\fP of the
+valid fields, see the member \fIcount\fP below), are inserted
+into the \fIstd::ostream\fP as a series of comma\-separated values\&.
+
+.PP 
+The class \fICSV\fP defines the nested classes \fIconst_iterator\fP and
+\fIconst_reverse_iterator\fP which are \fIInputIterators\fP, which can be used 
+to iterate over the sequence of comma\-separated values\&. 
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBCSV(std::string const &specification, Mode mode = LINE, InsertType =
+LENGTH)\fP:
+.br 
+The specification in \fIspecification\fP defines the subsequent fields
+of the comma\-separated value\&. Specifications are 
+.RS 
+.IP o 
+\fIS\fP: the field is left as\-is, and can be retrieved as a
+\fIstd::string\fP\&. 
+.IP o 
+\fII\fP: the field represents an \fIint\fP value;
+.IP o 
+\fID\fP: the field represents a \fIdouble\fP value;
+.IP o 
+\fIX\fP or \fI\-\fP: the field is ignored and is not stored inside the
+\fBCSV\fP object\&. E\&.g\&., with the specification \fISXS\fP two
+fields will actually be stored inside the \fBCSV\fP object:
+field 0 contains the first field extracted from the input
+stream, field 1 contains the third field extracted from the
+input stream\&.
+.RE
+Specifications may be separated by space or tab characters, which are
+ignored\&. The number of specification characters determines the number
+of fields that are stored in a \fBCSV\fP object\&. The final field may or
+may not be followed by a comma\&. 
+.IP 
+Each specification may also be followed by a positive integral value,
+indicating that the input at that point contains that number of
+comma\-separated fields of the specified type\&.
+.IP 
+By default the \fBCSV\fP extraction operator extracts complete lines
+from the stream from which a \fBCSV\fP object is extracted\&. 
+.IP 
+When inserting a \fBCSV\fP object into a \fIstd::ostream\fP object all
+fields that are specified by `\fIspecification\fP\(cq\& will be
+inserted\&. Ignored fields will be inserted as single blanks\&.
+The default, copy, and move constructors are available\&.
+.PP 
+.SH "OVERLOADED OPERATORS"
+.IP o 
+\fBstd::string const &operator[](size_t index) const\fP:
+.br 
+The contents of the indicated field is returned as a
+\fIstd::string\fP\&.
+.IP 
+.IP o 
+\fBstd::istream &operator>>(std::istream &out, CSV const &csv)\fP:
+.br 
+The data fields stored within \fIcsv\fP are inserted into \fIout\fP as a
+series of comma\-separated values\&. The fields are inserted according to
+the latest \fIInsertType\fP specification:
+.RS 
+.IP o 
+For \fILENGTH\fP all fields are inserted according to their
+original type specification, where \fI\(cq\&X\(cq\&\fP and \fI\(cq\&\-\(cq\&\fP fields are
+inserted as fields of single blank spaces;
+.IP o 
+For \fISIZE\fP all fields that are stored inside \fIcsv\fP are
+inserted `as\-is\(cq\&;
+.IP o 
+For \fICOUNT\fP all valid fields are inserted\&.
+.RE
+If \fIcsv\fP\(cq\&s \fIMode\fP specification contains \fITRAILINGCOMMA\fP then a
+comma is expected and extracted beyond the last field; if it contains
+\fILINE\fP then any information that is found on the line beyond the
+last field (including its terminating comma, if applicable) is ignored
+(including the \fI\(cq\&\en\(cq\&\fP line terminator)\&.
+.IP 
+.IP o 
+\fBstd::ostream &operator<<(std::ostream &out, CSV const &csv)\fP:
+.br 
+The data fields stored within \fIcsv\fP are inserted into \fIout\fP as a
+series of comma\-separated values\&. The fields are inserted according to
+the latest \fIInsertType\fP specification:
+.RS 
+.IP o 
+For \fILENGTH\fP all fields are inserted according to their
+original type specification, where \fI\(cq\&X\(cq\&\fP and \fI\(cq\&\-\(cq\&\fP fields are
+inserted as fields of single blank spaces;
+.IP o 
+For \fISIZE\fP all fields that are stored inside \fIcsv\fP are
+inserted `as\-is\(cq\&;
+.IP o 
+For \fICOUNT\fP all valid fields are inserted\&.
+.RE
+If \fIcsv\fP\(cq\&s \fIMode\fP specification contains \fITRAILINGCOMMA\fP then a
+comma is inserted beyond the last field\&.
+
+.PP 
+The copy and move assignment operators are available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+.IP o 
+\fBCSV &append(char spec, std::string const &value = \(dq\&\(dq\&)\fP:
+.br 
+A field \fIspec\fP, with textual representation \fIvalue\fP is added to the
+object\(cq\&s current set of fiels\&. A specification \fI\(cq\&X\(cq\&\fP or
+\fI\(cq\&\-\(cq\&\fP is added to the object\(cq\&s set of specifications, but does not
+add \fIvalue\fP to the currently stored set of values\&.
+.IP 
+.IP o 
+\fBstd::vector<bool> const &available() const\fP:
+.br 
+A vector of \fIbool\fP values indicating which of the matching data
+fields are valid (i\&.e\&., could be converted to its specification as
+defined at construction time or by \fIsetSpec\fP) is returned\&.
+.IP 
+.IP o 
+\fBCSV::const_iterator<Type> begin<Type == std::string>() const\fP:
+.br 
+This is a template member returning a \fICSV::const_iterator\fP to the
+object\(cq\&s first field\&. When dereferencing a \fIconst_iterator\fP the
+value it refers to is converted to the indicated \fIType\fP\&. If the
+conversion fails, the \fIType\fP\(cq\&s default value is returned\&.
+.IP 
+.IP o 
+\fBsize_t count() const\fP:
+.br 
+The number of fields that could actually be converted to their
+indicated types is returned\&. E\&.g\&., an empty field or a supposedly 
+numeric field whose contents cannot be converted to the indicated
+numeric value won\(cq\&t be counted here\&.
+.IP 
+.IP o 
+\fBstd::vector<std::string> const &data() const\fP:
+.br 
+The vector of fields stored inside the \fBCSV\fP object is returned\&.
+.IP 
+.IP o 
+\fBCSV::const_iterator<Type> end<Type == std::string>() const\fP:
+.br 
+This is a template member returning a \fICSV::const_iterator\fP pointing
+just beyond the \fBCSV\fP object\(cq\&s last field\&.
+.IP 
+.IP o 
+\fBType field<Type = std::string>(size_t idx) const\fP:
+.br 
+This is a template member returning the contents of field \fIidx\fP as a
+value of type \fIType\fP\&.  When \fIType\fP equals \fIstd::string\fP a
+\fIstd::string const &\fP is returned\&. For \fIType\fP all integral and
+floating types as well as \fIstd::sting\fP are accepted\&. If field
+\fIidx\fP cannot be converted to \fIType\fP a \fBstd::exception\fP is
+thrown\&. 
+.IP 
+.IP o 
+\fBType get<Type = std::string>(size_t idx)\fP:
+.br 
+This is a template member returning the contents of field \fIidx\fP as a
+value of type \fIType\fP\&.  When \fIType\fP equals \fIstd::string\fP a
+\fIstd::string const &\fP is returned\&. For \fIType\fP all integral and
+floating types as well as \fIstd::sting\fP are accepted\&. If field
+\fIidx\fP cannot be converted to \fIType\fP, the \fIType\fP\(cq\&s default value
+is returned\&.
+.IP 
+.IP o 
+\fBInsertType insertType() const\fP:
+.br 
+The object\(cq\&s current \fIInsertType\fP is returned\&.
+.IP 
+.IP o 
+\fBsize_t length() const\fP:
+.br 
+The number of specifications (defined at construction time or by the
+\fIsetSpec\fP member) is returned\&. This count includes the number of
+\fIX\fP and \fI\-\fP specifications\&.
+.IP 
+.IP o 
+\fBCSV::Mode mode() const\fP:
+.br 
+The object\(cq\&s current \fIMode\fP value is returned\&.
+.IP 
+.IP o 
+\fBstd::string const &spec() const\fP:
+.br 
+The object\(cq\&s current field\-type specifications are returned\&.
+.IP 
+.IP o 
+\fBCSV::const_reverse_iterator<Type> rbegin<Type == std::string>() const\fP:
+.br 
+This is a template member returning a \fICSV::const_reverse_iterator\fP
+to the object\(cq\&s last field\&. When dereferencing a
+\fIconst_reverse_iterator\fP the value it refers to is converted to the
+indicated \fIType\fP\&. If the conversion fails, the \fIType\fP\(cq\&s default
+value is returned\&.
+.IP 
+.IP o 
+\fBCSV::const_iterator<Type> rend<Type == std::string>() const\fP:
+.br 
+This is a template member returning a \fICSV::const_reverse_iterator\fP
+pointing just before the \fBCSV\fP object\(cq\&s first field\&.
+.IP 
+.IP o 
+\fBvoid setInsertType(InsertType insertType)\fP:
+.br 
+The objects \fIInsertType\fP is changed to \fIinsertType\fP\&. This has no
+immediate effect, but is only interpreted with the insertion operator\&.
+.IP 
+.IP o 
+\fBvoid setMode(Mode mode)\fP:
+.br 
+The object\(cq\&s current \fIMode\fP value is changed to \fImode\fP\&. This has no
+immediate effect, but is only interpreted with the insertion and
+extraction operators\&.
+.IP 
+.IP o 
+\fBvoid setSpec(std::string const &spec)\fP:
+.br 
+The information stored inside the \fBCSV\fP object is erased, and a new
+field\-specification is defined from \fIspec\fP\&.
+.IP 
+.IP o 
+\fBsize_t size() const\fP:
+.br 
+The number of fields is returned (the returned value equals the value
+returned by \fIlength\fP not counting the \fIX\fP and \fI\-\fP fields)\&.
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+#include <iostream>
+#include <bobcat/csv>
+
+using namespace std;
+using namespace FBB;
+
+int main()
+{
+    CSV csv(\(dq\&I5 X2 S2 D3\(dq\&);
+
+    cin >> csv;
+
+    cout << 
+        \(dq\&Nr\&. of field specs: \(dq\& << csv\&.length() << \(dq\&\en\(dq\&
+        \(dq\&Nr\&. of fields: \(dq\& << csv\&.size() << \(dq\&\en\(dq\&
+        \(dq\&Nr\&. of available fields: \(dq\& << csv\&.count() << \(dq\&\en\(dq\&
+        \(dq\&Field 2 as int via get: \(dq\& << csv\&.get<int>(2) << \(dq\&\en\(dq\&
+        \(dq\&Field 2 as int via available: \(dq\& << csv\&.field<int>(2) << \(dq\&\en\(dq\&
+        \(dq\&Field 3 via operator[]: \(dq\& << csv[3] << \(dq\&\en\(dq\&
+        \(dq\&Field 6 as string via get: \(dq\& << csv\&.get<string>(6) << \(dq\&\en\(dq\&
+        \(dq\&Field 6 as string via available: \(dq\& << csv\&.field<string>(6) << \(dq\&\en\(dq\&
+    ;
+
+    cout << \(dq\&First element as string: \(dq\& << *csv\&.begin() << \(dq\&\en\(dq\&;
+
+    cout << \(dq\&All elements as strings:\en\(dq\&;
+    copy(csv\&.begin(), csv\&.end(), ostream_iterator<string>(cout, \(dq\& \(dq\&));
+    cout << \(cq\&\en\(cq\&;
+    
+    cout << \(dq\&All elements as ints:\en\(dq\&;
+    copy(csv\&.begin<int>(), csv\&.end<int>(), ostream_iterator<int>(cout, \(dq\& \(dq\&));
+    cout << \(cq\&\en\(cq\&;
+
+    cout << \(dq\&All elements as strings, backward:\en\(dq\&;
+    copy(csv\&.rbegin(), csv\&.rend(), ostream_iterator<string>(cout, \(dq\& \(dq\&));
+    cout << \(cq\&\en\(cq\&;
+    
+    cout << \(dq\&All elements as ints, backward:\en\(dq\&;
+    copy(csv\&.rbegin<int>(), csv\&.rend<int>(), ostream_iterator<int>(cout, \(dq\& \(dq\&));
+    cout << \(cq\&\en\(cq\&;
+
+    cout << \(dq\&Insert LENGTH (default):\en\(dq\& <<
+            csv << \(cq\&\en\(cq\&;
+
+    csv\&.setInsertType(CSV::SIZE);
+
+    cout << \(dq\&Insert SIZE:\en\(dq\& <<
+            csv << \(cq\&\en\(cq\&;
+
+    csv\&.setInsertType(CSV::COUNT);
+
+    cout << \(dq\&Insert COUNT:\en\(dq\& <<
+            csv << \(cq\&\en\(cq\&;
+}
+
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/csv\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

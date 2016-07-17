@@ -1,0 +1,445 @@
+.TH "FBB::SharedMemory" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Shared Memory Memory"
+
+.PP 
+.SH "NAME"
+FBB::SharedMemory \- Shared Memory memory structure
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/sharedmemory>\fP
+.br 
+Linking option: \fI\-lbobcat \fP 
+.PP 
+.SH "DESCRIPTION"
+
+.PP 
+The class \fBFBB::SharedMemory\fP implements a usable interface to a shared
+memory segment made available by \fIFBB::SharedSegment\fP and monitored by
+\fIFBB::SharedPos\fP\&. It is the main building block for
+\fIFBB::SharedStreambuf\fP, defining the `device\(cq\& to which
+\fIFBB::SharedStreambuf\fP interfaces\&. All shared memory related I/O should be
+performed by \fBFBB::SharedMemory\fP objects, which are true objects, not
+themselves residing in shared memory\&. 
+.PP 
+An \fBFBB::SharedMemory\fP object defines, connects to and manages access to
+shared memory, encapsulating all raw shared memory operations\&. In addition to
+the class \fBFBB::SharedMemory\fP the header file \fIbobcat/sharedmemory\fP also
+defines a \fBstruct SharedEnum__\fP defining \fBenum SizeUnit\fP within the
+namespace \fIFBB\fP\&.
+.PP 
+The requested amount of shared memory is always a lower bound to the maximum
+amount of shared memory that eventually may become available\&. When defining a
+\fBSharedMemory\fP object not all of its potentially available shared memory is
+immediately allocated\&. Shared memory will be allocated by the \fBSharedMemory\fP
+object once needed (up to a calculated maximum)\&.
+.PP 
+As a fictitious example: assume 100 kB of memory is requested\&. The
+\fBSharedMemory\fP object then maintains a table of, e\&.g\&., 10 entries, each
+entry controlling access to a shared memory block of 10 kB\&. These 10 kB blocks
+aren\(cq\&t immediately allocated, but become available once the program reads from
+or writes to addresses located in these data blocks\&. Newly allocated data
+blocks are initialized to 0\-bytes\&.
+.PP 
+Caveat: when constructing a shared memory segment make sure the segment\(cq\&s
+ID is stored at a retrievable location\&. This allows other processes to access
+the shared segment\&. The shared segment ID is also required to delete a shared
+memory segment\&. If the shared segment ID is lost, the memory occupied by the
+shared memory segment remains inaccessible (although they can be retrieved and
+removed by additional means, like \fBipcs\fP(1) and \fBipcrm\fP(1))\&. The member
+\fIid\fP returns the ID of the shared memory currently monitored by an
+\fBFBB::SharedMemory\fP object\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBFBB::SharedEnum__\fP
+.PP 
+The \fBstruct SharedEnum__\fP is a wrapper struct around \fBenum SizeUnit\fP,
+which is available through inheritance in several \fBFBB::Shared*\fP classes,
+and offers symbolic constants defining standard memory sizes\&. The \fBenum
+SizeUnit\fP defines the following symbolic constants:
+.IP o 
+\fBkB\fP, representing 1024 (2**10) bytes of memory;
+.IP o 
+\fBMB\fP, representing 1048576 (2**20) bytes of memory;
+.IP o 
+\fBGB\fP, representing 1073741824 (2**30) bytes of memory
+
+.PP 
+.SH "CONSTRUCTORS, DESTRUCTOR"
+
+.PP 
+.IP o 
+\fBSharedMemory()\fP:
+.br 
+The default constructor defines an empty stub, which cannot immediately
+be used\&.  As the \fBSharedMemory\fP class supports move assignment,
+empty stubs can easily be (re)configured at any time after their
+construction\&.
+.IP 
+.IP o 
+\fBSharedMemory(size_t maxSize, SizeUnit sizeUnit, size_t access = 0600)\fP:
+.br 
+This constructor creates a shared memory segment having a capacity of
+at least \fImaxSize * sizeUnit\fP bytes\&. The shared memory\(cq\&s access
+rights are defined by the \fIaccess\fP parameter, using the well\-known
+(\fBchmod\fP(1)) octal values to define access rights for the owner, the
+group and others\&. If construction succeeds the shared memory is ready
+for use\&. If construction fails, an \fIFBB::Exception\fP is thrown\&.
+.IP 
+.IP o 
+\fBSharedMemory(int id)\fP:
+.br 
+This constructor connects to a shared memory segment having ID
+\fIid\fP\&. If construction succeeds the shared memory is ready for
+use\&. If construction fails (e\&.g\&., no shared memory segment having ID
+\fIid\fP exists), an \fIFBB::Exception\fP is thrown\&.
+.IP 
+.IP o 
+\fB~SharedMemory()\fP:
+.br 
+The destructor detaches any attached shared memory segments from
+the \fBFBB::SharedMemory\fP object\&. If the shared memory segment is
+currently locked by the \fBFBB::SharedMemory\fP object, the lock is
+removed\&.
+
+.PP 
+copy and move constructors are not available\&.
+.PP 
+.SH "OVERLOADED OPERATORS"
+.IP o 
+\fBstd::ostream &operator<<(std::ostream &out, 
+SharedMemory const &sharedMemory)\fP:
+.br 
+The overloaded insertion operator inserts information about the
+\fISharedMemory\fP object into the provide \fIostream\fP object\&. The IDs
+of the shared segments, their sizes, the maximum number of shared
+memory segments, the number of bytes that can be read from the shared
+memory, and its actual storage capacity, etc\&., are displayed\&.
+.IP 
+.IP o 
+\fBSharedMemory &operator=(SharedMemory &&rhs)\fP:
+.br 
+The overloaded move assignment operator is available\&. It is used to
+(re)define the shared memory segment an \fBFBB::SharedMemory\fP object
+is interfacing with\&.
+
+.PP 
+The overloaded copy assignement operator is not available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+.IP o 
+\fBsize_t blockOffset() const\fP:
+.br 
+The offset within the shared segment data block matching \fIoffset\fP\(cq\&s
+return value is returned\&. 0 is returned if the \fBSharedMemory\fP
+object has not yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBvoid clear()\fP:
+.br 
+First, the shared memory is locked\&. Next, all shared data segment are
+deleted, and the shared memory\(cq\&s own data are reset to indicate it is
+completely empty\&. Following this the shared memory segment is unlocked
+again\&. Returning from \fIclear\fP the shared memory The
+\fBFBB::SharedMemory\fP object is effectively re\-initialized, with
+\fIoffset\fP and \fInReadable\fP returning 0\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBsize_t dataSegmentSize() const\fP:
+.br 
+Returns the size (in bytes) of shared memory data block\&. 0 is returned
+if the \fBSharedMemory\fP object has not yet been connected to a shared
+memory block\&.
+.IP 
+.IP o 
+\fBint get()\fP:
+.br 
+First the \fBFBB::SharedMemory\fP object calls \fIlock\fP to lock the
+shared memory segment\&. Next the character at \fIoffset\fP is retrieved
+and \fIoffset\fP is incremented\&. Then \fIunlock\fP is called, and the
+retrieved character is returned\&. If \fIoffset\fP is at least equal to
+\fInReadable, EOF\fP is immediately returned\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBint id() const\fP:
+.br 
+The ID of the shared memory segment is returned\&. Following \fIkill\fP
+\fIid\fP returns \-1, indicating that the shared segment cannot be used
+anymore (note that \fIoperator=\fP can be used to re\-initialize the
+\fBFBB::SharedMemory\fP object)\&.
+.IP 
+.IP o 
+\fBSharedType *install(std::streamsize *offset, 
+Params &&\&.\&.\&.params)\fP:
+.br 
+This member was implemented as a member template, using \fItypename
+SharedType\fP and \fItypename \&.\&.\&.Params\fP, allowing perfect forwarding of
+arguments to \fISharedType\fP\(cq\&s constructor\&.
+.IP 
+This member installs a \fISharedType\fP object at \fBSharedMemory\(cq\&s\fP at
+\fBSharedMemory\fP\(cq\&s first available offset: either at the current
+offset, or (if \fISharedType\(cq\&s\fP size is too big to fit in the current
+data block at offset) at the first byte of the next \fISharedSegment\fP
+shared data block\&.
+.IP 
+The actual offset where the \fISharedType\fP object is installed is
+returned in \fI*offset\fP, unless a \fInullptr\fP is passed as
+\fIinstall\(cq\&s\fP first argument\&.
+.IP 
+A pointer to the installed \fISharedType\fP is returned, with
+\fIshmem\&.offset\fP pointing just beyond \fISharedType\(cq\&s\fP last byte\&. 
+.IP 
+The \fISharedType\fP object is installed using placement new\&. E\&.g\&., the
+following example illustrates how a \fBSharedMutex\fP(3bobcat) object
+can be installed at the first possible 
+location of \fISharedMemory shmem\fP:
+.nf 
+
+    std::streamsize offset;
+    FBB::SharedMutex *mutexPtr = shmem\&.install<FBB::SharedMutex>(&offset); 
+            
+.fi 
+If the installed object must be destroyed, its destructor must
+explicitly be called\&. E\&.g\&., to destroy the \fIMutex\fP pointed at by
+\fImutexPtr\fP use \fImutexPtr\->~SharedMutex()\fP\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if \fIshmem\fP could not install the
+object in its shared memory data blocks\&.
+.IP 
+.IP o 
+\fBvoid kill()\fP:
+.br 
+Without locking the shared memory all shared memory controlled by the
+\fBSharedMemory\fP object is deleted\&. The \fBSharedMemory\fP object is
+unusable after returning from \fIkill\fP, with its \fIid\fP member returns
+\-1\&. Nothing happens if this member is called when the \fBSharedMemory\fP
+object has not yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBstd::streamsize maxOffset() const\fP:
+.br 
+The maximum possible offset that can be used with the shared memory
+segment is returned\&. The members \fIoffset\fP and \fInReadable\fP never
+exceed the value returned by \fImaxOffset\fP\&. 0 is returned if the
+\fBSharedMemory\fP object has not yet been connected to a shared memory
+block\&.
+.IP 
+.IP o 
+\fBstd::streamsize nReadable() const\fP:
+.br 
+The number of characters (bytes) that can be read from the beginning of
+the shared memory is returned\&. 0 is returned if the \fBSharedMemory\fP
+object has not yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBstd::streamsize offset() const\fP:
+.br 
+The offset within the shared memory segment (i\&.e\&., relative to the
+segment\(cq\&s \fIios::beg\fP position) is returned\&. 0 is returned if the
+\fBSharedMemory\fP object has not yet been connected to a shared memory
+block\&.
+.IP 
+.IP o 
+\fBchar *ptr()\fP:
+.br 
+Returns 0 if \fIoffset() == maxOffset()\fP\&. Otherwise it returns a
+pointer to the character at index \fIoffset\fP within the shared memory
+segment\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBint put(int ch)\fP:
+.br 
+After locking the appropriate shared data segment, \fIch\fP is written at
+position \fIoffset\fP, incrementing \fIoffset\fP thereafter\&. If \fIch ==
+EOF, EOF\fP is immediately returned\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBint read(Type *value)\fP:
+.br 
+This member was implemented as a member template\&. It calls
+the next member, casting \fIType *\fP to \fIchar *\fP, and using
+\fIsizeof(Type)\fP as its second argument\&.  The number of
+bytes actually read is returned\&. This member returns \-1 if
+initially \fIoffset\fP was at least equal to \fInReadable\fP\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBint read(char *data, std::streamsize len)\fP:
+.br 
+While locking the appropriate shared data segment(s) at most \fIlen\fP
+bytes are read from the shared memory, starting at \fIoffset\fP\&. The
+bytes read from shared memory are stored at \fIdata\fP\&.  The number of
+bytes actually read is returned\&. This member returns \-1 if
+initially \fIoffset\fP was at least equal to \fInReadable\fP\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBint read(std::ios::off_type offset, Type *value,
+std::ios::seekdir origin = std::ios::beg)\fP:
+.br 
+This member was implemented as a member template\&. After changing the
+\fBSharedMemory\fP\(cq\&s offset to \fIoffset\fP (relative to \fIorigin\fP), it
+calls the first \fIread\fP member, passing it \fIvalue\fP\&. The number of
+bytes actually read is returned\&. This member returns \-1 if initially
+\fIoffset\fP was at least equal to \fInReadable\fP\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBvoid remove()\fP:
+.br 
+The shared memory is locked, after which all shared memory controlled
+by the \fBFBB::SharedMemory\fP object is deleted\&. The
+\fBFBB::SharedMemory\fP object is unusable after returning from
+\fIremove\fP\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBstd::ios::pos_type seek(std::ios::off_type offset, 
+std::ios::seekdir origin = std::ios::beg)\fP:
+.br 
+Moves the \fIoffset\fP position relative to \fIway\fP\&. The value \-1 is
+returned when seeking before offset 0 or beyond \fImaxOffset\fP,
+otherwise the offset relative to the begin location of the shared
+memory (i\&.e, \fIoffset\fP for \fIorigin == ios::beg\fP) is returned\&.  0 is
+returned if the \fBSharedMemory\fP object has not yet been connected to
+a shared memory block\&.
+.IP 
+.IP o 
+\fBstd::streamsize showmanyc() const\fP:
+.br 
+The number of characters that can be read from the current shared
+segment data block is returned\&.  This member interrogates the number
+of readable characters in the shared memory segment\&. This number may
+change while this member is being executed\&. In order to receive a
+stable return value, calling functions should have obtained a lock on
+the shared memory segment before calling this member\&. 0 is returned if
+the \fBSharedMemory\fP object has not yet been connected to a shared
+memory block\&.
+.IP 
+.IP o 
+\fBvoid swap(SharedMemory &other)\fP:
+.br 
+The current and other \fBFBB::SharedMemory\fP objects are swapped\&.
+.IP 
+.IP o 
+\fBbool truncate(std::streamsize offset)\fP:
+.br 
+If \fIoffset\fP is not exceeding the value returned by \fInReadable\fP
+\fInReadable\fP is changed to \fIoffset\fP and \fItrue\fP is
+returned\&. Otherwise \fIfalse\fP is returned, and the value returned by
+\fInReadable\fP is not changed\&. 
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBint write(Type const *value)\fP:
+.br 
+This member was implemented as a member template\&. It calls the next
+member, casting \fIType const *\fP to \fIchar const *\fP, and using
+\fIsizeof(Type)\fP as its second argument\&.  The number of bytes actually
+written is returned\&. This member returns \-1 if initially \fIoffset\fP
+was at least equal to \fImaxOffset\fP\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBint write(char const *data, std::streamsize len)\fP:
+.br 
+The \fBFBB::SharedMemory\fP object calls \fIlock\fP to lock the shared
+memory, and writes at most \fIlen\fP bytes into the shared memory,
+starting at \fIoffset\fP\&. Next, \fIunlock\fP is called\&. The number of
+bytes actually written is returned\&. The member function returns \-1 if
+initially \fIoffset\fP is equal to \fImaxOffset\fP\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+.IP 
+.IP o 
+\fBint write(std::ios::off_type offset, Type const *value,
+std::ios::seekdir origin = std::ios::beg)\fP:
+.br 
+This member was implemented as a member template\&. After changing the
+\fBSharedMemory\fP\(cq\&s offset to \fIoffset\fP (relative to \fIorigin\fP), it
+calls the first \fIwrite\fP member, passing it \fIvalue\fP\&. The number of
+bytes actually written is returned\&. This member returns \-1 if
+initially \fIoffset\fP was at least equal to \fImaxOffset\fP\&.
+.IP 
+An \fIFBB::Exception\fP is thrown if the \fBSharedMemory\fP object has not
+yet been connected to a shared memory block\&.
+
+.PP 
+.SH "EXAMPLE"
+See the \fBsharedstream\fP(3bobcat) man page\&.
+.PP 
+.SH "FILES"
+\fIbobcat/sharedmemory\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBchmod\fP(1), \fBipcs\fP(1), \fBipcrm\fP(1),
+\fBisharedstream\fP(3bobcat),
+\fBosharedstream\fP(3bobcat),
+\fBsharedblock\fP(3bobcat), 
+\fBsharedcondition\fP(3bobcat), 
+\fBsharedmutex\fP(3bobcat), 
+\fBsharedpos\fP(3bobcat), 
+\fBsharedreadme\fP(7bobcat),
+\fBsharedsegment\fP(3bobcat),
+\fBsharedstream\fP(3bobcat), 
+\fBsharedstreambuf\fP(3bobcat)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

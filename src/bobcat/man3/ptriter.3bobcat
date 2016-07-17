@@ -1,0 +1,184 @@
+.TH "FBB::PtrIter" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Error handler"
+
+.PP 
+.SH "NAME"
+FBB::PtrIter \- Iterator returning pointer when dereferenced 
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/ptriter>\fP
+.br 
+
+.PP 
+.SH "DESCRIPTION"
+
+.PP 
+The \fIPtrIter\fP class template implements an input iterator whose
+\fIoperator*\fP returns the address of the element the iterator refers to\&.
+Consider a \fIstd::unordered_map<std::string, DataType>\fP\&. Its \fIbegin\fP member
+returns an iterator whose \fIoperator*\fP returns a \fIstd::pair<std::string,
+DataType> (const) &\fP\&. This is usually what you want, but now assume we want to
+display the map\(cq\&s contents, sorted by its keys\&. Sorting can simply be
+performed by defining a support vector containing pointers to the elements in
+the map, and then sorting the strings the pointers point at\&.
+.PP 
+\fIPtrIter\fP is a tool that can be used to construct such a support vector, as
+shown in the \fBEXAMPLE\fP section\&.
+.PP 
+\fIPtrIter\fP is a class template requiring one template type parameter:
+\fIIterator\fP, the iterator\(cq\&s type (e\&.g\&., \fIvector<string>::iterator\fP)
+.PP 
+\fIPtrIter\fP\(cq\&s users don\(cq\&t have to specify \fIPtrIter\fP\(cq\&s template type\&. The
+function template \fIptrIter\fP, when provided with an iterator returns the
+matching \fIPtrIter\fP object\&.
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fIstd::iterator<std::input_iterator_tag, \&.\&.\&.>\fP
+.PP 
+.SH "FREE FUNCTION"
+.IP o 
+\fBPtrIter<Iterator> ptrIter(Iterator const &iter)\fP:
+.br 
+this function template returns a \fIPtrIter\fP object for the function\(cq\&s
+\fIIterator\fP argument\&. This function template simplyfies the construction of a
+\fIPtrIter\fP as no template parameters need to be specified (see also the
+\fBEXAMPLE\fP section)
+
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBPtrIter(Iterator const &iter)\fP:
+.br 
+The \fIiter\fP parameter must be initialized with an existing input
+iterator, offering \fIoperator*, operator++, operator==\fP and \fIoperator!=\fP\&.
+As \fIPtrIter\fP is a class template, its template type parameters must be
+specified when defining a \fIPtrIter\fP object\&. E\&.g\&.,
+.nf 
+
+    PtrIter<set<string>::iterator> PtrIter(mySet\&.begin());
+    
+.fi 
+The copy and move constructors are available\&.
+.PP 
+.SH "OVERLOADED OPERATORS"
+.IP o 
+\fBPtrType operator*() const\fP:
+.br 
+the address of the entity the iterator refers to is returned;
+.IP o 
+\fBPtrIter &operator++()\fP:
+.br 
+the iterator is (pre)incremented to the next position;
+.IP o 
+\fBbool operator==(PtrIter const &other) const\fP:
+.br 
+\fItrue\fP is returned if the two iterators are equal;
+.IP o 
+\fBbool operator!=(PtrIter const &other) const\fP:
+.br 
+\fItrue\fP is returned if the two iterators are unequal;
+The copy and move assignment operators are available\&.
+.PP 
+.SH "DEFINED TYPE"
+\fIPtrIter\fP defines the following type:
+.IP o 
+\fBtypedef decltype(&*Iterator()) PtrType\fP:
+.br 
+
+.PP 
+.SH "MEMBER FUNCTIONS"
+All members of \fIstd::iterator<std:::input_iterator_tag, \&.\&.\&.>\fP are
+available, as \fBFBB::PtrIter\fP inherits from this class\&.
+.PP 
+.SH "EXAMPLE"
+.nf 
+#include <algorithm>
+#include <unordered_map>
+#include <vector>
+#include <cstring>
+#include <iostream>
+
+#include <bobcat/ptriter>
+
+using namespace std;
+using namespace FBB;
+
+int main()
+{
+    cout << \(dq\&Enter lines, the first word will be the map\(cq\&s key; \(dq\&
+                                            \(dq\&^D when done\&.\en\(dq\&;
+
+    string key;
+    string line;                    
+    unordered_map<string, string> map;
+    while (cin >> key && getline(cin, line))    // fill the map
+        map[key] = line;
+    cout << \(cq\&\en\(cq\&;
+
+                                        // initialize a support
+    vector<decltype(&*map\&.begin())>     // vector, using ptrIter
+        support(ptrIter(map\&.begin()), ptrIter(map\&.end()));
+
+                                        // sort \(cq\&support\(cq\&
+    typedef unordered_map<string, string>::value_type VT;
+    sort(support\&.begin(), support\&.end(), 
+        [&](VT const *p1, VT const *p2)
+        {
+            return strcasecmp(p1\->first\&.c_str(), p2\->first\&.c_str()) < 0;
+        }
+    );
+
+    for(auto &element: support)         // display sorted by key
+        cout << element\->first << \(cq\& \(cq\& << element\->second << \(cq\&\en\(cq\&;
+}
+
+
+
+
+
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/ptriter\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

@@ -1,0 +1,508 @@
+.TH "FBB::DecryptBuf" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Decrypt information"
+
+.PP 
+.SH "NAME"
+FBB::DecryptBuf \- Decrypts information using various methods into a std::ostream 
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/decryptbuf>\fP
+.br 
+Linking option: \fI \-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+\fBFBB::DecryptBuf\fP objects are \fBstd::streambuf\fP objects that can be used
+to initialize \fIstd::ostream\fP objects with\&.
+.PP 
+All information inserted into such a \fIstd::ostream\fP is decrypted and
+written into a \fIstd::ostream\fP that is given as argument to \fIDecryptBuf\fP\(cq\&s
+constructor\&.
+.PP 
+All encryption methods defined by the OpenSSL library that can be selected
+by name may be used in combination with \fIDecryptBuf\fP objects\&. Most likely
+the information will have been encrypted using an \fIEncryptBuf\fP object,
+selecting a particular encryption method\&. The encryption method used when
+encrypting information should also be specified when constructing a
+\fIDecryptBuf\fP object\&. Likewise, the constructor expects a \fIkey\fP and
+\fIinitialization vector\fP\&. The key and initialization vector that was passed
+to the \fIEncryptBuf\fP object must be passed to \fIDecryptBuf\fP\(cq\&s constructor as
+well\&. 
+.PP 
+Block ciphers use one of the following four encryption modes:
+.IP o 
+\fBCBC (Cipher Block Chaining)\fP:
+.br 
+The first block is XOR\-ed by the initialization vector and then
+encrypted using the specified method\&. Subsequent blocks are XOR\-ed by the
+encrypted version of the preceding block\&. Due to the initialization vector
+dictionary attacks are infeasible, as long as the initialization vector is
+truly random\&.
+.IP o 
+\fBECB (Electronic Code Book)\fP:
+.br 
+Each block is encrypted by itself, using the specified encryption
+method\&. Although an \fIinitialization vector\fP may be specified, it is not
+used\&. This method is susceptible to dictionary attacks and should therefore be
+avoided, unless you know what you\(cq\&re doing\&.
+.IP o 
+\fBCFB (Cipher Feednack)\fP:
+.br 
+This method allows a block cipher to be used as a stream cipher\&. It
+uses an initialization vector, which should be unique and random for each new
+stream of data that is encrypted using the method\&. Encryption can only start
+after the first data block has been received\&.
+.IP o 
+\fBOFB (Output Feednack)\fP:
+.br 
+This is an alternative way to use a block cipher as a stream
+cipher\&. It is somewhat more susceptible to traditional data manipulation
+attacks, which can usually be thwarted when a message authentication code is
+added to the information as well\&. Like CFB it uses an initialization vector,
+which should again be unique and random for each new stream of data that is
+encrypted\&.
+
+.PP 
+The following table presents an overview of methods that are currently
+available\&. Methods for which the block size is specified as N\&.A\&. are stream
+ciphers; other methods are block ciphers: 
+.TS 
+ tab(~);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----
+lllll
+lllll
+-----
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+-----
+lllll
+lllll
+lllll
+lllll
+lssss
+-----
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+lllll
+-----
+lllll
+lllll
+lllll
+lllll
+lssss
+-----
+lllll
+lllll
+lllll
+lllll
+-----
+lllll
+-----
+lllll
+lllll
+lllll
+lllll
+-----
+lllll
+lllll
+lllll
+lllll
+lssss
+lssss
+-----
+lllll
+lllll
+lllll
+lllll
+lssss
+-----
+lllll
+lssss
+-----
+lllll
+lssss
+-----
+lllll
+lssss
+lssss
+-----
+lllll
+lssss
+-----
+lllll
+lllll
+lllll
+lllll
+lssss
+lssss
+-----
+c.
+method~keysize~blocksize~mode~identifier
+~(bytes)~(bytes)~
+AES~16~8~CBC~\(dq\&aes\-128\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&aes\-128\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&aes\-128\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&aes\-128\-ofb\(dq\&
+~24~24~CBC~\(dq\&aes\-192\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&aes\-192\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&aes\-192\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&aes\-192\-ofb\(dq\&
+~32~32~CBC~\(dq\&aes\-256\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&aes\-256\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&aes\-256\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&aes\-256\-ofb\(dq\&
+BLOWFISH~16~8~CBC~\(dq\&bf\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&bf\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&bf\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&bf\-ofb\(dq\&
+max key length is 56 bytes, 16 generally used~
+CAMELLIA~16~16~CBC~\(dq\&camellia\-128\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&camellia\-128\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&camellia\-128\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&camellia\-128\-ofb\(dq\&
+~24~~CBC~\(dq\&camellia\-192\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&camellia\-192\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&camellia\-192\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&camellia\-192\-ofb\(dq\&
+~32~~CBC~\(dq\&camellia\-256\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&camellia\-256\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&camellia\-256\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&camellia\-256\-ofb\(dq\&
+CAST~16~8~CBC~\(dq\&cast\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&cast\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&cast\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&cast\-ofb\(dq\&
+min key length is 5 bytes, max is shown~
+DES~8~8~CBC~\(dq\&des\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&des\-ebc\(dq\&
+~  ~  ~CFB~\(dq\&des\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&des\-ofb\(dq\&
+DESX~8~8~CBC~\(dq\&desx\-cbc\(dq\&
+3DES~16~8~CBC~\(dq\&des\-ede\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&des\-ede\(dq\&
+~  ~  ~CFB~\(dq\&des\-ede\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&des\-ede\-ofb\(dq\&
+3DES~24~8~CBC~\(dq\&des\-ede3\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&des\-ede3\(dq\&
+~  ~  ~CFB~\(dq\&des\-ede3\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&des\-ede3\-ofb\(dq\&
+Key bytes 9\-16 define the 2nd key, bytes 17\-24~
+define the 3rd key~
+RC2~16~8~CBC~\(dq\&rc2\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&rc2\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&rc2\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&rc2\-ofb\(dq\&
+Key length variable, max\&. 128 bytes, default length is shown~
+RC2\-40~5~8~~\(dq\&rc2\-40\-cbc\(dq\&
+obsolete: avoid~
+RC2\-64~8~8~~\(dq\&rc2\-64\-cbc\(dq\&
+obsolete: avoid~
+RC4~16~N\&.A\&.~~\(dq\&rc4\(dq\&
+Key length is variable, max\&. 256 bytes\&. default length is shown~
+Encrypt again to decrypt\&. Don\(cq\&t use \fIDecryptBuf\fP~
+RC4\-40~5~N\&.A\&.~~\(dq\&rc4\-40\(dq\&
+obsolete: avoid~
+RC5~16~8~CBC~\(dq\&rc5\-cbc\(dq\&
+~  ~  ~EBC~\(dq\&rc5\-ecb\(dq\&
+~  ~  ~CFB~\(dq\&rc5\-cfb\(dq\&
+~  ~  ~OFB~\(dq\&rc5\-ofb\(dq\&
+Key length variable, max\&. 256 bytes, rounds 8, 12 or 16,~
+default # rounds is 12~
+
+.TE 
+
+.PP 
+The RC4 stream cipher is subject to a well\-known attack
+(cf\&. http://www\&.wisdom\&.weizmann\&.ac\&.il/~itsik/RC4/Papers/Mantin1\&.zip)
+unless the initial 256 bytes produced by the cipher are discarded\&. 
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\fBstd::streambuf\fP
+.PP 
+.SH "CONSTRUCTOR/DESTRUCTOR"
+.IP o 
+\fBDecryptBuf(std::ostream &outStream, char const *type, 
+std::string const &key, std::string const &iv,
+size_t bufsize = 1024)\fP:
+.br 
+This constructor initializes the \fIDecryptBuf\fP object preparing it
+for the message decrypt algorithm specified with \fItype\fP\&. The decryption
+algorithms that can be used are listed in the table found in the
+\fBEncryptBuf\fP(3bobcat) manual page\&. As an example: to use the AES method on
+192 bit keys and blocks in CBC mode specify \fI\(dq\&aes\-192\-cbc\(dq\&\fP\&. The \fIkey\fP
+parameter refers to the key to be used, the \fIiv\fP parameter refers to the
+initialization vector to use\&. The \fIiv\fP\(cq\&s length cannot be zero\&. When using 
+ECB modes no initialization vector is used\&. In those cases any non\-empty
+initialization vector may be provided\&.
+.IP 
+The constructor throws an \fIFBB::Exception\fP exception if an unknown
+encryption method was specified\&.
+.IP 
+The constructor\(cq\&s first parameter refers to the \fIstd::ostream\fP to
+receive the decrypted information\&.
+.IP 
+The \fIbufsize\fP argument specifies the size in bytes of the internal
+buffer used by \fIDecryptBuf\fP to store incoming characters temporarily\&. The
+provided default argument should be OK in all normal cases\&.
+.IP o 
+\fB~DecryptBuf()\fP:
+.br 
+The destructor calls the \fIdone()\fP member (see below), prevending any
+exception that function might throw from leaving the destructor\&. In this case
+only a non thread\-safe way to determine whether the decryption was
+successfully completed is available through the static member function
+\fIlastOK()\fP (see below)\&.
+There is no copy constructor, nor move constructor (as \fIstd::streambuf\fP
+doesn\(cq\&t support either)\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+
+.PP 
+All members of \fBstd::streambuf\fP are available, as \fBFBB::DecryptBuf\fP
+inherits from this class\&. Some of the \fBstd::streambuf\fP\(cq\&s member are
+overridden or are hidden by \fIDecryptBuf\fP\&. In normal situations these
+inherited members will not be used by programs using \fIDecryptBuf\fP objects\&.
+.PP 
+.IP o 
+\fBvoid done()\fP:
+.br 
+This member can be called to indicate that all information to be
+decrypted has been received\&. It throws an \fIFBB::Exception\fP exception if
+decryption fails (resulting from providing the \fIDecryptBuf\fP object with
+incorrect (usually improperly padded) input)\&. If not explicitly called it is
+called by \fIDecryptBuf\fP\(cq\&s destructor, preventing its exception from leaving
+the destructor\&. 
+.IP o 
+\fBvoid setIv(std::string const &iv)\fP:
+.br 
+This member can be used to specify the initialization vector to use
+after construction time but before any data has been decrypted\&. When called
+after decryption has started or when specifying an empty intialization vector
+an \fIFBB::Exception\fP exception will be thrown\&.  When using ECB modes no
+initialization vector is used\&. In those cases any non\-empty initialization
+vector may be provided\&.
+.IP o 
+\fBbool setRounds(size_t nRounds)\fP:
+.br 
+This member can only be used with the RC5 decryption method to set the
+number of rounds of the algorithm to 8, 12 or 16\&. When the number of rounds
+were updated successfully the member returns \fItrue\fP\&. It returns \fIfalse\fP in
+other cases (e\&.g\&., called for other decryption methods than RC5 or the
+requested number of rounds differ from 8, 12 or 16)\&.
+
+.PP 
+.SH "STATIC MEMBER"
+.IP o 
+\fBbool lastOK()\fP:
+.br 
+This member is a non thread\-safe way to determine whether the
+decryption has succeeded when the  \fIDecryptBuf\fP object\(cq\&s \fIdone\fP member has
+not been called and the object has been destroyed\&. In that case the object\(cq\&s
+destructor will call \fIdone\fP to complete the decryption\&. The member
+\fIlastOK\fP returns \fItrue\fP if the \fIDecryptBuf\fP object  destroyed last
+could complete its decryption successfully and returns \fIfalse\fP otherwise\&. 
+
+.PP 
+.SH "PROTECTED MEMBER"
+.IP o 
+\fBEVP_CIPHER_CTX *cipherCtx()\fP:
+.br 
+Classes derived from \fIDecryptBuf\fP may use this member to gain direct
+access to the \fIEVP_CIPHER_CTX\fP pointer used by the \fIDecryptBuf\fP
+object\&. This pointer is a pointer to an opaque structure used by many OpenSSL
+functions to set or query parameters of an decryption method\&.
+
+.PP 
+.SH "EXAMPLE"
+.nf 
+#include <iostream>
+#include <fstream>
+#include <bobcat/errno>
+#include <bobcat/decryptbuf>
+
+using namespace std;
+using namespace FBB;
+
+int main(int argc, char **argv)
+try
+{
+    if (argc == 1)
+        throw Errno(\(dq\&1st arg: method, 2nd arg: key, 3rd arg: file to \(dq\&
+                    \(dq\&decrypt (to stdout), 4th arg: iv\(dq\&);
+
+    cerr << \(dq\&Key: `\(dq\& << argv[2] << \(dq\&\(cq\&\en\(dq\&
+            \(dq\&IV:  `\(dq\& << argv[4] << \(dq\&\(cq\&\en\(dq\&;
+
+    DecryptBuf decryptbuf(cout, argv[1], argv[2], argv[4]);
+    ostream out(&decryptbuf);
+    ifstream in(argv[3]);
+
+    out << in\&.rdbuf();
+    // decryptbuf\&.done();       // optionally
+}
+catch(Errno const &err)
+{
+    cout << err\&.why() << endl;
+    return 1;
+}
+
+
+
+
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/decryptbuf\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBencryptbuf\fP(3bobcat), \fBstd::streambuf\fP
+.PP 
+.SH "BUGS"
+None reported
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 

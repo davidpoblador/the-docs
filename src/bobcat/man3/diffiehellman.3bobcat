@@ -1,0 +1,324 @@
+.TH "FBB::DiffieHellman" "3bobcat" "2005\-2014" "libbobcat\-dev_3\&.23\&.01\-x\&.tar\&.gz" "Diffie Hellman key computations"
+
+.PP 
+.SH "NAME"
+FBB::DiffieHellman \- Diffie\-Hellman PKI, computing shared keys
+.PP 
+.SH "SYNOPSIS"
+\fB#include <bobcat/diffiehellman>\fP
+.br 
+Linking option: \fI\-lbobcat\fP 
+.PP 
+.SH "DESCRIPTION"
+
+.PP 
+The class \fBFBB::DiffieHellman\fP computes shared keys (shared secrets) using
+the Diffie\-Hellman (1976) algorithm\&. The Diffie\-Hellman algorithm uses public
+and private information\&. The public information consists of a \fIprime\fP (e\&.g\&.,
+a prime number consisting of 1024 bits), a \fIgenerator\fP (for which the value
+5 is commonly used), and the value \fIgenerator mod prime\fP, where
+\fIprivate\fP is a randomly selected large number, which is the private
+information\&. 
+.PP 
+The Diffie\-Hellman algorithm is commonly used to compute a shared key which
+can be used to encrypt information sent between two parties\&. One party, which
+in this man\-page is called the \fIinitiator\fP computes the prime and defines
+the generator\&.  The prime is computed by \fBFBB::DiffieHellman\fP\(cq\&s first
+constructor, while the generator is passed to this constructor as one of its
+arguments\&. For the generator the value 5 is often used\&.
+.PP 
+Next the initiator passes its public information, consisting of the prime, the
+generator, and the value \fIgenerator mod prime\fP to the other
+party, which in this man\-page is called the \fIpeer\fP\&. The public information
+is written in binairy, big\-endian form to file using the member \fIsave\fP\&. The
+initiator may optionally save the private information to a separate file as
+well\&. 
+.PP 
+The peer thereupon receives the initiator\(cq\&s public information\&. The
+initialor\(cq\&s public information is read by a \fBFBB::DiffieHellman\fP constructor
+either expecting the name of a file or a \fIstd::istream\fP containining the
+initiator\(cq\&s public information\&. 
+.PP 
+Having obtained the prime and generator, the peer\(cq\&s public (and, optionally,
+private information) is saved by also calling \fIsave\fP\&. This results, among
+other things, in the value \fIgenerator mod prime\fP, but now using
+the peer\(cq\&s private information\&. 
+.PP 
+At this point the peer is already able to compute the shared key\&. The key is
+returned by calling the \fIkey\fP member, which returns the shared key as a
+series of bytes stored in a \fIstd::string\fP\&. 
+.PP 
+Before the initiator can compute the shared key the peer\(cq\&s
+\fIgenerator mod prime\fP value must be available\&. The peer sends
+the saved public data to the initiator\&. The initiator then passes the peer\(cq\&s
+public data either by file name or by \fIstd::istream\fP to the \fIkey\fP member,
+returning the shared key\&. 
+.PP 
+\fBPerfect Forward Secrecy and Ephemeral Diffie Hellman\fP
+.PP 
+If the initiator and peer decide not to save their private information
+\fIPerfect Forward Secrecy\fP and \fIEphemeral Diffie Hellman\fP may be
+obtained\&. Here, the procedure is applied as follows:
+.PP 
+.IP o 
+Initiator and peer have agreed upon and securely exchanged a
+long\-lasting common secret, which may be used in combination with, e\&.g\&.,
+symmetric encryption methods\&.
+.IP o 
+Applying the abovementioned procedure, the private information is
+never saved on file\&. Consequently, the shared key, once computed, cannot be
+reconstructed anymore\&.
+.IP o 
+The value \fIgenerator mod prime\fP is not sent to either
+peer or initiator `in the clear\(cq\&, but encrypted using the long\-lasting common
+secret\&. As the current implementation saves all public information on file,
+it\(cq\&s probably easiest to encrypt the file containing the public information\&.
+.IP o 
+The recipients, having recieved the other party\(cq\&s encrypted public
+information, decrypt it using the long\-lasting shared secret and compute the
+the shared key\&.
+.IP o 
+As the secret information is not kept, the shared key cannot be
+reconstructed, while a Man\-In\-The\-Middle attack is prevented by only
+exchanging encrypted public information\&.
+.IP o 
+The shared key can now be used to encrypt a communication session
+
+.PP 
+.SH "NAMESPACE"
+\fBFBB\fP
+.br 
+All constructors, members, operators and manipulators, mentioned in this
+man\-page, are defined in the namespace \fBFBB\fP\&.
+.PP 
+.SH "INHERITS FROM"
+\-
+.PP 
+.SH "PUBLIC ENUMERATION"
+
+.PP 
+The enumeration \fIFBB::DiffieHellman::SecretKey\fP has two values:
+.IP o 
+\fIDONT_SAVE_SECRET_KEY\fP, indicating that the secret information
+should not be saved on file;
+.IP o 
+\fISAVE_SECRET_KEY\fP, indicating that the secret information
+should be saved on file;
+
+.PP 
+.SH "CONSTRUCTORS"
+.IP o 
+\fBDiffieHellman(size_t primeLength = 1024, size_t generator = 5,
+bool progress = false)\fP:
+.br 
+This constructor computes a prime of the specified length, and
+initializes the public information with the indicated generator\&. If
+\fIprogress\fP is \fItrue\fP, the progress of the prime construction process is
+shown to \fIstd::cout\fP by a series of dots, minuses and plusses\&. Generating a
+suitable prime may fail, resulting in an \fIFBB::Exception\fP being
+thrown\&. Unless the generator is specified as 2 or 5 the warning \fIcannot
+check the validity of generator \&.\&.\&.\fP is inserted into the
+\fBmstream\fP(3bobcat)\(cq\&s \fIwmsg\fP object\&. A warning is also inserted if the
+provided generator is not a generator for the computed prime\&.
+.IP 
+This constructor should be called by the initiator to start the
+Diffie\-Hellman shared key computation procedure\&.
+.IP 
+.IP o 
+\fBDiffieHellman(std::string const &initiatorPublicFileName)\fP:
+.br 
+This constructor should be called by the peer, after having received the
+initiator\(cq\&s public info\&. It makes the initiator\(cq\&s public information available
+to the peer, after which the peer\(cq\&s public and private information can be
+computed\&. 
+.IP 
+.IP o 
+\fBDiffieHellman(std::stream &initiatorPublicStream)\fP:
+.br 
+This constructor acts like the previous constructor, expecting a
+\fIstd::istream\fP rather than a file name\&. It should be called by the peer,
+after having received the initiator\(cq\&s public info\&. It makes the initiator\(cq\&s
+public information available to the peer, after which the peer\(cq\&s public and
+private information can be computed\&.
+.IP 
+.IP o 
+\fBDiffieHellman(std::string const &initiatorPublicFileName, std::string
+const &initiatorPrivateFileName)\fP:
+.br 
+Unless the initiator\(cq\&s \fIDiffieHellman\fP object is still available,
+this constructor should again be called by the initiator, to load the
+initiator\(cq\&s public and private data\&.
+.IP 
+.IP o 
+\fBDiffieHellman(std::stream &initiatorPublicStream, std::stream
+&initiatorPrivateStream)\fP:
+.br 
+This constructor acts like the previous constructor, expecting 
+\fIstd::istreams\fP rather than file names\&. It should be called by the
+initiator, to load the initiator\(cq\&s public and private info\&.
+Copy and move constructors are available\&.
+.PP 
+.SH "OVERLOADED OPERATORS"
+Copy and move assignment operators are available\&.
+.PP 
+.SH "MEMBER FUNCTIONS"
+.IP o 
+\fBstd::string key() const\fP:
+.br 
+This member should be called by the peer\&. It returns the shared key\&. If
+the key cannot be computed, or if the key is not resistant to the small group
+attack (i\&.e\&., if the key equals 1, or is at least equal to the public prime
+value, or if \fIkey mod prime != 1\fP), then an
+\fIFBB::Exception\fP is thrown\&.
+.IP 
+.IP o 
+\fBstd::string key(std::string const &peerPublicFileName) const\fP:
+.br 
+This member should be called by the initiator\&. It skips the data referring
+to the prime and generator found in \fIpeerPublicFileName\fP and then reads the
+peer\(cq\&s \fIgenerator mod prime\fP value\&.  If this value cannot be
+read or if the key is not resistant to the small group attack (cf\&. the
+description of the previous \fIkey\fP member) then an \fIFBB::Exception\fP is
+thrown\&. It returns the shared key\&.
+.IP 
+.IP o 
+\fBstd::string key(std::istream const &peerPublicStream) const\fP:
+.br 
+This member should be called by the initiator\&. It acts like the previous
+\fIkey\fP member, reading the peer\(cq\&s \fIgenerator mod prime\fP value
+from \fIpeerPublicStream\fP\&. It returns the shared key\&.
+.IP 
+.IP o 
+\fBvoid save(std::string const &basename, SecretKey action = 
+DONT_SAVE_SECRET_KEY)\fP:
+.br 
+This member should be called by the initiator\&. It saves the public
+information on the file \fI\(cq\&basename\(cq\&\&.pub\fP\&. The information is written in
+binary, big\-endian format, using the following organization:
+.IP 
+\- the size of the prime in bytes;
+.br 
+\- the prime\(cq\&s bytes;
+.br 
+\- the size of the generator in bytes;
+.br 
+\- the generator\(cq\&s bytes;
+.br 
+\- the size of the public info (\fIgenerator mod prime\fP) in
+bytes;
+.br 
+\- the public info\(cq\&s bytes\&.
+.br 
+
+.IP 
+If \fIaction\fP is specified as \fISAVE_SECRET_KEY\fP then the private
+information is written in binary, big\-endian format, using the following
+organization:
+.IP 
+\- the size of the private information in bytes;
+.br 
+\- the private information bytes\&.
+
+.PP 
+.SH "EXAMPLE"
+
+.PP 
+When called without arguments, the example program generates
+Diffie\-Hellman parameters writing the initiator\(cq\&s public and private
+information to, respectively, \fIinit\&.pub\fP and \fIinit\&.sec\fP\&.
+.PP 
+When called with one argument, \fIinit\&.pub\fP is read, and the peer\(cq\&s public
+and private information is written to, respectively, \fIpeer\&.pub\fP and
+\fIpeer\&.sec\fP\&. Next, the (peer\(cq\&s) shared key is written to \fIpeerkey\fP\&.
+.PP 
+When called with two arguments, \fIinit\&.pub\fP and \fIinit\&.sec\fP are read,
+as well as the peer\(cq\&s public information (on the file \fIpeer\&.pub\fP)\&. Next, the
+(initiator\(cq\&s) shared key is written to \fIinitkey\fP\&. 
+.PP 
+The files \fIpeerkey\fP and \fIinitkey\fP should be identical\&.
+.PP 
+.nf 
+
+#include <fstream>
+#include <iostream>
+#include <bobcat/diffiehellman>
+
+using namespace FBB;
+using namespace std;
+
+int main(int argc, char **argv)
+try
+{
+    if (argc == 1)
+    {
+        DiffieHellman dh(1024, 5, true);
+        dh\&.save(\(dq\&init\(dq\&, DiffieHellman::SAVE_SECRET_KEY);
+    }
+
+    if (argc == 2)
+    {
+        DiffieHellman dh(\(dq\&init\&.pub\(dq\&);
+        dh\&.save(\(dq\&peer\(dq\&, DiffieHellman::SAVE_SECRET_KEY);
+
+        string key = dh\&.key();
+        cout << \(dq\&Key length: \(dq\& << key\&.length() << \(cq\&\en\(cq\&;
+        ofstream outkey(\(dq\&peerkey\(dq\&);
+        outkey\&.write(key\&.data(), key\&.length());
+    }
+
+    if (argc == 3)
+    {
+        DiffieHellman dh(\(dq\&init\&.pub\(dq\&, \(dq\&init\&.sec\(dq\&);
+
+        string key = dh\&.key(\(dq\&peer\&.pub\(dq\&);
+        cout << \(dq\&Key length: \(dq\& << key\&.length() << \(cq\&\en\(cq\&;
+        ofstream outkey(\(dq\&initkey\(dq\&);
+        outkey\&.write(key\&.data(), key\&.length());
+    }
+
+}
+catch (std::exception const &exc)
+{
+    std::cout << exc\&.what() << \(cq\&\en\(cq\&;
+}
+
+
+.fi 
+
+.PP 
+.SH "FILES"
+\fIbobcat/diffiehellman\fP \- defines the class interface
+.PP 
+.SH "SEE ALSO"
+\fBbobcat\fP(7), \fBbigint\fP(3bobcat)
+.PP 
+.SH "BUGS"
+None Reported\&.
+.PP 
+.SH "DISTRIBUTION FILES"
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.dsc\fP: detached signature;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x\&.tar\&.gz\fP: source archive;
+.IP o 
+\fIbobcat_3\&.23\&.01\-x_i386\&.changes\fP: change log;
+.IP o 
+\fIlibbobcat1_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries;
+.IP o 
+\fIlibbobcat1\-dev_3\&.23\&.01\-x_*\&.deb\fP: debian package holding the
+libraries, headers and manual pages;
+.IP o 
+\fIhttp://sourceforge\&.net/projects/bobcat\fP: public archive location;
+
+.PP 
+.SH "BOBCAT"
+Bobcat is an acronym of `Brokken\(cq\&s Own Base Classes And Templates\(cq\&\&.
+.PP 
+.SH "COPYRIGHT"
+This is free software, distributed under the terms of the 
+GNU General Public License (GPL)\&.
+.PP 
+.SH "AUTHOR"
+Frank B\&. Brokken (\fBf\&.b\&.brokken@rug\&.nl\fP)\&.
+.PP 
