@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ld - The GNU linker</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="The gnu linker">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">ld<small> (1)</small></h1>
+        <p class="lead">The gnu linker</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/"><span itemprop="title">Executable programs or shell commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/ld.1.html"><span itemprop="title">ld</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>ld [<strong>options</strong>] <em>objfile</em> ...</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>ld</strong> combines a number of object and archive files, relocates their data and ties up symbol references. Usually the last step in compiling a program is to run <strong>ld</strong>.</p>
+<p class='spacer'>
+
+<p><strong>ld</strong> accepts Linker Command Language files written in a superset of \s-1AT&T\s0's Link Editor Command Language syntax, to provide explicit and total control over the linking process.</p>
+<p class='spacer'>
+
+<p>This man page does not describe the command language; see the <strong>ld</strong> entry in \f(CW\*(C`info\*(C' for full details on the command language and on other aspects of the \s-1GNU\s0 linker.</p>
+<p class='spacer'>
+
+<p>This version of <strong>ld</strong> uses the general purpose \s-1BFD\s0 libraries to operate on object files. This allows <strong>ld</strong> to read, combine, and write object files in many different formats---for example, \s-1COFF\s0 or \f(CW\*(C`a.out\*(C'.  Different formats may be linked together to produce any available kind of object file.</p>
+<p class='spacer'>
+
+<p>Aside from its flexibility, the \s-1GNU\s0 linker is more helpful than other linkers in providing diagnostic information.  Many linkers abandon execution immediately upon encountering an error; whenever possible, <strong>ld</strong> continues executing, allowing you to identify other errors (or, in some cases, to get an output file in spite of the error).</p>
+<p class='spacer'>
+
+<p>The \s-1GNU\s0 linker <strong>ld</strong> is meant to cover a broad range of situations, and to be as compatible as possible with other linkers.  As a result, you have many choices to control its behavior.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+<p>The linker supports a plethora of command-line options, but in actual practice few of them are used in any particular context. For instance, a frequent use of <strong>ld</strong> is to link standard Unix object files on a standard, supported Unix system.  On such a system, to link a file \f(CW\*(C`hello.o\*(C':</p>
+<p class='spacer'>
+
+<pre>        ld -o &lt;output&gt; /lib/crt0.o hello.o -lc</pre>
+
+<p class='spacer'>
+
+<p>This tells <strong>ld</strong> to produce a file called <em>output</em> as the result of linking the file \f(CW\*(C`/lib/crt0.o\*(C' with \f(CW\*(C`hello.o\*(C' and the library \f(CW\*(C`libc.a\*(C', which will come from the standard search directories.  (See the discussion of the <strong>-l</strong> option below.)</p>
+<p class='spacer'>
+
+<p>Some of the command-line options to <strong>ld</strong> may be specified at any point in the command line.  However, options which refer to files, such as <strong>-l</strong> or <strong>-T</strong>, cause the file to be read at the point at which the option appears in the command line, relative to the object files and other file options.  Repeating non-file options with a different argument will either have no further effect, or override prior occurrences (those further to the left on the command line) of that option.  Options which may be meaningfully specified more than once are noted in the descriptions below.</p>
+<p class='spacer'>
+
+<p>Non-option arguments are object files or archives which are to be linked together.  They may follow, precede, or be mixed in with command-line options, except that an object file argument may not be placed between an option and its argument.</p>
+<p class='spacer'>
+
+<p>Usually the linker is invoked with at least one object file, but you can specify other forms of binary input files using <strong>-l</strong>, <strong>-R</strong>, and the script command language.  If <em>no</em> binary input files at all are specified, the linker does not produce any output, and issues the message <strong>No input files</strong>.</p>
+<p class='spacer'>
+
+<p>If the linker cannot recognize the format of an object file, it will assume that it is a linker script.  A script specified in this way augments the main linker script used for the link (either the default linker script or the one specified by using <strong>-T</strong>).  This feature permits the linker to link against a file which appears to be an object or an archive, but actually merely defines some symbol values, or uses \f(CW\*(C`INPUT\*(C' or \f(CW\*(C`GROUP\*(C' to load other objects.  Specifying a script in this way merely augments the main linker script, with the extra commands placed after the main script; use the <strong>-T</strong> option to replace the default linker script entirely, but note the effect of the \f(CW\*(C`INSERT\*(C' command.</p>
+<p class='spacer'>
+
+<p>For options whose names are a single letter, option arguments must either follow the option letter without intervening whitespace, or be given as separate arguments immediately following the option that requires them.</p>
+<p class='spacer'>
+
+<p>For options whose names are multiple letters, either one dash or two can precede the option name; for example, <strong>-trace-symbol</strong> and <strong>--trace-symbol</strong> are equivalent.  Note---there is one exception to this rule.  Multiple letter options that start with a lower case 'o' can only be preceded by two dashes.  This is to reduce confusion with the <strong>-o</strong> option.  So for example <strong>-omagic</strong> sets the output file name to <strong>magic</strong> whereas <strong>--omagic</strong> sets the \s-1NMAGIC\s0 flag on the output.</p>
+<p class='spacer'>
+
+<p>Arguments to multiple-letter options must either be separated from the option name by an equals sign, or be given as separate arguments immediately following the option that requires them.  For example, <strong>--trace-symbol foo</strong> and <strong>--trace-symbol=foo</strong> are equivalent. Unique abbreviations of the names of multiple-letter options are accepted.</p>
+<p class='spacer'>
+
+<p>Note---if the linker is being invoked indirectly, via a compiler driver (e.g. <strong>gcc</strong>) then all the linker command line options should be prefixed by <strong>-Wl,</strong> (or whatever is appropriate for the particular compiler driver) like this:</p>
+<p class='spacer'>
+
+<pre>          gcc -Wl,--start-group foo.o bar.o -Wl,--end-group</pre>
+
+<p class='spacer'>
+
+<p>This is important, because otherwise the compiler driver program may silently drop the linker options, resulting in a bad link.  Confusion may also arise when passing options that require values through a driver, as the use of a space between option and argument acts as a separator, and causes the driver to pass only the option to the linker and the argument to the compiler.  In this case, it is simplest to use the joined forms of both single- and multiple-letter options, such as:</p>
+<p class='spacer'>
+
+<pre>          gcc foo.o bar.o -Wl,-eENTRY -Wl,-Map=a.map</pre>
+
+<p class='spacer'>
+
+  <p>Here is a table of the generic command line switches accepted by the \s-1GNU\s0 linker:</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>@</strong><em>file</em></dt>
+    <dd>
+  <p>Read command-line options from <em>file</em>.  The options read are inserted in place of the original @<em>file</em> option.  If <em>file</em> does not exist, or cannot be read, then the option will be treated literally, and not removed.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>Options in <em>file</em> are separated by whitespace.  A whitespace character may be included in an option by surrounding the entire option in either single or double quotes.  Any character (including a backslash) may be included by prefixing the character to be included with a backslash.  The <em>file</em> may itself contain additional @<em>file</em> options; any such options will be processed recursively.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-a</strong> <em>keyword</em></dt>
+    <dd>
+  <p>This option is supported for \s-1HP/UX\s0 compatibility.  The <em>keyword</em> argument must be one of the strings <strong>archive</strong>, <strong>shared</strong>, or <strong>default</strong>.  <strong>-aarchive</strong> is functionally equivalent to <strong>-Bstatic</strong>, and the other two keywords are functionally equivalent to <strong>-Bdynamic</strong>.  This option may be used any number of times.</p>
+    </dd>
+    <dt><strong>--audit</strong> <em>\s-1AUDITLIB\s0</em></dt>
+    <dd>
+  <p>Adds <em>\s-1AUDITLIB\s0</em> to the \f(CW\*(C`DT_AUDIT\*(C' entry of the dynamic section. <em>\s-1AUDITLIB\s0</em> is not checked for existence, nor will it use the \s-1DT_SONAME\s0 specified in the library.  If specified multiple times \f(CW\*(C`DT_AUDIT\*(C' will contain a colon separated list of audit interfaces to use. If the linker finds an object with an audit entry while searching for shared libraries, it will add a corresponding \f(CW\*(C`DT_DEPAUDIT\*(C' entry in the output file. This option is only meaningful on \s-1ELF\s0 platforms supporting the rtld-audit interface.</p>
+    </dd>
+    <dt><strong>-A</strong> <em>architecture</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--architecture=</strong><em>architecture</em></dt>
+    <dd>
+  <p>In the current release of <strong>ld</strong>, this option is useful only for the Intel 960 family of architectures.  In that <strong>ld</strong> configuration, the <em>architecture</em> argument identifies the particular architecture in the 960 family, enabling some safeguards and modifying the archive-library search path.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>Future releases of <strong>ld</strong> may support similar functionality for other architecture families.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-b</strong> <em>input-format</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--format=</strong><em>input-format</em></dt>
+    <dd>
+  <p><strong>ld</strong> may be configured to support more than one kind of object file.  If your <strong>ld</strong> is configured this way, you can use the <strong>-b</strong> option to specify the binary format for input object files that follow this option on the command line.  Even when <strong>ld</strong> is configured to support alternative object formats, you don't usually need to specify this, as <strong>ld</strong> should be configured to expect as a default input format the most usual format on each machine. <em>input-format</em> is a text string, the name of a particular format supported by the \s-1BFD\s0 libraries.  (You can list the available binary formats with <strong>objdump -i</strong>.)</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>You may want to use this option if you are linking files with an unusual binary format.  You can also use <strong>-b</strong> to switch formats explicitly (when linking object files of different formats), by including <strong>-b</strong> <em>input-format</em> before each group of object files in a particular format.</p>
+<p class='spacer'>
+
+<p>The default format is taken from the environment variable \f(CW\*(C`GNUTARGET\*(C'.</p>
+<p class='spacer'>
+
+  <p>You can also define the input format from a script, using the command \f(CW\*(C`TARGET\*(C';</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-c</strong> <em>MRI-commandfile</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--mri-script=</strong><em>MRI-commandfile</em></dt>
+    <dd>
+  <p>For compatibility with linkers produced by \s-1MRI, \s0<strong>ld</strong> accepts script files written in an alternate, restricted command language, described in the \s-1MRI\s0 Compatible Script Files section of \s-1GNU\s0 ld documentation. Introduce \s-1MRI\s0 script files with the option <strong>-c</strong>; use the <strong>-T</strong> option to run linker scripts written in the general-purpose <strong>ld</strong> scripting language. If <em>MRI-cmdfile</em> does not exist, <strong>ld</strong> looks for it in the directories specified by any <strong>-L</strong> options.</p>
+    </dd>
+    <dt><strong>-d</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-dc</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-dp</strong></dt>
+    <dd>
+  <p>These three options are equivalent; multiple forms are supported for compatibility with other linkers.  They assign space to common symbols even if a relocatable output file is specified (with <strong>-r</strong>).  The script command \f(CW\*(C`FORCE_COMMON_ALLOCATION\*(C' has the same effect.</p>
+    </dd>
+    <dt><strong>--depaudit</strong> <em>\s-1AUDITLIB\s0</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>-P</strong> <em>\s-1AUDITLIB\s0</em></dt>
+    <dd>
+  <p>Adds <em>\s-1AUDITLIB\s0</em> to the \f(CW\*(C`DT_DEPAUDIT\*(C' entry of the dynamic section. <em>\s-1AUDITLIB\s0</em> is not checked for existence, nor will it use the \s-1DT_SONAME\s0 specified in the library.  If specified multiple times \f(CW\*(C`DT_DEPAUDIT\*(C' will contain a colon separated list of audit interfaces to use.  This option is only meaningful on \s-1ELF\s0 platforms supporting the rtld-audit interface. The -P option is provided for Solaris compatibility.</p>
+    </dd>
+    <dt><strong>-e</strong> <em>entry</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--entry=</strong><em>entry</em></dt>
+    <dd>
+  <p>Use <em>entry</em> as the explicit symbol for beginning execution of your program, rather than the default entry point.  If there is no symbol named <em>entry</em>, the linker will try to parse <em>entry</em> as a number, and use that as the entry address (the number will be interpreted in base 10; you may use a leading <strong>0x</strong> for base 16, or a leading <strong>0</strong> for base 8).</p>
+    </dd>
+    <dt><strong>--exclude-libs</strong> <em>lib</em><strong>,</strong><em>lib</em><strong>,...</strong></dt>
+    <dd>
+  <p>Specifies a list of archive libraries from which symbols should not be automatically exported.  The library names may be delimited by commas or colons.  Specifying \f(CW\*(C`--exclude-libs ALL\*(C' excludes symbols in all archive libraries from automatic export.  This option is available only for the i386 \s-1PE\s0 targeted port of the linker and for \s-1ELF\s0 targeted ports.  For i386 \s-1PE,\s0 symbols explicitly listed in a .def file are still exported, regardless of this option.  For \s-1ELF\s0 targeted ports, symbols affected by this option will be treated as hidden.</p>
+    </dd>
+    <dt><strong>--exclude-modules-for-implib</strong> <em>module</em><strong>,</strong><em>module</em><strong>,...</strong></dt>
+    <dd>
+  <p>Specifies a list of object files or archive members, from which symbols should not be automatically exported, but which should be copied wholesale into the import library being generated during the link.  The module names may be delimited by commas or colons, and must match exactly the filenames used by <strong>ld</strong> to open the files; for archive members, this is simply the member name, but for object files the name listed must include and match precisely any path used to specify the input file on the linker's command-line.  This option is available only for the i386 \s-1PE\s0 targeted port of the linker.  Symbols explicitly listed in a .def file are still exported, regardless of this option.</p>
+    </dd>
+    <dt><strong>-E</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--export-dynamic</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-export-dynamic</strong></dt>
+    <dd>
+  <p>When creating a dynamically linked executable, using the <strong>-E</strong> option or the <strong>--export-dynamic</strong> option causes the linker to add all symbols to the dynamic symbol table.  The dynamic symbol table is the set of symbols which are visible from dynamic objects at run time.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If you do not use either of these options (or use the <strong>--no-export-dynamic</strong> option to restore the default behavior), the dynamic symbol table will normally contain only those symbols which are referenced by some dynamic object mentioned in the link.</p>
+<p class='spacer'>
+
+<p>If you use \f(CW\*(C`dlopen\*(C' to load a dynamic object which needs to refer back to the symbols defined by the program, rather than some other dynamic object, then you will probably need to use this option when linking the program itself.</p>
+<p class='spacer'>
+
+<p>You can also use the dynamic list to control what symbols should be added to the dynamic symbol table if the output format supports it. See the description of <strong>--dynamic-list</strong>.</p>
+<p class='spacer'>
+
+  <p>Note that this option is specific to \s-1ELF\s0 targeted ports.  \s-1PE\s0 targets support a similar function to export all symbols from a \s-1DLL\s0 or \s-1EXE\s0; see the description of <strong>--export-all-symbols</strong> below.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-EB</strong></dt>
+    <dd>
+  <p>Link big-endian objects.  This affects the default output format.</p>
+    </dd>
+    <dt><strong>-EL</strong></dt>
+    <dd>
+  <p>Link little-endian objects.  This affects the default output format.</p>
+    </dd>
+    <dt><strong>-f</strong> <em>name</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--auxiliary=</strong><em>name</em></dt>
+    <dd>
+  <p>When creating an \s-1ELF\s0 shared object, set the internal \s-1DT_AUXILIARY\s0 field to the specified name.  This tells the dynamic linker that the symbol table of the shared object should be used as an auxiliary filter on the symbol table of the shared object <em>name</em>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If you later link a program against this filter object, then, when you run the program, the dynamic linker will see the \s-1DT_AUXILIARY\s0 field.  If the dynamic linker resolves any symbols from the filter object, it will first check whether there is a definition in the shared object <em>name</em>.  If there is one, it will be used instead of the definition in the filter object.  The shared object <em>name</em> need not exist. Thus the shared object <em>name</em> may be used to provide an alternative implementation of certain functions, perhaps for debugging or for machine specific performance.</p>
+<p class='spacer'>
+
+  <p>This option may be specified more than once.  The \s-1DT_AUXILIARY\s0 entries will be created in the order in which they appear on the command line.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-F</strong> <em>name</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--filter=</strong><em>name</em></dt>
+    <dd>
+  <p>When creating an \s-1ELF\s0 shared object, set the internal \s-1DT_FILTER\s0 field to the specified name.  This tells the dynamic linker that the symbol table of the shared object which is being created should be used as a filter on the symbol table of the shared object <em>name</em>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If you later link a program against this filter object, then, when you run the program, the dynamic linker will see the \s-1DT_FILTER\s0 field.  The dynamic linker will resolve symbols according to the symbol table of the filter object as usual, but it will actually link to the definitions found in the shared object <em>name</em>.  Thus the filter object can be used to select a subset of the symbols provided by the object <em>name</em>.</p>
+<p class='spacer'>
+
+  <p>Some older linkers used the <strong>-F</strong> option throughout a compilation toolchain for specifying object-file format for both input and output object files. The \s-1GNU\s0 linker uses other mechanisms for this purpose: the <strong>-b</strong>, <strong>--format</strong>, <strong>--oformat</strong> options, the \f(CW\*(C`TARGET\*(C' command in linker scripts, and the \f(CW\*(C`GNUTARGET\*(C' environment variable. The \s-1GNU\s0 linker will ignore the <strong>-F</strong> option when not creating an \s-1ELF\s0 shared object.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-fini=</strong><em>name</em></dt>
+    <dd>
+  <p>When creating an \s-1ELF\s0 executable or shared object, call \s-1NAME\s0 when the executable or shared object is unloaded, by setting \s-1DT_FINI\s0 to the address of the function.  By default, the linker uses \f(CW\*(C`_fini\*(C' as the function to call.</p>
+    </dd>
+    <dt><strong>-g</strong></dt>
+    <dd>
+  <p>Ignored.  Provided for compatibility with other tools.</p>
+    </dd>
+    <dt><strong>-G</strong> <em>value</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--gpsize=</strong><em>value</em></dt>
+    <dd>
+  <p>Set the maximum size of objects to be optimized using the \s-1GP\s0 register to <em>size</em>.  This is only meaningful for object file formats such as \s-1MIPS ELF\s0 that support putting large and small objects into different sections.  This is ignored for other object file formats.</p>
+    </dd>
+    <dt><strong>-h</strong> <em>name</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>-soname=</strong><em>name</em></dt>
+    <dd>
+  <p>When creating an \s-1ELF\s0 shared object, set the internal \s-1DT_SONAME\s0 field to the specified name.  When an executable is linked with a shared object which has a \s-1DT_SONAME\s0 field, then when the executable is run the dynamic linker will attempt to load the shared object specified by the \s-1DT_SONAME\s0 field rather than the using the file name given to the linker.</p>
+    </dd>
+    <dt><strong>-i</strong></dt>
+    <dd>
+  <p>Perform an incremental link (same as option <strong>-r</strong>).</p>
+    </dd>
+    <dt><strong>-init=</strong><em>name</em></dt>
+    <dd>
+  <p>When creating an \s-1ELF\s0 executable or shared object, call \s-1NAME\s0 when the executable or shared object is loaded, by setting \s-1DT_INIT\s0 to the address of the function.  By default, the linker uses \f(CW\*(C`_init\*(C' as the function to call.</p>
+    </dd>
+    <dt><strong>-l</strong> <em>namespec</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--library=</strong><em>namespec</em></dt>
+    <dd>
+  <p>Add the archive or object file specified by <em>namespec</em> to the list of files to link.  This option may be used any number of times. If <em>namespec</em> is of the form <em>:filename</em>, <strong>ld</strong> will search the library path for a file called <em>filename</em>, otherwise it will search the library path for a file called <em>libnamespec.a</em>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>On systems which support shared libraries, <strong>ld</strong> may also search for files other than <em>libnamespec.a</em>.  Specifically, on \s-1ELF\s0 and SunOS systems, <strong>ld</strong> will search a directory for a library called <em>libnamespec.so</em> before searching for one called <em>libnamespec.a</em>.  (By convention, a \f(CW\*(C`.so\*(C' extension indicates a shared library.)  Note that this behavior does not apply to <em>:filename</em>, which always specifies a file called <em>filename</em>.</p>
+<p class='spacer'>
+
+<p>The linker will search an archive only once, at the location where it is specified on the command line.  If the archive defines a symbol which was undefined in some object which appeared before the archive on the command line, the linker will include the appropriate file(s) from the archive.  However, an undefined symbol in an object appearing later on the command line will not cause the linker to search the archive again.</p>
+<p class='spacer'>
+
+<p>See the <strong>-(</strong> option for a way to force the linker to search archives multiple times.</p>
+<p class='spacer'>
+
+<p>You may list the same archive multiple times on the command line.</p>
+<p class='spacer'>
+
+  <p>This type of archive searching is standard for Unix linkers.  However, if you are using <strong>ld</strong> on \s-1AIX,\s0 note that it is different from the behaviour of the \s-1AIX\s0 linker.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-L</strong> <em>searchdir</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--library-path=</strong><em>searchdir</em></dt>
+    <dd>
+  <p>Add path <em>searchdir</em> to the list of paths that <strong>ld</strong> will search for archive libraries and <strong>ld</strong> control scripts.  You may use this option any number of times.  The directories are searched in the order in which they are specified on the command line.  Directories specified on the command line are searched before the default directories.  All <strong>-L</strong> options apply to all <strong>-l</strong> options, regardless of the order in which the options appear.  <strong>-L</strong> options do not affect how <strong>ld</strong> searches for a linker script unless <strong>-T</strong> option is specified.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If <em>searchdir</em> begins with \f(CW\*(C`=\*(C', then the \f(CW\*(C`=\*(C' will be replaced by the <em>sysroot prefix</em>, controlled by the <strong>--sysroot</strong> option, or specified when the linker is configured.</p>
+<p class='spacer'>
+
+<p>The default set of paths searched (without being specified with <strong>-L</strong>) depends on which emulation mode <strong>ld</strong> is using, and in some cases also on how it was configured.</p>
+<p class='spacer'>
+
+  <p>The paths can also be specified in a link script with the \f(CW\*(C`SEARCH_DIR\*(C' command.  Directories specified this way are searched at the point in which the linker script appears in the command line.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-m</strong> <em>emulation</em></dt>
+    <dd>
+  <p>Emulate the <em>emulation</em> linker.  You can list the available emulations with the <strong>--verbose</strong> or <strong>-V</strong> options.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If the <strong>-m</strong> option is not used, the emulation is taken from the \f(CW\*(C`LDEMULATION\*(C' environment variable, if that is defined.</p>
+<p class='spacer'>
+
+  <p>Otherwise, the default emulation depends upon how the linker was configured.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-M</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--print-map</strong></dt>
+    <dd>
+      <p>Print a link map to the standard output.  A link map provides information about the link, including the following:</p>
+      <dl class='dl-horizontal'>
+        <dt>&bull;</dt>
+        <dd>
+      <p>Where object files are mapped into memory.</p>
+        </dd>
+        <dt>&bull;</dt>
+        <dd>
+      <p>How common symbols are allocated.</p>
+        </dd>
+        <dt>&bull;</dt>
+        <dd>
+      <p>All archive members included in the link, with a mention of the symbol which caused the archive member to be brought in.</p>
+        </dd>
+        <dt>&bull;</dt>
+        <dd>
+      <p>The values assigned to symbols.</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+    <p>Note - symbols whose values are computed by an expression which involves a reference to a previous value of the same symbol may not have correct result displayed in the link map.  This is because the linker discards intermediate results and only retains the final value of an expression.  Under such circumstances the linker will display the final value enclosed by square brackets.  Thus for example a linker script containing:</p>
+<p class='spacer'>
+
+<pre>           foo = 1
+           foo = foo * 4
+           foo = foo + 8</pre>
+
+<p class='spacer'>
+
+    <p>will produce the following output in the link map if the <strong>-M</strong> option is used:</p>
+<p class='spacer'>
+
+<pre>           0x00000001                foo = 0x1
+           [0x0000000c]                foo = (foo * 0x4)
+           [0x0000000c]                foo = (foo + 0x8)</pre>
+
+<p class='spacer'>
+
+  <p>See <strong>Expressions</strong> for more information about expressions in linker scripts.</p>
+    </dd>
+    <dt><strong>-n</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--nmagic</strong></dt>
+    <dd>
+  <p>Turn off page alignment of sections, and disable linking against shared libraries.  If the output format supports Unix style magic numbers, mark the output as \f(CW\*(C`NMAGIC\*(C'.</p>
+    </dd>
+    <dt><strong>-N</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--omagic</strong></dt>
+    <dd>
+  <p>Set the text and data sections to be readable and writable.  Also, do not page-align the data segment, and disable linking against shared libraries.  If the output format supports Unix style magic numbers, mark the output as \f(CW\*(C`OMAGIC\*(C'. Note: Although a writable text section is allowed for PE-COFF targets, it does not conform to the format specification published by Microsoft.</p>
+    </dd>
+    <dt><strong>--no-omagic</strong></dt>
+    <dd>
+  <p>This option negates most of the effects of the <strong>-N</strong> option.  It sets the text section to be read-only, and forces the data segment to be page-aligned.  Note - this option does not enable linking against shared libraries.  Use <strong>-Bdynamic</strong> for this.</p>
+    </dd>
+    <dt><strong>-o</strong> <em>output</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--output=</strong><em>output</em></dt>
+    <dd>
+  <p>Use <em>output</em> as the name for the program produced by <strong>ld</strong>; if this option is not specified, the name <em>a.out</em> is used by default.  The script command \f(CW\*(C`OUTPUT\*(C' can also specify the output file name.</p>
+    </dd>
+    <dt><strong>-O</strong> <em>level</em></dt>
+    <dd>
+  <p>If <em>level</em> is a numeric values greater than zero <strong>ld</strong> optimizes the output.  This might take significantly longer and therefore probably should only be enabled for the final binary.  At the moment this option only affects \s-1ELF\s0 shared library generation.  Future releases of the linker may make more use of this option.  Also currently there is no difference in the linker's behaviour for different non-zero values of this option.  Again this may change with future releases.</p>
+    </dd>
+    <dt><strong>--push-state</strong></dt>
+    <dd>
+  <p>The <strong>--push-state</strong> allows to preserve the current state of the flags which govern the input file handling so that they can all be restored with one corresponding <strong>--pop-state</strong> option.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The option which are covered are: <strong>-Bdynamic</strong>, <strong>-Bstatic</strong>, <strong>-dn</strong>, <strong>-dy</strong>, <strong>-call_shared</strong>, <strong>-non_shared</strong>, <strong>-static</strong>, <strong>-N</strong>, <strong>-n</strong>, <strong>--whole-archive</strong>, <strong>--no-whole-archive</strong>, <strong>-r</strong>, <strong>-Ur</strong>, <strong>--copy-dt-needed-entries</strong>, <strong>--no-copy-dt-needed-entries</strong>, <strong>--as-needed</strong>, <strong>--no-as-needed</strong>, and <strong>-a</strong>.</p>
+<p class='spacer'>
+
+<p>One target for this option are specifications for <em>pkg-config</em>.  When used with the <strong>--libs</strong> option all possibly needed libraries are listed and then possibly linked with all the time.  It is better to return something as follows:</p>
+<p class='spacer'>
+
+<pre>        -Wl,--push-state,--as-needed -libone -libtwo -Wl,--pop-state</pre>
+
+<p class='spacer'>
+
+  <p>Undoes the effect of --push-state, restores the previous values of the flags governing input file handling.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-q</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--emit-relocs</strong></dt>
+    <dd>
+  <p>Leave relocation sections and contents in fully linked executables. Post link analysis and optimization tools may need this information in order to perform correct modifications of executables.  This results in larger executables.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>This option is currently only supported on \s-1ELF\s0 platforms.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--force-dynamic</strong></dt>
+    <dd>
+  <p>Force the output file to have dynamic sections.  This option is specific to VxWorks targets.</p>
+    </dd>
+    <dt><strong>-r</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--relocatable</strong></dt>
+    <dd>
+  <p>Generate relocatable output---i.e., generate an output file that can in turn serve as input to <strong>ld</strong>.  This is often called <em>partial linking</em>.  As a side effect, in environments that support standard Unix magic numbers, this option also sets the output file's magic number to \f(CW\*(C`OMAGIC\*(C'. If this option is not specified, an absolute file is produced.  When linking \*(C+ programs, this option <em>will not</em> resolve references to constructors; to do that, use <strong>-Ur</strong>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>When an input file does not have the same format as the output file, partial linking is only supported if that input file does not contain any relocations.  Different output formats can have further restrictions; for example some \f(CW\*(C`a.out\*(C'-based formats do not support partial linking with input files in other formats at all.</p>
+<p class='spacer'>
+
+  <p>This option does the same thing as <strong>-i</strong>.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-R</strong> <em>filename</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--just-symbols=</strong><em>filename</em></dt>
+    <dd>
+  <p>Read symbol names and their addresses from <em>filename</em>, but do not relocate it or include it in the output.  This allows your output file to refer symbolically to absolute locations of memory defined in other programs.  You may use this option more than once.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>For compatibility with other \s-1ELF\s0 linkers, if the <strong>-R</strong> option is followed by a directory name, rather than a file name, it is treated as the <strong>-rpath</strong> option.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-s</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--strip-all</strong></dt>
+    <dd>
+  <p>Omit all symbol information from the output file.</p>
+    </dd>
+    <dt><strong>-S</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--strip-debug</strong></dt>
+    <dd>
+  <p>Omit debugger symbol information (but not all symbols) from the output file.</p>
+    </dd>
+    <dt><strong>-t</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--trace</strong></dt>
+    <dd>
+  <p>Print the names of the input files as <strong>ld</strong> processes them.</p>
+    </dd>
+    <dt><strong>-T</strong> <em>scriptfile</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--script=</strong><em>scriptfile</em></dt>
+    <dd>
+  <p>Use <em>scriptfile</em> as the linker script.  This script replaces <strong>ld</strong>'s default linker script (rather than adding to it), so <em>commandfile</em> must specify everything necessary to describe the output file.    If <em>scriptfile</em> does not exist in the current directory, \f(CW\*(C`ld\*(C' looks for it in the directories specified by any preceding <strong>-L</strong> options.  Multiple <strong>-T</strong> options accumulate.</p>
+    </dd>
+    <dt><strong>-dT</strong> <em>scriptfile</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--default-script=</strong><em>scriptfile</em></dt>
+    <dd>
+  <p>Use <em>scriptfile</em> as the default linker script.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>This option is similar to the <strong>--script</strong> option except that processing of the script is delayed until after the rest of the command line has been processed.  This allows options placed after the <strong>--default-script</strong> option on the command line to affect the behaviour of the linker script, which can be important when the linker command line cannot be directly controlled by the user.  (eg because the command line is being constructed by another tool, such as <strong>gcc</strong>).</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-u</strong> <em>symbol</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--undefined=</strong><em>symbol</em></dt>
+    <dd>
+  <p>Force <em>symbol</em> to be entered in the output file as an undefined symbol.  Doing this may, for example, trigger linking of additional modules from standard libraries.  <strong>-u</strong> may be repeated with different option arguments to enter additional undefined symbols.  This option is equivalent to the \f(CW\*(C`EXTERN\*(C' linker script command.</p>
+    </dd>
+    <dt><strong>-Ur</strong></dt>
+    <dd>
+  <p>For anything other than \*(C+ programs, this option is equivalent to <strong>-r</strong>: it generates relocatable output---i.e., an output file that can in turn serve as input to <strong>ld</strong>.  When linking \*(C+ programs, <strong>-Ur</strong> <em>does</em> resolve references to constructors, unlike <strong>-r</strong>. It does not work to use <strong>-Ur</strong> on files that were themselves linked with <strong>-Ur</strong>; once the constructor table has been built, it cannot be added to.  Use <strong>-Ur</strong> only for the last partial link, and <strong>-r</strong> for the others.</p>
+    </dd>
+    <dt><strong>--unique[=</strong><em>\s-1SECTION\s0</em><strong>]</strong></dt>
+    <dd>
+  <p>Creates a separate output section for every input section matching <em>\s-1SECTION\s0</em>, or if the optional wildcard <em>\s-1SECTION\s0</em> argument is missing, for every orphan input section.  An orphan section is one not specifically mentioned in a linker script.  You may use this option multiple times on the command line;  It prevents the normal merging of input sections with the same name, overriding output section assignments in a linker script.</p>
+    </dd>
+    <dt><strong>-v</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--version</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-V</strong></dt>
+    <dd>
+  <p>Display the version number for <strong>ld</strong>.  The <strong>-V</strong> option also lists the supported emulations.</p>
+    </dd>
+    <dt><strong>-x</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--discard-all</strong></dt>
+    <dd>
+  <p>Delete all local symbols.</p>
+    </dd>
+    <dt><strong>-X</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--discard-locals</strong></dt>
+    <dd>
+  <p>Delete all temporary local symbols.  (These symbols start with system-specific local label prefixes, typically <strong>.L</strong> for \s-1ELF\s0 systems or <strong>L</strong> for traditional a.out systems.)</p>
+    </dd>
+    <dt><strong>-y</strong> <em>symbol</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--trace-symbol=</strong><em>symbol</em></dt>
+    <dd>
+  <p>Print the name of each linked file in which <em>symbol</em> appears.  This option may be given any number of times.  On many systems it is necessary to prepend an underscore.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>This option is useful when you have an undefined symbol in your link but don't know where the reference is coming from.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-Y</strong> <em>path</em></dt>
+    <dd>
+  <p>Add <em>path</em> to the default library search path.  This option exists for Solaris compatibility.</p>
+    </dd>
+    <dt><strong>-z</strong> <em>keyword</em></dt>
+    <dd>
+      <p>The recognized keywords are:</p>
+      <dl class='dl-horizontal'>
+        <dt><strong>combreloc</strong></dt>
+        <dd>
+      <p>Combines multiple reloc sections and sorts them to make dynamic symbol lookup caching possible.</p>
+        </dd>
+        <dt><strong>defs</strong></dt>
+        <dd>
+      <p>Disallows undefined symbols in object files.  Undefined symbols in shared libraries are still allowed.</p>
+        </dd>
+        <dt><strong>execstack</strong></dt>
+        <dd>
+      <p>Marks the object as requiring executable stack.</p>
+        </dd>
+        <dt><strong>global</strong></dt>
+        <dd>
+      <p>This option is only meaningful when building a shared object.  It makes the symbols defined by this shared object available for symbol resolution of subsequently loaded libraries.</p>
+        </dd>
+        <dt><strong>initfirst</strong></dt>
+        <dd>
+      <p>This option is only meaningful when building a shared object. It marks the object so that its runtime initialization will occur before the runtime initialization of any other objects brought into the process at the same time.  Similarly the runtime finalization of the object will occur after the runtime finalization of any other objects.</p>
+        </dd>
+        <dt><strong>interpose</strong></dt>
+        <dd>
+      <p>Marks the object that its symbol table interposes before all symbols but the primary executable.</p>
+        </dd>
+        <dt><strong>lazy</strong></dt>
+        <dd>
+      <p>When generating an executable or shared library, mark it to tell the dynamic linker to defer function call resolution to the point when the function is called (lazy binding), rather than at load time. Lazy binding is the default.</p>
+        </dd>
+        <dt><strong>loadfltr</strong></dt>
+        <dd>
+      <p>Marks  the object that its filters be processed immediately at runtime.</p>
+        </dd>
+        <dt><strong>muldefs</strong></dt>
+        <dd>
+      <p>Allows multiple definitions.</p>
+        </dd>
+        <dt><strong>nocombreloc</strong></dt>
+        <dd>
+      <p>Disables multiple reloc sections combining.</p>
+        </dd>
+        <dt><strong>nocopyreloc</strong></dt>
+        <dd>
+      <p>Disables production of copy relocs.</p>
+        </dd>
+        <dt><strong>nodefaultlib</strong></dt>
+        <dd>
+      <p>Marks the object that the search for dependencies of this object will ignore any default library search paths.</p>
+        </dd>
+        <dt><strong>nodelete</strong></dt>
+        <dd>
+      <p>Marks the object shouldn't be unloaded at runtime.</p>
+        </dd>
+        <dt><strong>nodlopen</strong></dt>
+        <dd>
+      <p>Marks the object not available to \f(CW\*(C`dlopen\*(C'.</p>
+        </dd>
+        <dt><strong>nodump</strong></dt>
+        <dd>
+      <p>Marks the object can not be dumped by \f(CW\*(C`dldump\*(C'.</p>
+        </dd>
+        <dt><strong>noexecstack</strong></dt>
+        <dd>
+      <p>Marks the object as not requiring executable stack.</p>
+        </dd>
+        <dt><strong>norelro</strong></dt>
+        <dd>
+      <p>Don't create an \s-1ELF \s0\f(CW\*(C`PT_GNU_RELRO\*(C' segment header in the object.</p>
+        </dd>
+        <dt><strong>now</strong></dt>
+        <dd>
+      <p>When generating an executable or shared library, mark it to tell the dynamic linker to resolve all symbols when the program is started, or when the shared library is linked to using dlopen, instead of deferring function call resolution to the point when the function is first called.</p>
+        </dd>
+        <dt><strong>origin</strong></dt>
+        <dd>
+      <p>Marks the object may contain \f(CW$ORIGIN.</p>
+        </dd>
+        <dt><strong>relro</strong></dt>
+        <dd>
+      <p>Create an \s-1ELF \s0\f(CW\*(C`PT_GNU_RELRO\*(C' segment header in the object.</p>
+        </dd>
+        <dt><strong>max-page-size=</strong><em>value</em></dt>
+        <dd>
+      <p>Set the emulation maximum page size to <em>value</em>.</p>
+        </dd>
+        <dt><strong>common-page-size=</strong><em>value</em></dt>
+        <dd>
+      <p>Set the emulation common page size to <em>value</em>.</p>
+        </dd>
+        <dt><strong>stack-size=</strong><em>value</em></dt>
+        <dd>
+      <p>Specify a stack size for in an \s-1ELF \s0\f(CW\*(C`PT_GNU_STACK\*(C' segment. Specifying zero will override any default non-zero sized \f(CW\*(C`PT_GNU_STACK\*(C' segment creation.</p>
+        </dd>
+        <dt><strong>bndplt</strong></dt>
+        <dd>
+      <p>Always generate \s-1BND\s0 prefix in \s-1PLT\s0 entries. Supported for Linux/x86_64.</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+  <p>Other keywords are ignored for Solaris compatibility.</p>
+    </dd>
+    <dt><strong>-(</strong> <em>archives</em> <strong>-)</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--start-group</strong> <em>archives</em> <strong>--end-group</strong></dt>
+    <dd>
+  <p>The <em>archives</em> should be a list of archive files.  They may be either explicit file names, or <strong>-l</strong> options.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The specified archives are searched repeatedly until no new undefined references are created.  Normally, an archive is searched only once in the order that it is specified on the command line.  If a symbol in that archive is needed to resolve an undefined symbol referred to by an object in an archive that appears later on the command line, the linker would not be able to resolve that reference.  By grouping the archives, they all be searched repeatedly until all possible references are resolved.</p>
+<p class='spacer'>
+
+  <p>Using this option has a significant performance cost.  It is best to use it only when there are unavoidable circular references between two or more archives.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--accept-unknown-input-arch</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-accept-unknown-input-arch</strong></dt>
+    <dd>
+  <p>Tells the linker to accept input files whose architecture cannot be recognised.  The assumption is that the user knows what they are doing and deliberately wants to link in these unknown input files.  This was the default behaviour of the linker, before release 2.14.  The default behaviour from release 2.14 onwards is to reject such input files, and so the <strong>--accept-unknown-input-arch</strong> option has been added to restore the old behaviour.</p>
+    </dd>
+    <dt><strong>--as-needed</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-as-needed</strong></dt>
+    <dd>
+  <p>This option affects \s-1ELF DT_NEEDED\s0 tags for dynamic libraries mentioned on the command line after the <strong>--as-needed</strong> option.  Normally the linker will add a \s-1DT_NEEDED\s0 tag for each dynamic library mentioned on the command line, regardless of whether the library is actually needed or not.  <strong>--as-needed</strong> causes a \s-1DT_NEEDED\s0 tag to only be emitted for a library that <em>at that point in the link</em> satisfies a non-weak undefined symbol reference from a regular object file or, if the library is not found in the \s-1DT_NEEDED\s0 lists of other needed libraries, a non-weak undefined symbol reference from another needed dynamic library. Object files or libraries appearing on the command line <em>after</em> the library in question do not affect whether the library is seen as needed.  This is similar to the rules for extraction of object files from archives.  <strong>--no-as-needed</strong> restores the default behaviour.</p>
+    </dd>
+    <dt><strong>--add-needed</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-add-needed</strong></dt>
+    <dd>
+  <p>These two options have been deprecated because of the similarity of their names to the <strong>--as-needed</strong> and <strong>--no-as-needed</strong> options.  They have been replaced by <strong>--copy-dt-needed-entries</strong> and <strong>--no-copy-dt-needed-entries</strong>.</p>
+    </dd>
+    <dt><strong>-assert</strong> <em>keyword</em></dt>
+    <dd>
+  <p>This option is ignored for SunOS compatibility.</p>
+    </dd>
+    <dt><strong>-Bdynamic</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-dy</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-call_shared</strong></dt>
+    <dd>
+  <p>Link against dynamic libraries.  This is only meaningful on platforms for which shared libraries are supported.  This option is normally the default on such platforms.  The different variants of this option are for compatibility with various systems.  You may use this option multiple times on the command line: it affects library searching for <strong>-l</strong> options which follow it.</p>
+    </dd>
+    <dt><strong>-Bgroup</strong></dt>
+    <dd>
+  <p>Set the \f(CW\*(C`DF_1_GROUP\*(C' flag in the \f(CW\*(C`DT_FLAGS_1\*(C' entry in the dynamic section.  This causes the runtime linker to handle lookups in this object and its dependencies to be performed only inside the group. <strong>--unresolved-symbols=report-all</strong> is implied.  This option is only meaningful on \s-1ELF\s0 platforms which support shared libraries.</p>
+    </dd>
+    <dt><strong>-Bstatic</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-dn</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-non_shared</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-static</strong></dt>
+    <dd>
+  <p>Do not link against shared libraries.  This is only meaningful on platforms for which shared libraries are supported.  The different variants of this option are for compatibility with various systems.  You may use this option multiple times on the command line: it affects library searching for <strong>-l</strong> options which follow it.  This option also implies <strong>--unresolved-symbols=report-all</strong>.  This option can be used with <strong>-shared</strong>.  Doing so means that a shared library is being created but that all of the library's external references must be resolved by pulling in entries from static libraries.</p>
+    </dd>
+    <dt><strong>-Bsymbolic</strong></dt>
+    <dd>
+  <p>When creating a shared library, bind references to global symbols to the definition within the shared library, if any.  Normally, it is possible for a program linked against a shared library to override the definition within the shared library.  This option is only meaningful on \s-1ELF\s0 platforms which support shared libraries.</p>
+    </dd>
+    <dt><strong>-Bsymbolic-functions</strong></dt>
+    <dd>
+  <p>When creating a shared library, bind references to global function symbols to the definition within the shared library, if any. This option is only meaningful on \s-1ELF\s0 platforms which support shared libraries.</p>
+    </dd>
+    <dt><strong>--dynamic-list=</strong><em>dynamic-list-file</em></dt>
+    <dd>
+  <p>Specify the name of a dynamic list file to the linker.  This is typically used when creating shared libraries to specify a list of global symbols whose references shouldn't be bound to the definition within the shared library, or creating dynamically linked executables to specify a list of symbols which should be added to the symbol table in the executable.  This option is only meaningful on \s-1ELF\s0 platforms which support shared libraries.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The format of the dynamic list is the same as the version node without scope and node name.  See <strong>\s-1VERSION\s0</strong> for more information.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--dynamic-list-data</strong></dt>
+    <dd>
+  <p>Include all global data symbols to the dynamic list.</p>
+    </dd>
+    <dt><strong>--dynamic-list-cpp-new</strong></dt>
+    <dd>
+  <p>Provide the builtin dynamic list for \*(C+ operator new and delete.  It is mainly useful for building shared libstdc++.</p>
+    </dd>
+    <dt><strong>--dynamic-list-cpp-typeinfo</strong></dt>
+    <dd>
+  <p>Provide the builtin dynamic list for \*(C+ runtime type identification.</p>
+    </dd>
+    <dt><strong>--check-sections</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-check-sections</strong></dt>
+    <dd>
+  <p>Asks the linker <em>not</em> to check section addresses after they have been assigned to see if there are any overlaps.  Normally the linker will perform this check, and if it finds any overlaps it will produce suitable error messages.  The linker does know about, and does make allowances for sections in overlays.  The default behaviour can be restored by using the command line switch <strong>--check-sections</strong>. Section overlap is not usually checked for relocatable links.  You can force checking in that case by using the <strong>--check-sections</strong> option.</p>
+    </dd>
+    <dt><strong>--copy-dt-needed-entries</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-copy-dt-needed-entries</strong></dt>
+    <dd>
+  <p>This option affects the treatment of dynamic libraries referred to by \s-1DT_NEEDED\s0 tags <em>inside</em> \s-1ELF\s0 dynamic libraries mentioned on the command line.  Normally the linker won't add a \s-1DT_NEEDED\s0 tag to the output binary for each library mentioned in a \s-1DT_NEEDED\s0 tag in an input dynamic library.  With <strong>--copy-dt-needed-entries</strong> specified on the command line however any dynamic libraries that follow it will have their \s-1DT_NEEDED\s0 entries added.  The default behaviour can be restored with <strong>--no-copy-dt-needed-entries</strong>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>This option also has an effect on the resolution of symbols in dynamic libraries.  With <strong>--copy-dt-needed-entries</strong> dynamic libraries mentioned on the command line will be recursively searched, following their \s-1DT_NEEDED\s0 tags to other libraries, in order to resolve symbols required by the output binary.  With the default setting however the searching of dynamic libraries that follow it will stop with the dynamic library itself.  No \s-1DT_NEEDED\s0 links will be traversed to resolve symbols.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--cref</strong></dt>
+    <dd>
+  <p>Output a cross reference table.  If a linker map file is being generated, the cross reference table is printed to the map file. Otherwise, it is printed on the standard output.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The format of the table is intentionally simple, so that it may be easily processed by a script if necessary.  The symbols are printed out, sorted by name.  For each symbol, a list of file names is given.  If the symbol is defined, the first file listed is the location of the definition.  If the symbol is defined as a common value then any files where this happens appear next.  Finally any files that reference the symbol are listed.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--no-define-common</strong></dt>
+    <dd>
+  <p>This option inhibits the assignment of addresses to common symbols. The script command \f(CW\*(C`INHIBIT_COMMON_ALLOCATION\*(C' has the same effect.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The <strong>--no-define-common</strong> option allows decoupling the decision to assign addresses to Common symbols from the choice of the output file type; otherwise a non-Relocatable output type forces assigning addresses to Common symbols. Using <strong>--no-define-common</strong> allows Common symbols that are referenced from a shared library to be assigned addresses only in the main program. This eliminates the unused duplicate space in the shared library, and also prevents any possible confusion over resolving to the wrong duplicate when there are many dynamic modules with specialized search paths for runtime symbol resolution.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--defsym=</strong><em>symbol</em><strong>=</strong><em>expression</em></dt>
+    <dd>
+  <p>Create a global symbol in the output file, containing the absolute address given by <em>expression</em>.  You may use this option as many times as necessary to define multiple symbols in the command line.  A limited form of arithmetic is supported for the <em>expression</em> in this context: you may give a hexadecimal constant or the name of an existing symbol, or use \f(CW\*(C`+\*(C' and \f(CW\*(C`-\*(C' to add or subtract hexadecimal constants or symbols.  If you need more elaborate expressions, consider using the linker command language from a script.  <em>Note:</em> there should be no white space between <em>symbol</em>, the equals sign ("<strong>=</strong>"), and <em>expression</em>.</p>
+    </dd>
+    <dt><strong>--demangle[=</strong><em>style</em><strong>]</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-demangle</strong></dt>
+    <dd>
+  <p>These options control whether to demangle symbol names in error messages and other output.  When the linker is told to demangle, it tries to present symbol names in a readable fashion: it strips leading underscores if they are used by the object file format, and converts \*(C+ mangled symbol names into user readable names.  Different compilers have different mangling styles.  The optional demangling style argument can be used to choose an appropriate demangling style for your compiler.  The linker will demangle by default unless the environment variable <strong>\s-1COLLECT_NO_DEMANGLE\s0</strong> is set.  These options may be used to override the default.</p>
+    </dd>
+    <dt><strong>-I</strong><em>file</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--dynamic-linker=</strong><em>file</em></dt>
+    <dd>
+  <p>Set the name of the dynamic linker.  This is only meaningful when generating dynamically linked \s-1ELF\s0 executables.  The default dynamic linker is normally correct; don't use this unless you know what you are doing.</p>
+    </dd>
+    <dt><strong>--fatal-warnings</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-fatal-warnings</strong></dt>
+    <dd>
+  <p>Treat all warnings as errors.  The default behaviour can be restored with the option <strong>--no-fatal-warnings</strong>.</p>
+    </dd>
+    <dt><strong>--force-exe-suffix</strong></dt>
+    <dd>
+  <p>Make sure that an output file has a .exe suffix.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>If a successfully built fully linked output file does not have a \f(CW\*(C`.exe\*(C' or \f(CW\*(C`.dll\*(C' suffix, this option forces the linker to copy the output file to one of the same name with a \f(CW\*(C`.exe\*(C' suffix. This option is useful when using unmodified Unix makefiles on a Microsoft Windows host, since some versions of Windows won't run an image unless it ends in a \f(CW\*(C`.exe\*(C' suffix.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--gc-sections</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-gc-sections</strong></dt>
+    <dd>
+  <p>Enable garbage collection of unused input sections.  It is ignored on targets that do not support this option.  The default behaviour (of not performing this garbage collection) can be restored by specifying <strong>--no-gc-sections</strong> on the command line.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><strong>--gc-sections</strong> decides which input sections are used by examining symbols and relocations.  The section containing the entry symbol and all sections containing symbols undefined on the command-line will be kept, as will sections containing symbols referenced by dynamic objects.  Note that when building shared libraries, the linker must assume that any visible symbol is referenced.  Once this initial set of sections has been determined, the linker recursively marks as used any section referenced by their relocations.  See <strong>--entry</strong> and <strong>--undefined</strong>.</p>
+<p class='spacer'>
+
+  <p>This option can be set when doing a partial link (enabled with option <strong>-r</strong>).  In this case the root of symbols kept must be explicitly specified either by an <strong>--entry</strong> or <strong>--undefined</strong> option or by a \f(CW\*(C`ENTRY\*(C' command in the linker script.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--print-gc-sections</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-print-gc-sections</strong></dt>
+    <dd>
+  <p>List all sections removed by garbage collection.  The listing is printed on stderr.  This option is only effective if garbage collection has been enabled via the <strong>--gc-sections</strong>) option.  The default behaviour (of not listing the sections that are removed) can be restored by specifying <strong>--no-print-gc-sections</strong> on the command line.</p>
+    </dd>
+    <dt><strong>--print-output-format</strong></dt>
+    <dd>
+  <p>Print the name of the default output format (perhaps influenced by other command-line options).  This is the string that would appear in an \f(CW\*(C`OUTPUT_FORMAT\*(C' linker script command.</p>
+    </dd>
+    <dt><strong>--help</strong></dt>
+    <dd>
+  <p>Print a summary of the command-line options on the standard output and exit.</p>
+    </dd>
+    <dt><strong>--target-help</strong></dt>
+    <dd>
+  <p>Print a summary of all target specific options on the standard output and exit.</p>
+    </dd>
+    <dt><strong>-Map=</strong><em>mapfile</em></dt>
+    <dd>
+  <p>Print a link map to the file <em>mapfile</em>.  See the description of the <strong>-M</strong> option, above.</p>
+    </dd>
+    <dt><strong>--no-keep-memory</strong></dt>
+    <dd>
+  <p><strong>ld</strong> normally optimizes for speed over memory usage by caching the symbol tables of input files in memory.  This option tells <strong>ld</strong> to instead optimize for memory usage, by rereading the symbol tables as necessary.  This may be required if <strong>ld</strong> runs out of memory space while linking a large executable.</p>
+    </dd>
+    <dt><strong>--no-undefined</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-z defs</strong></dt>
+    <dd>
+  <p>Report unresolved symbol references from regular object files.  This is done even if the linker is creating a non-symbolic shared library. The switch <strong>--[no-]allow-shlib-undefined</strong> controls the behaviour for reporting unresolved references found in shared libraries being linked in.</p>
+    </dd>
+    <dt><strong>--allow-multiple-definition</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-z muldefs</strong></dt>
+    <dd>
+  <p>Normally when a symbol is defined multiple times, the linker will report a fatal error. These options allow multiple definitions and the first definition will be used.</p>
+    </dd>
+    <dt><strong>--allow-shlib-undefined</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-allow-shlib-undefined</strong></dt>
+    <dd>
+  <p>Allows or disallows undefined symbols in shared libraries. This switch is similar to <strong>--no-undefined</strong> except that it determines the behaviour when the undefined symbols are in a shared library rather than a regular object file.  It does not affect how undefined symbols in regular object files are handled.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The default behaviour is to report errors for any undefined symbols referenced in shared libraries if the linker is being used to create an executable, but to allow them if the linker is being used to create a shared library.</p>
+<p class='spacer'>
+
+    <p>The reasons for allowing undefined symbol references in shared libraries specified at link time are that:</p>
+    <dl class='dl-horizontal'>
+      <dt>&bull;</dt>
+      <dd>
+    <p>A shared library specified at link time may not be the same as the one that is available at load time, so the symbol might actually be resolvable at load time.</p>
+      </dd>
+      <dt>&bull;</dt>
+      <dd>
+    <p>There are some operating systems, eg BeOS and \s-1HPPA,\s0 where undefined symbols in shared libraries are normal.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+  <p>The BeOS kernel for example patches shared libraries at load time to select whichever function is most appropriate for the current architecture.  This is used, for example, to dynamically select an appropriate memset function.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--no-undefined-version</strong></dt>
+    <dd>
+  <p>Normally when a symbol has an undefined version, the linker will ignore it. This option disallows symbols with undefined version and a fatal error will be issued instead.</p>
+    </dd>
+    <dt><strong>--default-symver</strong></dt>
+    <dd>
+  <p>Create and use a default symbol version (the soname) for unversioned exported symbols.</p>
+    </dd>
+    <dt><strong>--default-imported-symver</strong></dt>
+    <dd>
+  <p>Create and use a default symbol version (the soname) for unversioned imported symbols.</p>
+    </dd>
+    <dt><strong>--no-warn-mismatch</strong></dt>
+    <dd>
+  <p>Normally <strong>ld</strong> will give an error if you try to link together input files that are mismatched for some reason, perhaps because they have been compiled for different processors or for different endiannesses. This option tells <strong>ld</strong> that it should silently permit such possible errors.  This option should only be used with care, in cases when you have taken some special action that ensures that the linker errors are inappropriate.</p>
+    </dd>
+    <dt><strong>--no-warn-search-mismatch</strong></dt>
+    <dd>
+  <p>Normally <strong>ld</strong> will give a warning if it finds an incompatible library during a library search.  This option silences the warning.</p>
+    </dd>
+    <dt><strong>--no-whole-archive</strong></dt>
+    <dd>
+  <p>Turn off the effect of the <strong>--whole-archive</strong> option for subsequent archive files.</p>
+    </dd>
+    <dt><strong>--noinhibit-exec</strong></dt>
+    <dd>
+  <p>Retain the executable output file whenever it is still usable. Normally, the linker will not produce an output file if it encounters errors during the link process; it exits without writing an output file when it issues any error whatsoever.</p>
+    </dd>
+    <dt><strong>-nostdlib</strong></dt>
+    <dd>
+  <p>Only search library directories explicitly specified on the command line.  Library directories specified in linker scripts (including linker scripts specified on the command line) are ignored.</p>
+    </dd>
+    <dt><strong>--oformat=</strong><em>output-format</em></dt>
+    <dd>
+  <p><strong>ld</strong> may be configured to support more than one kind of object file.  If your <strong>ld</strong> is configured this way, you can use the <strong>--oformat</strong> option to specify the binary format for the output object file.  Even when <strong>ld</strong> is configured to support alternative object formats, you don't usually need to specify this, as <strong>ld</strong> should be configured to produce as a default output format the most usual format on each machine.  <em>output-format</em> is a text string, the name of a particular format supported by the \s-1BFD\s0 libraries.  (You can list the available binary formats with <strong>objdump -i</strong>.)  The script command \f(CW\*(C`OUTPUT_FORMAT\*(C' can also specify the output format, but this option overrides it.</p>
+    </dd>
+    <dt><strong>-pie</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--pic-executable</strong></dt>
+    <dd>
+  <p>Create a position independent executable.  This is currently only supported on \s-1ELF\s0 platforms.  Position independent executables are similar to shared libraries in that they are relocated by the dynamic linker to the virtual address the \s-1OS\s0 chooses for them (which can vary between invocations).  Like normal dynamically linked executables they can be executed and symbols defined in the executable cannot be overridden by shared libraries.</p>
+    </dd>
+    <dt><strong>-qmagic</strong></dt>
+    <dd>
+  <p>This option is ignored for Linux compatibility.</p>
+    </dd>
+    <dt><strong>-Qy</strong></dt>
+    <dd>
+  <p>This option is ignored for \s-1SVR4\s0 compatibility.</p>
+    </dd>
+    <dt><strong>--relax</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-relax</strong></dt>
+    <dd>
+  <p>An option with machine dependent effects. This option is only supported on a few targets.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>On some platforms the <strong>--relax</strong> option performs target specific, global optimizations that become possible when the linker resolves addressing in the program, such as relaxing address modes, synthesizing new instructions, selecting shorter version of current instructions, and combining constant values.</p>
+<p class='spacer'>
+
+<p>On some platforms these link time global optimizations may make symbolic debugging of the resulting executable impossible. This is known to be the case for the Matsushita \s-1MN10200\s0 and \s-1MN10300\s0 family of processors.</p>
+<p class='spacer'>
+
+<p>On platforms where this is not supported, <strong>--relax</strong> is accepted, but ignored.</p>
+<p class='spacer'>
+
+  <p>On platforms where <strong>--relax</strong> is accepted the option <strong>--no-relax</strong> can be used to disable the feature.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--retain-symbols-file=</strong><em>filename</em></dt>
+    <dd>
+  <p>Retain <em>only</em> the symbols listed in the file <em>filename</em>, discarding all others.  <em>filename</em> is simply a flat file, with one symbol name per line.  This option is especially useful in environments (such as VxWorks) where a large global symbol table is accumulated gradually, to conserve run-time memory.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><strong>--retain-symbols-file</strong> does <em>not</em> discard undefined symbols, or symbols needed for relocations.</p>
+<p class='spacer'>
+
+  <p>You may only specify <strong>--retain-symbols-file</strong> once in the command line.  It overrides <strong>-s</strong> and <strong>-S</strong>.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-rpath=</strong><em>dir</em></dt>
+    <dd>
+  <p>Add a directory to the runtime library search path.  This is used when linking an \s-1ELF\s0 executable with shared objects.  All <strong>-rpath</strong> arguments are concatenated and passed to the runtime linker, which uses them to locate shared objects at runtime.  The <strong>-rpath</strong> option is also used when locating shared objects which are needed by shared objects explicitly included in the link; see the description of the <strong>-rpath-link</strong> option.  If <strong>-rpath</strong> is not used when linking an \s-1ELF\s0 executable, the contents of the environment variable \f(CW\*(C`LD_RUN_PATH\*(C' will be used if it is defined.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The <strong>-rpath</strong> option may also be used on SunOS.  By default, on SunOS, the linker will form a runtime search path out of all the <strong>-L</strong> options it is given.  If a <strong>-rpath</strong> option is used, the runtime search path will be formed exclusively using the <strong>-rpath</strong> options, ignoring the <strong>-L</strong> options.  This can be useful when using gcc, which adds many <strong>-L</strong> options which may be on \s-1NFS\s0 mounted file systems.</p>
+<p class='spacer'>
+
+  <p>For compatibility with other \s-1ELF\s0 linkers, if the <strong>-R</strong> option is followed by a directory name, rather than a file name, it is treated as the <strong>-rpath</strong> option.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-rpath-link=</strong><em>dir</em></dt>
+    <dd>
+  <p>When using \s-1ELF\s0 or SunOS, one shared library may require another.  This happens when an \f(CW\*(C`ld -shared\*(C' link includes a shared library as one of the input files.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>When the linker encounters such a dependency when doing a non-shared, non-relocatable link, it will automatically try to locate the required shared library and include it in the link, if it is not included explicitly.  In such a case, the <strong>-rpath-link</strong> option specifies the first set of directories to search.  The <strong>-rpath-link</strong> option may specify a sequence of directory names either by specifying a list of names separated by colons, or by appearing multiple times.</p>
+<p class='spacer'>
+
+<p>This option should be used with caution as it overrides the search path that may have been hard compiled into a shared library. In such a case it is possible to use unintentionally a different search path than the runtime linker would do.</p>
+<p class='spacer'>
+
+    <p>The linker uses the following search paths to locate required shared libraries:</p>
+    <dl class='dl-horizontal'>
+      <dt>1.</dt>
+      <dd>
+    <p>Any directories specified by <strong>-rpath-link</strong> options.</p>
+      </dd>
+      <dt>2.</dt>
+      <dd>
+    <p>Any directories specified by <strong>-rpath</strong> options.  The difference between <strong>-rpath</strong> and <strong>-rpath-link</strong> is that directories specified by <strong>-rpath</strong> options are included in the executable and used at runtime, whereas the <strong>-rpath-link</strong> option is only effective at link time. Searching <strong>-rpath</strong> in this way is only supported by native linkers and cross linkers which have been configured with the <strong>--with-sysroot</strong> option.</p>
+      </dd>
+      <dt>3.</dt>
+      <dd>
+    <p>On an \s-1ELF\s0 system, for native linkers, if the <strong>-rpath</strong> and <strong>-rpath-link</strong> options were not used, search the contents of the environment variable \f(CW\*(C`LD_RUN_PATH\*(C'.</p>
+      </dd>
+      <dt>4.</dt>
+      <dd>
+    <p>On SunOS, if the <strong>-rpath</strong> option was not used, search any directories specified using <strong>-L</strong> options.</p>
+      </dd>
+      <dt>5.</dt>
+      <dd>
+    <p>For a native linker, search the contents of the environment variable \f(CW\*(C`LD_LIBRARY_PATH\*(C'.</p>
+      </dd>
+      <dt>6.</dt>
+      <dd>
+    <p>For a native \s-1ELF\s0 linker, the directories in \f(CW\*(C`DT_RUNPATH\*(C' or \f(CW\*(C`DT_RPATH\*(C' of a shared library are searched for shared libraries needed by it. The \f(CW\*(C`DT_RPATH\*(C' entries are ignored if \f(CW\*(C`DT_RUNPATH\*(C' entries exist.</p>
+      </dd>
+      <dt>7.</dt>
+      <dd>
+    <p>The default directories, normally <em>/lib</em> and <em>/usr/lib</em>.</p>
+      </dd>
+      <dt>8.</dt>
+      <dd>
+    <p>For a native linker on an \s-1ELF\s0 system, if the file <em>/etc/ld.so.conf</em> exists, the list of directories found in that file.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+  <p>If the required shared library is not found, the linker will issue a warning and continue with the link.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>-shared</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>-Bshareable</strong></dt>
+    <dd>
+  <p>Create a shared library.  This is currently only supported on \s-1ELF, XCOFF\s0 and SunOS platforms.  On SunOS, the linker will automatically create a shared library if the <strong>-e</strong> option is not used and there are undefined symbols in the link.</p>
+    </dd>
+    <dt><strong>--sort-common</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--sort-common=ascending</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--sort-common=descending</strong></dt>
+    <dd>
+  <p>This option tells <strong>ld</strong> to sort the common symbols by alignment in ascending or descending order when it places them in the appropriate output sections.  The symbol alignments considered are sixteen-byte or larger, eight-byte, four-byte, two-byte, and one-byte. This is to prevent gaps between symbols due to alignment constraints.  If no sorting order is specified, then descending order is assumed.</p>
+    </dd>
+    <dt><strong>--sort-section=name</strong></dt>
+    <dd>
+  <p>This option will apply \f(CW\*(C`SORT_BY_NAME\*(C' to all wildcard section patterns in the linker script.</p>
+    </dd>
+    <dt><strong>--sort-section=alignment</strong></dt>
+    <dd>
+  <p>This option will apply \f(CW\*(C`SORT_BY_ALIGNMENT\*(C' to all wildcard section patterns in the linker script.</p>
+    </dd>
+    <dt><strong>--split-by-file[=</strong><em>size</em><strong>]</strong></dt>
+    <dd>
+  <p>Similar to <strong>--split-by-reloc</strong> but creates a new output section for each input file when <em>size</em> is reached.  <em>size</em> defaults to a size of 1 if not given.</p>
+    </dd>
+    <dt><strong>--split-by-reloc[=</strong><em>count</em><strong>]</strong></dt>
+    <dd>
+  <p>Tries to creates extra sections in the output file so that no single output section in the file contains more than <em>count</em> relocations. This is useful when generating huge relocatable files for downloading into certain real time kernels with the \s-1COFF\s0 object file format; since \s-1COFF\s0 cannot represent more than 65535 relocations in a single section.  Note that this will fail to work with object file formats which do not support arbitrary sections.  The linker will not split up individual input sections for redistribution, so if a single input section contains more than <em>count</em> relocations one output section will contain that many relocations.  <em>count</em> defaults to a value of 32768.</p>
+    </dd>
+    <dt><strong>--stats</strong></dt>
+    <dd>
+  <p>Compute and display statistics about the operation of the linker, such as execution time and memory usage.</p>
+    </dd>
+    <dt><strong>--sysroot=</strong><em>directory</em></dt>
+    <dd>
+  <p>Use <em>directory</em> as the location of the sysroot, overriding the configure-time default.  This option is only supported by linkers that were configured using <strong>--with-sysroot</strong>.</p>
+    </dd>
+    <dt><strong>--traditional-format</strong></dt>
+    <dd>
+  <p>For some targets, the output of <strong>ld</strong> is different in some ways from the output of some existing linker.  This switch requests <strong>ld</strong> to use the traditional format instead.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>For example, on SunOS, <strong>ld</strong> combines duplicate entries in the symbol string table.  This can reduce the size of an output file with full debugging information by over 30 percent.  Unfortunately, the SunOS \f(CW\*(C`dbx\*(C' program can not read the resulting program (\f(CW\*(C`gdb\*(C' has no trouble).  The <strong>--traditional-format</strong> switch tells <strong>ld</strong> to not combine duplicate entries.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--section-start=</strong><em>sectionname</em><strong>=</strong><em>org</em></dt>
+    <dd>
+  <p>Locate a section in the output file at the absolute address given by <em>org</em>.  You may use this option as many times as necessary to locate multiple sections in the command line. <em>org</em> must be a single hexadecimal integer; for compatibility with other linkers, you may omit the leading <strong>0x</strong> usually associated with hexadecimal values.  <em>Note:</em> there should be no white space between <em>sectionname</em>, the equals sign ("<strong>=</strong>"), and <em>org</em>.</p>
+    </dd>
+    <dt><strong>-Tbss=</strong><em>org</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>-Tdata=</strong><em>org</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>-Ttext=</strong><em>org</em></dt>
+    <dd>
+  <p>Same as <strong>--section-start</strong>, with \f(CW\*(C`.bss\*(C', \f(CW\*(C`.data\*(C' or \f(CW\*(C`.text\*(C' as the <em>sectionname</em>.</p>
+    </dd>
+    <dt><strong>-Ttext-segment=</strong><em>org</em></dt>
+    <dd>
+  <p>When creating an \s-1ELF\s0 executable, it will set the address of the first byte of the text segment.</p>
+    </dd>
+    <dt><strong>-Trodata-segment=</strong><em>org</em></dt>
+    <dd>
+  <p>When creating an \s-1ELF\s0 executable or shared object for a target where the read-only data is in its own segment separate from the executable text, it will set the address of the first byte of the read-only data segment.</p>
+    </dd>
+    <dt><strong>-Tldata-segment=</strong><em>org</em></dt>
+    <dd>
+  <p>When creating an \s-1ELF\s0 executable or shared object for x86-64 medium memory model, it will set the address of the first byte of the ldata segment.</p>
+    </dd>
+    <dt><strong>--unresolved-symbols=</strong><em>method</em></dt>
+    <dd>
+      <p>Determine how to handle unresolved symbols.  There are four possible values for <strong>method</strong>:</p>
+      <dl class='dl-horizontal'>
+        <dt><strong>ignore-all</strong></dt>
+        <dd>
+      <p>Do not report any unresolved symbols.</p>
+        </dd>
+        <dt><strong>report-all</strong></dt>
+        <dd>
+      <p>Report all unresolved symbols.  This is the default.</p>
+        </dd>
+        <dt><strong>ignore-in-object-files</strong></dt>
+        <dd>
+      <p>Report unresolved symbols that are contained in shared libraries, but ignore them if they come from regular object files.</p>
+        </dd>
+        <dt><strong>ignore-in-shared-libs</strong></dt>
+        <dd>
+      <p>Report unresolved symbols that come from regular object files, but ignore them if they come from shared libraries.  This can be useful when creating a dynamic binary and it is known that all the shared libraries that it should be referencing are included on the linker's command line.</p>
+        </dd>
+      </dl>
+<p class='spacer'>
+
+    <p>The behaviour for shared libraries on their own can also be controlled by the <strong>--[no-]allow-shlib-undefined</strong> option.</p>
+<p class='spacer'>
+
+  <p>Normally the linker will generate an error message for each reported unresolved symbol but the option <strong>--warn-unresolved-symbols</strong> can change this to a warning.</p>
+    </dd>
+    <dt><strong>--dll-verbose</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--verbose[=</strong><em>\s-1NUMBER\s0</em><strong>]</strong></dt>
+    <dd>
+  <p>Display the version number for <strong>ld</strong> and list the linker emulations supported.  Display which input files can and cannot be opened.  Display the linker script being used by the linker. If the optional <em>\s-1NUMBER\s0</em> argument &gt; 1, plugin symbol status will also be displayed.</p>
+    </dd>
+    <dt><strong>--version-script=</strong><em>version-scriptfile</em></dt>
+    <dd>
+  <p>Specify the name of a version script to the linker.  This is typically used when creating shared libraries to specify additional information about the version hierarchy for the library being created.  This option is only fully supported on \s-1ELF\s0 platforms which support shared libraries; see <strong>\s-1VERSION\s0</strong>.  It is partially supported on \s-1PE\s0 platforms, which can use version scripts to filter symbol visibility in auto-export mode: any symbols marked <strong>local</strong> in the version script will not be exported.</p>
+    </dd>
+    <dt><strong>--warn-common</strong></dt>
+    <dd>
+  <p>Warn when a common symbol is combined with another common symbol or with a symbol definition.  Unix linkers allow this somewhat sloppy practice, but linkers on some other operating systems do not.  This option allows you to find potential problems from combining global symbols. Unfortunately, some C libraries use this practice, so you may get some warnings about symbols in the libraries as well as in your programs.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+    <p>There are three kinds of global symbols, illustrated here by C examples:</p>
+    <dl class='dl-horizontal'>
+      <dt><strong>int i = 1;</strong></dt>
+      <dd>
+    <p>A definition, which goes in the initialized data section of the output file.</p>
+      </dd>
+      <dt><strong>extern int i;</strong></dt>
+      <dd>
+    <p>An undefined reference, which does not allocate space. There must be either a definition or a common symbol for the variable somewhere.</p>
+      </dd>
+      <dt><strong>int i;</strong></dt>
+      <dd>
+    <p>A common symbol.  If there are only (one or more) common symbols for a variable, it goes in the uninitialized data area of the output file. The linker merges multiple common symbols for the same variable into a single symbol.  If they are of different sizes, it picks the largest size.  The linker turns a common symbol into a declaration, if there is a definition of the same variable.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+    <p>The <strong>--warn-common</strong> option can produce five kinds of warnings. Each warning consists of a pair of lines: the first describes the symbol just encountered, and the second describes the previous symbol encountered with the same name.  One or both of the two symbols will be a common symbol.</p>
+    <dl class='dl-horizontal'>
+      <dt>1.</dt>
+      <dd>
+    <p>Turning a common symbol into a reference, because there is already a definition for the symbol.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<pre>        &lt;file&gt;(&lt;section&gt;): warning: common of &#96;&lt;symbol&gt;&apos;
+           overridden by definition
+        &lt;file&gt;(&lt;section&gt;): warning: defined here</pre>
+
+    <dl class='dl-horizontal'>
+      <dt>2.</dt>
+      <dd>
+    <p>Turning a common symbol into a reference, because a later definition for the symbol is encountered.  This is the same as the previous case, except that the symbols are encountered in a different order.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<pre>        &lt;file&gt;(&lt;section&gt;): warning: definition of &#96;&lt;symbol&gt;&apos;
+           overriding common
+        &lt;file&gt;(&lt;section&gt;): warning: common is here</pre>
+
+    <dl class='dl-horizontal'>
+      <dt>3.</dt>
+      <dd>
+    <p>Merging a common symbol with a previous same-sized common symbol.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<pre>        &lt;file&gt;(&lt;section&gt;): warning: multiple common
+           of &#96;&lt;symbol&gt;&apos;
+        &lt;file&gt;(&lt;section&gt;): warning: previous common is here</pre>
+
+    <dl class='dl-horizontal'>
+      <dt>4.</dt>
+      <dd>
+    <p>Merging a common symbol with a previous larger common symbol.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<pre>        &lt;file&gt;(&lt;section&gt;): warning: common of &#96;&lt;symbol&gt;&apos;
+           overridden by larger common
+        &lt;file&gt;(&lt;section&gt;): warning: larger common is here</pre>
+
+    <dl class='dl-horizontal'>
+      <dt>5.</dt>
+      <dd>
+    <p>Merging a common symbol with a previous smaller common symbol.  This is the same as the previous case, except that the symbols are encountered in a different order.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+<pre>        &lt;file&gt;(&lt;section&gt;): warning: common of &#96;&lt;symbol&gt;&apos;
+           overriding smaller common
+        &lt;file&gt;(&lt;section&gt;): warning: smaller common is here</pre>
+
+  <dl class='dl-horizontal'>
+    <dt><strong>--warn-constructors</strong></dt>
+    <dd>
+  <p>Warn if any global constructors are used.  This is only useful for a few object file formats.  For formats like \s-1COFF\s0 or \s-1ELF,\s0 the linker can not detect the use of global constructors.</p>
+    </dd>
+    <dt><strong>--warn-multiple-gp</strong></dt>
+    <dd>
+  <p>Warn if multiple global pointer values are required in the output file. This is only meaningful for certain processors, such as the Alpha. Specifically, some processors put large-valued constants in a special section.  A special register (the global pointer) points into the middle of this section, so that constants can be loaded efficiently via a base-register relative addressing mode.  Since the offset in base-register relative mode is fixed and relatively small (e.g., 16 bits), this limits the maximum size of the constant pool.  Thus, in large programs, it is often necessary to use multiple global pointer values in order to be able to address all possible constants.  This option causes a warning to be issued whenever this case occurs.</p>
+    </dd>
+    <dt><strong>--warn-once</strong></dt>
+    <dd>
+  <p>Only warn once for each undefined symbol, rather than once per module which refers to it.</p>
+    </dd>
+    <dt><strong>--warn-section-align</strong></dt>
+    <dd>
+  <p>Warn if the address of an output section is changed because of alignment.  Typically, the alignment will be set by an input section. The address will only be changed if it not explicitly specified; that is, if the \f(CW\*(C`SECTIONS\*(C' command does not specify a start address for the section.</p>
+    </dd>
+    <dt><strong>--warn-shared-textrel</strong></dt>
+    <dd>
+  <p>Warn if the linker adds a \s-1DT_TEXTREL\s0 to a shared object.</p>
+    </dd>
+    <dt><strong>--warn-alternate-em</strong></dt>
+    <dd>
+  <p>Warn if an object has alternate \s-1ELF\s0 machine code.</p>
+    </dd>
+    <dt><strong>--warn-unresolved-symbols</strong></dt>
+    <dd>
+  <p>If the linker is going to report an unresolved symbol (see the option <strong>--unresolved-symbols</strong>) it will normally generate an error. This option makes it generate a warning instead.</p>
+    </dd>
+    <dt><strong>--error-unresolved-symbols</strong></dt>
+    <dd>
+  <p>This restores the linker's default behaviour of generating errors when it is reporting unresolved symbols.</p>
+    </dd>
+    <dt><strong>--whole-archive</strong></dt>
+    <dd>
+  <p>For each archive mentioned on the command line after the <strong>--whole-archive</strong> option, include every object file in the archive in the link, rather than searching the archive for the required object files.  This is normally used to turn an archive file into a shared library, forcing every object to be included in the resulting shared library.  This option may be used more than once.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>Two notes when using this option from gcc: First, gcc doesn't know about this option, so you have to use <strong>-Wl,-whole-archive</strong>. Second, don't forget to use <strong>-Wl,-no-whole-archive</strong> after your list of archives, because gcc will add its own list of archives to your link and you may not want this flag to affect those as well.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--wrap=</strong><em>symbol</em></dt>
+    <dd>
+  <p>Use a wrapper function for <em>symbol</em>.  Any undefined reference to <em>symbol</em> will be resolved to \f(CW\*(C`_\|_wrap_\f(CIsymbol\f(CW\*(C'.  Any undefined reference to \f(CW\*(C`_\|_real_\f(CIsymbol\f(CW\*(C' will be resolved to <em>symbol</em>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>This can be used to provide a wrapper for a system function.  The wrapper function should be called \f(CW\*(C`_\|_wrap_\f(CIsymbol\f(CW\*(C'.  If it wishes to call the system function, it should call \f(CW\*(C`_\|_real_\f(CIsymbol\f(CW\*(C'.</p>
+<p class='spacer'>
+
+<p>Here is a trivial example:</p>
+<p class='spacer'>
+
+<pre>        void *
+        _\|_wrap_malloc (size_t c)
+        {
+          printf ("malloc called with %zu&#92;n", c);
+          return _\|_real_malloc (c);
+        }</pre>
+
+<p class='spacer'>
+
+<p>If you link other code with this file using <strong>--wrap malloc</strong>, then all calls to \f(CW\*(C`malloc\*(C' will call the function \f(CW\*(C`_\|_wrap_malloc\*(C' instead.  The call to \f(CW\*(C`_\|_real_malloc\*(C' in \f(CW\*(C`_\|_wrap_malloc\*(C' will call the real \f(CW\*(C`malloc\*(C' function.</p>
+<p class='spacer'>
+
+  <p>You may wish to provide a \f(CW\*(C`_\|_real_malloc\*(C' function as well, so that links without the <strong>--wrap</strong> option will succeed.  If you do this, you should not put the definition of \f(CW\*(C`_\|_real_malloc\*(C' in the same file as \f(CW\*(C`_\|_wrap_malloc\*(C'; if you do, the assembler may resolve the call before the linker has a chance to wrap it to \f(CW\*(C`malloc\*(C'.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--eh-frame-hdr</strong></dt>
+    <dd>
+  <p>Request creation of \f(CW\*(C`.eh_frame_hdr\*(C' section and \s-1ELF \s0\f(CW\*(C`PT_GNU_EH_FRAME\*(C' segment header.</p>
+    </dd>
+    <dt><strong>--no-ld-generated-unwind-info</strong></dt>
+    <dd>
+  <p>Request creation of \f(CW\*(C`.eh_frame\*(C' unwind info for linker generated code sections like \s-1PLT. \s0 This option is on by default if linker generated unwind info is supported.</p>
+    </dd>
+    <dt><strong>--enable-new-dtags</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--disable-new-dtags</strong></dt>
+    <dd>
+  <p>This linker can create the new dynamic tags in \s-1ELF.\s0 But the older \s-1ELF\s0 systems may not understand them. If you specify <strong>--enable-new-dtags</strong>, the new dynamic tags will be created as needed and older dynamic tags will be omitted. If you specify <strong>--disable-new-dtags</strong>, no new dynamic tags will be created. By default, the new dynamic tags are not created. Note that those options are only available for \s-1ELF\s0 systems.</p>
+    </dd>
+    <dt><strong>--hash-size=</strong><em>number</em></dt>
+    <dd>
+  <p>Set the default size of the linker's hash tables to a prime number close to <em>number</em>.  Increasing this value can reduce the length of time it takes the linker to perform its tasks, at the expense of increasing the linker's memory requirements.  Similarly reducing this value can reduce the memory requirements at the expense of speed.</p>
+    </dd>
+    <dt><strong>--hash-style=</strong><em>style</em></dt>
+    <dd>
+  <p>Set the type of linker's hash table(s).  <em>style</em> can be either \f(CW\*(C`sysv\*(C' for classic \s-1ELF \s0\f(CW\*(C`.hash\*(C' section, \f(CW\*(C`gnu\*(C' for new style \s-1GNU \s0\f(CW\*(C`.gnu.hash\*(C' section or \f(CW\*(C`both\*(C' for both the classic \s-1ELF \s0\f(CW\*(C`.hash\*(C' and new style \s-1GNU \s0\f(CW\*(C`.gnu.hash\*(C' hash tables.  The default is \f(CW\*(C`sysv\*(C'.</p>
+    </dd>
+    <dt><strong>--reduce-memory-overheads</strong></dt>
+    <dd>
+  <p>This option reduces memory requirements at ld runtime, at the expense of linking speed.  This was introduced to select the old O(n^2) algorithm for link map file generation, rather than the new O(n) algorithm which uses about 40% more memory for symbol storage.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Another effect of the switch is to set the default hash table size to 1021, which again saves memory at the cost of lengthening the linker's run time.  This is not done however if the <strong>--hash-size</strong> switch has been used.</p>
+<p class='spacer'>
+
+  <p>The <strong>--reduce-memory-overheads</strong> switch may be also be used to enable other tradeoffs in future versions of the linker.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--build-id</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--build-id=</strong><em>style</em></dt>
+    <dd>
+  <p>Request the creation of a \f(CW\*(C`.note.gnu.build-id\*(C' \s-1ELF\s0 note section or a \f(CW\*(C`.build-id\*(C' \s-1COFF\s0 section.  The contents of the note are unique bits identifying this linked file.  <em>style</em> can be \f(CW\*(C`uuid\*(C' to use 128 random bits, \f(CW\*(C`sha1\*(C' to use a 160-bit \s-1SHA1\s0 hash on the normative parts of the output contents, \f(CW\*(C`md5\*(C' to use a 128-bit \s-1MD5\s0 hash on the normative parts of the output contents, or \f(CW\*(C`0x\f(CIhexstring\f(CW\*(C' to use a chosen bit string specified as an even number of hexadecimal digits (\f(CW\*(C`-\*(C' and \f(CW\*(C`:\*(C' characters between digit pairs are ignored).  If <em>style</em> is omitted, \f(CW\*(C`sha1\*(C' is used.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The \f(CW\*(C`md5\*(C' and \f(CW\*(C`sha1\*(C' styles produces an identifier that is always the same in an identical output file, but will be unique among all nonidentical output files.  It is not intended to be compared as a checksum for the file's contents.  A linked file may be changed later by other tools, but the build \s-1ID\s0 bit string identifying the original linked file does not change.</p>
+<p class='spacer'>
+
+<p>Passing \f(CW\*(C`none\*(C' for <em>style</em> disables the setting from any \f(CW\*(C`--build-id\*(C' options earlier on the command line.</p>
+<p class='spacer'>
+
+<p>The i386 \s-1PE\s0 linker supports the <strong>-shared</strong> option, which causes the output to be a dynamically linked library (\s-1DLL\s0) instead of a normal executable.  You should name the output \f(CW\*(C`*.dll\*(C' when you use this option.  In addition, the linker fully supports the standard \f(CW\*(C`*.def\*(C' files, which may be specified on the linker command line like an object file (in fact, it should precede archives it exports symbols from, to ensure that they get linked in, just like a normal object file).</p>
+<p class='spacer'>
+
+  <p>In addition to the options common to all targets, the i386 \s-1PE\s0 linker support additional command line options that are specific to the i386 \s-1PE\s0 target.  Options that take values may be separated from their values by either a space or an equals sign.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--add-stdcall-alias</strong></dt>
+    <dd>
+  <p>If given, symbols with a stdcall suffix (@<em>nn</em>) will be exported as-is and also with the suffix stripped. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--base-file</strong> <em>file</em></dt>
+    <dd>
+  <p>Use <em>file</em> as the name of a file in which to save the base addresses of all the relocations needed for generating DLLs with <em>dlltool</em>. [This is an i386 \s-1PE\s0 specific option]</p>
+    </dd>
+    <dt><strong>--dll</strong></dt>
+    <dd>
+  <p>Create a \s-1DLL\s0 instead of a regular executable.  You may also use <strong>-shared</strong> or specify a \f(CW\*(C`LIBRARY\*(C' in a given \f(CW\*(C`.def\*(C' file. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--enable-long-section-names</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--disable-long-section-names</strong></dt>
+    <dd>
+  <p>The \s-1PE\s0 variants of the Coff object format add an extension that permits the use of section names longer than eight characters, the normal limit for Coff.  By default, these names are only allowed in object files, as fully-linked executable images do not carry the Coff string table required to support the longer names.  As a \s-1GNU\s0 extension, it is possible to allow their use in executable images as well, or to (probably pointlessly!) disallow it in object files, by using these two options.  Executable images generated with these long section names are slightly non-standard, carrying as they do a string table, and may generate confusing output when examined with non-GNU PE-aware tools, such as file viewers and dumpers.  However, \s-1GDB\s0 relies on the use of \s-1PE\s0 long section names to find Dwarf-2 debug information sections in an executable image at runtime, and so if neither option is specified on the command-line, <strong>ld</strong> will enable long section names, overriding the default and technically correct behaviour, when it finds the presence of debug information while linking an executable image and not stripping symbols. [This option is valid for all \s-1PE\s0 targeted ports of the linker]</p>
+    </dd>
+    <dt><strong>--enable-stdcall-fixup</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--disable-stdcall-fixup</strong></dt>
+    <dd>
+  <p>If the link finds a symbol that it cannot resolve, it will attempt to do \*(L"fuzzy linking\*(R" by looking for another defined symbol that differs only in the format of the symbol name (cdecl vs stdcall) and will resolve that symbol by linking to the match.  For example, the undefined symbol \f(CW\*(C`_foo\*(C' might be linked to the function \f(CW\*(C`_foo@12\*(C', or the undefined symbol \f(CW\*(C`_bar@16\*(C' might be linked to the function \f(CW\*(C`_bar\*(C'.  When the linker does this, it prints a warning, since it normally should have failed to link, but sometimes import libraries generated from third-party dlls may need this feature to be usable.  If you specify <strong>--enable-stdcall-fixup</strong>, this feature is fully enabled and warnings are not printed.  If you specify <strong>--disable-stdcall-fixup</strong>, this feature is disabled and such mismatches are considered to be errors. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--leading-underscore</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-leading-underscore</strong></dt>
+    <dd>
+  <p>For most targets default symbol-prefix is an underscore and is defined in target's description. By this option it is possible to disable/enable the default underscore symbol-prefix.</p>
+    </dd>
+    <dt><strong>--export-all-symbols</strong></dt>
+    <dd>
+  <p>If given, all global symbols in the objects used to build a \s-1DLL\s0 will be exported by the \s-1DLL. \s0 Note that this is the default if there otherwise wouldn't be any exported symbols.  When symbols are explicitly exported via \s-1DEF\s0 files or implicitly exported via function attributes, the default is to not export anything else unless this option is given.  Note that the symbols \f(CW\*(C`DllMain@12\*(C', \f(CW\*(C`DllEntryPoint@0\*(C', \f(CW\*(C`DllMainCRTStartup@12\*(C', and \f(CW\*(C`impure_ptr\*(C' will not be automatically exported.  Also, symbols imported from other DLLs will not be re-exported, nor will symbols specifying the \s-1DLL\s0's internal layout such as those beginning with \f(CW\*(C`_head_\*(C' or ending with \f(CW\*(C`_iname\*(C'.  In addition, no symbols from \f(CW\*(C`libgcc\*(C', \f(CW\*(C`libstd++\*(C', \f(CW\*(C`libmingw32\*(C', or \f(CW\*(C`crtX.o\*(C' will be exported. Symbols whose names begin with \f(CW\*(C`_\|_rtti_\*(C' or \f(CW\*(C`_\|_builtin_\*(C' will not be exported, to help with \*(C+ DLLs.  Finally, there is an extensive list of cygwin-private symbols that are not exported (obviously, this applies on when building DLLs for cygwin targets). These cygwin-excludes are: \f(CW\*(C`_cygwin_dll_entry@12\*(C', \f(CW\*(C`_cygwin_crt0_common@8\*(C', \f(CW\*(C`_cygwin_noncygwin_dll_entry@12\*(C', \f(CW\*(C`_fmode\*(C', \f(CW\*(C`_impure_ptr\*(C', \f(CW\*(C`cygwin_attach_dll\*(C', \f(CW\*(C`cygwin_premain0\*(C', \f(CW\*(C`cygwin_premain1\*(C', \f(CW\*(C`cygwin_premain2\*(C', \f(CW\*(C`cygwin_premain3\*(C', and \f(CW\*(C`environ\*(C'. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--exclude-symbols</strong> <em>symbol</em><strong>,</strong><em>symbol</em><strong>,...</strong></dt>
+    <dd>
+  <p>Specifies a list of symbols which should not be automatically exported.  The symbol names may be delimited by commas or colons. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--exclude-all-symbols</strong></dt>
+    <dd>
+  <p>Specifies no symbols should be automatically exported. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--file-alignment</strong></dt>
+    <dd>
+  <p>Specify the file alignment.  Sections in the file will always begin at file offsets which are multiples of this number.  This defaults to 512. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--heap</strong> <em>reserve</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--heap</strong> <em>reserve</em><strong>,</strong><em>commit</em></dt>
+    <dd>
+  <p>Specify the number of bytes of memory to reserve (and optionally commit) to be used as heap for this program.  The default is 1MB reserved, 4K committed. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--image-base</strong> <em>value</em></dt>
+    <dd>
+  <p>Use <em>value</em> as the base address of your program or dll.  This is the lowest memory location that will be used when your program or dll is loaded.  To reduce the need to relocate and improve performance of your dlls, each should have a unique base address and not overlap any other dlls.  The default is 0x400000 for executables, and 0x10000000 for dlls. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--kill-at</strong></dt>
+    <dd>
+  <p>If given, the stdcall suffixes (@<em>nn</em>) will be stripped from symbols before they are exported. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--large-address-aware</strong></dt>
+    <dd>
+  <p>If given, the appropriate bit in the \*(L"Characteristics\*(R" field of the \s-1COFF\s0 header is set to indicate that this executable supports virtual addresses greater than 2 gigabytes.  This should be used in conjunction with the /3GB or /USERVA=<em>value</em> megabytes switch in the \*(L"[operating systems]\*(R" section of the \s-1BOOT.INI. \s0 Otherwise, this bit has no effect. [This option is specific to \s-1PE\s0 targeted ports of the linker]</p>
+    </dd>
+    <dt><strong>--disable-large-address-aware</strong></dt>
+    <dd>
+  <p>Reverts the effect of a previous <strong>--large-address-aware</strong> option. This is useful if <strong>--large-address-aware</strong> is always set by the compiler driver (e.g. Cygwin gcc) and the executable does not support virtual addresses greater than 2 gigabytes. [This option is specific to \s-1PE\s0 targeted ports of the linker]</p>
+    </dd>
+    <dt><strong>--major-image-version</strong> <em>value</em></dt>
+    <dd>
+  <p>Sets the major number of the \*(L"image version\*(R".  Defaults to 1. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--major-os-version</strong> <em>value</em></dt>
+    <dd>
+  <p>Sets the major number of the \*(L"os version\*(R".  Defaults to 4. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--major-subsystem-version</strong> <em>value</em></dt>
+    <dd>
+  <p>Sets the major number of the \*(L"subsystem version\*(R".  Defaults to 4. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--minor-image-version</strong> <em>value</em></dt>
+    <dd>
+  <p>Sets the minor number of the \*(L"image version\*(R".  Defaults to 0. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--minor-os-version</strong> <em>value</em></dt>
+    <dd>
+  <p>Sets the minor number of the \*(L"os version\*(R".  Defaults to 0. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--minor-subsystem-version</strong> <em>value</em></dt>
+    <dd>
+  <p>Sets the minor number of the \*(L"subsystem version\*(R".  Defaults to 0. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--output-def</strong> <em>file</em></dt>
+    <dd>
+  <p>The linker will create the file <em>file</em> which will contain a \s-1DEF\s0 file corresponding to the \s-1DLL\s0 the linker is generating.  This \s-1DEF\s0 file (which should be called \f(CW\*(C`*.def\*(C') may be used to create an import library with \f(CW\*(C`dlltool\*(C' or may be used as a reference to automatically or implicitly exported symbols. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--out-implib</strong> <em>file</em></dt>
+    <dd>
+  <p>The linker will create the file <em>file</em> which will contain an import lib corresponding to the \s-1DLL\s0 the linker is generating. This import lib (which should be called \f(CW\*(C`*.dll.a\*(C' or \f(CW\*(C`*.a\*(C' may be used to link clients against the generated \s-1DLL\s0; this behaviour makes it possible to skip a separate \f(CW\*(C`dlltool\*(C' import library creation step. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--enable-auto-image-base</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--enable-auto-image-base=</strong><em>value</em></dt>
+    <dd>
+  <p>Automatically choose the image base for DLLs, optionally starting with base <em>value</em>, unless one is specified using the \f(CW\*(C`--image-base\*(C' argument. By using a hash generated from the dllname to create unique image bases for each \s-1DLL,\s0 in-memory collisions and relocations which can delay program execution are avoided. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--disable-auto-image-base</strong></dt>
+    <dd>
+  <p>Do not automatically generate a unique image base.  If there is no user-specified image base (\f(CW\*(C`--image-base\*(C') then use the platform default. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--dll-search-prefix</strong> <em>string</em></dt>
+    <dd>
+  <p>When linking dynamically to a dll without an import library, search for \f(CW\*(C`&lt;string&gt;&lt;basename&gt;.dll\*(C' in preference to \f(CW\*(C`lib&lt;basename&gt;.dll\*(C'. This behaviour allows easy distinction between DLLs built for the various \*(L"subplatforms\*(R": native, cygwin, uwin, pw, etc.  For instance, cygwin DLLs typically use \f(CW\*(C`--dll-search-prefix=cyg\*(C'. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--enable-auto-import</strong></dt>
+    <dd>
+  <p>Do sophisticated linking of \f(CW\*(C`_symbol\*(C' to \f(CW\*(C`_\|_imp_\|_symbol\*(C' for \s-1DATA\s0 imports from DLLs, and create the necessary thunking symbols when building the import libraries with those \s-1DATA\s0 exports. Note: Use of the 'auto-import' extension will cause the text section of the image file to be made writable. This does not conform to the PE-COFF format specification published by Microsoft.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>Note - use of the 'auto-import' extension will also cause read only data which would normally be placed into the .rdata section to be placed into the .data section instead.  This is in order to work around a problem with consts that is described here: http://www.cygwin.com/ml/cygwin/2004-09/msg01101.html</p>
+<p class='spacer'>
+
+<p>Using 'auto-import' generally will 'just work' \*(-- but sometimes you may see this message:</p>
+<p class='spacer'>
+
+<p>"variable '&lt;var&gt;' can't be auto-imported. Please read the documentation for ld's \f(CW\*(C`--enable-auto-import\*(C' for details."</p>
+<p class='spacer'>
+
+<p>This message occurs when some (sub)expression accesses an address ultimately given by the sum of two constants (Win32 import tables only allow one).  Instances where this may occur include accesses to member fields of struct variables imported from a \s-1DLL,\s0 as well as using a constant index into an array variable imported from a \s-1DLL. \s0 Any multiword variable (arrays, structs, long long, etc) may trigger this error condition.  However, regardless of the exact data type of the offending exported variable, ld will always detect it, issue the warning, and exit.</p>
+<p class='spacer'>
+
+<p>There are several ways to address this difficulty, regardless of the data type of the exported variable:</p>
+<p class='spacer'>
+
+<p>One way is to use --enable-runtime-pseudo-reloc switch. This leaves the task of adjusting references in your client code for runtime environment, so this method works only when runtime environment supports this feature.</p>
+<p class='spacer'>
+
+<p>A second solution is to force one of the 'constants' to be a variable \*(-- that is, unknown and un-optimizable at compile time.  For arrays, there are two possibilities: a) make the indexee (the array's address) a variable, or b) make the 'constant' index a variable.  Thus:</p>
+<p class='spacer'>
+
+<pre>        extern type extern_array[];
+        extern_array[1] --&gt;
+           { volatile type *t=extern_array; t[1] }</pre>
+
+<p class='spacer'>
+
+<p>or</p>
+<p class='spacer'>
+
+<pre>        extern type extern_array[];
+        extern_array[1] --&gt;
+           { volatile int t=1; extern_array[t] }</pre>
+
+<p class='spacer'>
+
+<p>For structs (and most other multiword data types) the only option is to make the struct itself (or the long long, or the ...) variable:</p>
+<p class='spacer'>
+
+<pre>        extern struct s extern_struct;
+        extern_struct.field --&gt;
+           { volatile struct s *t=&extern_struct; t-&gt;field }</pre>
+
+<p class='spacer'>
+
+<p>or</p>
+<p class='spacer'>
+
+<pre>        extern long long extern_ll;
+        extern_ll --&gt;
+          { volatile long long * local_ll=&extern_ll; *local_ll }</pre>
+
+<p class='spacer'>
+
+<p>A third method of dealing with this difficulty is to abandon 'auto-import' for the offending symbol and mark it with \f(CW\*(C`_\|_declspec(dllimport)\*(C'.  However, in practice that requires using compile-time #defines to indicate whether you are building a \s-1DLL,\s0 building client code that will link to the \s-1DLL,\s0 or merely building/linking to a static library.   In making the choice between the various methods of resolving the 'direct address with constant offset' problem, you should consider typical real-world usage:</p>
+<p class='spacer'>
+
+<p>Original:</p>
+<p class='spacer'>
+
+<pre>        --foo.h
+        extern int arr[];
+        --foo.c
+        #include "foo.h"
+        void main(int argc, char **argv){
+          printf("%d&#92;n",arr[1]);
+        }</pre>
+
+<p class='spacer'>
+
+<p>Solution 1:</p>
+<p class='spacer'>
+
+<pre>        --foo.h
+        extern int arr[];
+        --foo.c
+        #include "foo.h"
+        void main(int argc, char **argv){
+          /* This workaround is for win32 and cygwin; do not "optimize" */
+          volatile int *parr = arr;
+          printf("%d&#92;n",parr[1]);
+        }</pre>
+
+<p class='spacer'>
+
+<p>Solution 2:</p>
+<p class='spacer'>
+
+<pre>        --foo.h
+        /* Note: auto-export is assumed (no _\|_declspec(dllexport)) */
+        #if (defined(_WIN32) || defined(_\|_CYGWIN_\|_)) && &#92;
+          !(defined(FOO_BUILD_DLL) || defined(FOO_STATIC))
+        #define FOO_IMPORT _\|_declspec(dllimport)
+        #else
+        #define FOO_IMPORT
+        #endif
+        extern FOO_IMPORT int arr[];
+        --foo.c
+        #include "foo.h"
+        void main(int argc, char **argv){
+          printf("%d&#92;n",arr[1]);
+        }</pre>
+
+<p class='spacer'>
+
+  <p>A fourth way to avoid this problem is to re-code your library to use a functional interface rather than a data interface for the offending variables (e.g. <em>set_foo()</em> and <em>get_foo()</em> accessor functions). [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--disable-auto-import</strong></dt>
+    <dd>
+  <p>Do not attempt to do sophisticated linking of \f(CW\*(C`_symbol\*(C' to \f(CW\*(C`_\|_imp_\|_symbol\*(C' for \s-1DATA\s0 imports from DLLs. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--enable-runtime-pseudo-reloc</strong></dt>
+    <dd>
+  <p>If your code contains expressions described in --enable-auto-import section, that is, \s-1DATA\s0 imports from \s-1DLL\s0 with non-zero offset, this switch will create a vector of 'runtime pseudo relocations' which can be used by runtime environment to adjust references to such data in your client code. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--disable-runtime-pseudo-reloc</strong></dt>
+    <dd>
+  <p>Do not create pseudo relocations for non-zero offset \s-1DATA\s0 imports from DLLs. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--enable-extra-pe-debug</strong></dt>
+    <dd>
+  <p>Show additional debug info related to auto-import symbol thunking. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--section-alignment</strong></dt>
+    <dd>
+  <p>Sets the section alignment.  Sections in memory will always begin at addresses which are a multiple of this number.  Defaults to 0x1000. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--stack</strong> <em>reserve</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--stack</strong> <em>reserve</em><strong>,</strong><em>commit</em></dt>
+    <dd>
+  <p>Specify the number of bytes of memory to reserve (and optionally commit) to be used as stack for this program.  The default is 2MB reserved, 4K committed. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+    <dt><strong>--subsystem</strong> <em>which</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--subsystem</strong> <em>which</em><strong>:</strong><em>major</em></dt>
+    <dd>
+    </dd>
+    <dt><strong>--subsystem</strong> <em>which</em><strong>:</strong><em>major</em><strong>.</strong><em>minor</em></dt>
+    <dd>
+  <p>Specifies the subsystem under which your program will execute.  The legal values for <em>which</em> are \f(CW\*(C`native\*(C', \f(CW\*(C`windows\*(C', \f(CW\*(C`console\*(C', \f(CW\*(C`posix\*(C', and \f(CW\*(C`xbox\*(C'.  You may optionally set the subsystem version also.  Numeric values are also accepted for <em>which</em>. [This option is specific to the i386 \s-1PE\s0 targeted port of the linker]</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The following options set flags in the \f(CW\*(C`DllCharacteristics\*(C' field of the \s-1PE\s0 file header: [These options are specific to \s-1PE\s0 targeted ports of the linker]</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--high-entropy-va</strong></dt>
+    <dd>
+  <p>Image is compatible with 64-bit address space layout randomization (\s-1ASLR\s0).</p>
+    </dd>
+    <dt><strong>--dynamicbase</strong></dt>
+    <dd>
+  <p>The image base address may be relocated using address space layout randomization (\s-1ASLR\s0).  This feature was introduced with \s-1MS\s0 Windows Vista for i386 \s-1PE\s0 targets.</p>
+    </dd>
+    <dt><strong>--forceinteg</strong></dt>
+    <dd>
+  <p>Code integrity checks are enforced.</p>
+    </dd>
+    <dt><strong>--nxcompat</strong></dt>
+    <dd>
+  <p>The image is compatible with the Data Execution Prevention. This feature was introduced with \s-1MS\s0 Windows \s-1XP SP2\s0 for i386 \s-1PE\s0 targets.</p>
+    </dd>
+    <dt><strong>--no-isolation</strong></dt>
+    <dd>
+  <p>Although the image understands isolation, do not isolate the image.</p>
+    </dd>
+    <dt><strong>--no-seh</strong></dt>
+    <dd>
+  <p>The image does not use \s-1SEH.\s0 No \s-1SE\s0 handler may be called from this image.</p>
+    </dd>
+    <dt><strong>--no-bind</strong></dt>
+    <dd>
+  <p>Do not bind this image.</p>
+    </dd>
+    <dt><strong>--wdmdriver</strong></dt>
+    <dd>
+  <p>The driver uses the \s-1MS\s0 Windows Driver Model.</p>
+    </dd>
+    <dt><strong>--tsaware</strong></dt>
+    <dd>
+  <p>The image is Terminal Server aware.</p>
+    </dd>
+    <dt><strong>--insert-timestamp</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-insert-timestamp</strong></dt>
+    <dd>
+  <p>Insert a real timestamp into the image.  This is the default behaviour as it matches legacy code and it means that the image will work with other, proprietary tools.  The problem with this default is that it will result in slightly different images being produced each tiem the same sources are linked.  The option <strong>--no-insert-timestamp</strong> can be used to insert a zero value for the timestamp, this ensuring that binaries produced from indentical sources will compare identically.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The C6X uClinux target uses a binary format called \s-1DSBT\s0 to support shared libraries.  Each shared library in the system needs to have a unique index; all executables use an index of 0.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--dsbt-size</strong> <em>size</em></dt>
+    <dd>
+  <p>This option sets the number of entires in the \s-1DSBT\s0 of the current executable or shared library to <em>size</em>.  The default is to create a table with 64 entries.</p>
+    </dd>
+    <dt><strong>--dsbt-index</strong> <em>index</em></dt>
+    <dd>
+  <p>This option sets the \s-1DSBT\s0 index of the current executable or shared library to <em>index</em>.  The default is 0, which is appropriate for generating executables.  If a shared library is generated with a \s-1DSBT\s0 index of 0, the \f(CW\*(C`R_C6000_DSBT_INDEX\*(C' relocs are copied into the output file.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The <strong>--no-merge-exidx-entries</strong> switch disables the merging of adjacent exidx entries in frame unwind info.</p>
+<p class='spacer'>
+
+  <p>The 68HC11 and 68HC12 linkers support specific options to control the memory bank switching mapping and trampoline code generation.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--no-trampoline</strong></dt>
+    <dd>
+  <p>This option disables the generation of trampoline. By default a trampoline is generated for each far function which is called using a \f(CW\*(C`jsr\*(C' instruction (this happens when a pointer to a far function is taken).</p>
+    </dd>
+    <dt><strong>--bank-window</strong> <em>name</em></dt>
+    <dd>
+  <p>This option indicates to the linker the name of the memory region in the <strong>\s-1MEMORY\s0</strong> specification that describes the memory bank window. The definition of such region is then used by the linker to compute paging and addresses within the memory window.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The following options are supported to control handling of \s-1GOT\s0 generation when linking for 68K targets.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--got=</strong><em>type</em></dt>
+    <dd>
+  <p>This option tells the linker which \s-1GOT\s0 generation scheme to use. <em>type</em> should be one of <strong>single</strong>, <strong>negative</strong>, <strong>multigot</strong> or <strong>target</strong>.  For more information refer to the Info entry for <em>ld</em>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>The following options are supported to control microMIPS instruction generation when linking for \s-1MIPS\s0 targets.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>--insn32</strong></dt>
+    <dd>
+    </dd>
+    <dt><strong>--no-insn32</strong></dt>
+    <dd>
+  <p>These options control the choice of microMIPS instructions used in code generated by the linker, such as that in the \s-1PLT\s0 or lazy binding stubs, or in relaxation.  If <strong>--insn32</strong> is used, then the linker only uses 32-bit instruction encodings.  By default or if <strong>--no-insn32</strong> is used, all instruction encodings are used, including 16-bit ones where possible.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ENVIRONMENT</h2>
+        <div class="sectioncontent">
+
+<p>You can change the behaviour of <strong>ld</strong> with the environment variables \f(CW\*(C`GNUTARGET\*(C', \f(CW\*(C`LDEMULATION\*(C' and \f(CW\*(C`COLLECT_NO_DEMANGLE\*(C'.</p>
+<p class='spacer'>
+
+<p>\f(CW\*(C`GNUTARGET\*(C' determines the input-file object format if you don't use <strong>-b</strong> (or its synonym <strong>--format</strong>).  Its value should be one of the \s-1BFD\s0 names for an input format.  If there is no \f(CW\*(C`GNUTARGET\*(C' in the environment, <strong>ld</strong> uses the natural format of the target. If \f(CW\*(C`GNUTARGET\*(C' is set to \f(CW\*(C`default\*(C' then \s-1BFD\s0 attempts to discover the input format by examining binary input files; this method often succeeds, but there are potential ambiguities, since there is no method of ensuring that the magic number used to specify object-file formats is unique.  However, the configuration procedure for \s-1BFD\s0 on each system places the conventional format for that system first in the search-list, so ambiguities are resolved in favor of convention.</p>
+<p class='spacer'>
+
+<p>\f(CW\*(C`LDEMULATION\*(C' determines the default emulation if you don't use the <strong>-m</strong> option.  The emulation can affect various aspects of linker behaviour, particularly the default linker script.  You can list the available emulations with the <strong>--verbose</strong> or <strong>-V</strong> options.  If the <strong>-m</strong> option is not used, and the \f(CW\*(C`LDEMULATION\*(C' environment variable is not defined, the default emulation depends upon how the linker was configured.</p>
+<p class='spacer'>
+
+<p>Normally, the linker will default to demangling symbols.  However, if \f(CW\*(C`COLLECT_NO_DEMANGLE\*(C' is set in the environment, then it will default to not demangling symbols.  This environment variable is used in a similar fashion by the \f(CW\*(C`gcc\*(C' linker wrapper program.  The default may be overridden by the <strong>--demangle</strong> and <strong>--no-demangle</strong> options.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><em>ar</em>\|(1), <em>nm</em>\|(1), <em>objcopy</em>\|(1), <em>objdump</em>\|(1), <em>readelf</em>\|(1) and the Info entries for <em>binutils</em> and <em>ld</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COPYRIGHT</h2>
+        <div class="sectioncontent">
+
+<p>Copyright (c) 1991-2014 Free Software Foundation, Inc.</p>
+<p class='spacer'>
+
+<p>Permission is granted to copy, distribute and/or modify this document under the terms of the \s-1GNU\s0 Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with no Invariant Sections, with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the license is included in the section entitled \*(L"\s-1GNU\s0 Free Documentation License\*(R".</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="koi8rxterm.1.html"><span aria-hidden="true">&larr;</span> koi8rxterm.1: X terminal emulator for KOI8-R environments</a></li><li class="next"><a href="ld.bfd.1.html">ld.bfd.1: The GNU linker <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
