@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pam_fail_delay - request a delay on failure</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Request a delay on failure">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pam_fail_delay<small> (3)</small></h1>
+        <p class="lead">Request a delay on failure</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pam_fail_delay.3.html"><span itemprop="title">pam_fail_delay</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<pre>#include &lt;security/pam_appl.h&gt;</pre>
+
+<p><strong>int pam_fail_delay(pam_handle_t&nbsp;*</strong><em>pamh</em><strong>, unsigned&nbsp;int&nbsp;</strong><em>usec</em><strong>);</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The <strong>pam_fail_delay</strong> function provides a mechanism by which an application or module can suggest a minimum delay of <em>usec</em> micro-seconds. The function keeps a record of the longest time requested with this function. Should <a href="../man3/pam_authenticate.3.html"><strong>pam_authenticate</strong>(3)</a> fail, the failing return to the application is delayed by an amount of time randomly distributed (by up to 25%) about this longest value.</p>
+<p class='spacer'>
+
+<p>Independent of success, the delay time is reset to its zero default value when the PAM service module returns control to the application. The delay occurs <em>after</em> all authentication modules have been called, but <em>before</em> control is returned to the service application.</p>
+<p class='spacer'>
+
+<p>When using this function the programmer should check if it is available with:</p>
+<p class='spacer'>
+
+<pre>#ifdef HAVE_PAM_FAIL_DELAY
+    ....
+#endif /* HAVE_PAM_FAIL_DELAY */
+</pre>
+
+<p class='spacer'>
+
+<p>For applications written with a single thread that are event driven in nature, generating this delay may be undesirable. Instead, the application may want to register the delay in some other way. For example, in a single threaded server that serves multiple authentication requests from a single event loop, the application might want to simply mark a given connection as blocked until an application timer expires. For this reason the delay function can be changed with the <em>PAM_FAIL_DELAY</em> item. It can be queried and set with <a href="../man3/pam_get_item.3.html"><strong>pam_get_item</strong>(3)</a> and <strong>pam_set_item </strong>(3) respectively. The value used to set it should be a function pointer of the following prototype:</p>
+<p class='spacer'>
+
+<pre>void (*delay_fn)(int retval, unsigned usec_delay, void *appdata_ptr);
+</pre>
+
+<p class='spacer'>
+
+<p>The arguments being the <em>retval</em> return code of the module stack, the <em>usec_delay</em> micro-second delay that libpam is requesting and the <em>appdata_ptr</em> that the application has associated with the current <em>pamh</em>. This last value was set by the application when it called <a href="../man3/pam_start.3.html"><strong>pam_start</strong>(3)</a> or explicitly with <a href="../man3/pam_set_item.3.html"><strong>pam_set_item</strong>(3)</a>. Note, if PAM_FAIL_DELAY item is unset (or set to NULL), then no delay will be performed.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RATIONALE</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>It is often possible to attack an authentication scheme by exploiting the time it takes the scheme to deny access to an applicant user. In cases of <em>short</em> timeouts, it may prove possible to attempt a <em>brute force</em> dictionary attack -- with an automated process, the attacker tries all possible passwords to gain access to the system. In other cases, where individual failures can take measurable amounts of time (indicating the nature of the failure), an attacker can obtain useful information about the authentication process. These latter attacks make use of procedural delays that constitute a <em>covert channel</em> of useful information.</p>
+<p class='spacer'>
+
+<p>To minimize the effectiveness of such attacks, it is desirable to introduce a random delay in a failed authentication process. Preferable this value should be set by the application or a special PAM module. Standard PAM modules should not modify the delay unconditional.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>For example, a login application may require a failure delay of roughly 3 seconds. It will contain the following code:</p>
+<p class='spacer'>
+
+<pre>    pam_fail_delay (pamh, 3000000 /* micro-seconds */ );
+    pam_authenticate (pamh, 0);
+</pre>
+
+<p class='spacer'>
+
+<p>if the modules do not request a delay, the failure delay will be between 2.25 and 3.75 seconds.</p>
+<p class='spacer'>
+
+<p>However, the modules, invoked in the authentication process, may also request delays:</p>
+<p class='spacer'>
+
+<pre>module #1:    pam_fail_delay (pamh, 2000000);
+module #2:    pam_fail_delay (pamh, 4000000);
+</pre>
+
+<p class='spacer'>
+
+<p>in this case, it is the largest requested value that is used to compute the actual failed delay: here between 3 and 5 seconds.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>PAM_SUCCESS Delay was successful adjusted.</p>
+<p class='spacer'>
+
+<p>PAM_SYSTEM_ERR A NULL pointer was submitted as PAM handle.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><a href="../man3/pam_start.3.html"><strong>pam_start</strong>(3)</a>, <a href="../man3/pam_get_item.3.html"><strong>pam_get_item</strong>(3)</a>, <a href="../man3/pam_strerror.3.html"><strong>pam_strerror</strong>(3)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">STANDARDS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The <strong>pam_fail_delay</strong> function is an Linux-PAM extension.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+  <li class="previous"><a href="pam_error.3.html"><span aria-hidden="true">&larr;</span> pam_error.3: display error messages to the user</a></li><li class="next"><a href="pam_get_authtok.3.html">pam_get_authtok.3: get authentication token <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
