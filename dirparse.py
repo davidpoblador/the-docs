@@ -96,6 +96,7 @@ class ManDirectoryParser(object):
         shutil.rmtree(base_manpage_dir, ignore_errors=True)
         p = self.pages
 
+        # Parse pages
         for item in list(glob.iglob("%s/*/man?/*.?" % self.source_dir)):
             #print "DEBUG", item
             page_directory, basename = os.path.split(item)
@@ -168,7 +169,7 @@ class ManDirectoryParser(object):
                 cp['errors'] = True
                 raise
 
-        found_pages = self.get_pages_without_errors()
+        # Calculate previous-next links
         for directory, page_files in self.get_dir_pages().iteritems():
             man_directory = os.path.join(base_manpage_dir, directory)
             try:
@@ -187,6 +188,7 @@ class ManDirectoryParser(object):
 
                 previous = (page, d['subtitle'])
 
+        # Write pages
         try:
             page_hashes_file = open('page_hashes.dat', 'rb')
             page_hashes = marshal.load(page_hashes_file)
@@ -195,6 +197,7 @@ class ManDirectoryParser(object):
             page_hashes = dict()
 
         now = datetime.datetime.today().strftime('%Y-%m-%d')
+        found_pages = self.get_pages_without_errors()
         for mp, final_page, instance in self.get_pages():
             out = mp.html(pages_to_link=found_pages)
             self.missing_links.update(mp.broken_links)
@@ -216,7 +219,7 @@ class ManDirectoryParser(object):
         marshal.dump(page_hashes, page_hashes_file)
         page_hashes_file.close()
 
-        # Directory Indexes & Sitemaps
+        # Generate directory Indexes & Sitemaps
         sm_urls = []
         for directory, page_files in self.get_dir_pages().iteritems():
             logging.debug(" * Generating indexes and sitemaps for %s" %
@@ -274,6 +277,7 @@ class ManDirectoryParser(object):
             f.write(out)
             f.close()
 
+        # Generate sitemap indexes
         sitemap_index_url_tpl = load_template('sitemap-index-url')
         sitemap_index_content = ""
         for sitemap_url in sm_urls:
@@ -288,7 +292,7 @@ class ManDirectoryParser(object):
         f.write(sitemap_index_content)
         f.close()
 
-        # Generate base index
+        # Generate man-pages index
         base_tpl = load_template('base')
         index_tpl = load_template('index-manpage')
 
@@ -296,8 +300,6 @@ class ManDirectoryParser(object):
             # FIXME: Naming templates should be better
             metadescription="Linux Man Pages",
             title="Linux Man Pages",
-            # FIXME: Remove nav
-            nav="",
             canonical="",
             header="",
             breadcrumb="",
@@ -307,13 +309,11 @@ class ManDirectoryParser(object):
         f.write(index)
         f.close()
 
+        # Generate base index
         index_tpl = load_template('index-contents')
         index = base_tpl.safe_substitute(
-            # FIXME: Naming templates should be better
             metadescription="Carta.tech: The home for open documentation",
             title="Carta.tech: The home for open documentation",
-            # FIXME: Remove nav
-            nav="",
             canonical="",
             header="",
             breadcrumb="",
