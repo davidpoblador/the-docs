@@ -124,8 +124,12 @@ class BodyMacroParser(MacroParser):
     def p_nf(self):
         self.manpage.start_pre()
 
+    p_Vb = p_nf
+
     def p_fi(self):
         self.manpage.end_pre()
+
+    p_Ve = p_fi
 
     def p_UR(self):
         self.manpage.add_url(self.unescaped_data)
