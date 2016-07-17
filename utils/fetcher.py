@@ -30,12 +30,16 @@ class DebianManpageFetcher(object):
             for line in fp:
                 if line.startswith("usr/share/man/man"):
                     if search_string in line:
-                        self.section, self.package = line.split(
-                        )[-1].split(',')[0].split('/')
+                        packages = line.split()[-1].split(',')
+                        self.packages = []
+
+                        for package in packages:
+                            self.packages.append(package.split('/'))
+
                         logging.info(
-                            "Found missing page %s in package %s",
+                            "Found missing page %s in packages %s",
                             self.missing_manpage,
-                            self.package)
+                            self.packages)
                         break
             else:
                 logging.info(
@@ -44,33 +48,32 @@ class DebianManpageFetcher(object):
                 )
                 return False
 
-        if self.package in self.packages_to_ignore:
-            logging.info(
-                "Ignoring page %s, it was already fetched (package %s)",
-                self.missing_manpage, self.package
-            )
-        else:
-            self.get_package_data()
-            self.fetch_manpages()
+        for section, package in self.packages:
+            if package in self.packages_to_ignore:
+                logging.info(
+                    "Ignoring page %s, it was already fetched (package %s)",
+                    self.missing_manpage, package
+                )
+            else:
+                self.fetch_manpages(section, package)
 
         return True
 
-    def get_package_data(self):
-            #a = deb822.Packages()
+    @classmethod
+    def fetch_manpages(cls, section, package):
         for b in deb822.Packages.iter_paragraphs(sequence=open(packages_file)):
-            if b["Package"] == self.package and b["Section"] == self.section:
+            if b["Package"] == package and b["Section"] == section:
                 if "Source" not in b:
-                    self.namespace = self.package
+                    namespace = package
                 else:
                     # We must split, in case it includes the version string
-                    self.namespace = b["Source"].split()[0]
-                self.filename = b["Filename"]
+                    namespace = b["Source"].split()[0]
+                filename = b["Filename"]
                 break
 
-    def fetch_manpages(self):
-        logging.debug("Fetching package %s", self.filename)
+        logging.debug("Fetching package %s", filename)
 
-        r = requests.get("%s%s" % (repo_base_url, self.filename,))
+        r = requests.get("%s%s" % (repo_base_url, filename,))
         _, tmpfile = mkstemp()
 
         fp = open(tmpfile, 'w')
@@ -87,33 +90,30 @@ class DebianManpageFetcher(object):
                     continue
 
                 if file_contents:
-                    self.extract_file(file, file_contents)
+                    path, basename = os.path.split(file)
+                    mandir = os.path.basename(path)
 
-    def extract_file(self, file, contents):
-        path, basename = os.path.split(file)
-        mandir = os.path.basename(path)
+                    compressed = False
+                    if basename.endswith(".gz"):
+                        compressed = True
+                        basename = basename.rsplit('.', 1)[0]
 
-        compressed = False
-        if basename.endswith(".gz"):
-            compressed = True
-            basename = basename.rsplit('.', 1)[0]
+                    final_page_directory = os.path.join(output_dir, namespace, mandir)
 
-        final_page_directory = os.path.join(output_dir, self.namespace, mandir)
+                    try:
+                        os.makedirs(final_page_directory)
+                    except OSError:
+                        pass
 
-        try:
-            os.makedirs(final_page_directory)
-        except OSError:
-            pass
+                    final_path = os.path.join(final_page_directory, basename)
 
-        final_path = os.path.join(final_page_directory, basename)
+                    if compressed:
+                        file_contents = gzip.GzipFile(fileobj=file_contents)
 
-        if compressed:
-            contents = gzip.GzipFile(fileobj=contents)
-
-        logging.debug("Writing new page %s", final_path)
-        fp = open(final_path, "w")
-        fp.write(contents.read())
-        fp.close()
+                    logging.debug("Writing new page %s", final_path)
+                    fp = open(final_path, "w")
+                    fp.write(file_contents.read())
+                    fp.close()
 
 if __name__ == '__main__':
     import time
