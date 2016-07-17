@@ -158,6 +158,7 @@ class BodyMacroParser(MacroParser):
     p_LP = p_paragraph
     p_PP = p_paragraph
     p_P = p_paragraph
+    p_Sp = p_paragraph
 
     def p_TP(self):
         self.manpage.preserve_next_line = True  # FIXME (now we can do better)
