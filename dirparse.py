@@ -9,6 +9,7 @@ from string import Template
 import marshal
 import logging
 import shutil
+import datetime
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -54,6 +55,9 @@ class ManDirectoryParser(object):
         self.missing_links = Counter()
         self.number_missing_links = 10
 
+        self.section_counters = Counter()
+        self.number_section_counters = 10
+
     def get_dir_pages(self):
         mandirpages = defaultdict(set)
         for page, v in self.pages.iteritems():
@@ -65,7 +69,7 @@ class ManDirectoryParser(object):
     def get_pages(self):
         for page, v in self.pages.iteritems():
             if 'errors' not in v and 'missing-parser' not in v:
-                yield v['instance'], v['final-page']
+                yield v['instance'], v['final-page'], v
 
     def get_pages_without_errors(self):
         manpages = set()
@@ -183,12 +187,34 @@ class ManDirectoryParser(object):
 
                 previous = (page, d['subtitle'])
 
-        for mp, final_page in self.get_pages():
+        try:
+            page_hashes_file = open('page_hashes.dat', 'rb')
+            page_hashes = marshal.load(page_hashes_file)
+            page_hashes_file.close()
+        except:
+            page_hashes = dict()
+
+        now = datetime.datetime.today().strftime('%Y-%m-%d')
+        for mp, final_page, instance in self.get_pages():
             out = mp.html(pages_to_link=found_pages)
             self.missing_links.update(mp.broken_links)
+            self.section_counters.update(mp.section_counters)
+            if (final_page in page_hashes) and mp.unique_hash == page_hashes[final_page][0]:
+                # Has not changed
+                pass
+            else:
+                # Has changed
+                page_hashes[final_page] = (mp.unique_hash, now)
+
             file = open(final_page, "w")
             file.write(out)
             file.close()
+
+            instance['last-modified'] = page_hashes[final_page][1]
+
+        page_hashes_file = open('page_hashes.dat', 'wb')
+        marshal.dump(page_hashes, page_hashes_file)
+        page_hashes_file.close()
 
         # Directory Indexes & Sitemaps
         sm_urls = []
@@ -210,10 +236,9 @@ class ManDirectoryParser(object):
                     description=d['subtitle'],
                     package=d['package'], )
 
-                sitemap_items += sm_item_tpl.substitute(url=d['page-url'])
+                sitemap_items += sm_item_tpl.substitute(url=d['page-url'], lastmod=d['last-modified'])
             else:
-                sitemap_items += sm_item_tpl.substitute(
-                    url=get_section_url(directory))
+                sitemap_items += sm_item_tpl.substitute(url=get_section_url(directory), lastmod = now)
 
             section_content = load_template('section-index').substitute(
                 items=section_items)
@@ -318,16 +343,17 @@ class ManDirectoryParser(object):
     def get_missing_links(self):
         return self.missing_links.most_common(self.number_missing_links)
 
+    def get_section_counters(self):
+        return self.section_counters.most_common(self.number_section_counters)
+
     def get_missing_parsers(self):
         return self.missing_parsers.most_common(self.number_missing_parsers)
-
 
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))
     out = Template(''.join(fp.readlines()))
     fp.close()
     return out
-
 
 if __name__ == '__main__':
     import time
@@ -344,6 +370,9 @@ if __name__ == '__main__':
     parser.add_argument("--missing-parsers",
                         help="choose the amount of missing parsers to display",
                         type=int)
+    parser.add_argument("--section-counters",
+                        help="choose the amount of section titles to display",
+                        type=int)
     args = parser.parse_args()
 
     if args.log_level:
@@ -355,6 +384,9 @@ if __name__ == '__main__':
     if args.missing_links:
         parser.number_missing_links = args.missing_links
 
+    if args.section_counters:
+        parser.number_section_counters = args.missing_links
+
     if args.missing_parsers:
         parser.number_missing_parsers = args.missing_parsers
 
@@ -363,6 +395,7 @@ if __name__ == '__main__':
     print "Missing Links: %s" % parser.get_missing_links()
     print "Missing Parsers: %s" % parser.get_missing_parsers()
     print "Pages With Missing Parsers", parser.get_pages_with_missing_parsers()
+    print "Section Counter", parser.get_section_counters()
 
     elapsed = time.time() - start_time
     logging.info("--- Total time: %s seconds ---" % (elapsed, ))

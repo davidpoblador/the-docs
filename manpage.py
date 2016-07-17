@@ -14,6 +14,7 @@ from parsers import ManPageStates
 from parsers import RedirectedPage
 from parsers import tagify, unescape, toargs, entitize
 from collections import namedtuple
+import hashlib
 
 LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
 
@@ -148,6 +149,9 @@ class ManPage(object):
         self.base_url = base_url
 
         self.broken_links = set()
+        self.section_counters = set()
+
+        self.unique_hash = ""
 
         if redirected_from:
             self.manpage_name = os.path.basename(redirected_from)
@@ -460,10 +464,12 @@ class ManPage(object):
         contents = []
 
         for title, content in self.sections:
+            self.section_counters.add(title)
             contents.append(section_tpl.substitute(title=title,
                                                    content=''.join(content), ))
 
         section_contents = self.linkify(''.join(contents), pages_to_link)
+        self.unique_hash = hashlib.md5(section_contents).hexdigest()
 
         if self.next_page or self.previous_page:
             links = ""
