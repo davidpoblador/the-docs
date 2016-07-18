@@ -173,64 +173,7 @@ class ManDirectoryParser(object):
 
         self.set_previous_next_links(self.get_dir_pages().iteritems(), p)
         self.write_pages()
-
-        # Generate directory Indexes & Sitemaps
-        sm_urls = []
-        for directory, page_files in self.get_dir_pages().iteritems():
-            logging.debug(" * Generating indexes and sitemaps for %s" %
-                          directory)
-
-            section_item_tpl = load_template('section-index-item')
-            sm_item_tpl = load_template('sitemap-url')
-
-            section_items, sitemap_items = ("", "")
-            for page in sorted(page_files):
-                d = p[page]
-
-                section_items += section_item_tpl.substitute(
-                    link=page,
-                    name=d['name'],
-                    section=d['section'],
-                    description=d['subtitle'],
-                    package=d['package'], )
-
-                sitemap_items += sm_item_tpl.substitute(url=d['page-url'], lastmod=d['last-modified'])
-            else:
-                sitemap_items += sm_item_tpl.substitute(url=get_section_url(directory), lastmod = self.now)
-
-            section_content = load_template('section-index').substitute(
-                items=section_items)
-            sitemap = load_template('sitemap').substitute(urlset=sitemap_items)
-
-            sitemap_path = os.path.join(base_manpage_dir, directory,
-                                        "sitemap.xml")
-            f = open(sitemap_path, 'w')
-            f.write(sitemap)
-            f.close()
-
-            sm_urls.append(get_section_url(directory) + "sitemap.xml")
-
-            full_section = SECTIONS[directory]
-            numeric_section = directory[3:]
-
-            out = load_template('base').safe_substitute(
-                title="Linux Man Pages - %s" % full_section,
-                canonical="",
-                header=load_template('header').safe_substitute(
-                    title=full_section,
-                    section=numeric_section,
-                    subtitle=""),
-                breadcrumb=load_template('breadcrumb-section').substitute(
-                    section_name=full_section,
-                    base_url=base_manpage_url,
-                    section=numeric_section),
-                content=section_content,
-                metadescription=full_section.replace("\"", "\'"), )
-
-            f = open(
-                os.path.join(base_manpage_dir, directory, 'index.html'), 'w')
-            f.write(out)
-            f.close()
+        sm_urls = self.generate_sitemaps_and_indexes(iterator = self.get_dir_pages().iteritems(), now = self.now, pages = p)
 
         # Generate sitemap indexes
         sitemap_index_url_tpl = load_template('sitemap-index-url')
@@ -279,6 +222,69 @@ class ManDirectoryParser(object):
         f.close()
 
         self.fix_missing_links()
+
+    @classmethod
+    def generate_sitemaps_and_indexes(cls, iterator, now, pages):
+        # Generate directory Indexes & Sitemaps
+        p = pages
+        sm_urls = []
+        for directory, page_files in iterator:
+            logging.debug(" * Generating indexes and sitemaps for %s" %
+                          directory)
+
+            section_item_tpl = load_template('section-index-item')
+            sm_item_tpl = load_template('sitemap-url')
+
+            section_items, sitemap_items = ("", "")
+            for page in sorted(page_files):
+                d = p[page]
+
+                section_items += section_item_tpl.substitute(
+                    link=page,
+                    name=d['name'],
+                    section=d['section'],
+                    description=d['subtitle'],
+                    package=d['package'], )
+
+                sitemap_items += sm_item_tpl.substitute(url=d['page-url'], lastmod=d['last-modified'])
+            else:
+                sitemap_items += sm_item_tpl.substitute(url=get_section_url(directory), lastmod = now)
+
+            section_content = load_template('section-index').substitute(
+                items=section_items)
+            sitemap = load_template('sitemap').substitute(urlset=sitemap_items)
+
+            sitemap_path = os.path.join(base_manpage_dir, directory,
+                                        "sitemap.xml")
+            f = open(sitemap_path, 'w')
+            f.write(sitemap)
+            f.close()
+
+            sm_urls.append(get_section_url(directory) + "sitemap.xml")
+
+            full_section = SECTIONS[directory]
+            numeric_section = directory[3:]
+
+            out = load_template('base').safe_substitute(
+                title="Linux Man Pages - %s" % full_section,
+                canonical="",
+                header=load_template('header').safe_substitute(
+                    title=full_section,
+                    section=numeric_section,
+                    subtitle=""),
+                breadcrumb=load_template('breadcrumb-section').substitute(
+                    section_name=full_section,
+                    base_url=base_manpage_url,
+                    section=numeric_section),
+                content=section_content,
+                metadescription=full_section.replace("\"", "\'"), )
+
+            f = open(
+                os.path.join(base_manpage_dir, directory, 'index.html'), 'w')
+            f.write(out)
+            f.close()
+
+        return sm_urls
 
     def write_pages(self):
         found_pages = self.get_pages_without_errors()
