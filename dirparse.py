@@ -269,22 +269,22 @@ class ManDirectoryParser(object):
                                           package)) and package != "man-pages":
                 packages.add(package)
 
+        empty_packages = set()
+        for package in packages:
+            if not package_items[package]:
+                empty_packages.add(package)
+
         packages_to_index = []
-        for package in sorted(packages):
+        packages = sorted(packages.difference(empty_packages))
+        for i, package in enumerate(packages):
             package_directory = os.path.join(base_packages_dir, package)
             try:
                 os.makedirs(package_directory)
             except OSError:
                 pass
 
-            package_index_file = os.path.join(package_directory, "index.html")
-
             pages_in_package = package_items[package]
-            if not pages_in_package:
-                continue
-
             section_pages = defaultdict(set)
-
             for page in pages_in_package:
                 section_pages[pages[page]['section']].add(page)
 
@@ -319,15 +319,28 @@ class ManDirectoryParser(object):
                     content=package_index_tpl.substitute(items='\n'.join(
                         package_list))))
 
+            prev_page = next_page = None
+
+            if i > 0:
+                prev_page = ("../%s/" % (packages[i - 1], ), packages[i - 1])
+
+            if i < len(packages) - 1:
+                next_page = ("../%s/" % (packages[i + 1], ), packages[i + 1])
+
+            contents = package_index_contents_tpl.substitute(
+                contents="\n".join(package_index)) + get_pagination(prev_page,
+                                                                    next_page)
+
             out = load_template('base').safe_substitute(
                 title="Man Pages in %s" % package,
                 canonical="",
                 header=load_template('header-package').substitute(
                     title=package),
                 breadcrumb="",
-                content=package_index_contents_tpl.substitute(
-                    contents="\n".join(package_index)),
+                content=contents,
                 metadescription="Man Pages in %s" % package, )
+
+            package_index_file = os.path.join(package_directory, "index.html")
 
             f = open(package_index_file, 'w')
             f.write(out)
