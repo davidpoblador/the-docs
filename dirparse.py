@@ -354,12 +354,20 @@ class ManDirectoryParser(object):
             for page in sorted(page_files):
                 d = pages[page]
                 lastmod = d['last-modified']
-                section_items += section_item_tpl.substitute(
-                    link=page,
-                    name=d['name'],
-                    section=d['section'],
-                    description=d['subtitle'],
-                    package=d['package'], )
+                if d['package'] == "man-pages":
+                    section_items += load_template('section-index-item-manpage').substitute(
+                            link=page,
+                            name=d['name'],
+                            section=d['section'],
+                            description=d['subtitle'],
+                            package=d['package'], )
+                else:
+                    section_items += section_item_tpl.substitute(
+                        link=page,
+                        name=d['name'],
+                        section=d['section'],
+                        description=d['subtitle'],
+                        package=d['package'], )
 
                 sitemap_items += sm_item_tpl.substitute(url=d['page-url'],
                                                         lastmod=lastmod)
