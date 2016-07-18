@@ -179,7 +179,13 @@ class ManDirectoryParser(object):
             pages=p)
 
         self.generate_sitemap_indexes(sm_urls = sm_urls)
+        self.generate_manpage_index()
+        self.generate_base_index()
 
+        self.fix_missing_links()
+
+    @classmethod
+    def generate_manpage_index(cls):
         # Generate man-pages index
         base_tpl = load_template('base')
         index_tpl = load_template('index-manpage')
@@ -197,8 +203,12 @@ class ManDirectoryParser(object):
         f.write(index)
         f.close()
 
+    @classmethod
+    def generate_base_index(cls):
         # Generate base index
+        base_tpl = load_template('base')
         index_tpl = load_template('index-contents')
+
         index = base_tpl.safe_substitute(
             metadescription="Carta.tech: The home for open documentation",
             title="Carta.tech: The home for open documentation",
@@ -210,8 +220,6 @@ class ManDirectoryParser(object):
         f = open(os.path.join(root_html, "index.html"), 'w')
         f.write(index)
         f.close()
-
-        self.fix_missing_links()
 
     @classmethod
     def generate_sitemap_indexes(cls, sm_urls):
