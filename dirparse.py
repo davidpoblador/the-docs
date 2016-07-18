@@ -169,24 +169,7 @@ class ManDirectoryParser(object):
                 cp['errors'] = True
                 raise
 
-        # Calculate previous-next links
-        for directory, page_files in self.get_dir_pages().iteritems():
-            man_directory = os.path.join(base_manpage_dir, directory)
-            try:
-                os.makedirs(man_directory)
-            except OSError:
-                pass
-
-            previous = None
-            for page in sorted(page_files):
-                d = p[page]
-                d['final-page'] = os.path.join(man_directory, page) + ".html"
-                logging.debug(" * Writing page: %s" % page)
-                if previous:
-                    d['instance'].set_previous(previous[0], previous[1])
-                    p[previous[0]]['instance'].set_next(page, d['subtitle'])
-
-                previous = (page, d['subtitle'])
+        self.set_previous_next_links(self.get_dir_pages().iteritems(), p)
 
         # Write pages
         try:
@@ -324,6 +307,29 @@ class ManDirectoryParser(object):
         f.close()
 
         self.fix_missing_links()
+
+    @classmethod
+    def set_previous_next_links(cls, iterator, pages):
+        p = pages
+
+        # Calculate previous-next links
+        for directory, page_files in iterator:
+            man_directory = os.path.join(base_manpage_dir, directory)
+            try:
+                os.makedirs(man_directory)
+            except OSError:
+                pass
+
+            previous = None
+            for page in sorted(page_files):
+                d = p[page]
+                d['final-page'] = os.path.join(man_directory, page) + ".html"
+                logging.debug(" * Writing page: %s" % page)
+                if previous:
+                    d['instance'].set_previous(previous[0], previous[1])
+                    p[previous[0]]['instance'].set_next(page, d['subtitle'])
+
+                previous = (page, d['subtitle'])
 
     def fix_missing_links(self):
         for page in self.get_pages_with_errors():
