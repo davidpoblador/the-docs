@@ -46,6 +46,8 @@ SECTIONS = {
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
 
+    now = datetime.datetime.today().strftime('%Y-%m-%d')
+
     def __init__(self, source_dir):
         self.pages = dict()
 
@@ -59,8 +61,6 @@ class ManDirectoryParser(object):
 
         self.section_counters = Counter()
         self.number_section_counters = 10
-
-        self.now = datetime.datetime.today().strftime('%Y-%m-%d')
 
     def get_dir_pages(self):
         mandirpages = defaultdict(set)
@@ -185,7 +185,6 @@ class ManDirectoryParser(object):
         self.write_pages()
         sm_urls = self.generate_sitemaps_and_indexes(
             iterator=self.get_dir_pages().iteritems(),
-            now=self.now,
             pages=p)
 
         self.generate_package_indexes(source_dir=self.source_dir,
@@ -269,9 +268,8 @@ class ManDirectoryParser(object):
                                           package)) and package != "man-pages":
                 packages.add(package)
 
-        packages = sorted(packages)
-
-        for package in packages:
+        package_urls = [] 
+        for package in sorted(packages):
             package_directory = os.path.join(base_packages_dir, package)
             try:
                 os.makedirs(package_directory)
@@ -338,8 +336,13 @@ class ManDirectoryParser(object):
             f.write(out)
             f.close()
 
+            package_urls.append("%s/%s/" % (base_packages_url, package))
+
+        for url in package_urls:
+            sm_item_tpl = load_template('sitemap-url')
+
     @classmethod
-    def generate_sitemaps_and_indexes(cls, iterator, now, pages):
+    def generate_sitemaps_and_indexes(cls, iterator, pages):
         # Generate directory Indexes & Sitemaps
         sm_urls = []
         last_update = None
@@ -378,7 +381,7 @@ class ManDirectoryParser(object):
                     last_update = max(lastmod, last_update)
             else:
                 if not last_update:
-                    last_update = now
+                    last_update = cls.now
 
                 sitemap_items += sm_item_tpl.substitute(
                     url=cls.get_section_url(directory),
