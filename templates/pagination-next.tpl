@@ -1,0 +1,1 @@
+   <li class="next"><a href="${link}">${text} <span aria-hidden="true">&rarr;</span></a></li>

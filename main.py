@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-import dirparse
 import logging
 from utils.fetcher import DebianManpageFetcher
 import marshal
+from dirparse import ManDirectoryParser
 
 manpage_source = "src"
 
 
 def main():
-    parser = dirparse.ManDirectoryParser(manpage_source)
+    parser = ManDirectoryParser(manpage_source)
     parser.parse_directory()
 
     try:

@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 
-import shlex
-from string import Template
 import os
+import hashlib
+import logging
+
 from repoze.lru import lru_cache
+from collections import namedtuple
+
 try:
     import re2 as re
 except ImportError:
     import re
-import logging
+
 from parsers import MacroParser, BodyMacroParser, TitleMacroParser, HeaderMacroParser
 from parsers import ManPageStates
-from parsers import RedirectedPage
 from parsers import tagify, unescape, toargs, entitize
-from collections import namedtuple
-import hashlib
+
+from base import load_template, get_pagination
+from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
 
 LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
 
@@ -192,11 +195,11 @@ class ManPage(object):
     def set_state(self, state):
         self.parsing_state = state
 
-    def set_previous(self, manfile, description):
-        self.previous_page = (manfile, description)
+    def set_previous(self, page):
+        self.previous_page = page
 
-    def set_next(self, manfile, description):
-        self.next_page = (manfile, description)
+    def set_next(self, page):
+        self.next_page = page
 
     def process_spaced_lines(self, line):
         if (not line) or (not line.startswith(" ")):
@@ -472,17 +475,9 @@ class ManPage(object):
         section_contents = self.linkify(''.join(contents), pages_to_link)
         self.unique_hash = hashlib.md5(section_contents).hexdigest()
 
-        if self.next_page or self.previous_page:
-            links = ""
-            if self.previous_page:
-                links += "<li class=\"previous\"><a href=\"%s.html\"><span aria-hidden=\"true\">&larr;</span> %s: %s</a></li>" % (
-                    self.previous_page[0], self.previous_page[0],
-                    self.previous_page[1])
-            if self.next_page:
-                links += "<li class=\"next\"><a href=\"%s.html\">%s: %s <span aria-hidden=\"true\">&rarr;</span></a></li>" % (
-                    self.next_page[0], self.next_page[0], self.next_page[1])
+        pager_contents = get_pagination(self.previous_page, self.next_page)
 
-            pager_contents = load_template('pager').substitute(links=links, )
+        if pager_contents:
             section_contents += pager_contents
 
         title, section = self.manpage_name.rsplit('.', 1)
@@ -501,14 +496,6 @@ class ManPage(object):
                 title=title,
                 subtitle=self.subtitle.capitalize(), ),
             content=section_contents, )
-
-
-def load_template(template):
-    fp = open("templates/%s.tpl" % (template, ))
-    out = Template(''.join(fp.readlines()))
-    fp.close()
-    return out
-
 
 def stylize(style, text):
     style_trans = {'I': 'em',
@@ -530,14 +517,8 @@ def stylize_odd_even(style, args):
 
     return buff
 
-
 linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
-
-
-class UnexpectedState(Exception):
-    pass
-
 
 if __name__ == '__main__':
     import argparse

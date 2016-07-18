@@ -1,0 +1,1 @@
+   <li class="previous"><a href="${link}"><span aria-hidden="true">&larr;</span> ${text}</a></li>

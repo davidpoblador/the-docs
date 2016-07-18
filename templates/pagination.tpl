@@ -1,5 +1,5 @@
 <nav>
   <ul class="pager">
-  ${links}
+${content}
   </ul>
 </nav>

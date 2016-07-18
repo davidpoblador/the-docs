@@ -1,13 +1,16 @@
-import itertools
-from repoze.lru import lru_cache
+
 import shlex
+import itertools
+
+from repoze.lru import lru_cache
+
 try:
     import re2 as re
 except ImportError:
     import re
 
-import collections
-
+from base import load_template, get_pagination
+from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
 
 class MacroParser(object):
     # FIXME
@@ -422,15 +425,3 @@ def tagify(t):
     t = t.replace('*NEWLINE*', "\n")
 
     return t
-
-
-class MissingParser(Exception):
-    pass
-
-
-class NotSupportedFormat(Exception):
-    pass
-
-
-class RedirectedPage(Exception):
-    pass

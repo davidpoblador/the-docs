@@ -1,3 +1,3 @@
- <dt><a href="${link}.html"><strong>${name}</strong></a></dt>
+ <dt><a href="${link}"><strong>${name}</strong></a></dt>
 
  <dd>${description}</dd>

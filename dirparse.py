@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
-from manpage import ManPage
-from parsers import MissingParser, NotSupportedFormat, RedirectedPage
-import glob
 import os
-from collections import defaultdict, Counter
-from string import Template
+import glob
 import marshal
 import logging
 import datetime
+
+from collections import defaultdict, Counter
+
+from manpage import ManPage
+
+from base import load_template, get_pagination
+from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -302,7 +305,7 @@ class ManDirectoryParser(object):
                 numeric_section, section = section, "man%s" % (section, )
 
                 package_list = [
-                    item_tpl.substitute(link="hola",
+                    item_tpl.substitute(link=pages[page]['page-url'],
                                         name=page,
                                         description=pages[page]['subtitle'])
                     for page in pages_in_section
@@ -311,16 +314,16 @@ class ManDirectoryParser(object):
                 amount_of_pages_in_section = len(pages_in_section)
                 package_index.append(package_index_section_tpl.substitute(
                     amount=amount_of_pages_in_section,
-                    section="Section %s: %s" % (numeric_section,
-                                                SECTIONS[section], ),
+                    numeric_section = numeric_section,
+                    section=SECTIONS[section],
+                    section_url = cls.get_section_url(section),
                     content=package_index_tpl.substitute(items='\n'.join(
                         package_list))))
 
             out = load_template('base').safe_substitute(
-                title="Linux Man Pages in %s" % package,
+                title="Man Pages in %s" % package,
                 canonical="",
-                header=load_template('header-package').substitute(
-                    title="Linux Man Pages in %s" % package),
+                header=load_template('header-package').substitute(title=package),
                 breadcrumb="",
                 #breadcrumb=load_template('breadcrumb-section').substitute(
                 #    section_name=full_section,
@@ -457,11 +460,11 @@ class ManDirectoryParser(object):
                 d['final-page'] = os.path.join(man_directory, page) + ".html"
                 logging.debug(" * Writing page: %s" % page)
                 if previous:
-                    d['instance'].set_previous(previous[0], previous[1])
-                    pages[previous[0]]['instance'].set_next(page,
-                                                            d['subtitle'])
+                    d['instance'].set_previous(previous[1])
+                    next_page = ("%s.html" % (page, ), "%s: %s" % (page, d['subtitle'], ))
+                    pages[previous[0]]['instance'].set_next(next_page)
 
-                previous = (page, d['subtitle'])
+                previous = (page, ("%s.html" % (page, ), "%s: %s" % (page, d['subtitle'], )))
 
     def fix_missing_links(self):
         for page in self.get_pages_with_errors():
@@ -486,14 +489,6 @@ class ManDirectoryParser(object):
 
     def get_missing_parsers(self):
         return self.missing_parsers.most_common(self.number_missing_parsers)
-
-
-def load_template(template):
-    fp = open("templates/%s.tpl" % (template, ))
-    out = Template(''.join(fp.readlines()))
-    fp.close()
-    return out
-
 
 if __name__ == '__main__':
     import time
