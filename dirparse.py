@@ -251,6 +251,7 @@ class ManDirectoryParser(object):
     def generate_sitemaps_and_indexes(cls, iterator, now, pages):
         # Generate directory Indexes & Sitemaps
         sm_urls = []
+        last_update = None
         for directory, page_files in iterator:
             logging.debug(" * Generating indexes and sitemaps for %s" %
                           directory)
@@ -261,7 +262,7 @@ class ManDirectoryParser(object):
             section_items, sitemap_items = ("", "")
             for page in sorted(page_files):
                 d = pages[page]
-
+                lastmod = d['last-modified']
                 section_items += section_item_tpl.substitute(
                     link=page,
                     name=d['name'],
@@ -271,11 +272,19 @@ class ManDirectoryParser(object):
 
                 sitemap_items += sm_item_tpl.substitute(
                     url=d['page-url'],
-                    lastmod=d['last-modified'])
+                    lastmod=lastmod)
+
+                if not last_update:
+                    last_update = lastmod
+                else:
+                    last_update = max(lastmod, last_update)
             else:
+                if not last_update:
+                    last_update = now
+
                 sitemap_items += sm_item_tpl.substitute(
                     url=cls.get_section_url(directory),
-                    lastmod=now)
+                    lastmod=last_update)
 
             section_content = load_template('section-index').substitute(
                 items=section_items)
