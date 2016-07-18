@@ -8,7 +8,6 @@ from collections import defaultdict, Counter
 from string import Template
 import marshal
 import logging
-import shutil
 import datetime
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -95,10 +94,10 @@ class ManDirectoryParser(object):
         return pages_with_missing_parsers
 
     def parse_directory(self):
-        shutil.rmtree(base_manpage_dir, ignore_errors=True)
-        p = self.pages
+        self.clean_directory()
 
         # Parse pages
+        p = self.pages
         for item in list(glob.iglob("%s/*/man?/*.?" % self.source_dir)):
             #print "DEBUG", item
             page_directory, basename = os.path.split(item)
@@ -178,11 +177,18 @@ class ManDirectoryParser(object):
             now=self.now,
             pages=p)
 
+        self.generate_package_indexes()
+
         self.generate_sitemap_indexes(sm_urls=sm_urls)
         self.generate_manpage_index()
         self.generate_base_index()
 
         self.fix_missing_links()
+
+    @classmethod
+    def clean_directory(cls):
+        import shutil
+        shutil.rmtree(base_manpage_dir, ignore_errors=True)
 
     @classmethod
     def generate_manpage_index(cls):
@@ -237,6 +243,11 @@ class ManDirectoryParser(object):
         f = open(os.path.join(base_manpage_dir, "sitemap.xml"), 'w')
         f.write(sitemap_index_content)
         f.close()
+
+
+    @classmethod
+    def generate_package_indexes(cls):
+        pass
 
     @classmethod
     def generate_sitemaps_and_indexes(cls, iterator, now, pages):
