@@ -6,16 +6,20 @@ import sys
 
 current_module = sys.modules[__name__]
 
+
 class Section(object):
     def __init__(self, name):
         self.name = name
         self.contents = []
 
+
 class SubSection(Section):
     pass
 
+
 class ManPage(object):
     """docstring for ManPage"""
+
     def __init__(self, filename):
         self.filename = filename
         self.c = 0
@@ -29,7 +33,8 @@ class ManPage(object):
         self.c = c
 
     def set_header(self, name, section):
-        logging.info("Setting header for %s: %s %s", self.filename, name, section)
+        logging.info("Setting header for %s: %s %s", self.filename, name,
+                     section)
         if self.header:
             raise Exception
         else:
@@ -55,12 +60,12 @@ class ManPage(object):
     def add(self, data):
         self.current_pointer.append(data)
 
-    
+
 class Parser(object):
     """docstring for Parser"""
     cc = set([".", "'"])
 
-    def __init__(self, lines, manpage, counter = -1):
+    def __init__(self, lines, manpage, counter=-1):
         self.lines = lines
         self.size = len(self.lines)
         self.mp = manpage
@@ -82,11 +87,12 @@ class Parser(object):
 
             l = self.lines[self.c]
 
-            logging.debug("LINE [%s] (%s): %s", self.__class__.__name__, self.c, l)
+            logging.debug("LINE [%s] (%s): %s", self.__class__.__name__,
+                          self.c, l)
 
             # Remove comments
             l = l.split("\\\"", 1)[0]
-            if l == '.': # Comment
+            if l == '.':  # Comment
                 logging.debug("Comment")
                 continue
 
@@ -116,10 +122,10 @@ class Parser(object):
             #logging.info("Request macro: %s data: %s", macro, args)
 
         if self.c_delta is not None:
-            logging.info("Ending parsing in %s" % (self.__class__.__name__,))
-            c = (self.c - self.initial_c) + self.c_delta # Return new c delta
+            logging.info("Ending parsing in %s" % (self.__class__.__name__, ))
+            c = (self.c - self.initial_c) + self.c_delta  # Return new c delta
             return (c, self.contents)
-        else: # Probably this can happen in the SectionParser
+        else:  # Probably this can happen in the SectionParser
             self.mp.flush_section()
             return self.c
 
@@ -133,15 +139,20 @@ class Parser(object):
 
     def sub_parse(self, parser, *args):
         parser = getattr(current_module, parser)
-        c, contents = parser(lines = self.lines, manpage = self.mp, counter = self.c, *args).parse()
+        c, contents = parser(lines=self.lines,
+                             manpage=self.mp,
+                             counter=self.c,
+                             *args).parse()
         self.c += c
         return contents
 
     def add(self, line):
         raise Exception("Must be reimplemented")
 
+
 class SectionParser(Parser):
     """docstring for SectionParser"""
+
     def __init__(self, *args, **kwargs):
         super(SectionParser, self).__init__(**kwargs)
         if not self.mp.has_header(): raise
@@ -185,9 +196,11 @@ class SectionParser(Parser):
     def p_RE(self, data):
         self.c_delta = 0
 
+
 class SubSectionParser(SectionParser):
     def __init__(self, *args, **kwargs):
-        super(SectionParser, self).__init__(**kwargs) # Calling parent of SectionParser
+        super(SectionParser, self).__init__(
+            **kwargs)  # Calling parent of SectionParser
 
         name = args[0]
         if not name:
@@ -195,9 +208,11 @@ class SubSectionParser(SectionParser):
 
         self.mp.add_subsection(' '.join(name))
 
+
 class TPSectionParser(SectionParser):
     def __init__(self, *args, **kwargs):
-        super(SectionParser, self).__init__(**kwargs) # Calling parent of SectionParser
+        super(SectionParser, self).__init__(
+            **kwargs)  # Calling parent of SectionParser
         self.contents = []
         self.pointer = None
 
@@ -211,16 +226,20 @@ class TPSectionParser(SectionParser):
         else:
             self.pointer.append(data)
 
+
 class RSSectionParser(SectionParser):
     def __init__(self, *args, **kwargs):
-        super(SectionParser, self).__init__(**kwargs) # Calling parent of SectionParser
+        super(SectionParser, self).__init__(
+            **kwargs)  # Calling parent of SectionParser
         self.contents = []
 
     def add(self, data):
         self.contents.append(data)
 
+
 class MissingParser(Exception):
     pass
+
 
 # FIXME: Make it fast
 def toargs(data):
@@ -242,6 +261,7 @@ def toargs(data):
 
     return args
 
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -259,8 +279,6 @@ if __name__ == '__main__':
     with open(filename) as fp:
         lines = [line.rstrip() for line in fp]
 
-    c = Parser(lines = lines, manpage = manpage).parse()
+    c = Parser(lines=lines, manpage=manpage).parse()
 
     logging.info("Parsed %s lines", c)
-
-

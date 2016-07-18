@@ -7,6 +7,7 @@ from pprint import pprint
 
 current_module = sys.modules[__name__]
 
+
 class Parser(object):
     cc = {'\'', '.'}
     ignored = {'PD', 'in', 'ft', 'sp'}
@@ -31,41 +32,41 @@ class Parser(object):
 
     @classmethod
     def process_raw_line(cls, c, line):
-            macro = data = None
-            comment = False
+        macro = data = None
+        comment = False
 
-            if "\\\"" in line:
-                l = line.split("\\\"",1)[0]
+        if "\\\"" in line:
+            l = line.split("\\\"", 1)[0]
+        else:
+            l = line
+
+        if l and l[0] in cls.cc:
+            if len(l) == 1:
+                # Full Comment Line
+                logging.debug("(%s): Comment: %s", c, line)
+                comment = True
             else:
-                l = line
+                # Macro
+                chunks = l[1:].lstrip().split(" ", 1)
+                if len(chunks) == 2:
+                    # With arguments
+                    data = chunks[1]
 
-            if l and l[0] in cls.cc:
-                if len(l) == 1:
-                    # Full Comment Line
-                    logging.debug("(%s): Comment: %s", c, line)
-                    comment = True
-                else:
-                    # Macro
-                    chunks = l[1:].lstrip().split(" ", 1)
-                    if len(chunks) == 2:
-                        # With arguments
-                        data = chunks[1]
+                macro = chunks[0]
 
-                    macro = chunks[0]
+                logging.debug("(%s): Macro (%s) Args: %s", c, macro, data)
+        elif l:
+            data = l
+            logging.debug("(%s): Data: %s", c, l)
+        else:
+            data = ""
+            logging.debug("(%s): Empty", c)
+            # Empty line
 
-                    logging.debug("(%s): Macro (%s) Args: %s", c, macro, data)
-            elif l:
-                data = l
-                logging.debug("(%s): Data: %s", c, l)
-            else:
-                data = ""
-                logging.debug("(%s): Empty", c)
-                # Empty line
-
-            if not comment:
-                return (c, line, macro, data)
-            else:
-                return False
+        if not comment:
+            return (c, line, macro, data)
+        else:
+            return False
 
     def parse(self):
         self.lines = list(self.line())
@@ -85,14 +86,16 @@ class Parser(object):
                     p = getattr(self.__class__, "p_%s" % macro, None)
                     s = getattr(self.__class__, "s_%s" % macro, None)
                     if not p and not s:
-                        raise MissingParser("Missing parser for macro (%s) (line(%s): %s)" % (macro, c, line))
+                        raise MissingParser(
+                            "Missing parser for macro (%s) (line(%s): %s)" %
+                            (macro, c, line))
                     elif p:
                         self.cl = (i, macro, args, add_to_buffer)
                         p(self)
                     elif s:
                         self.cl = (i, macro, args, add_to_buffer)
                         d = s(self)
-                        if d: # Should not be necessary
+                        if d:  # Should not be necessary
                             add_to_buffer = d
                         else:
                             print "DEBUG", line
@@ -112,7 +115,7 @@ class Parser(object):
     @property
     def macro(self):
         return self.cl[1]
-    
+
     @property
     def args(self):
         return self.cl[2]
@@ -120,7 +123,7 @@ class Parser(object):
     @property
     def data(self):
         return " ".join(self.args)
-    
+
     @property
     def text(self):
         return self.cl[3]
@@ -162,17 +165,17 @@ class Parser(object):
             self.add = definition_list.add
 
         #self.get_next_line()
-        next_line = self.lines[self.i+1][1]
+        next_line = self.lines[self.i + 1][1]
         #print "NEXT", self.process_line(None, next_line)
         #print "NEXT", self.process_line(None, self.lines[self.i+1])
 
-        self.add(bullet = "**")
-            # first
+        self.add(bullet="**")
+        # first
 
-    #def p_IP(self):
-    #    pass
-#
-    ## Indentation
+        #def p_IP(self):
+        #    pass
+        #
+        ## Indentation
     def p_RS(self):
         rs_section = RSSection()
         self.add(rs_section)
@@ -181,21 +184,23 @@ class Parser(object):
         self.current = type(rs_section)
         self.add = rs_section.add
 #
+
     def p_RE(self):
         self.restore_state()
 #
-    ## Preformatted text
-    #def p_nf(self):
-    #    pass
+## Preformatted text
+#def p_nf(self):
+#    pass
 #
-    #def p_fi(self):
-    #    pass
+#def p_fi(self):
+#    pass
 #
-    ## Paragraphs and line breaks
-    #def p_br(self):
-    #    pass
+## Paragraphs and line breaks
+#def p_br(self):
+#    pass
 
-    # Styles
+# Styles
+
     def s_simple_style(self):
         return self.data
 
@@ -218,8 +223,10 @@ class Parser(object):
     def clean_state(self):
         self.state = []
 
+
 class MissingParser(Exception):
     pass
+
 
 class Section(object):
     def __init__(self, name):
@@ -230,11 +237,15 @@ class Section(object):
         self.content.append(content)
 
     def __repr__(self):
-        return "SECTION: %s: %s" % (self.name, self.content, )
+        return "SECTION: %s: %s" % (self.name,
+                                    self.content, )
+
 
 class Subsection(Section):
     def __repr__(self):
-        return "SUBSECTION: %s: %s" % (self.name, self.content, )
+        return "SUBSECTION: %s: %s" % (self.name,
+                                       self.content, )
+
 
 class DefinitionList(object):
     def __init__(self):
@@ -244,7 +255,7 @@ class DefinitionList(object):
         self.content.append([bullet, []])
         self.pointer = self.content[-1][1]
 
-    def add(self, content = None, bullet = "*"):
+    def add(self, content=None, bullet="*"):
         if content:
             self.pointer.append(content)
         elif bullet:
@@ -252,12 +263,14 @@ class DefinitionList(object):
         else:
             raise
 
+
 class RSSection(object):
     def __init__(self):
         self.content = []
 
     def add(self, content):
         self.content.append(content)
+
 
 # FIXME: Make it fast
 def toargs(data):
@@ -279,6 +292,7 @@ def toargs(data):
 
     return args
 
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -294,4 +308,3 @@ if __name__ == '__main__':
     p.parse()
 
     pprint(p.content)
-

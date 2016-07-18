@@ -173,7 +173,10 @@ class ManDirectoryParser(object):
 
         self.set_previous_next_links(self.get_dir_pages().iteritems(), p)
         self.write_pages()
-        sm_urls = self.generate_sitemaps_and_indexes(iterator = self.get_dir_pages().iteritems(), now = self.now, pages = p)
+        sm_urls = self.generate_sitemaps_and_indexes(
+            iterator=self.get_dir_pages().iteritems(),
+            now=self.now,
+            pages=p)
 
         # Generate sitemap indexes
         sitemap_index_url_tpl = load_template('sitemap-index-url')
@@ -246,9 +249,13 @@ class ManDirectoryParser(object):
                     description=d['subtitle'],
                     package=d['package'], )
 
-                sitemap_items += sm_item_tpl.substitute(url=d['page-url'], lastmod=d['last-modified'])
+                sitemap_items += sm_item_tpl.substitute(
+                    url=d['page-url'],
+                    lastmod=d['last-modified'])
             else:
-                sitemap_items += sm_item_tpl.substitute(url=get_section_url(directory), lastmod = now)
+                sitemap_items += sm_item_tpl.substitute(
+                    url=get_section_url(directory),
+                    lastmod=now)
 
             section_content = load_template('section-index').substitute(
                 items=section_items)
@@ -301,7 +308,8 @@ class ManDirectoryParser(object):
             out = mp.html(pages_to_link=found_pages)
             self.missing_links.update(mp.broken_links)
             self.section_counters.update(mp.section_counters)
-            if (final_page in page_hashes) and mp.unique_hash == page_hashes[final_page][0]:
+            if (final_page in page_hashes
+                ) and mp.unique_hash == page_hashes[final_page][0]:
                 # Has not changed
                 pass
             else:
@@ -365,11 +373,13 @@ class ManDirectoryParser(object):
     def get_missing_parsers(self):
         return self.missing_parsers.most_common(self.number_missing_parsers)
 
+
 def load_template(template):
     fp = open("templates/%s.tpl" % (template, ))
     out = Template(''.join(fp.readlines()))
     fp.close()
     return out
+
 
 if __name__ == '__main__':
     import time
