@@ -58,6 +58,8 @@ class ManDirectoryParser(object):
         self.section_counters = Counter()
         self.number_section_counters = 10
 
+        self.now = datetime.datetime.today().strftime('%Y-%m-%d')
+
     def get_dir_pages(self):
         mandirpages = defaultdict(set)
         for page, v in self.pages.iteritems():
@@ -170,37 +172,7 @@ class ManDirectoryParser(object):
                 raise
 
         self.set_previous_next_links(self.get_dir_pages().iteritems(), p)
-
-        # Write pages
-        try:
-            page_hashes_file = open('page_hashes.dat', 'rb')
-            page_hashes = marshal.load(page_hashes_file)
-            page_hashes_file.close()
-        except:
-            page_hashes = dict()
-
-        now = datetime.datetime.today().strftime('%Y-%m-%d')
-        found_pages = self.get_pages_without_errors()
-        for mp, final_page, instance in self.get_pages():
-            out = mp.html(pages_to_link=found_pages)
-            self.missing_links.update(mp.broken_links)
-            self.section_counters.update(mp.section_counters)
-            if (final_page in page_hashes) and mp.unique_hash == page_hashes[final_page][0]:
-                # Has not changed
-                pass
-            else:
-                # Has changed
-                page_hashes[final_page] = (mp.unique_hash, now)
-
-            file = open(final_page, "w")
-            file.write(out)
-            file.close()
-
-            instance['last-modified'] = page_hashes[final_page][1]
-
-        page_hashes_file = open('page_hashes.dat', 'wb')
-        marshal.dump(page_hashes, page_hashes_file)
-        page_hashes_file.close()
+        self.write_pages()
 
         # Generate directory Indexes & Sitemaps
         sm_urls = []
@@ -224,7 +196,7 @@ class ManDirectoryParser(object):
 
                 sitemap_items += sm_item_tpl.substitute(url=d['page-url'], lastmod=d['last-modified'])
             else:
-                sitemap_items += sm_item_tpl.substitute(url=get_section_url(directory), lastmod = now)
+                sitemap_items += sm_item_tpl.substitute(url=get_section_url(directory), lastmod = self.now)
 
             section_content = load_template('section-index').substitute(
                 items=section_items)
@@ -307,6 +279,38 @@ class ManDirectoryParser(object):
         f.close()
 
         self.fix_missing_links()
+
+    def write_pages(self):
+        found_pages = self.get_pages_without_errors()
+
+        # Write pages
+        try:
+            page_hashes_file = open('page_hashes.dat', 'rb')
+            page_hashes = marshal.load(page_hashes_file)
+            page_hashes_file.close()
+        except:
+            page_hashes = dict()
+
+        for mp, final_page, instance in self.get_pages():
+            out = mp.html(pages_to_link=found_pages)
+            self.missing_links.update(mp.broken_links)
+            self.section_counters.update(mp.section_counters)
+            if (final_page in page_hashes) and mp.unique_hash == page_hashes[final_page][0]:
+                # Has not changed
+                pass
+            else:
+                # Has changed
+                page_hashes[final_page] = (mp.unique_hash, self.now)
+
+            file = open(final_page, "w")
+            file.write(out)
+            file.close()
+
+            instance['last-modified'] = page_hashes[final_page][1]
+
+        page_hashes_file = open('page_hashes.dat', 'wb')
+        marshal.dump(page_hashes, page_hashes_file)
+        page_hashes_file.close()
 
     @classmethod
     def set_previous_next_links(cls, iterator, pages):
