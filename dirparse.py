@@ -178,20 +178,7 @@ class ManDirectoryParser(object):
             now=self.now,
             pages=p)
 
-        # Generate sitemap indexes
-        sitemap_index_url_tpl = load_template('sitemap-index-url')
-        sitemap_index_content = ""
-        for sitemap_url in sm_urls:
-            sitemap_index_content += sitemap_index_url_tpl.substitute(
-                url=sitemap_url)
-
-        sitemap_index_tpl = load_template('sitemap-index')
-        sitemap_index_content = sitemap_index_tpl.substitute(
-            sitemaps=sitemap_index_content)
-
-        f = open(os.path.join(base_manpage_dir, "sitemap.xml"), 'w')
-        f.write(sitemap_index_content)
-        f.close()
+        self.generate_sitemap_indexes(sm_urls = sm_urls)
 
         # Generate man-pages index
         base_tpl = load_template('base')
@@ -225,6 +212,23 @@ class ManDirectoryParser(object):
         f.close()
 
         self.fix_missing_links()
+
+    @classmethod
+    def generate_sitemap_indexes(cls, sm_urls):
+        # Generate sitemap indexes
+        sitemap_index_url_tpl = load_template('sitemap-index-url')
+        sitemap_index_content = ""
+        for sitemap_url in sm_urls:
+            sitemap_index_content += sitemap_index_url_tpl.substitute(
+                url=sitemap_url)
+
+        sitemap_index_tpl = load_template('sitemap-index')
+        sitemap_index_content = sitemap_index_tpl.substitute(
+            sitemaps=sitemap_index_content)
+
+        f = open(os.path.join(base_manpage_dir, "sitemap.xml"), 'w')
+        f.write(sitemap_index_content)
+        f.close()
 
     @classmethod
     def generate_sitemaps_and_indexes(cls, iterator, now, pages):
