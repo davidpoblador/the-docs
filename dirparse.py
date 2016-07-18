@@ -201,6 +201,7 @@ class ManDirectoryParser(object):
     def clean_directory(cls):
         import shutil
         shutil.rmtree(base_manpage_dir, ignore_errors=True)
+        shutil.rmtree(base_packages_dir, ignore_errors=True)
 
     @classmethod
     def generate_manpage_index(cls):
@@ -268,7 +269,7 @@ class ManDirectoryParser(object):
                                           package)) and package != "man-pages":
                 packages.add(package)
 
-        package_urls = [] 
+        packages_to_index = [] 
         for package in sorted(packages):
             package_directory = os.path.join(base_packages_dir, package)
             try:
@@ -336,10 +337,20 @@ class ManDirectoryParser(object):
             f.write(out)
             f.close()
 
-            package_urls.append("%s/%s/" % (base_packages_url, package))
+            packages_to_index.append(package)
 
-        for url in package_urls:
-            sm_item_tpl = load_template('sitemap-url')
+        sm_item_tpl = load_template('sitemap-url-nolastmod')
+        sm_urls = []
+        for package in packages_to_index:
+            sm_urls.append(sm_item_tpl.substitute(url = "%s/%s/" % (base_packages_url, package)))
+
+        if sm_urls:
+            sitemap = load_template('sitemap').substitute(urlset="\n".join(sm_urls))
+
+            sitemap_path = os.path.join(base_packages_dir, "sitemap.xml")
+            f = open(sitemap_path, 'w')
+            f.write(sitemap)
+            f.close()
 
     @classmethod
     def generate_sitemaps_and_indexes(cls, iterator, pages):
