@@ -7,6 +7,6 @@ packages="binary-i386/Packages.gz"
 cd ../src
 
 curl ${base_url}${contents} | gunzip > Contents
-curl ${base_url}${packages} | gunzip > Packages
+curl ${base_url}${packages} | gunzip > Packages-index
 
 cd -

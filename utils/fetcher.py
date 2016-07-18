@@ -11,7 +11,7 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 output_dir = os.path.join(package_directory, "..", "src")
 
-packages_file = os.path.join(output_dir, "Packages")
+packages_file = os.path.join(output_dir, "Packages-index")
 contents_file = os.path.join(output_dir, "Contents")
 repo_base_url = "http://ftp.se.debian.org/debian/"
 

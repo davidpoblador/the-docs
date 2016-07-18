@@ -13,11 +13,15 @@ import datetime
 package_directory = os.path.dirname(os.path.abspath(__file__))
 
 root_html = os.path.join(package_directory, "public_html")
-base_src = "man-pages"
+base_manpage_src = "man-pages"
+base_packages_src = "packages"
 base_url = "https://www.carta.tech/"
 
-base_manpage_dir = os.path.join(root_html, base_src)
-base_manpage_url = base_url + base_src
+base_manpage_dir = os.path.join(root_html, base_manpage_src)
+base_packages_dir = os.path.join(root_html, base_packages_src)
+
+base_manpage_url = base_url + base_manpage_src
+base_packages_url = base_url + base_packages_src
 
 # To skip
 broken_files = set()
@@ -34,6 +38,7 @@ SECTIONS = {
     'man8': "System administration commands",
     'man0': "ERROR. Section 0",
 }
+
 
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
@@ -61,6 +66,14 @@ class ManDirectoryParser(object):
                 mandirpages[v['section-dir']].add(page)
 
         return mandirpages
+
+    def get_package_pages(self):
+        packagepages = defaultdict(set)
+        for page, v in self.pages.iteritems():
+            if 'errors' not in v and 'missing-parser' not in v:
+                packagepages[v['package']].add(page)
+
+        return packagepages
 
     def get_pages(self):
         for page, v in self.pages.iteritems():
@@ -172,7 +185,9 @@ class ManDirectoryParser(object):
             now=self.now,
             pages=p)
 
-        self.generate_package_indexes()
+        self.generate_package_indexes(source_dir=self.source_dir,
+                                      package_items=self.get_package_pages(),
+                                      pages=p)
 
         self.generate_sitemap_indexes(sm_urls=sm_urls)
         self.generate_manpage_index()
@@ -244,8 +259,81 @@ class ManDirectoryParser(object):
         return base_manpage_url + "/" + section + "/"
 
     @classmethod
-    def generate_package_indexes(cls):
-        pass
+    def generate_package_indexes(cls, source_dir, package_items, pages):
+        packages = set()
+        for package in os.listdir(source_dir):
+            if os.path.isdir(os.path.join(source_dir,
+                                          package)) and package != "man-pages":
+                packages.add(package)
+
+        packages = sorted(packages)
+
+        for package in packages:
+            package_directory = os.path.join(base_packages_dir, package)
+            try:
+                os.makedirs(package_directory)
+            except OSError:
+                pass
+
+            package_index_file = os.path.join(package_directory, "index.html")
+
+            pages_in_package = package_items[package]
+            if not pages_in_package:
+                continue
+
+            section_pages = defaultdict(set)
+
+            for page in pages_in_package:
+                section_pages[pages[page]['section']].add(page)
+
+            item_tpl = load_template('package-index-item')
+            package_index_tpl = load_template('package-index')
+            package_index_section_tpl = load_template('package-index-section')
+            package_index_contents_tpl = load_template(
+                'package-index-contents')
+
+            package_index = []
+            for section in sorted(section_pages):
+                pages_in_section = section_pages[section]
+
+                if not pages_in_section:
+                    continue
+
+                numeric_section, section = section, "man%s" % (section, )
+
+                package_list = [
+                    item_tpl.substitute(link="hola",
+                                        name=page,
+                                        description=pages[page]['subtitle'])
+                    for page in pages_in_section
+                ]
+
+                amount_of_pages_in_section = len(pages_in_section)
+                package_index.append(package_index_section_tpl.substitute(
+                    amount=amount_of_pages_in_section,
+                    section="Section %s: %s" % (numeric_section,
+                                                SECTIONS[section], ),
+                    content=package_index_tpl.substitute(items='\n'.join(
+                        package_list))))
+
+            out = load_template('base').safe_substitute(
+                title="Linux Man Pages in %s" % package,
+                canonical="",
+                header=load_template('header-package').substitute(
+                    title="Linux Man Pages in %s" % package),
+                breadcrumb="",
+                #breadcrumb=load_template('breadcrumb-section').substitute(
+                #    section_name=full_section,
+                #    base_url=base_manpage_url,
+                #    section=numeric_section),
+                content=package_index_contents_tpl.substitute(
+                    contents="\n".join(package_index)),
+                #metadescription=full_section.replace("\"", "\'"),
+                metadescription="", )
+
+            f = open(package_index_file, 'w')
+            f.write(out)
+            f.close()
 
     @classmethod
     def generate_sitemaps_and_indexes(cls, iterator, now, pages):
@@ -270,9 +358,8 @@ class ManDirectoryParser(object):
                     description=d['subtitle'],
                     package=d['package'], )
 
-                sitemap_items += sm_item_tpl.substitute(
-                    url=d['page-url'],
-                    lastmod=lastmod)
+                sitemap_items += sm_item_tpl.substitute(url=d['page-url'],
+                                                        lastmod=lastmod)
 
                 if not last_update:
                     last_update = lastmod
