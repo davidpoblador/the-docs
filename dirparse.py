@@ -241,7 +241,6 @@ class ManDirectoryParser(object):
     @classmethod
     def generate_sitemaps_and_indexes(cls, iterator, now, pages):
         # Generate directory Indexes & Sitemaps
-        p = pages
         sm_urls = []
         for directory, page_files in iterator:
             logging.debug(" * Generating indexes and sitemaps for %s" %
@@ -252,7 +251,7 @@ class ManDirectoryParser(object):
 
             section_items, sitemap_items = ("", "")
             for page in sorted(page_files):
-                d = p[page]
+                d = pages[page]
 
                 section_items += section_item_tpl.substitute(
                     link=page,
@@ -306,8 +305,6 @@ class ManDirectoryParser(object):
         return sm_urls
 
     def write_pages(self):
-        found_pages = self.get_pages_without_errors()
-
         # Write pages
         try:
             page_hashes_file = open('page_hashes.dat', 'rb')
@@ -316,6 +313,7 @@ class ManDirectoryParser(object):
         except:
             page_hashes = dict()
 
+        found_pages = self.get_pages_without_errors()
         for mp, final_page, instance in self.get_pages():
             out = mp.html(pages_to_link=found_pages)
             self.missing_links.update(mp.broken_links)
@@ -340,8 +338,6 @@ class ManDirectoryParser(object):
 
     @classmethod
     def set_previous_next_links(cls, iterator, pages):
-        p = pages
-
         # Calculate previous-next links
         for directory, page_files in iterator:
             man_directory = os.path.join(base_manpage_dir, directory)
@@ -352,12 +348,12 @@ class ManDirectoryParser(object):
 
             previous = None
             for page in sorted(page_files):
-                d = p[page]
+                d = pages[page]
                 d['final-page'] = os.path.join(man_directory, page) + ".html"
                 logging.debug(" * Writing page: %s" % page)
                 if previous:
                     d['instance'].set_previous(previous[0], previous[1])
-                    p[previous[0]]['instance'].set_next(page, d['subtitle'])
+                    pages[previous[0]]['instance'].set_next(page, d['subtitle'])
 
                 previous = (page, d['subtitle'])
 
