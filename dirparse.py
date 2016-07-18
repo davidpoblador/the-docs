@@ -35,11 +35,6 @@ SECTIONS = {
     'man0': "ERROR. Section 0",
 }
 
-
-def get_section_url(section):
-    return base_manpage_url + "/" + section + "/"
-
-
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
 
@@ -115,7 +110,7 @@ class ManDirectoryParser(object):
             fp = cp['full-path'] = item  # Full Path
 
             cp['name'], cp['section'] = basename.rsplit('.', 1)
-            cp['page-url'] = get_section_url(sd) + basename + ".html"
+            cp['page-url'] = self.get_section_url(sd) + basename + ".html"
 
             first_pass = True
             try:
@@ -244,6 +239,9 @@ class ManDirectoryParser(object):
         f.write(sitemap_index_content)
         f.close()
 
+    @classmethod
+    def get_section_url(cls, section):
+        return base_manpage_url + "/" + section + "/"
 
     @classmethod
     def generate_package_indexes(cls):
@@ -276,7 +274,7 @@ class ManDirectoryParser(object):
                     lastmod=d['last-modified'])
             else:
                 sitemap_items += sm_item_tpl.substitute(
-                    url=get_section_url(directory),
+                    url=cls.get_section_url(directory),
                     lastmod=now)
 
             section_content = load_template('section-index').substitute(
@@ -289,7 +287,7 @@ class ManDirectoryParser(object):
             f.write(sitemap)
             f.close()
 
-            sm_urls.append(get_section_url(directory) + "sitemap.xml")
+            sm_urls.append(cls.get_section_url(directory) + "sitemap.xml")
 
             full_section = SECTIONS[directory]
             numeric_section = directory[3:]
