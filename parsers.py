@@ -1,4 +1,3 @@
-
 import shlex
 import itertools
 
@@ -11,6 +10,7 @@ except ImportError:
 
 from base import load_template, get_pagination
 from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
+
 
 class MacroParser(object):
     # FIXME

@@ -497,6 +497,7 @@ class ManPage(object):
                 subtitle=self.subtitle.capitalize(), ),
             content=section_contents, )
 
+
 def stylize(style, text):
     style_trans = {'I': 'em',
                    'B': 'strong', }
@@ -516,6 +517,7 @@ def stylize_odd_even(style, args):
         c = c + 1
 
     return buff
+
 
 linkifier = re.compile(
     r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")

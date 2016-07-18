@@ -269,7 +269,7 @@ class ManDirectoryParser(object):
                                           package)) and package != "man-pages":
                 packages.add(package)
 
-        packages_to_index = [] 
+        packages_to_index = []
         for package in sorted(packages):
             package_directory = os.path.join(base_packages_dir, package)
             try:
@@ -313,25 +313,21 @@ class ManDirectoryParser(object):
                 amount_of_pages_in_section = len(pages_in_section)
                 package_index.append(package_index_section_tpl.substitute(
                     amount=amount_of_pages_in_section,
-                    numeric_section = numeric_section,
+                    numeric_section=numeric_section,
                     section=SECTIONS[section],
-                    section_url = cls.get_section_url(section),
+                    section_url=cls.get_section_url(section),
                     content=package_index_tpl.substitute(items='\n'.join(
                         package_list))))
 
             out = load_template('base').safe_substitute(
                 title="Man Pages in %s" % package,
                 canonical="",
-                header=load_template('header-package').substitute(title=package),
+                header=load_template('header-package').substitute(
+                    title=package),
                 breadcrumb="",
-                #breadcrumb=load_template('breadcrumb-section').substitute(
-                #    section_name=full_section,
-                #    base_url=base_manpage_url,
-                #    section=numeric_section),
                 content=package_index_contents_tpl.substitute(
                     contents="\n".join(package_index)),
-                #metadescription=full_section.replace("\"", "\'"),
-                metadescription="", )
+                metadescription="Man Pages in %s" % package, )
 
             f = open(package_index_file, 'w')
             f.write(out)
@@ -339,17 +335,44 @@ class ManDirectoryParser(object):
 
             packages_to_index.append(package)
 
-        sm_item_tpl = load_template('sitemap-url-nolastmod')
-        sm_urls = []
-        for package in packages_to_index:
-            sm_urls.append(sm_item_tpl.substitute(url = "%s/%s/" % (base_packages_url, package)))
+        if packages_to_index:
+            sm_item_tpl = load_template('sitemap-url-nolastmod')
+            package_list_item_tpl = load_template('package-list-item')
 
-        if sm_urls:
-            sitemap = load_template('sitemap').substitute(urlset="\n".join(sm_urls))
+            sm_urls = []
+            package_list_items = []
+            for package in packages_to_index:
+                sm_urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
+                    base_packages_url, package)))
+                package_list_items.append(package_list_item_tpl.substitute(
+                    url="%s/" % (package, ),
+                    package=package))
 
+            # Generate package sitemap
+            sitemap = load_template('sitemap').substitute(
+                urlset="\n".join(sm_urls))
             sitemap_path = os.path.join(base_packages_dir, "sitemap.xml")
+
             f = open(sitemap_path, 'w')
             f.write(sitemap)
+            f.close()
+
+            # Generate package index
+            index = load_template('ul').substitute(
+                content="\n".join(package_list_items))
+            index_path = os.path.join(base_packages_dir, "index.html")
+
+            out = load_template('base').safe_substitute(
+                title="Packages with man pages",
+                canonical="",
+                header=load_template('header-package-index').substitute(
+                    title="Packages with man pages"),
+                breadcrumb="",
+                content=index,
+                metadescription="List of packages with man pages", )
+
+            f = open(index_path, 'w')
+            f.write(out)
             f.close()
 
     @classmethod
@@ -369,7 +392,8 @@ class ManDirectoryParser(object):
                 d = pages[page]
                 lastmod = d['last-modified']
                 if d['package'] == "man-pages":
-                    section_items += load_template('section-index-item-manpage').substitute(
+                    section_items += load_template(
+                        'section-index-item-manpage').substitute(
                             link=page,
                             name=d['name'],
                             section=d['section'],
@@ -483,10 +507,14 @@ class ManDirectoryParser(object):
                 logging.debug(" * Writing page: %s" % page)
                 if previous:
                     d['instance'].set_previous(previous[1])
-                    next_page = ("%s.html" % (page, ), "%s: %s" % (page, d['subtitle'], ))
+                    next_page = ("%s.html" % (page, ),
+                                 "%s: %s" % (page,
+                                             d['subtitle'], ))
                     pages[previous[0]]['instance'].set_next(next_page)
 
-                previous = (page, ("%s.html" % (page, ), "%s: %s" % (page, d['subtitle'], )))
+                previous = (page, ("%s.html" % (page, ),
+                                   "%s: %s" % (page,
+                                               d['subtitle'], )))
 
     def fix_missing_links(self):
         for page in self.get_pages_with_errors():
@@ -511,6 +539,7 @@ class ManDirectoryParser(object):
 
     def get_missing_parsers(self):
         return self.missing_parsers.most_common(self.number_missing_parsers)
+
 
 if __name__ == '__main__':
     import time
