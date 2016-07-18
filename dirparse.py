@@ -178,7 +178,7 @@ class ManDirectoryParser(object):
             now=self.now,
             pages=p)
 
-        self.generate_sitemap_indexes(sm_urls = sm_urls)
+        self.generate_sitemap_indexes(sm_urls=sm_urls)
         self.generate_manpage_index()
         self.generate_base_index()
 
@@ -353,7 +353,8 @@ class ManDirectoryParser(object):
                 logging.debug(" * Writing page: %s" % page)
                 if previous:
                     d['instance'].set_previous(previous[0], previous[1])
-                    pages[previous[0]]['instance'].set_next(page, d['subtitle'])
+                    pages[previous[0]]['instance'].set_next(page,
+                                                            d['subtitle'])
 
                 previous = (page, d['subtitle'])
 
