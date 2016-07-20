@@ -3,30 +3,31 @@
 import os
 import git
 import magic
-import logging
-from collections import defaultdict
 import shutil
+import logging
+import ConfigParser
+from collections import defaultdict
 
 pjoin = os.path.join
-
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
 output_dir = pjoin(package_directory, "..", "sources")
 dest_dir = pjoin(package_directory, "..", "src")
+config_file = pjoin(package_directory, "packages.cfg")
+numbers = map(str, range(1,10))
 
 def main():
-    packages = dict()
-    packages['acl'] = ("git://git.savannah.nongnu.org/acl.git", )
-    packages['man-pages'] = ("http://git.kernel.org/pub/scm/docs/man-pages/man-pages", )
+    config = ConfigParser.ConfigParser()
+    config.readfp(open(config_file))
 
-    for package in packages:
+    for package in config.sections():
+        url = config.get(package, "url")
         logging.info("Processing package %s", package)
         package_dir = os.path.relpath(pjoin(output_dir, package))
         if os.path.isdir(package_dir):
             repo = git.Repo(package_dir)
             #repo.remotes[0].pull()
         else:
-            url = packages[package][0]
             logging.info("%s not found, cloning from %s", package, url)
 
             repo = git.Repo.clone_from(url, package_dir, depth=1)
@@ -44,13 +45,10 @@ def main():
                     if not ext:
                         continue
 
-                    numbers = map(str, range(1,10))
                     section = ext[0]
                     if section in numbers:
                         file = pjoin(dirpath, filename)
-                        ft = magic.Magic(keep_going = True)
-                        file_type = ft.from_file(file)
-                        print "DEBUG", filename, file, file_type
+                        file_type = magic.Magic(keep_going = True).from_file(file)
                         if "troff" in file_type:
                             non_numeric_section = "man%s" % (section, )
                             manpages[non_numeric_section].add(file)
@@ -70,6 +68,10 @@ def main():
 
             for page in manpages[section]:
                 shutil.copy(page, man_directory)
+
+    with open(config_file, 'wb') as configfile:
+        config.write(configfile)
+
 
 if __name__ == '__main__':
     import time
