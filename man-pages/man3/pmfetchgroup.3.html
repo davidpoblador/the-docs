@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmfetchgroup - simplified performance metrics value fetch and conversion</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Simplified performance metrics value fetch and conversion">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmfetchgroup<small> (3)</small></h1>
+        <p class="lead">Simplified performance metrics value fetch and conversion</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmfetchgroup.3.html"><span itemprop="title">pmfetchgroup</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>int pmCreateFetchGroup(pmFG *<em>ptr</em>, int <em>type</em>, const char *<em>name</em>);</p>
+<p class='spacer'>
+
+<p>int pmExtendFetchGroup_item(pmFG <em>pmfg</em>, const char *<em>metric</em>, const char *<em>instance</em>, const char *<em>scale</em>, pmAtomValue *<em>out_value</em>, int <em>out_type</em>, int <em>out_sts</em>);</p>
+<p class='spacer'>
+
+<p>int pmExtendFetchGroup_indom(pmFG <em>pmfg</em>, const char *<em>metric</em>, const char *<em>scale</em>, int <em>out_inst_codes</em>[], char *<em>out_inst_names</em>[], pmAtomValue <em>out_values</em>[], int <em>out_type</em>, int <em>out_stss</em>[], unsigned int <em>out_maxnum</em>, unsigned int *<em>out_num</em>, int *<em>out_sts</em>);</p>
+<p class='spacer'>
+
+<p>int pmExtendFetchGroup_event(pmFG <em>pmfg</em>, const char *<em>metric</em>, const char *<em>instance</em>, const char *<em>field</em>, const char *<em>scale</em>, struct timespec <em>out_times</em>[], pmAtomValue <em>out_values</em>[], int <em>out_type</em>, int <em>out_stss</em>[], unsigned int <em>out_maxnum</em>, unsigned int *<em>out_num</em>, int *<em>out_sts</em>);</p>
+<p class='spacer'>
+
+<p>int pmExtendFetchGroup_timestamp(pmFG <em>pmfg</em>, struct timeval *<em>out_value</em>);</p>
+<p class='spacer'>
+
+<p>int pmGetFetchGroupContext(pmFG <em>pmfg</em>);</p>
+<p class='spacer'>
+
+<p>int pmFetchGroup(pmFG <em>pmfg</em>);</p>
+<p class='spacer'>
+
+<p>int pmDestroyFetchGroup(pmFG <em>pmfg</em>);</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The fetchgroup functions implement a registration-based mechanism to fetch groups of performance metrics, including automation for general unit, rate and type conversions as well as convenient instance and value encodings. They constitute a powerful and compact alternative to the classic Performance Metrics Application Programming Interface ( .BR PMAPI (3)) sequence of separate lookup, check, fetch, iterate, extract and convert functions.</p>
+<p class='spacer'>
+
+<p>The general idea consists of two stages. In the setup stage, the application identifies metrics of interest by name and with desired conversions, and register a unique <strong>pmAtomValue</strong> output location where the fetchgroup system is to later deposit the result. It is also possible to identify a metric with an instance domain, and register a unique <em>vector</em> of pmAtomValue objects for them. In the operation stage, one simple <strong>pmFetchGroup</strong> function fetches, decodes, converts, and stores all metrics to their destinations, where the application can <em>read</em> them directly. This function may be called repeatedly, and each time new <strong>pmAtomValue</strong> values will be stored in the same destinations. Rate conversions between consecutive samples may be requested.</p>
+<p class='spacer'>
+
+<p>Each fetchgroup is associated with a private PMAPI context, so it can manipulate instance profiles and other such state without disrupting other contexts. This private PMAPI context belongs to the fetchgroup, is used for all of its internal operations, and will be destroyed.</p>
+<p class='spacer'>
+
+<p>Multiple fetchgroups may be used concurrently, independently. An opaque type <strong>pmFG</strong> is used to identify a fetchgroup, which is passed to all related function calls.</p>
+  <h3>Creating a fetchgroup</h3>
+<p class='spacer'>
+
+<p>int pmCreateFetchGroup(pmFG *<em>ptr</em>, int <em>type</em>, const char *<em>name</em>);</p>
+<p class='spacer'>
+
+<p>This function creates a new fetchgroup, associated with a new PMAPI context. The <em>type</em> and <em>name</em> parameters are relayed to <strong>pmNewContext</strong>(3) for creation of the context. The fetchgroup identifier is returned upon success through the <em>ptr</em> pointer. This object is later used as a parameter to all other fetchgroup functions. The private PMAPI context may be accessed with <strong>pmGetFetchGroupContext</strong>, if required.</p>
+<p class='spacer'>
+
+<p>The normal function return code is zero, and <em>ptr</em> is set. This function may fail in case of <strong>pmNewContext</strong> or memory allocation errors. Those are indicated with a negative return code and a cleared <em>ptr</em> value.</p>
+  <h3>Getting the private PMAPI context</h3>
+<p class='spacer'>
+
+<p>int pmGetFetchGroupContext(pmFG <em>pmfg</em>);</p>
+<p class='spacer'>
+
+<p>This function returns the private PMAPI context used by the given fetchgroup. It may be safely used to adjust some configuration parameters of the context, such as via <strong>pmSetMode</strong>(3), before fetchgroup extension and fetching begins.</p>
+<p class='spacer'>
+
+<p>However, <em>mutation</em> of this context by PMAPI functions after this time may disrupt fetchgroup functionality. For example, a <strong>pmSetMode</strong> call could invalidate one rate-conversion time-step.</p>
+<p class='spacer'>
+
+<p>The normal function return code is the context number.</p>
+  <h3>Extending a fetchgroup with a metric instance of interest</h3>
+<p class='spacer'>
+
+<p>int pmExtendFetchGroup_item(pmFG <em>pmfg</em>, const char *<em>metric</em>, const char *<em>instance</em>, const char *<em>scale</em>, pmAtomValue *<em>out_value</em>, int <em>out_type</em>, int *<em>out_sts</em>);</p>
+<p class='spacer'>
+
+<p>This function registers interest in a single metric and optional instance. The metric name is given in the mandatory <em>metric</em> parameter, which is checked immediately via <strong>pmLookupName</strong>(3) and other calls. If and only if the metric has an instance domain, the specific instance of interest may be named by the <em>instance</em> parameter, which is checked immediately via <strong>pmNameInDom</strong>(3); otherwise pass NULL. If the fetchgroup context is a set of archives, it is possible that the metric / instance pair is not yet defined at the current time origin. Therefore, this function may attempt to seek to the <em>end</em> of the current set of archives <em>temporarily</em> to retry the metric / instance lookup.</p>
+<p class='spacer'>
+
+  <p>The optional <em>scale</em> parameter specifies desired unit/scale/rate conversions for the metric value. It can take the following values:</p>
+  <dl class='dl-horizontal'>
+    <dt>NULL</dt>
+    <dd>
+  <p>No unit/scale conversion. If metric has <strong>PM_SEM_COUNTER</strong> semantics, perform rate conversion.</p>
+    </dd>
+    <dt>rate</dt>
+    <dd>
+  <p>Perform rate conversion regardless of semantics, and no unit/scale conversion.</p>
+    </dd>
+    <dt>instant</dt>
+    <dd>
+  <p>Perform no rate conversion regardless of semantics, and no unit/scale conversion.</p>
+    </dd>
+    <dt>EXPRESSION</dt>
+    <dd>
+  <p>Perform unit/scale/rate conversion as specified by the EXPRESSION, which is parsed by <strong>pmParseUnitsStr</strong>(3). This may be useful to assert a canonical scaling for the resulting metric value, independent of PCP version or configuration. Dimensionality must match the metric, except if rate conversion is requested, in which case the time dimension must be one smaller than the metric's time dimension. Note that the type of rate conversion performed here matches the <strong>rate(x)</strong> function in derived metric expressions, in that it is calculated as the naive difference between previous and current values of a metric, divided by elapsed time. For example, if a counter wraps around, or a non-counter value decreases, a <em>negative</em> output rate may be computed.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The optional but usual <em>out_value</em> parameter specifies the <strong>pmAtomValue</strong> where the converted result should later be stored. If the value is NULL, fetching and conversions will be attempted, and possible errors reported, but the result tossed away. The mandatory <em>out_type</em> parameter specifes the <strong>PM_TYPE_*</strong> requested for the output value. It need not match the metric's native type, as the fetchgroup facility is capable of casting between all supported types (including to and from strings).</p>
+<p class='spacer'>
+
+<p>Any errors subsequently encountered during fetching, unit/scale/rate conversion, or casting, will result in the assignment of a sentinel value to the output <strong>pmAtomValue</strong> (see the ``UNUSUAL SITUATIONS'' section below). In addition, if the optional <em>out_sts</em> parameter is specified, an appropriate PMAPI error code will be stored there.</p>
+<p class='spacer'>
+
+<p>As a review, only the <em>pmfg</em>, <em>metric</em>, and <em>out_type</em> parameters are mandatory. Others may be NULL to indicate applicaton disinterest.</p>
+<p class='spacer'>
+
+<p>The normal function return code is zero. This function may fail in case of various lookup, type- and conversion- checking errors. Those are indicated with a negative return code.</p>
+<p class='spacer'>
+
+  <h3>Extending a fetchgroup with a metric instance domain of interest</h3>
+<p class='spacer'>
+
+<p>int pmExtendFetchGroup_indom(pmFG <em>pmfg</em>, const char* <em>metric</em>, const char *<em>scale</em>, int <em>out_inst_codes</em>[], char *<em>out_inst_names</em>[], pmAtomValue <em>out_values</em>[], int <em>out_type</em>, int <em>out_stss</em>[], unsigned int <em>out_maxnum</em>, unsigned int *<em>out_num</em>, int *<em>out_sts</em>);</p>
+<p class='spacer'>
+
+<p>This function generalizes the <strong>pmExtendFetchGroup_item</strong> function by registering interest in a whole instance domain. Therefore, the function registers preallocated <em>vectors</em> for output variables (instead of a singleton). Instances will be stored in sorted order in elements of those vectors. The concepts are otherwise the same.</p>
+<p class='spacer'>
+
+<p>The metric name is specified by the mandatory <em>metric</em> parameter. Note that it <em>may</em> refer to a metric without an instance domain, in which case the single output value will appear as one unnamed instance.</p>
+<p class='spacer'>
+
+<p>The optional <em>scale</em> parameter specifies desired unit/scale/rate conversions for the metric value, same as above.</p>
+<p class='spacer'>
+
+<p>The optional <em>out_inst_codes</em> parameter specifies a vector of integers, where the raw instance number of the fetched metrics should later be stored.</p>
+<p class='spacer'>
+
+<p>The optional <em>out_inst_names</em> parameter specifies a vector of strings, where the instance names of the fetched metrics should later be stored. If an instance does not have a corresponding name, a NULL pointer is stored instead. The application must not modify or <a href="../man3/free.3.html"><strong>free</strong>(3)</a> strings in that vector.</p>
+<p class='spacer'>
+
+<p>The optional <em>out_values</em> parameter specifies a vector of <strong>pmAtomValue</strong> objects where the converted result should later be stored. The mandatory <em>out_type</em> parameter specifies the <strong>PM_TYPE_*</strong> requested for the all output values, same as above.</p>
+<p class='spacer'>
+
+<p>The optional <em>out_stss</em> parameter specifies a vector of integers where per-instance error codes should be stored.</p>
+<p class='spacer'>
+
+<p>The mandatory <em>out_maxnum</em> parameter specifies the number of elements of the vectors above. In other words, it tells the fetchgroup the maximum number of instances which are expected. The optional <em>out_num</em> parameter specifies an integer where the actual number of instances should later be stored. It will range between 0 and <em>out_maxnum</em>. It is initialized to 0 by this function.</p>
+<p class='spacer'>
+
+<p>Finally, the optional <em>out_sts</em> parameter specifies a single location where an integer status code for the overall fetch for this metric should be stored. Normally, this will be zero. Other than a severe fetch error, one may see a <strong>PM_ERR_TOOBIG</strong> here if the number of instances actually encountered was larger than <em>out_maxnum</em>.</p>
+<p class='spacer'>
+
+<p>Any errors subsequently encountered during fetching, unit/scale/rate conversion, or casting, will result in the assignment of a sentinel value to the appropriate output <strong>pmAtomValue</strong> (see the ``UNUSUAL SITUATIONS'' section below). In addition, if the optional <em>out_stss</em> parameter was specified, a PMAPI error code will be stored in the appropriate position.</p>
+<p class='spacer'>
+
+<p>As a review, only the <em>pmfg</em>, <em>metric</em>, <em>out_type</em>, and <em>out_maxnum</em> parameters are mandatory. Others may be NULL to indicate applicaton disinterest.</p>
+<p class='spacer'>
+
+<p>The normal function return code is zero. This function may fail in case of various lookup, type- and conversion- checking errors. Those are indicated with a negative return code.</p>
+  <h3>Extending a fetchgroup with an event field</h3>
+<p class='spacer'>
+
+<p>int pmExtendFetchGroup_event(pmFG <em>pmfg</em>, const char *<em>metric</em>, const char *<em>instance</em>, const char *<em>field</em>, const char *<em>scale</em>, struct timespec <em>out_times</em>[], pmAtomValue <em>out_values</em>[], int <em>out_type</em>, int <em>out_stss</em>[], unsigned int <em>out_maxnum</em>, unsigned int *<em>out_num</em>, int *<em>out_sts</em>);</p>
+<p class='spacer'>
+
+<p>This function registers interest in all instances of one field of all records of an event metric. Since event metrics may return multiple records per fetch, and each record may have multiple fields of a given field metric type, this function registers preallocated <em>vectors</em> for output variables, similarly to <strong>pmExtendFetchGroup_indom</strong>. They are filled in temporal/sequential order.</p>
+<p class='spacer'>
+
+<p>The metric name is specified by the mandatory <em>metric</em> parameter. It must be of <strong>PM_TYPE_EVENT</strong>. If the metric has an instance domain, the <em>instance</em> parameter is mandatory to identify the instance of interest.</p>
+<p class='spacer'>
+
+<p>The field to extract from event records is specified by the mandatory <em>field</em> parameter, which is a metric name of normal scalar type. As is typical for event field metrics, it should not have an instance domain. The optional <em>scale</em> parameter specifies desired unit/scale conversions on this metric value. Rate conversions are <strong>not available</strong>, because of ambiguity about which previous value to compute rates from.</p>
+<p class='spacer'>
+
+<p>The optional <em>out_times</em> parameter specifies a vector of <strong>timespec</strong> structs, which will receive a copy of the timestamp of the event record where each particular field was found.</p>
+<p class='spacer'>
+
+<p>The optional <em>out_values</em> parameter specifies a vector of <strong>pmAtomValue</strong> objects where the converted result should later be stored. The mandatory <em>out_type</em> parameter specifies the <strong>PM_TYPE_*</strong> requested for the output values.</p>
+<p class='spacer'>
+
+<p>The optional <em>out_stss</em> parameter specifies a vector of integers where per-field error codes should be stored.</p>
+<p class='spacer'>
+
+<p>The mandatory <em>out_maxnum</em> parameter specifies the number of elements of the vectors above. In other words, it tells the fetchgroup the maximum number of instances which are expected. The optional <em>out_num</em> parameter specifies an integer where the the actual number of instances should later be stored. It will range between zero and <em>out_maxnum</em>. It is initialized to zero by this function.</p>
+<p class='spacer'>
+
+<p>Finally, the optional <em>out_sts</em> parameter specifies a single location where an integer status code for the overall fetch for this metric should be stored. Normally, this will be zero, even if no event field values were found (<em>out_num</em> would then be zero). Other than a severe fetch error, one may see a <strong>PM_ERR_TOOBIG</strong> here if the number of fields actually encountered was larger than <em>out_maxnum</em>.</p>
+<p class='spacer'>
+
+<p>Any errors subsequently encountered during fetching, unit/scale conversion, or casting, will result in the assignment of a sentinel value to the appropriate output <strong>pmAtomValue</strong> (see the ``UNUSUAL SITUATIONS'' section below). In addition, if the optional <em>out_stss</em> parameter was specified, a PMAPI error code will be stored in the appropriate position.</p>
+<p class='spacer'>
+
+<p>As a review, only the <em>pmfg</em>, <em>metric</em>, <em>field</em>, <em>out_type</em>, and <em>out_maxnum</em> parameters are mandatory. Others may be NULL to indicate applicaton disinterest.</p>
+<p class='spacer'>
+
+<p>The normal function return code is zero. This function may fail in case of various lookup, type- and conversion- checking errors. Those are indicated with a negative return code.</p>
+  <h3>Extending a fetchgroup with the fetch timestamp</h3>
+<p class='spacer'>
+
+<p>int pmExtendFetchGroup_timestamp(pmFG <em>pmfg</em>, struct timeval *<em>out_value</em>);</p>
+<p class='spacer'>
+
+<p>This function registers interest in the <strong>pmResult</strong> timestamp. If the <em>out_value</em> pointer is non-NULL, at every future <strong>pmFetchGroup</strong> call, the corresponding result timestamp will be copied there.</p>
+  <h3>Fetching all metrics in a fetchgroup</h3>
+<p class='spacer'>
+
+<p>int pmFetchGroup(pmFG <em>pmfg</em>);</p>
+<p class='spacer'>
+
+<p>This function performs one <strong>pmFetch</strong> on its private PMAPI context, including all the metrics that were registered via prior <strong>pmExtendFetchGroup_*</strong> calls. It runs all the data extraction and conversion operations necessary to populate all the requested output variables.</p>
+<p class='spacer'>
+
+<p>The normal function return code is zero or positive, as per the underlying <strong>pmFetch</strong> function. This function may fail in case of severe fetch errors, which are indicated with a negative return code.</p>
+<p class='spacer'>
+
+<p>In the case of per-metric availability or conversion errors, or severe fetch errors, output variables are reset to sentinel values and individual error codes are set. <em>PM_ERR_AGAIN</em> signals rate-conversion failure due to lack of a previous value.</p>
+<p class='spacer'>
+
+<p>However, temporarily absent metrics with discrete semantics are exempt from some sentinel/error processing: if a <strong>pmFetchGroup</strong> fails to collect a result for a discrete metric (pmResult pmValueSet.numval==0), then the last seen valid value (if any) is retained. This is intended to ease the processing of sets of archives with a mixture of once- and repeatedly-sampled metrics.</p>
+<p class='spacer'>
+
+  <h3>Destroying a fetchgroup</h3>
+<pre>int pmDestroyFetchGroup(pmFG <em>pmfg</em>);</pre>
+
+<p class='spacer'>
+
+<p>When the fetchgroup is no longer needed, it may be explicitly freed with this function. It releases any dynamically stored state, as well as the private PMAPI context. It clears frees any pointers such as indom instance names or strings that may have been stored in output variables.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>The following program demonstrates fetchgroup usage. Run it with different $PCP_DISK_UNITS environment variables to see different unit/rate conversion in effect.</p>
+<p class='spacer'>
+
+<pre>#include &lt;pcp/pmapi.h&gt;
+#include &lt;stdio.h&gt;
+
+#define pcpassert(sts) &#92;
+    while (sts&lt;0) { fprintf(stderr, "%s&#92;n", pmErrStr(sts)); exit(42); }
+
+int main()
+{
+    pmFG fg;
+    pmAtomValue v, v2;
+    enum { v3_maxnum = 100 };
+    pmAtomValue v3_values[v3_maxnum];
+    char *v3_names[v3_maxnum];
+    int v3_stss[v3_maxnum];
+    unsigned int v3_num;
+    int sts, i;
+    char *diskunits = getenv("PCP_DISK_UNITS");
+    struct timeval t;
+
+    sts = pmCreateFetchGroup(&fg, PM_CONTEXT_HOST, "local:");
+    pcpassert(sts);
+    sts = pmExtendFetchGroup_item(fg, "kernel.all.load", "1 minute",
+                                  NULL, &v, PM_TYPE_FLOAT, NULL);
+    pcpassert(sts);
+    sts = pmExtendFetchGroup_item(fg, "kernel.all.idletime", NULL,
+                                  "hour", &v2, PM_TYPE_DOUBLE, NULL);
+    pcpassert(sts);
+    sts = pmExtendFetchGroup_indom(fg, "disk.dev.total", diskunits,
+                                   NULL, v3_names,
+                                   v3_values, PM_TYPE_STRING,
+                                   v3_stss, v3_maxnum, &v3_num, NULL);
+    pcpassert(sts);
+    sts = pmExtendFetchGroup_timestamp(fg, &t);
+    pcpassert(sts);
+
+    for (i=0; i &lt; 10; i++) {
+        unsigned int j;
+        char stamp[28];
+
+        sts = pmFetchGroup(fg);
+        pcpassert(sts);
+        printf("%s", pmCtime(&t.tv_sec, stamp));
+        printf("1-minute load: %f; idletime: %f h&#92;n", v.f, v2.d);
+        for (j=0; j &lt; v3_num; j++) {
+            if (v3_stss[j] == 0)
+                 printf("disk %s i/o operations (%s): %s&#92;n",
+                        v3_names[j] ? v3_names[j] : "?",
+                        diskunits ? diskunits : "-",
+                        v3_values[j].cp);
+        }
+        <a href="../man1/sleep.1.html"><strong>sleep</strong>(1)</a>;
+    }
+
+    sts = pmDestroyFetchGroup(fg);
+    pcpassert(sts);
+    return 0;
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">UNUSUAL SITUATIONS</h2>
+        <div class="sectioncontent">
+
+<p>The fetchgroup API supports only the numeric, string and event metric types. Aggregates are rejected during <strong>pmExtendFetchGroup_*</strong>.</p>
+<p class='spacer'>
+
+<p>Any strings supplied by the fetchgroup API to the application are "owned" by the API. The application should consider them read-only, so it should not modify them nor <strong>free</strong> them.</p>
+<p class='spacer'>
+
+<p>Error codes are always negative integers, whether returned from fetchgroup functions as return value, or stored in <em>out_sts</em> type variables. Normal result codes are always zero.</p>
+<p class='spacer'>
+
+<p>Because of the unique ways in which extracted data is shared between the application and a fetchgroup, the functions in this API are <em>not protected</em> by the multi-threading mutexes conventional in other parts of PMAPI. Specifically, for any given <strong>pmFG</strong>, it is <em>not safe</em> to concurrently call two or more fetchgroup API functions, nor to traverse the registered output variables while calling one of the functions. Instead, the calling application must ensure that only one thread at a time uses these calls <em>and</em> the registered output variables. On the other hand, concurrency between different <strong>pmFG</strong> instances is unrestricted, because they share no global data.</p>
+<p class='spacer'>
+
+<p>Any pointers passed to a successful <strong>pmFetchGroupExtent_*</strong> call must stay valid throughout the lifetime of the fetchgroup, since future <strong>pmFetchGroup</strong> calls may write into them.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+
+<p>The fetchgroup API offers several options for collecting diagnostics. Negative integer error codes may be returned from each function for serious conditions.</p>
+<p class='spacer'>
+
+<p>In addition, each output pmAtomValue may have a corresponding integer variable, where <strong>pmFetchGroup</strong> can store per-metric per-instance error codes.</p>
+<p class='spacer'>
+
+<p>As an alternative, per-metric per-instance error conditions are also signalled by setting the corresponding pmAtomValue to a sentinel value. If unambiguous and precise error detection is not required, this may be sufficient. The sentinel value is negative one for all integers (including unsigned integers - i.e. all bits are set), <strong>NaN</strong> for floating point types, a NULL pointer for strings, and 0.0s for the timestamp. The fetchgroup API guarantees that once an output pmAtomValue is registered (during a successful <strong>pmExtendFetchGroup_*</strong> call), it will be cleared to the sentinel value or to a valid converted metric value, from the time of registration until the <strong>pmDestroyFetchGroup</strong> call.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>PMAPI</strong>(3), <strong>pmLookupName</strong>(3), <strong>pmFetch</strong>(3), <strong>pmParseUnitsStr</strong>(3), <strong>pmUseContext</strong>(3), <strong>pmRegisterDerived</strong>(3) and <strong>pmExtractValue</strong>(3).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmfetcharchive.3.html"><span aria-hidden="true">&larr;</span> pmfetcharchive.3: get performance metrics directly from a set if archive logs</a></li>
+   <li class="next"><a href="pmfreeeventresult.3.html">pmfreeeventresult.3: release storage allocated for unpacked event records <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

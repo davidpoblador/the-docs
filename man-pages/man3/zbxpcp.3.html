@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>zbxpcp - Zabbix Agent Loadable PCP Module</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Zabbix agent loadable pcp module">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">zbxpcp<small> (3)</small></h1>
+        <p class="lead">Zabbix agent loadable pcp module</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/zbxpcp.3.html"><span itemprop="title">zbxpcp</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>zbxpcp</strong> loadable module extends Zabbix agent by making Performance Co-Pilot (PCP) metrics available to it. With the <strong>zbxpcp</strong> module configured in <em>zabbix_agentd.conf</em> all the PCP metrics are available from the Zabbix agent like any other agent items. As a loadable module (DSO) <strong>zbxpcp</strong> does not rely on any external programs but directly uses the PCP APIs to fetch PCP metrics when requested.</p>
+<p class='spacer'>
+
+<p>A typical Linux PCP installation offers over 1,000 metrics by default and is in turn extensible with its own plugins, or PMDAs (``Performance Metrics Domain Agents''). In addition to very complete <em>/proc</em> based statistics, readily available PCP PMDAs provide support for such system and application level components as 389 Directory Server, Apache, containers, GFS2, Gluster, KVM, MySQL, NFS, Oracle, Postfix, PostgreSQL, Samba, and Sendmail, among others. PCP also runs on many platforms, including Linux, Mac OS X, FreeBSD, NetBSD, Solaris, and Windows.</p>
+<p class='spacer'>
+
+<p>For PCP introduction, see <strong>PCPIntro</strong>(1). To investigate the available PCP metrics, use for example <a href="../man1/pminfo.1.html"><strong>pminfo</strong>(1)</a>. The <em>PCP Quick Reference Guide</em> is available at the PCP home page http://pcp.io/.</p>
+<p class='spacer'>
+
+<p>For general information about Zabbix data collection and loadable modules, see https://www.zabbix.com/documentation/3.0/manual/config/items. For Zabbix introduction and downloads, see http://www.zabbix.com/.</p>
+<p class='spacer'>
+
+<p><strong>zbxpcp</strong> is compatible with the Zabbix module API version <strong>1</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFIGURATION</h2>
+        <div class="sectioncontent">
+
+<p>First make sure PCP is installed and configured properly, see the above references for instructions and use for example <a href="../man1/pminfo.1.html"><strong>pminfo</strong>(1)</a> to make sure the PCP metrics can be fetched. To enable the <strong>zbxpcp</strong> loadable module in a Zabbix agent, the following lines must be added to the Zabbix agent configuration file <em>zabbix_agentd.conf</em> (make sure to use the correct <em>LoadModulePath</em>):</p>
+<p class='spacer'>
+
+<pre>LoadModulePath=/usr/lib64/zabbix/agent/
+LoadModule=zbxpcp.so</pre>
+
+<p class='spacer'>
+
+<p>After restarting the Zabbix agent all the PCP metrics will be available with the `` .BR pcp. '' prefix like all the other agent items. This can be verified with the commands:</p>
+<p class='spacer'>
+
+<pre>$ pminfo -t
+$ zabbix_agentd -p
+$ pminfo -f kernel.all.sysfork
+$ zabbix_get -s 127.0.0.1 -p 10050 -k pcp.kernel.all.sysfork</pre>
+
+<p class='spacer'>
+
+<p>Then to collect PCP metrics from Zabbix agents, the Zabbix server side configuration is as usual (see Zabbix documentation if needed).</p>
+<p class='spacer'>
+
+<p>The PCP <strong>pmcd</strong> service must always be running when starting up a <strong>zbxpcp</strong> enabled Zabbix agent, otherwise the module will fail to load and the PCP metrics will not become available. Special care must be taken to make sure this happens also when rebooting the system.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>/etc/zabbix/zabbix_agentd.conf</strong></dt>
+    <dd>
+  <p>Typical Zabbix agent configuration file location.</p>
+    </dd>
+    <dt><strong>/etc/zabbix/zbxpcp-derived-metrics.conf</strong></dt>
+    <dd>
+  <p>Optional PCP derived metrics configuration file for <strong>zbxpcp</strong>. See <strong>pmLoadDerivedConfig</strong>(3) for more info on derived metrics.</p>
+    </dd>
+    <dt><strong>$(PCP_LIB_DIR)/zabbix/agent/zbxpcp.so</strong></dt>
+    <dd>
+  <p>Zabbix agent loadable PCP module.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>PCPIntro</strong>(1), <a href="../man1/pminfo.1.html"><strong>pminfo</strong>(1)</a>, <a href="../man1/pmrep.1.html"><strong>pmrep</strong>(1)</a>, <strong>zabbix_get</strong>(1), <strong>pmLoadDerivedConfig</strong>(3) and <strong>zabbix_agentd</strong>(8).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="ynl.3.html"><span aria-hidden="true">&larr;</span> ynl.3: Bessel functions of the second kind</a></li>
+   <li class="next"><a href="zlib.3.html">zlib.3: compression/decompression library <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

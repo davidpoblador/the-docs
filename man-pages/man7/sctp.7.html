@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sctp - SCTP protocol.</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Sctp protocol.">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">sctp<small> (7)</small></h1>
+        <p class="lead">Sctp protocol.</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/"><span itemprop="title">Miscellaneous</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man7/sctp.7.html"><span itemprop="title">sctp</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;sys/socket.h&gt;</strong>
+<strong>#include &lt;netinet/in.h&gt;</strong>
+<strong>#include &lt;netinet/sctp.h&gt;</strong>
+
+<strong>sctp_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_SCTP);</strong>
+<strong>sctp_socket = socket(PF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>This is an implementation of the SCTP protocol as defined in RFC2960 and RFC3309. It is a message oriented, reliable transport protocol with direct support for multihoming that runs on top of <strong>ip</strong>(7), and supports both v4 and v6 versions.</p>
+<p class='spacer'>
+
+<p>Like TCP, SCTP provides reliable, connection oriented data delivery with congestion control. Unlike TCP, SCTP also provides message boundary preservation, ordered and unordered message delivery, multi-streaming and multi-homing. Detection of data corruption, loss of data and duplication of data is achieved by using checksums and sequence numbers. A selective retransmission mechanism is applied to correct loss or corruption of data.</p>
+<p class='spacer'>
+
+<p>This implementation supports a mapping of SCTP into sockets API as defined in the draft-ietf-tsvwg-sctpsocket-10.txt(Sockets API extensions for SCTP). Two styles of interfaces are supported.</p>
+<p class='spacer'>
+
+<p>A <strong>one-to-many</strong> style interface with 1 to MANY relationship between socket and associations where the outbound association setup is implicit. The syntax of a one-to-many style socket() call is</p>
+<p class='spacer'>
+
+<p><strong>sd = socket(PF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);</strong></p>
+<p class='spacer'>
+
+<p>A typical server in this style uses the following socket calls in sequence to prepare an endpoint for servicing requests.</p>
+<p class='spacer'>
+
+<pre>     1. socket()
+     2. bind()
+     3. listen()
+     4. recvmsg()
+     5. sendmsg()
+     6. close()</pre>
+
+<p class='spacer'>
+
+<p>A typical client uses the following calls in sequence to setup an association with a server to request services.</p>
+<p class='spacer'>
+
+<pre>     1. socket()
+     2. sendmsg()
+     3. recvmsg()
+     4. close()</pre>
+
+<p class='spacer'>
+
+<p>A <strong>one-to-one style</strong> interface with a 1 to 1 relationship between socket and association which enables existing TCP applications to be ported to SCTP with very little effort. The syntax of a one-to-one style socket() call is</p>
+<p class='spacer'>
+
+<p><strong>sd = socket(PF_INET, SOCK_STREAM, IPPROTO_SCTP);</strong></p>
+<p class='spacer'>
+
+<p>A typical server in one-to-one style uses the following system call sequence to prepare an SCTP endpoint for servicing requests:</p>
+<p class='spacer'>
+
+<pre>     1. socket()
+     2. bind()
+     3. listen()
+     4. accept()</pre>
+
+<p class='spacer'>
+
+<p>The accept() call blocks until a new association is set up. It returns with a new socket descriptor. The server then uses the new socket descriptor to communicate with the client, using recv() and send() calls to get requests and send back responses. Then it calls</p>
+<p class='spacer'>
+
+<pre>     5. close()</pre>
+
+<p class='spacer'>
+
+<p>to terminate the association. A typical client uses the following system call sequence to setup an association with a server to request services:</p>
+<p class='spacer'>
+
+<pre>     1. socket()
+     2. connect()</pre>
+
+<p class='spacer'>
+
+<p>After returning from connect(), the client uses send() and recv() calls to send out requests and receive responses from the server. The client calls</p>
+<p class='spacer'>
+
+<pre>     3. close()</pre>
+
+<p class='spacer'>
+
+<p>to terminate this association when done.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ADDRESS FORMATS</h2>
+        <div class="sectioncontent">
+
+<p>SCTP is built on top of IP (see <strong>ip</strong>(7)). The address formats defined by <strong>ip</strong>(7) apply to SCTP.  SCTP only supports point-to-point communication; broadcasting and multicasting are not supported.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYSCTLS</h2>
+        <div class="sectioncontent">
+
+  <p>These variables can be accessed by the <strong>/proc/sys/net/sctp/*</strong> files or with the <a href="../man2/sysctl.2.html"><strong>sysctl</strong>(2)</a> interface.  In addition, most IP sysctls also apply to SCTP. See <strong>ip</strong>(7).</p>
+  <dl class='dl-vertical'>
+    <dt>Please check kernel documentation for this, at Documentation/networking/ip-sysctl.txt.</dt>
+    <dd>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">STATISTICS</h2>
+        <div class="sectioncontent">
+
+  <p>These variables can be accessed by the <strong>/proc/net/sctp/*</strong> files.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>assocs</strong></dt>
+    <dd>
+  <p>Displays the following information about the active associations. assoc ptr, sock ptr, socket style, sock state, association state, hash bucket, association id, bytes in transmit queue, bytes in receive queue, user id, inode, local port, remote port, local addresses and remote addresses.</p>
+    </dd>
+    <dt><strong>eps</strong></dt>
+    <dd>
+  <p>Displays the following information about the active endpoints. endpoint ptr, sock ptr, socket style, sock state, hash bucket, local port, user id, inode and local addresses.</p>
+    </dd>
+    <dt><strong>snmp</strong></dt>
+    <dd>
+  <p>Displays the following statistics related to SCTP states, packets and chunks.</p>
+    </dd>
+    </dd>
+    <dt><strong>SctpCurrEstab</strong></dt>
+    <dd>
+  <p>The number of associations for which the current state is either ESTABLISHED, SHUTDOWN-RECEIVED or SHUTDOWN-PENDING.</p>
+    </dd>
+    <dt><strong>SctpActiveEstabs</strong></dt>
+    <dd>
+  <p>The number of times that associations have made a direct transition to the ESTABLISHED state from the COOKIE-ECHOED state. The upper layer initiated the association attempt.</p>
+    </dd>
+    <dt><strong>SctpPassiveEstabs</strong></dt>
+    <dd>
+  <p>The number of times that associations have made a direct transition to the ESTABLISHED state from the CLOSED state. The remote endpoint initiated the association attempt.</p>
+    </dd>
+    <dt><strong>SctpAborteds</strong></dt>
+    <dd>
+  <p>The number of times that associations have made a direct transition to the CLOSED state from any state using the primitive 'ABORT'. Ungraceful termination of the association.</p>
+    </dd>
+    <dt><strong>SctpShutdowns</strong></dt>
+    <dd>
+  <p>The number of times that associations have made a direct transition to the CLOSED state from either the SHUTDOWN-SENT state or the SHUTDOWN-ACK-SENT state. Graceful termination of the association.</p>
+    </dd>
+    <dt><strong>SctpOutOfBlues</strong></dt>
+    <dd>
+  <p>The number of out of the blue packets received by the host. An out of the blue packet is an SCTP packet correctly formed, including the proper checksum, but for which the receiver was unable to identify an appropriate association.</p>
+    </dd>
+    <dt><strong>SctpChecksumErrors</strong></dt>
+    <dd>
+  <p>The number of SCTP packets received with an invalid checksum.</p>
+    </dd>
+    <dt><strong>SctpOutCtrlChunks</strong></dt>
+    <dd>
+  <p>The number of SCTP control chunks sent (retransmissions are not included). Control chunks are those chunks different from DATA.</p>
+    </dd>
+    <dt><strong>SctpOutOrderChunks</strong></dt>
+    <dd>
+  <p>The number of SCTP ordered data chunks sent (retransmissions are not included).</p>
+    </dd>
+    <dt><strong>SctpOutUnorderChunks</strong></dt>
+    <dd>
+  <p>The number of SCTP unordered chunks(data chunks in which the U bit is set to 1) sent (retransmissions are not included).</p>
+    </dd>
+    <dt><strong>SctpInCtrlChunks</strong></dt>
+    <dd>
+  <p>The number of SCTP control chunks received (no duplicate chunks included).</p>
+    </dd>
+    <dt><strong>SctpInOrderChunks</strong></dt>
+    <dd>
+  <p>The number of SCTP ordered data chunks received (no duplicate chunks included).</p>
+    </dd>
+    <dt><strong>SctpInUnorderChunks</strong></dt>
+    <dd>
+  <p>The number of SCTP unordered chunks(data chunks in which the U bit is set to 1) received (no duplicate chunks included).</p>
+    </dd>
+    <dt><strong>SctpFragUsrMsgs</strong></dt>
+    <dd>
+  <p>The number of user messages that have to be fragmented because of the MTU.</p>
+    </dd>
+    <dt><strong>SctpReasmUsrMsgs</strong></dt>
+    <dd>
+  <p>The number of user messages reassembled, after conversion into DATA chunks.</p>
+    </dd>
+    <dt><strong>SctpOutSCTPPacks</strong></dt>
+    <dd>
+  <p>The number of SCTP packets sent. Retransmitted DATA chunks are included.</p>
+    </dd>
+    <dt><strong>SctpInSCTPPacks</strong></dt>
+    <dd>
+  <p>The number of SCTP packets received. Duplicates are included.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SOCKET OPTIONS</h2>
+        <div class="sectioncontent">
+
+  <p>To set or get a SCTP socket option, call <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> to read or <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> to write the option with the option level argument set to <strong>SOL_SCTP.</strong></p>
+  <dl class='dl-vertical'>
+    <dt><strong>SCTP_RTOINFO.</strong></dt>
+    <dd>
+  <p>This option is used to get or set the protocol parameters used to initialize and bound retransmission timout(RTO). The structure sctp_rtoinfo defined in /usr/include/netinet/sctp.h is used to access and modify these parameters.</p>
+    </dd>
+    <dt><strong>SCTP_ASSOCINFO</strong></dt>
+    <dd>
+  <p>This option is used to both examine and set various association and endpoint parameters. The sturcture sctp_assocparams defined in /usr/include/netinet/sctp.h is used to access and modify these parameters.</p>
+    </dd>
+    <dt><strong>SCTP_INITMSG</strong></dt>
+    <dd>
+  <p>This option is used to get or set the protocol parameters for the default association initialization. The structure sctp_initmsg defined in /usr/include/netinet/sctp.h is used to access and modify these parameters.</p>
+<p class='spacer'>
+
+  <p>Setting initialization parameters is effective only on an unconnected socket (for one-to-many style sockets only future associations are effected by the change). With one-to-one style sockets, this option is inherited by sockets derived from a listener socket.</p>
+    </dd>
+    <dt><strong>SCTP_NODELAY</strong></dt>
+    <dd>
+  <p>Turn on/off any Nagle-like algorithm. This means that packets are generally sent as soon as possible and no unnecessary delays are introduced, at the cost of more packets in the network.  Expects an integer boolean flag.</p>
+    </dd>
+    <dt><strong>SCTP_AUTOCLOSE</strong></dt>
+    <dd>
+  <p>This socket option is applicable to the one-to-many style socket only. When set it will cause associations that are idle for more than the specified number of seconds to automatically close. An association being idle is defined an association that has NOT sent or received user data. The special value of 0 indicates that no automatic close of any associations should be performed. The option expects an integer defining the number of seconds of idle time before an association is closed.</p>
+    </dd>
+    <dt><strong>SCTP_SET_PEER_PRIMARY_ADDR</strong></dt>
+    <dd>
+  <p>Requests that the peer mark the enclosed address as the association primary. The enclosed address must be one of the association's locally bound addresses. The structure sctp_setpeerprim defined in /usr/include/netinet/sctp.h is used to make a set peer primary request.</p>
+    </dd>
+    <dt><strong>SCTP_PRIMARY_ADDR</strong></dt>
+    <dd>
+  <p>Requests that the local SCTP stack use the enclosed peer address as the association primary. The enclosed address must be one of the association peer's addresses. The structure sctp_prim defined in /usr/include/netinet/sctp.h is used to make a get/set primary request.</p>
+    </dd>
+    <dt><strong>SCTP_DISABLE_FRAGMENTS</strong></dt>
+    <dd>
+  <p>This option is a on/off flag and is passed an integer where a non-zero is on and a zero is off. If enabled no SCTP message fragmentation will be performed. Instead if a message being sent exceeds the current PMTU size, the message will NOT be sent and an error will be indicated to the user.</p>
+    </dd>
+    <dt><strong>SCTP_PEER_ADDR_PARAMS</strong></dt>
+    <dd>
+  <p>Using this option, applications can enable or disable heartbeats for any peer address of an association, modify an address's heartbeat interval, force a heartbeat to be sent immediately, and adjust the address's maximum number of retransmissions sent before an address is considered unreachable. The structure sctp_paddrparams defined in /usr/include/netinet/sctp.h is used to access and modify an address's parameters.</p>
+    </dd>
+    <dt><strong>SCTP_DEFAULT_SEND_PARAM</strong></dt>
+    <dd>
+  <p>Applications that wish to use the sendto() system call may wish to specify a default set of parameters that would normally be supplied through the inclusion of ancillary data. This socket option allows such an application to set the default sctp_sndrcvinfo structure. The application that wishes to use this socket option simply passes in to this call the sctp_sndrcvinfo structure defined in /usr/include/netinet/sctp.h. The input parameters accepted by this call include sinfo_stream, sinfo_flags, sinfo_ppid, sinfo_context, sinfo_timetolive. The user must set the sinfo_assoc_id field to identify the</p>
+<pre> association to affect if the caller is using the one-to-many style.</pre>
+
+    </dd>
+    <dt><strong>SCTP_EVENTS</strong></dt>
+    <dd>
+  <p>This socket option is used to specify various notifications and ancillary data the user wishes to receive. The structure sctp_event_subscribe defined in /usr/include/netinet/sctp.h is used to access or modify the events of interest to the user.</p>
+    </dd>
+    <dt><strong>SCTP_I_WANT_MAPPED_V4_ADDR</strong></dt>
+    <dd>
+  <p>This socket option is a boolean flag which turns on or off mapped V4 addresses. If this option is turned on and the socket is type PF_INET6, then IPv4 addresses will be mapped to V6 representation. If this option is turned off, then no mapping will be done of V4 addresses and a user will receive both PF_INET6 and PF_INET type addresses on the socket.</p>
+<p class='spacer'>
+
+  <p>By default this option is turned on and expects an integer to be passed where non-zero turns on the option and zero turns off the option.</p>
+    </dd>
+    <dt><strong>SCTP_MAXSEG</strong></dt>
+    <dd>
+  <p>This socket option specifies the maximum size to put in any outgoing SCTP DATA chunk. If a message is larger than this size it will be fragmented by SCTP into the specified size. Note that the underlying SCTP implementation may fragment into smaller sized chunks when the PMTU of the underlying association is smaller than the value set by the user. The option expects an integer.</p>
+<p class='spacer'>
+
+  <p>The default value for this option is 0 which indicates the user is NOT limiting fragmentation and only the PMTU will effect SCTP's choice of DATA chunk size.</p>
+    </dd>
+    <dt><strong>SCTP_STATUS</strong></dt>
+    <dd>
+  <p>Applications can retrieve current status information about an association, including association state, peer receiver window size, number of unacked data chunks, and number of data chunks pending receipt.  This information is read-only.  The structure sctp_status defined in /usr/include/netinet/sctp.h is used to access this information.</p>
+    </dd>
+    <dt><strong>SCTP_GET_PEER_ADDR_INFO</strong></dt>
+    <dd>
+  <p>Applications can retrieve information about a specific peer address of an association, including its reachability state, congestion window, and retransmission timer values.  This information is read-only. The structure sctp_paddr_info defined in /usr/include/netinet/sctp.h is used to access this information.</p>
+    </dd>
+    <dt><strong>SCTP_GET_ASSOC_STATS</strong></dt>
+    <dd>
+  <p>Applications can retrieve current statistics about an association, including SACKs sent and received, SCTP packets sent and received. The complete list can be found in /usr/include/netinet/sctp.h in struct sctp_assoc_stats.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+
+<p>Sridhar Samudrala &lt;sri@us.ibm.com&gt;</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>, <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <strong>ip</strong>(7), <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a>, <a href="../man2/listen.2.html"><strong>listen</strong>(2)</a>, <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>, <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a>, <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a>, <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/sysctl.2.html"><strong>sysctl</strong>(2)</a>, <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a>, <a href="../man3/sctp_bindx.3.html"><strong>sctp_bindx</strong>(3)</a>, <a href="../man3/sctp_connectx.3.html"><strong>sctp_connectx</strong>(3)</a>, <a href="../man3/sctp_sendmsg.3.html"><strong>sctp_sendmsg</strong>(3)</a>, <a href="../man3/sctp_send.3.html"><strong>sctp_send</strong>(3)</a>, <a href="../man3/sctp_recvmsg.3.html"><strong>sctp_recvmsg</strong>(3)</a>, <a href="../man3/sctp_peeloff.3.html"><strong>sctp_peeloff</strong>(3)</a>, <a href="../man3/sctp_getladdrs.3.html"><strong>sctp_getladdrs</strong>(3)</a>, <a href="../man3/sctp_getpaddrs.3.html"><strong>sctp_getpaddrs</strong>(3)</a>, <a href="../man3/sctp_opt_info.3.html"><strong>sctp_opt_info</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p>RFC2960, RFC3309 for the SCTP specification.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="sched.7.html"><span aria-hidden="true">&larr;</span> sched.7: overview of scheduling APIs</a></li>
+   <li class="next"><a href="sem_overview.7.html">sem_overview.7: overview of POSIX semaphores <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

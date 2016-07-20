@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>nfs4_acl - NFSv4 Access Control Lists</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Nfsv4 access control lists">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">nfs4_acl<small> (5)</small></h1>
+        <p class="lead">Nfsv4 access control lists</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/nfs4_acl.5.html"><span itemprop="title">nfs4_acl</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>An ACL is a list of permissions associated with a file or directory and consists of one or more Access Control Entries (ACEs).  NFSv4 ACLs provide finer granularity than typical POSIX read/write/execute permissions and are similar to CIFS ACLs.</p>
+<p class='spacer'>
+
+    <p>A sample NFSv4 file ACL might look like the following (see the <strong>ACL FORMAT</strong> section for detailed information):</p>
+<pre>
+A::OWNER@:rwatTnNcCy
+A::alice@nfsdomain.org:rxtncy
+A::bob@nfsdomain.org:rwadtTnNcCy
+A:g:GROUP@:rtncy
+D:g:GROUP@:waxTC
+A::EVERYONE@:rtncy
+D::EVERYONE@:waxTC</pre>
+
+<p class='spacer'>
+
+  <p>Some observations:</p>
+  <dl class='dl-horizontal'>
+    <dt>-</dt>
+    <dd>
+  <p>In the example output above, the user `alice@nfsdomain.org' has the equivalent of "read" and "execute" permissions, `bob@nfsdomain.org' has "read" and "write", and both `GROUP@' and `EVERYONE@' have "read".</p>
+    </dd>
+    <dt>-</dt>
+    <dd>
+  <p>NFSv4 ACLs are "default-deny"; that is, if a permission is not explicitly granted by an Allow ACE, it is denied.  Because of this, the two Deny ACEs above are superfluous and could be excluded by the server.  See the <strong>A WARNING ABOUT DENY ACES</strong> section for more information.</p>
+    </dd>
+    <dt>-</dt>
+    <dd>
+  <p>NFSv4 servers may return an ACL slightly different than one you set.  For example, a server that always allows reading the attributes of a file may silently turn on the read-attributes <em>permission</em>, and a server that does not support separate write-data and append-data <em>permissions</em>, e.g., may choose to turn off both if you set only one.  In extreme cases the server may also reorder or combine ACEs.  As a general rule, however, servers will attempt to ensure that the ACLs they return are no more permissive than the ones you set.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ACL FORMAT</h2>
+        <div class="sectioncontent">
+
+<p>An NFSv4 ACL is written as an <em>acl_spec</em>, which is a comma- or tab-delimited string consisting of one or more <em>ace_specs</em>. A single NFSv4 ACE is written as an <em>ace_spec</em>, which is a colon-delimited, 4-field string in the following format:</p>
+<p class='spacer'>
+
+<p><em>type</em>:<em>flags</em>:<em>principal</em>:<em>permissions</em></p>
+  <h3>ACE TYPES:</h3>
+  <p>There are four <em>types</em> of ACEs, each represented by a single character.  An ACE must have exactly one <em>type</em>.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>A</strong></dt>
+    <dd>
+  <p>Allow - allow <em>principal</em> to perform actions requiring <em>permissions</em>.</p>
+    </dd>
+    <dt><strong>D</strong></dt>
+    <dd>
+  <p>Deny - prevent <em>principal</em> from performing actions requiring <em>permissions</em>.</p>
+    </dd>
+    <dt><strong>U</strong></dt>
+    <dd>
+  <p>Audit - log any attempted access by <em>principal</em> which requires <em>permissions</em>. Requires one or both of the successful-access and failed-access <em>flags</em>. System-dependent; not supported by all servers.</p>
+    </dd>
+    <dt><strong>L</strong></dt>
+    <dd>
+  <p>Alarm - generate a system alarm at any attempted access by <em>principal</em> which requires <em>permissions</em>. Requires one or both of the successful-access and failed-access <em>flags</em>. System-dependent; not supported by all servers.</p>
+    </dd>
+  </dl>
+  <h3>ACE FLAGS:</h3>
+<p>There are three kinds of ACE <em>flags</em>: group, inheritance, and administrative.  An Allow or Deny ACE may contain zero or more <em>flags</em>, while an Audit or Alarm ACE must contain at least one of the successful-access and failed-access <em>flags</em>.</p>
+<p class='spacer'>
+
+  <p>Note that ACEs are inherited from the parent directory's ACL at the time a file or subdirectory is created.  Accordingly, inheritance flags can be used only in ACEs in a directory's ACL (and are therefore stripped from inherited ACEs in a new file's ACL).  Please see the <strong>INHERITANCE FLAGS COMMENTARY</strong> section for more information.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>GROUP FLAG</strong> - can be used in any ACE</dt>
+    <dd>
+    </dd>
+    <dt><strong>g</strong></dt>
+    <dd>
+  <p>group - indicates that <em>principal</em> represents a group instead of a user.</p>
+    </dd>
+    <dt><strong>INHERITANCE FLAGS</strong> - can be used in any directory ACE</dt>
+    <dd>
+    </dd>
+    <dt><strong>d</strong></dt>
+    <dd>
+  <p>directory-inherit - newly-created subdirectories will inherit the ACE.</p>
+    </dd>
+    <dt><strong>f</strong></dt>
+    <dd>
+  <p>file-inherit - newly-created files will inherit the ACE, minus its inheritance <em>flags</em>. Newly-created subdirectories will inherit the ACE; if directory-inherit is not also specified in the parent ACE, inherit-only will be added to the inherited ACE.</p>
+    </dd>
+    <dt><strong>n</strong></dt>
+    <dd>
+  <p>no-propagate-inherit - newly-created subdirectories will inherit the ACE, minus its inheritance <em>flags</em>.</p>
+    </dd>
+    <dt><strong>i</strong></dt>
+    <dd>
+  <p>inherit-only - the ACE is not considered in permissions checks, but it is heritable; however, the inherit-only <em>flag</em> is stripped from inherited ACEs.</p>
+    </dd>
+    <dt><strong>ADMINISTRATIVE FLAGS</strong> - can be used in <strong>Audit</strong> and <strong>Alarm</strong> ACEs</dt>
+    <dd>
+    </dd>
+    <dt><strong>S</strong></dt>
+    <dd>
+  <p>successful-access - trigger an alarm/audit when <em>principal</em> is allowed to perform an action covered by <em>permissions</em>.</p>
+    </dd>
+    <dt><strong>F</strong></dt>
+    <dd>
+  <p>failed-access - trigger an alarm/audit when <em>principal</em> is prevented from performing an action covered by <em>permissions</em>.</p>
+    </dd>
+  </dl>
+  <h3>ACE PRINCIPALS:</h3>
+<p>A <em>principal</em> is either a named user (e.g., `myuser@nfsdomain.org') or group (provided the group <em>flag</em> is also set), or one of three special <em>principals</em>: `OWNER@', `GROUP@', and `EVERYONE@', which are, respectively, analogous to the POSIX user/group/other distinctions used in, e.g., <a href="../man1/chmod.1.html"><strong>chmod</strong>(1)</a>.</p>
+  <h3>ACE PERMISSIONS:</h3>
+  <p>There are a variety of different ACE <em>permissions</em> (13 for files, 14 for directories), each represented by a single character. An ACE should have one or more of the following <em>permissions</em> specified:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>r</strong></dt>
+    <dd>
+  <p>read-data (files) / list-directory (directories)</p>
+    </dd>
+    <dt><strong>w</strong></dt>
+    <dd>
+  <p>write-data (files) / create-file (directories)</p>
+    </dd>
+    <dt><strong>a</strong></dt>
+    <dd>
+  <p>append-data (files) / create-subdirectory (directories)</p>
+    </dd>
+    <dt><strong>x</strong></dt>
+    <dd>
+  <p>execute (files) / change-directory (directories)</p>
+    </dd>
+    <dt><strong>d</strong></dt>
+    <dd>
+  <p>delete - delete the file/directory.  Some servers will allow a delete to occur if either this <em>permission</em> is set in the file/directory or if the delete-child <em>permission</em> is set in its parent directory.</p>
+    </dd>
+    <dt><strong>D</strong></dt>
+    <dd>
+  <p>delete-child - remove a file or subdirectory from within the given directory (directories only)</p>
+    </dd>
+    <dt><strong>t</strong></dt>
+    <dd>
+  <p>read-attributes - read the attributes of the file/directory.</p>
+    </dd>
+    <dt><strong>T</strong></dt>
+    <dd>
+  <p>write-attributes - write the attributes of the file/directory.</p>
+    </dd>
+    <dt><strong>n</strong></dt>
+    <dd>
+  <p>read-named-attributes - read the named attributes of the file/directory.</p>
+    </dd>
+    <dt><strong>N</strong></dt>
+    <dd>
+  <p>write-named-attributes - write the named attributes of the file/directory.</p>
+    </dd>
+    <dt><strong>c</strong></dt>
+    <dd>
+  <p>read-ACL - read the file/directory NFSv4 ACL.</p>
+    </dd>
+    <dt><strong>C</strong></dt>
+    <dd>
+  <p>write-ACL - write the file/directory NFSv4 ACL.</p>
+    </dd>
+    <dt><strong>o</strong></dt>
+    <dd>
+  <p>write-owner - change ownership of the file/directory.</p>
+    </dd>
+    <dt><strong>y</strong></dt>
+    <dd>
+  <p>synchronize - allow clients to use synchronous I/O with the server.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">INHERITANCE FLAGS COMMENTARY</h2>
+        <div class="sectioncontent">
+
+<p>Inheritance <em>flags</em> can be divided into two categories: "primary" (file-inherit and directory-inherit); and "secondary" (no-propagate-inherit and inherit-only), which are significant only insofar as they affect the two "primary" <em>flags</em>.</p>
+<p class='spacer'>
+
+<p>The no-propagate-inherit and inherit-only <em>flags</em> can be tricky to remember: the former determines whether or not a new child directory's inherited ACE is itself heritable by a grandchild subdirectory; the latter determines whether or not a heritable ACE affects the parent directory itself (in addition to being heritable).  They can be used in-tandem.</p>
+<p class='spacer'>
+
+  <p>When a subdirectory inherits an ACE from its parent directory's ACL, this can happen in one of two different ways, depending on the server implementation:</p>
+  <dl class='dl-horizontal'>
+    <dt>-</dt>
+    <dd>
+  <p>In the simple case, that exact same ACE is set in the subdirectory's ACL.</p>
+    </dd>
+    <dt>-</dt>
+    <dd>
+  <p>In the other case, two different ACEs will instead be set in the subdirectory's ACL: one with all inheritance <em>flags</em> removed, and one with the inherit-only <em>flag</em> added.  The former is the "effective" inherited ACE (used in the subdirectory's own permissions checks); the latter is the "heritable" inherited ACE (when the subdirectory has directories created within it, they inherit it).  This approach makes it easier to modify access rights to the subdirectory itself without modifying its heritable ACEs.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">A WARNING ABOUT DENY ACES</h2>
+        <div class="sectioncontent">
+
+<p>Deny ACEs should be avoided whenever possible.  Although they are a valid part of NFSv4 ACLs, Deny ACEs can be confusing and complicated.  This stems primarily from the fact that, unlike POSIX ACLs and CIFS ACLs, the ordering of ACEs within NFSv4 ACLs affects how they are evaluated.</p>
+<p class='spacer'>
+
+<p>First, it is important to note that (despite some unfortunate ambiguity in <em>RFC3530</em>) NFSv4 ACLs are "default-deny" in practice.  That is, if a <em>permission</em> is not explicitly granted, it is denied.</p>
+<p class='spacer'>
+
+<p>In general, when a <em>principal</em> is attempting to perform an action over NFSv4 which requires one or more <em>permissions</em>, an access check is performed. The NFSv4 ACL (assuming one is present) is evaluated ACE-by-ACE until every one of those <em>permissions</em> has been addressed, or until the end of the ACL is reached.  If every requisite <em>permission</em> was granted by Allow ACEs and was not forbidden by Deny ACEs (see next paragraph), the action is allowed to proceed.  Otherwise, the action is forbidden.</p>
+<p class='spacer'>
+
+<p>Note that each requisite <em>permission</em> is only addressed once -- that is, after a <em>permission</em> has been explicitly Allowed or Denied once during an access check, any subsequent ACEs in the ACL which affect that <em>permission</em> are no longer considered.  This often introduces problematic ordering issues when Deny ACEs are present.</p>
+<p class='spacer'>
+
+<p>Additionally, in some cases Group-Deny ACEs can be difficult (if not impossible) to enforce, since a server might not know about all of a given <em>principal</em>'s memberships in remote groups, e.g.</p>
+<p class='spacer'>
+
+<p>Because NFSv4 ACLs are "default-deny", the use of Deny ACEs can (and should) be avoided entirely in most cases.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+
+<p>Tools for viewing and manipulating NFSv4 ACLs, <strong>nfs4_getfacl</strong> and <strong>nfs4_setfacl</strong>, were written by people at CITI, the Center for Information Technology Integration (<em>http://www.citi.umich.edu</em>). This manpage was written by David Richter and J. Bruce Fields.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONTACT</h2>
+        <div class="sectioncontent">
+
+<p>Please send bug reports, feature requests, and comments to &lt;<em>nfsv4@linux-nfs.org</em>&gt;.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man1/nfs4_getfacl.1.html"><strong>nfs4_getfacl</strong>(1)</a>, <a href="../man1/nfs4_setfacl.1.html"><strong>nfs4_setfacl</strong>(1)</a>, <em>RFC3530</em> (NFSv4.0), NFSv4.1 Minor Version Draft.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="networks.5.html"><span aria-hidden="true">&larr;</span> networks.5: network name information</a></li>
+   <li class="next"><a href="nicknames.5.html">nicknames.5: nickname translation table for NIS maps <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>resizecons - change kernel idea of the console size</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Change kernel idea of the console size">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">resizecons<small> (8)</small></h1>
+        <p class="lead">Change kernel idea of the console size</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/resizecons.8.html"><span itemprop="title">resizecons</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>resizecons </strong><em>COLSxROWS</em></p>
+<p class='spacer'>
+
+<p><strong>resizecons -lines </strong><em>ROWS</em></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <em>resizecons</em> command tries to change the videomode of the console. There are several aspects to this: (a) the kernel must know about it, (b) the hardware must know about it, (c) user programs must know about it, (d) the console font may have to be adapted.</p>
+<p class='spacer'>
+
+<p>(a) The kernel is told about the change using the ioctl VT_RESIZE. This causes the kernel to reallocate console screen memory for all virtual consoles, and might fail if there is not enough memory. (In that case, try to disallocate some virtual consoles first.) If this ioctl succeeds, but a later step fails (e.g., because you do not have root permissions), you may be left with a very messy screen.</p>
+<p class='spacer'>
+
+<p>The most difficult part of this is (b), since it requires detailed knowledge of the video card hardware, and the setting of numerous registers. Only changing the number of rows is slightly easier, and <em>resizecons</em> will try to do that itself, when given the <em>-lines</em> option. (Probably, root permission will be required.) The command <em>resizecons COLSxROWS</em> will execute <em>restoretextmode -r COLSxROWS</em> (and hence requires that you have svgalib installed). Here COLSxROWS is a file that was created earlier by <em>restoretextmode -w COLSxROWS.</em> Again, either root permissions are required, or <em>restoretextmode</em> has to be suid root.</p>
+<p class='spacer'>
+
+<p>In order to deal with (c), <em>resizecons</em> does a `stty rows ROWS cols COLS' for each active console (in the range tty0..tty15), and sends a SIGWINCH signal to <em>selection</em> if it finds the file /tmp/selection.pid.</p>
+<p class='spacer'>
+
+<p>Finally, (d) is dealt with by executing a <em>setfont</em> command. Most likely, the wrong font is loaded, and you may want to do another <em>setfont</em> yourself afterwards.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+<p><em>resizecons</em> does not work on all hardware. This command used to be called <em>resize,</em> but was renamed to avoid conflict with another command with the same name.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>setfont</strong>(8), <a href="../man1/stty.1.html"><strong>stty</strong>(1)</a>, <strong>selection</strong>(1), <strong>restoretextmode</strong>(8), <strong>disalloc</strong>(8)</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="repquota.8.html"><span aria-hidden="true">&larr;</span> repquota.8: summarize quotas for a filesystem</a></li>
+   <li class="next"><a href="resizepart.8.html">resizepart.8: tell the kernel about the new size of a partition <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

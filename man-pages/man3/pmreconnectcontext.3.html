@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmreconnectcontext - reconnect to a PMAPI context</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Reconnect to a pmapi context">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmreconnectcontext<small> (3)</small></h1>
+        <p class="lead">Reconnect to a pmapi context</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmreconnectcontext.3.html"><span itemprop="title">pmreconnectcontext</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>int pmReconnectContext(int <em>handle</em>);</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>As a consequence of network, host or Performance Metrics Collector Daemon (PMCD) failures, an application's connection to a PMCD may be established and then subsequently lost.</p>
+<p class='spacer'>
+
+<p>The routine <strong>pmReconnectContext</strong> allows an application to request that the context identified by <em>handle</em> should be re-established, provided the associated metrics source is accessible.</p>
+<p class='spacer'>
+
+<p>When the source of metrics associated with the context <em>handle</em> is <strong>pmcd</strong>(1), then to avoid flooding the system with reconnect requests, <strong>pmReconnectContext</strong> will only attempt a reconnection after a suitable delay from the previous unsuccessful attempt to reconnect this context. This imposed restriction on the reconnect re-try time interval uses an exponential back-off so that the initial delay is 5 seconds after the first unsuccessful attempt, then 10 seconds, then 20 seconds, then 40 seconds and then 80 seconds thereafter.</p>
+<p class='spacer'>
+
+<p>The environment variable <strong>PMCD_RECONNECT_TIMEOUT</strong> may be used to redefine the back-off intervals, see <strong>PMAPI</strong>(3).</p>
+<p class='spacer'>
+
+<p>Calling <strong>pmReconnectContext</strong> with a handle identifying a currently connected <strong>pmcd</strong>(1) context will cause the connection to be broken before any reconnection is attempted.</p>
+<p class='spacer'>
+
+<p>If <em>handle</em> identifies a context associated with an archive source of metrics, <strong>pmReconnectContext</strong> returns without delay.</p>
+<p class='spacer'>
+
+<p>If the reconnection succeeds, <strong>pmReconnectContext</strong> returns <em>handle</em>.</p>
+<p class='spacer'>
+
+<p>As a side-effect of reconnecting, any derived metrics that have previously been defined using <strong>pmRegisterDerived</strong>(3), <strong>pmRegisterDerivedMetric</strong>(3) or <strong>pmLoadDerivedConfig</strong>(3) will be re-processed and re-bound to the available metrics from the reconnected source. The support of dynamic definition for derived metrics provides one use case where <strong>pmReconnectContext</strong> may be called even if the connection to the metrics source has not been lost.</p>
+<p class='spacer'>
+
+<p>Note that even in the case of a successful reconnection, <strong>pmReconnectContext</strong> does not change the current Performance Metrics Application Programming Interface (PMAPI) context, so <em>handle</em> remains valid.</p>
+<p class='spacer'>
+
+<p>When attempting to connect to a remote <strong>pmcd</strong>(1) on a machine that is booting, <strong>pmReconnectContext</strong> could potentially block for a long time until the remote machine finishes its initialization. <strong>pmReconnectContext</strong> will abort and return an error if the connection has not been established after some specified interval has elapsed.  The default interval is 5 seconds.  This may be modified by setting <strong>PMCD_CONNECT_TIMEOUT</strong> in the environment to a real number of seconds for the desired timeout. This is most useful in cases where the remote host is at the end of a slow network, requiring longer latencies to establish the connection correctly.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ENVIRONMENT</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt><strong>PMCD_CONNECT_TIMEOUT</strong></dt>
+    <dd>
+  <p>Timeout period (in seconds) for <strong>pmcd</strong>(1) connection attempts.</p>
+    </dd>
+    <dt><strong>PMCD_RECONNECT_TIMEOUT</strong></dt>
+    <dd>
+  <p>Redefines the back-off intervals - refer to <strong>PMAPI</strong>(3).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>pmcd</strong>(1), <strong>PMAPI</strong>(3), <strong>pmLoadDerivedConfig</strong>(3), <strong>pmNewContext</strong>(3), <strong>pmRegisterDerived</strong>(3), <strong>pmRegisterDerivedMetric</strong>(3) and <strong>pmUseContext</strong>(3).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><strong>PM_ERR_NOCONTEXT</strong></p>
+<p class='spacer'>
+
+<p><em>handle</em> does not identify a valid PMAPI context</p>
+<p class='spacer'>
+
+<p><strong>-ETIMEDOUT</strong></p>
+<p class='spacer'>
+
+<p>The re-try time has not elapsed, or the reconnection is attempted and fails.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CAVEAT</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>Applications that use <a href="../man3/gethostbyname.3.html"><strong>gethostbyname</strong>(3)</a> should exercise caution because the static fields in <em>struct hostent</em> may not be preserved across some <strong>PMAPI</strong>(3) calls. In particular, <strong>pmNewContext</strong>(3) and <strong>pmReconnectContext</strong>(3) both may call <a href="../man3/gethostbyname.3.html"><strong>gethostbyname</strong>(3)</a> internally.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmprintf.3.html"><span aria-hidden="true">&larr;</span> pmprintf.3: print formatted output in a window or to standard error</a></li>
+   <li class="next"><a href="pmsortinstances.3.html">pmsortinstances.3: sort performance metric values on instance identifier <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

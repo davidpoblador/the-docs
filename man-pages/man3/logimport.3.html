@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>logimport - introduction to the library for importing data and creating a PCP archive</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Introduction to the library for importing data and creating a pcp archive">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">logimport<small> (3)</small></h1>
+        <p class="lead">Introduction to the library for importing data and creating a pcp archive</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/logimport.3.html"><span itemprop="title">logimport</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/impl.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/import.h&gt;</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp_import -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">Perl SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>use PCP::LogImport;</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The Performance Co-Pilot Log Import (LOGIMPORT) API is a library (and Perl wrapper) that supports the creation of PCP archives from external sources of performance data, either in the form of historical logs and spreadsheets or from real-time sources that are <strong>not</strong> integrated as a Performance Metrics Domain Agent (PMDA) under the control of <strong>pmcd</strong>(1).</p>
+<p class='spacer'>
+
+  <p>The typical usage for LOGIMPORT would involve:</p>
+  <dl class='dl-horizontal'>
+    <dt>&bull;</dt>
+    <dd>
+  <p>An initial call to <strong>pmiStart</strong>(3).</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>Optional calls to <strong>pmiSetHostname</strong>(3) and/or <strong>pmiSetTimezone</strong>(3) to set the hostname and timezone for the source of the performance data.</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>One or more calls to <strong>pmiAddMetric</strong>(3) to define performance metrics.</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>One or more calls to <strong>pmiAddInstance</strong>(3) to define instances associated with the metrics.</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>Optional calls to <strong>pmiGetHandle</strong>(3) to defined convenience handles for metric-instance pairs.</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>A main loop in which performance data is injested and for each sample time interval, the PCP archive record is constructed by calls to <strong>pmiPutValue</strong>(3) and/or <strong>pmiPutValueHandle</strong>(3), followed by a call to <strong>pmiWrite</strong>(3) to flush all data and any associated new metadata to the PCP archive.  Alternatively, <strong>pmiPutResult</strong>(3) could be used to package and process all the data for one sample time interval.</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>Once the input source of data has been consumed, calling <strong>pmiEnd</strong>(3) to complete the PCP archive creation and close all open files.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If new metrics and/or instances are discovered during the data injestion, these can be added by subsequent calls to <strong>pmiAddMetric</strong>(3) and/or <strong>pmiAddInstance</strong>(3), provided all the metrics and instances have been defined before a call to <strong>pmiGetHandle</strong>(3), <strong>pmiPutValue</strong>(3)<strong>or</strong> <strong>pmiPutResult</strong>(3) that references those metrics and instances.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>pmcd</strong>(1), <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>, <strong>pmiGetHandle</strong>(3), <strong>pmiAddInstance</strong>(3), <strong>pmiAddMetric</strong>(3), <strong>pmiEnd</strong>(3), <strong>pmiErrStr</strong>(3), <strong>pmiPutMark</strong>(3), <strong>pmiPutResult</strong>(3), <strong>pmiPutValue</strong>(3), <strong>pmiPutValueHandle</strong>(3), <strong>pmiSetHostname</strong>(3), <strong>pmiSetTimezone</strong>(3), <strong>pmiStart</strong>(3) and <strong>pmiWrite</strong>(3).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="logf.3.html"><span aria-hidden="true">&larr;</span> logf.3: natural logarithmic function</a></li>
+   <li class="next"><a href="login.3.html">login.3: write utmp and wtmp entries <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

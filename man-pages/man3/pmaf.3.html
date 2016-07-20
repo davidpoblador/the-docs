@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmaf - event queue services for periodic asynchronous callbacks</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Event queue services for periodic asynchronous callbacks">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmaf<small> (3)</small></h1>
+        <p class="lead">Event queue services for periodic asynchronous callbacks</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmaf.3.html"><span itemprop="title">pmaf</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/impl.h&gt;</p>
+<p class='spacer'>
+
+<p>int __pmAFsetup(const struct timeval *<em>start</em>, const struct timeval *<em>delta</em>, void *<em>data</em>, void&nbsp;(*<em>func</em>)(int,&nbsp;void *)); int __pmAFregister(const struct timeval *<em>delta</em>, void *<em>data</em>, void&nbsp;(*<em>func</em>)(int,&nbsp;void *));</p>
+<p class='spacer'>
+
+<p>int __pmAFunregister(int <em>afid</em>);</p>
+<p class='spacer'>
+
+<p>void __pmAFblock(void);</p>
+<p class='spacer'>
+
+<p>void __pmAFunblock(void);</p>
+<p class='spacer'>
+
+<p>int __pmAFisempty(void);</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The routines implement an event queue and callback framework that supports periodic evaluation of a series of events with varying frequencies for Performance Co-Pilot (PCP) applications.</p>
+<p class='spacer'>
+
+<p>The <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a> application, the <a href="../man1/pmdatrace.1.html"><strong>pmdatrace</strong>(1)</a> PMDA and the <strong>pmdahotproc</strong>(1) PMDA are the principal users of these services.</p>
+<p class='spacer'>
+
+<p>An event is created by calling <strong>__pmAFsetup</strong> or <strong>__pmAFregister</strong> and on success the return value is an event number greater than zero. The event has associated event data identified by the opaque pointer <em>data</em>. The event will occur with frequency <em>delta</em> and each time the event occurs the function <em>func</em> will be called with the event number and the event data as arguments.</p>
+<p class='spacer'>
+
+<p>If <strong>__pmAFsetup</strong> is used then the first event is scheduled for the current time plus <em>start</em>, else if <strong>__pmAFregister</strong> is used then the first event is scheduled for the current time plus <em>delta</em>.</p>
+<p class='spacer'>
+
+<p><em>func</em> is called in a SIGALRM signal handler context and so the routines that may be safely called from <em>func</em> are restricted to the so-called <em>async-signal-safe</em> set. In particular there must be no Standard I/O calls nor calls to any of the <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> routines to modify the state of the heap. Refer to the <em>Pointer to a Function</em> Section of the POSIX.1-2013 document at http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html for a fuller description.</p>
+<p class='spacer'>
+
+<p>The safest and simplest class of <em>func</em> routines are those that do minimal processing, set some global state and return. The real work associated with the event is done subsequently from the application's main loop when the global state change is detected.</p>
+<p class='spacer'>
+
+<p>Once the event occurs and the callback has been executed, the event will be rescheduled for <em>delta</em> into the future, except if all the fields of <em>delta</em> are zero, in which case the event will not be rescheduled (a ``one trip'' event).</p>
+<p class='spacer'>
+
+<p>Internally, events are processed serially so there is no possibility of nested callbacks or re-entrant callbacks from the event management routines.</p>
+<p class='spacer'>
+
+<p>Given an event number <em>afid</em>, <strong>__pmAFunregister</strong> will permanently remove the corresponding entry from the event queue.</p>
+<p class='spacer'>
+
+<p>To control the event queue processing, <strong>__pmAFblock</strong> and <strong>__pmAFunblock</strong> may be used to explicitly block and unblock the dispatch of events. This is most useful when the caller wishes to set up a number of events via <strong>__pmAFsetup</strong> or <strong>__pmAFregister</strong> and complete the registration phase before the first event callback occurs.</p>
+<p class='spacer'>
+
+<p>A call to <strong>__pmAFisempty</strong> returns 1 or 0 depending on whether the event queue is empty or not.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>PMAPI</strong>(3)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><strong>__pmAFsetup</strong>, <strong>__pmAFregister</strong> and <strong>__pmAFunregister</strong> return values less than zero in the case of an error.  These values are PCP error codes, and may be used to produce error messages via <strong>pmErrStr</strong>(3).</p>
+<p class='spacer'>
+
+<p>The routines support the standard PCP debug tracing, and the value <strong>DBG_TRACE_AF</strong> (or <strong>-D af</strong> on the command line) will produce diagnostics on standard error that trace the enqueuing and execution of events.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CAVEATS</h2>
+        <div class="sectioncontent">
+
+<p>These routines rely on <a href="../man2/setitimer.2.html"><strong>setitimer</strong>(2)</a> and manipulate the handling of <strong>SIGALRM</strong> signals, and hence are probably ill-suited for applications that require direct and concurrent access to these services and resources.</p>
+<p class='spacer'>
+
+<p>If the callback functions are slow, or delayed, it is possible that the event scheduling could fall behind and never catchup.  When this begins to happen, events are silently skipped and rescheduled at the earliest possible time in the future according to the fixed schedule defined by the time of the call to <strong>__pmAFsetup</strong> and the value of the <em>start</em> and <em>delta</em> arguments (or defined by the time of the call to <strong>__pmAFregister</strong> and the value of the <em>delta</em> argument).</p>
+<p class='spacer'>
+
+<p>In addition, the semantics of the interval timer(s) and the global state needed to support these services demand that applications calling these routines must do so from a single thread. This restriction is enforced at the <strong>PMAPI</strong>(3), where routines may return the error code <strong>PM_ERR_THREAD</strong> if the library detects calls from more than one thread.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmaddprofile.3.html"><span aria-hidden="true">&larr;</span> pmaddprofile.3: add instance(s) to the current PMAPI instance profile</a></li>
+   <li class="next"><a href="pmafm.3.html">pmafm.3: record mode support for PMAPI clients <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

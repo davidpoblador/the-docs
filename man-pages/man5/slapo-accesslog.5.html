@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>slapo-accesslog - Access Logging overlay to slapd</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Access logging overlay to slapd">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">slapo-accesslog<small> (5)</small></h1>
+        <p class="lead">Access logging overlay to slapd</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/slapo-accesslog.5.html"><span itemprop="title">slapo-accesslog</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>ETCDIR/slapd.conf</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The Access Logging overlay can be used to record all accesses to a given backend database on another database. This allows all of the activity on a given database to be reviewed using arbitrary LDAP queries, instead of just logging to local flat text files. Configuration options are available for selecting a subset of operation types to log, and to automatically prune older log records from the logging database.  Log records are stored with audit schema (see below) to assure their readability whether viewed as LDIF or in raw form.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFIGURATION</h2>
+        <div class="sectioncontent">
+
+  <p>These <strong>slapd.conf</strong> options apply to the Access Logging overlay. They should appear after the <strong>overlay</strong> directive.</p>
+  <dl class='dl-vertical'>
+    <dt><strong>logdb &lt;suffix&gt;</strong></dt>
+    <dd>
+  <p>Specify the suffix of a database to be used for storing the log records. The specified database must be defined elsewhere in the configuration. The access controls on the log database should prevent general access. The suffix entry of the log database will be created automatically by this overlay. The log entries will be generated as the immediate children of the suffix entry.</p>
+    </dd>
+    <dt><strong>logops &lt;operations&gt;</strong></dt>
+    <dd>
+      <p>Specify which types of operations to log. The valid operation types are abandon, add, bind, compare, delete, extended, modify, modrdn, search, and unbind. Aliases for common sets of operations are also available:</p>
+      <dl class='dl-vertical'>
+        <dt><strong>writes</strong></dt>
+        <dd>
+      <p>add, delete, modify, modrdn</p>
+        </dd>
+        <dt><strong>reads</strong></dt>
+        <dd>
+      <p>compare, search</p>
+        </dd>
+        <dt><strong>session</strong></dt>
+        <dd>
+      <p>abandon, bind, unbind</p>
+        </dd>
+        <dt><strong>all</strong></dt>
+        <dd>
+      <p>all operations</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><strong>logbase &lt;operations&gt; &lt;baseDN&gt;</strong></dt>
+    <dd>
+  <p>Specify a set of operations that will only be logged if they occur under a specific subtree of the database. The operation types are as above for the <strong>logops</strong> setting, and delimited by a '|' character.</p>
+    </dd>
+    <dt><strong>logold &lt;filter&gt;</strong></dt>
+    <dd>
+  <p>Specify a filter for matching against Deleted and Modified entries. If the entry matches the filter, the old contents of the entry will be logged along with the current request.</p>
+    </dd>
+    <dt><strong>logoldattr &lt;attr&gt; ...</strong></dt>
+    <dd>
+  <p>Specify a list of attributes whose old contents are always logged in Modify and ModRDN requests. Usually only the contents of attributes that were actually modified will be logged; by default no old attributes are logged for ModRDN requests.</p>
+    </dd>
+    <dt><strong>logpurge &lt;age&gt; &lt;interval&gt;</strong></dt>
+    <dd>
+        <p>Specify the maximum age for log entries to be retained in the database, and how often to scan the database for old entries. Both the <strong>age</strong> and <strong>interval</strong> are specified as a time span in days, hours, minutes, and seconds. The time format is [ddd+]hh:mm[:ss] i.e., the days and seconds components are optional but hours and minutes are required. Except for days, which can be up to 5 digits, each numeric field must be exactly two digits. For example</p>
+        <dl class='dl-vertical'>
+          <dt>logpurge 2+00:00 1+00:00</dt>
+          <dd>
+          </dd>
+        </dl>
+  <p>would specify that the log database should be scanned every day for old entries, and entries older than two days should be deleted. When using a log database that supports ordered indexing on generalizedTime attributes, specifying an eq index on the <strong>reqStart</strong> attribute will greatly benefit the performance of the purge operation.</p>
+    </dd>
+    <dt><strong>logsuccess TRUE | FALSE</strong></dt>
+    <dd>
+  <p>If set to TRUE then log records will only be generated for successful requests, i.e., requests that produce a result code of 0 (LDAP_SUCCESS). If FALSE, log records are generated for all requests whether they succeed or not. The default is FALSE.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<pre>	database mdb
+	suffix dc=example,dc=com
+	...
+	overlay accesslog
+	logdb cn=log
+	logops writes reads
+	logbase search|compare ou=testing,dc=example,dc=com
+	logold (objectclass=person)
+
+	database mdb
+	suffix cn=log
+	...
+	index reqStart eq
+	access to *
+	  by dn.base="cn=admin,dc=example,dc=com" read</pre>
+
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SCHEMA</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>accesslog</strong> overlay utilizes the "audit" schema described herein. This schema is specifically designed for <strong>accesslog</strong> auditing and is not intended to be used otherwise.  It is also noted that the schema described here is <em>a work in</em> <em>progress</em>, and hence subject to change without notice. The schema is loaded automatically by the overlay.</p>
+<p class='spacer'>
+
+<p>The schema includes a number of object classes and associated attribute types as described below.</p>
+<p class='spacer'>
+
+<p>There is a basic <strong>auditObject</strong> class from which two additional classes, <strong>auditReadObject</strong> and <strong>auditWriteObject</strong> are derived. Object classes for each type of LDAP operation are further derived from these classes. This object class hierarchy is designed to allow flexible yet efficient searches of the log based on either a specific operation type's class, or on more general classifications. The definition of the <strong>auditObject</strong> class is as follows:</p>
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.1</p>
+<pre>    NAME 'auditObject'
+    DESC 'OpenLDAP request auditing'
+    SUP top STRUCTURAL
+    MUST ( reqStart $ reqType $ reqSession )
+    MAY ( reqDN $ reqAuthzID $ reqControls $ reqRespControls $
+        reqEnd $ reqResult $ reqMessage $ reqReferral ) )</pre>
+
+<p class='spacer'>
+
+<p>Note that all of the OIDs used in the logging schema currently reside under the OpenLDAP Experimental branch. It is anticipated that they will migrate to a Standard branch in the future.</p>
+<p class='spacer'>
+
+<p>An overview of the attributes follows: <strong>reqStart</strong> and <strong>reqEnd</strong> provide the start and end time of the operation, respectively. They use generalizedTime syntax. The <strong>reqStart</strong> attribute is also used as the RDN for each log entry.</p>
+<p class='spacer'>
+
+<p>The <strong>reqType</strong> attribute is a simple string containing the type of operation being logged, e.g. <strong>add</strong>, <strong>delete</strong>, <strong>search</strong>, etc. For extended operations, the type also includes the OID of the extended operation, e.g. <strong>extended(1.1.1.1)</strong></p>
+<p class='spacer'>
+
+<p>The <strong>reqSession</strong> attribute is an implementation-specific identifier that is common to all the operations associated with the same LDAP session. Currently this is slapd's internal connection ID, stored in decimal.</p>
+<p class='spacer'>
+
+<p>The <strong>reqDN</strong> attribute is the distinguishedName of the target of the operation. E.g., for a Bind request, this is the Bind DN. For an Add request, this is the DN of the entry being added. For a Search request, this is the base DN of the search.</p>
+<p class='spacer'>
+
+<p>The <strong>reqAuthzID</strong> attribute is the distinguishedName of the user that performed the operation. This will usually be the same name as was established at the start of a session by a Bind request (if any) but may be altered in various circumstances.</p>
+<p class='spacer'>
+
+<p>The <strong>reqControls</strong> and <strong>reqRespControls</strong> attributes carry any controls sent by the client on the request and returned by the server in the response, respectively. The attribute values are just uninterpreted octet strings.</p>
+<p class='spacer'>
+
+<p>The <strong>reqResult</strong> attribute is the numeric LDAP result code of the operation, indicating either success or a particular LDAP error code. An error code may be accompanied by a text error message which will be recorded in the <strong>reqMessage</strong> attribute.</p>
+<p class='spacer'>
+
+<p>The <strong>reqReferral</strong> attribute carries any referrals that were returned with the result of the request.</p>
+<p class='spacer'>
+
+<p>Operation-specific classes are defined with additional attributes to carry all of the relevant parameters associated with the operation:</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.4</p>
+<pre>    NAME 'auditAbandon'
+    DESC 'Abandon operation'
+    SUP auditObject STRUCTURAL
+    MUST reqId )</pre>
+
+<p class='spacer'>
+
+<p>For the <strong>Abandon</strong> operation the <strong>reqId</strong> attribute contains the message ID of the request that was abandoned.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.5</p>
+<pre>    NAME 'auditAdd'
+    DESC 'Add operation'
+    SUP auditWriteObject STRUCTURAL
+    MUST reqMod )</pre>
+
+<p class='spacer'>
+
+    <p>The <strong>Add</strong> class inherits from the <strong>auditWriteObject</strong> class. The Add and Modify classes are very similar. The <strong>reqMod</strong> attribute carries all of the attributes of the original entry being added. (Or in the case of a Modify operation, all of the modifications being performed.) The values are formatted as</p>
+    <dl class='dl-vertical'>
+      <dt>attribute:&lt;+|-|=|#&gt; [ value]</dt>
+      <dd>
+      </dd>
+    </dl>
+<p>Where '+' indicates an Add of a value, '-' for Delete, '=' for Replace, and '#' for Increment. In an Add operation, all of the reqMod values will have the '+' designator.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.6</p>
+<pre>    NAME 'auditBind'
+    DESC 'Bind operation'
+    SUP auditObject STRUCTURAL
+    MUST ( reqVersion $ reqMethod ) )</pre>
+
+<p class='spacer'>
+
+<p>The <strong>Bind</strong> class includes the <strong>reqVersion</strong> attribute which contains the LDAP protocol version specified in the Bind as well as the <strong>reqMethod</strong> attribute which contains the Bind Method used in the Bind. This will be the string <strong>SIMPLE</strong> for LDAP Simple Binds or <strong>SASL(&lt;mech&gt;)</strong> for SASL Binds. Note that unless configured as a global overlay, only Simple Binds using DNs that reside in the current database will be logged.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.7</p>
+<pre>    NAME 'auditCompare'
+    DESC 'Compare operation'
+    SUP auditObject STRUCTURAL
+    MUST reqAssertion )</pre>
+
+<p class='spacer'>
+
+<p>For the <strong>Compare</strong> operation the <strong>reqAssertion</strong> attribute carries the Attribute Value Assertion used in the compare request.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.8</p>
+<pre>    NAME 'auditDelete'
+    DESC 'Delete operation'
+    SUP auditWriteObject STRUCTURAL
+    MAY reqOld )</pre>
+
+<p class='spacer'>
+
+    <p>The <strong>Delete</strong> operation needs no further parameters. However, the <strong>reqOld</strong> attribute may optionally be used to record the contents of the entry prior to its deletion. The values are formatted as</p>
+    <dl class='dl-vertical'>
+      <dt>attribute: value</dt>
+      <dd>
+      </dd>
+    </dl>
+<p>The <strong>reqOld</strong> attribute is only populated if the entry being deleted matches the configured <strong>logold</strong> filter.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.9</p>
+<pre>    NAME 'auditModify'
+    DESC 'Modify operation'
+    SUP auditWriteObject STRUCTURAL
+    MAY reqOld MUST reqMod )</pre>
+
+<p class='spacer'>
+
+<p>The <strong>Modify</strong> operation contains a description of modifications in the <strong>reqMod</strong> attribute, which was already described above in the Add operation. It may optionally contain the previous contents of any modified attributes in the <strong>reqOld</strong> attribute, using the same format as described above for the Delete operation. The <strong>reqOld</strong> attribute is only populated if the entry being modified matches the configured <strong>logold</strong> filter.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.10</p>
+<pre>    NAME 'auditModRDN'
+    DESC 'ModRDN operation'
+    SUP auditWriteObject STRUCTURAL
+    MUST ( reqNewRDN $ reqDeleteOldRDN )
+    MAY ( reqNewSuperior $ reqOld ) )</pre>
+
+<p class='spacer'>
+
+<p>The <strong>ModRDN</strong> class uses the <strong>reqNewRDN</strong> attribute to carry the new RDN of the request. The <strong>reqDeleteOldRDN</strong> attribute is a Boolean value showing <strong>TRUE</strong> if the old RDN was deleted from the entry, or <strong>FALSE</strong> if the old RDN was preserved. The <strong>reqNewSuperior</strong> attribute carries the DN of the new parent entry if the request specified the new parent. The <strong>reqOld</strong> attribute is only populated if the entry being modified matches the configured <strong>logold</strong> filter and contains attributes in the <strong>logoldattr</strong> list.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.11</p>
+<pre>    NAME 'auditSearch'
+    DESC 'Search operation'
+    SUP auditReadObject STRUCTURAL
+    MUST ( reqScope $ reqDerefAliases $ reqAttrsOnly )
+    MAY ( reqFilter $ reqAttr $ reqEntries $ reqSizeLimit $
+          reqTimeLimit ) )</pre>
+
+<p class='spacer'>
+
+<p>For the <strong>Search</strong> class the <strong>reqScope</strong> attribute contains the scope of the original search request, using the values specified for the LDAP URL format. I.e. <strong>base</strong>, <strong>one</strong>, <strong>sub</strong>, or <strong>subord</strong>. The <strong>reqDerefAliases</strong> attribute is one of <strong>never</strong>, <strong>finding</strong>, <strong>searching</strong>, or <strong>always</strong>, denoting how aliases will be processed during the search. The <strong>reqAttrsOnly</strong> attribute is a Boolean value showing <strong>TRUE</strong> if only attribute names were requested, or <strong>FALSE</strong> if attributes and their values were requested. The <strong>reqFilter</strong> attribute carries the filter used in the search request. The <strong>reqAttr</strong> attribute lists the requested attributes if specific attributes were requested. The <strong>reqEntries</strong> attribute is the integer count of how many entries were returned by this search request. The <strong>reqSizeLimit</strong> and <strong>reqTimeLimit</strong> attributes indicate what limits were requested on the search operation.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+  <p>(  1.3.6.1.4.1.4203.666.11.5.2.12</p>
+<pre>    NAME 'auditExtended'
+    DESC 'Extended operation'
+    SUP auditObject STRUCTURAL
+    MAY reqData )</pre>
+
+<p class='spacer'>
+
+<p>The <strong>Extended</strong> class represents an LDAP Extended Operation. As noted above, the actual OID of the operation is included in the <strong>reqType</strong> attribute of the parent class. If any optional data was provided with the request, it will be contained in the <strong>reqData</strong> attribute as an uninterpreted octet string.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>The Access Log implemented by this overlay may be used for a variety of other tasks, e.g. as a ChangeLog for a replication mechanism, as well as for security/audit logging purposes.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt>ETCDIR/slapd.conf</dt>
+    <dd>
+  <p>default slapd configuration file</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>slapd.conf</strong>(5), <strong>slapd-config</strong>(5).</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ACKNOWLEDGEMENTS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>This module was written in 2005 by Howard Chu of Symas Corporation.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="slapd-sql.5.html"><span aria-hidden="true">&larr;</span> slapd-sql.5: SQL backend to slapd</a></li>
+   <li class="next"><a href="slapo-adremap.5.html">slapo-adremap.5: AD Remap overlay to slapd <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

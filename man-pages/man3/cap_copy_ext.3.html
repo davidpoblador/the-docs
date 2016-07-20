@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cap_copy_ext - capability state external representation translation</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Capability state external representation translation">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">cap_copy_ext<small> (3)</small></h1>
+        <p class="lead">Capability state external representation translation</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/cap_copy_ext.3.html"><span itemprop="title">cap_copy_ext</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/capability.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>ssize_t cap_size(cap_t </strong><em>cap_p</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><strong>ssize_t cap_copy_ext(void *</strong><em>ext_p</em><strong>, cap_t </strong><em>cap_p</em><strong>, ssize_t </strong><em>size</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><strong>cap_t cap_copy_int(const void *</strong><em>ext_p</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p>Link with <em>-lcap</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>These functions translate between internal and external representations of a capability state.  The external representation is an exportable, contiguous, persistent representation of a capability state in user-managed space.  The internal representation is managed by the capability functions in working storage.</p>
+<p class='spacer'>
+
+<p><strong>cap_size</strong>() returns the total length (in bytes) that the capability state in working storage identified by <em>cap_p</em> would require when converted by <strong>cap_copy_ext</strong>(). This function is used primarily to determine the amount of buffer space that must be provided to the <strong>cap_copy_ext</strong>() function in order to hold the capability data record created from <em>cap_p</em>.</p>
+<p class='spacer'>
+
+<p><strong>cap_copy_ext</strong>() copies a capability state in working storage, identified by <em>cap_p</em>, from system managed space to user-managed space (pointed to by <em>ext_p</em>) and returns the length of the resulting data record.  The size parameter represents the maximum size, in bytes, of the resulting data record.  The <strong>cap_copy_ext</strong>() function will do any conversions necessary to convert the capability state from the undefined internal format to an exportable, contiguous, persistent data record.  It is the responsibility of the user to allocate a buffer large enough to hold the copied data.  The buffer length required to hold the copied data may be obtained by a call to the <strong>cap_size</strong>() function.</p>
+<p class='spacer'>
+
+<p><strong>cap_copy_int</strong>() copies a capability state from a capability data record in user-managed space to a new capability state in working storage, allocating any memory necessary, and returning a pointer to the newly created capability state.  The function initializes the capability state and then copies the capability state from the record pointed to by <em>ext_p</em> into the capability state, converting, if necessary, the data from a contiguous, persistent format to an undefined, internal format.  Once copied into internal format, the object can be manipulated by the capability state manipulation functions (see <a href="../man3/cap_clear.3.html"><strong>cap_clear</strong>(3)</a>). Note that the record pointed to by <em>ext_p</em> must have been obtained from a previous, successful call to <strong>cap_copy_ext</strong>() for this function to work successfully.  The caller should free any releasable memory, when the capability state in working storage is no longer required, by calling <strong>cap_free</strong>() with the <em>cap_t</em> as an argument.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p><strong>cap_size</strong>() returns the length required to hold a capability data record on success, and -1 on failure.</p>
+<p class='spacer'>
+
+<p><strong>cap_copy_ext</strong>() returns the number of bytes placed in the user managed space pointed to by <em>ext_p</em> on success, and -1 on failure.</p>
+<p class='spacer'>
+
+<p><strong>cap_copy_int</strong>() returns a pointer to the newly created capability state in working storage on success, and NULL on failure.</p>
+<p class='spacer'>
+
+<p>On failure, <strong>errno</strong> is set to <strong>EINVAL</strong>, <strong>ENOMEM</strong>, or <strong>ERANGE</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>These functions are specified in the withdrawn POSIX.1e draft specification.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man3/libcap.3.html"><strong>libcap</strong>(3)</a>, <a href="../man3/cap_clear.3.html"><strong>cap_clear</strong>(3)</a>, <a href="../man3/cap_from_text.3.html"><strong>cap_from_text</strong>(3)</a>, <a href="../man3/cap_get_file.3.html"><strong>cap_get_file</strong>(3)</a>, <a href="../man3/cap_get_proc.3.html"><strong>cap_get_proc</strong>(3)</a>, <a href="../man3/cap_init.3.html"><strong>cap_init</strong>(3)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="cap_compare.3.html"><span aria-hidden="true">&larr;</span> cap_compare.3: capability data object manipulation</a></li>
+   <li class="next"><a href="cap_copy_int.3.html">cap_copy_int.3: capability state external representation translation <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

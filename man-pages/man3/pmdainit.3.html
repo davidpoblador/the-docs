@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmdainit - initialize a PMDA</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Initialize a pmda">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmdainit<small> (3)</small></h1>
+        <p class="lead">Initialize a pmda</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmdainit.3.html"><span itemprop="title">pmdainit</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/impl.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/pmda.h&gt;</p>
+<p class='spacer'>
+
+<p>void pmdaInit(pmdaInterface *<em>dispatch</em>, pmdaIndom *<em>indoms</em>, int&nbsp;<em>nindoms</em>, pmdaMetric&nbsp;*<em>metrics</em>, int&nbsp;<em>nmetrics</em>);</p>
+<p class='spacer'>
+
+<p>void pmdaRehash(pmdaExt *<em>pmda</em>, pmdaMetric&nbsp;*<em>metrics</em>, int&nbsp;<em>nmetrics</em>);</p>
+<p class='spacer'>
+
+<p>void pmdaSetFlags(pmdaInterface *<em>dispatch</em>, int <em>flags</em>);</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp_pmda -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>pmdaInit</strong> initializes a PMDA so that it is ready to receive PDUs from <strong>pmcd</strong>(1). The function expects as arguments the instance domain table (<em>indoms</em>) and the metric description table (<em>metrics</em>) that are initialized by the PMDA. The arguments <em>nindoms</em> and <em>nmetrics</em> should be set to the number of instances and metrics in the tables, respectively.</p>
+<p class='spacer'>
+
+<p>Much of the pmdaInterface structure can be automatically initialized with <strong>pmdaDaemon</strong>(3), <strong>pmdaGetOpt</strong>(3) and <strong>pmdaDSO</strong>(3). <strong>pmdaInit</strong> completes the PMDA initialization phase with three operations. The first operation adds the domain and instance numbers to the instance and metric tables.  Singular metrics (metrics without an instance domain) should have the instance domain <strong>PM_INDOM_NULL</strong> set in the <em>indom</em> field of the <strong>pmDesc</strong> structure (see <strong>pmLookupDesc</strong>(3)). Metrics with an instance domain should set this field to be the serial number of the instance domain in the <em>indoms</em> table.</p>
+<p class='spacer'>
+
+<p>The instance domain table may be made empty by setting <em>indoms</em> to NULL and <em>nindoms</em> to 0. This allows the caller to provide custom Fetch and Instance callback functions. The metric table may be made empty by setting <em>metrics</em> to NULL and <em>nmetrics</em> to 0. This allows the caller to provide custom Fetch and Descriptor callback functions.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>For example, a PMDA has three metrics: A, B and C, and two instance domains X and Y, with two instances in each instance domain.  The instance domain and metrics description tables could be defined as:</p>
+<p class='spacer'>
+
+<pre>static pmdaInstid _X[] = {
+    { 0, "X1" }, { 1, "X2" }
+};
+
+static pmdaInstid _Y[] = {
+    { 0, "Y1" }, { 1, "Y2" }
+};
+
+static pmdaIndom indomtab[] = {
+#define X_INDOM 0
+    { X_INDOM, 2, _X },
+#define Y_INDOM 3
+    { Y_INDOM, 2, _Y }
+};
+
+static pmdaMetric metrictab[] = {
+/* A */
+    { (void *)0,
+      { PMDA_PMID(0,0), PM_TYPE_U32, PM_INDOM_NULL, PM_SEM_INSTANT,
+        { 0,0,0,0,0,0} }, },
+/* B */
+    { (void *)0,
+      { PMDA_PMID(0,1), PM_TYPE_U32, X_INDOM, PM_SEM_INSTANT,
+        { 0,0,0,0,0,0} }, },
+/* C */
+    { (void *)0,
+      { PMDA_PMID(0,2), PM_TYPE_DOUBLE, Y_INDOM, PM_SEM_INSTANT,
+        { 0,1,0,0,PM_TIME_SEC,0} }, }
+};</pre>
+
+<p class='spacer'>
+
+<p>The metric description table defines metric A with no instance domain, metric B with instance domain X and metric C with instance domain Y.  Metric C has units of seconds, while the other metrics have no units (simple counters). <strong>pmdaInit</strong> will take these structures and assign the <strong>PMDA</strong>(3) domain number to the <em>it_indom</em> field of each instance domain.  This identifier also replaces the <em>indom</em> field of all metrics which have that instance domain, so that they are correctly associated.</p>
+<p class='spacer'>
+
+<p>The second stage opens the help text file, if one was specified with the <strong>-h</strong> command line option (see <strong>pmdaGetOpt</strong>(3)) or as a <em>helptext</em> argument to <strong>pmdaDSO</strong>(3) or <strong>pmdaDaemon</strong>(3).</p>
+<p class='spacer'>
+
+<p>The final stage involves preparing the metric table lookup strategy.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">METRIC LOOKUP</h2>
+        <div class="sectioncontent">
+
+<p>When fetch and descriptor requests are made of the PMDA, each requested PMID must be mapped to a metric table entry. There are currently three strategies for performing this mapping - direct, linear and hashed. Each has its own set of tradeoffs and an appropriate strategy should be selected for each PMDA.</p>
+<p class='spacer'>
+
+<p>If all of the metric PMID item numbers correspond to the position in the <em>metrics</em> table, then direct mapping is used. This is the most efficient of the lookup functions as it involves a direct array index (no additional memory is required nor any additional processing overhead). If the PMID numbering requirement is met by the PMDA, it is ideal. This strategy can be explicitly requested by calling <strong>pmdaSetFlags</strong>(f2pmdaf1,<strong>f2PMDA_FLAG_EXT_DIRECTf1)</strong> before calling <strong>pmdaInit</strong>. In this case, if the direct mapping is not possible (e.g. due to an oversight on the part of the PMDA developer), a warning is logged and the linear strategy is used instead.</p>
+<p class='spacer'>
+
+<p>The second strategy (linear search) is the default, when a direct mapping cannot be established. This provides greater flexibility in the PMID numbering scheme, as the PMDA item numbers do not have to be unique (hence, the PMID cluster numbers can be used more freely, which is often extremely convenient for the PMDA developer). However, lookup involves a linear walk from the start of the metric table until a matching PMID is found, for each requested PMID in a request.</p>
+<p class='spacer'>
+
+<p>The third strategy (hash lookup) can be requested by calling <strong>pmdaSetFlags</strong>(f2pmdaf1,<strong>f2PMDA_FLAG_EXT_HASHEDf1)</strong> before calling <strong>pmdaInit</strong>. This strategy is most useful for PMDAs with large numbers of metrics (many hundreds, or thousands). Such PMDAs will almost always use the cluster numbering scheme, so the direct lookup scheme becomes inappropriate. They may also be prepared to sacrifice a small amount of additional memory for a hash table, mapping PMID to metric table offsets, to speed up lookups in their vast metric tables.</p>
+<p class='spacer'>
+
+<p>This final strategy can also be used by PMDAs serving up dynamically numbered metrics. For this case, the <strong>pmdaRehash</strong> function should be used to replace the metric table when new metrics become available, or existing metrics are removed. The PMID hash mapping will be recomputed at the same time that the new metric table is installed.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+
+<p><strong>pmdaInit</strong> will set <em>dispatch-&gt;status</em> to a value less than zero if there is an error that would prevent the <strong>PMDA</strong>(3) from successfully running. <strong>pmcd</strong>(1) will terminate the connection to the <strong>PMDA</strong>(3) if this occurs.</p>
+<p class='spacer'>
+
+  <p><strong>pmdaInit</strong> may issue any of these messages:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>PMDA interface version </strong><em>interface</em><strong> not supported</strong></dt>
+    <dd>
+  <p>The <em>interface</em> version is not supported by <strong>pmdaInit</strong>.</p>
+    </dd>
+    <dt><strong>Using pmdaFetch() but fetch call back not set</strong></dt>
+    <dd>
+  <p>The fetch callback, <strong>pmdaFetch</strong>(3), requires an additional callback to be provided using <strong>pmdaSetFetchCallBack</strong>(3).</p>
+    </dd>
+    <dt><strong>Illegal instance domain </strong><em>inst</em><strong> for metric </strong><em>pmid</em></dt>
+    <dd>
+  <p>The instance domain <em>inst</em> that was specified for metric <em>pmid</em> is not within the range of the instance domain table.</p>
+    </dd>
+    <dt><strong>No help text path specified</strong></dt>
+    <dd>
+  <p>The help text callback, <strong>pmdaText</strong>(3), requires a help text file for the metrics to have been opened, however no path to the help text was specified as a command line option, or as an argument to <strong>pmdaDSO</strong>(3) or <strong>pmdaDaemon</strong>(3). This message is only a warning.</p>
+    </dd>
+    <dt><strong>Direct mapping for metrics disabled @ </strong><em>num</em></dt>
+    <dd>
+  <p>The unit numbers of the metrics did not correspond to the index in the metric description table.  The direct mapping failed for metric number <em>num</em> in the <em>metrics</em> table.  This is less efficient but is not fatal and the message is only a warning.</p>
+    </dd>
+    <dt><strong>Hashed mapping for metrics disabled @ </strong><em>num</em></dt>
+    <dd>
+  <p>A memory allocation failure occurred while building the hash table to index the metric description table. This is a non-fatal warning message - a fallback to linear searching will be automatically performed should this situation arise.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CAVEAT</h2>
+        <div class="sectioncontent">
+
+<p>The PMDA must be using <strong>PMDA_INTERFACE_2</strong> or later, as specified in the call to <strong>pmdaDSO</strong>(3) or <strong>pmdaDaemon</strong>(3).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man1/newhelp.1.html"><strong>newhelp</strong>(1)</a>, <strong>pmcd</strong>(1), <strong>PMAPI</strong>(3), <strong>PMDA</strong>(3), <strong>pmdaDaemon</strong>(3), <strong>pmdaDSO</strong>(3), <strong>pmdaFetch</strong>(3), <strong>pmdaGetOpt</strong>(3), <strong>pmdaText</strong>(3) and <strong>pmLookupDesc</strong>(3).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmdahelp.3.html"><span aria-hidden="true">&larr;</span> pmdahelp.3: help text support for a PMDA</a></li>
+   <li class="next"><a href="pmdainstance.3.html">pmdainstance.3: return instance descriptions for a PMDA <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

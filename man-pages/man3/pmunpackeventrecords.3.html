@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmunpackeventrecords - unpack event records</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Unpack event records">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmunpackeventrecords<small> (3)</small></h1>
+        <p class="lead">Unpack event records</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmunpackeventrecords.3.html"><span itemprop="title">pmunpackeventrecords</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>int pmUnpackEventRecords(pmValueSet *<em>vsp</em>, int <em>idx</em>, pmResult ***<em>rap</em>);</p>
+<p class='spacer'>
+
+<p>int pmUnpackHighResEventRecords(pmValueSet *<em>vsp</em>, int <em>idx</em>, pmHighResResult ***<em>hrap</em>);</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>Event records are encoded as a packed array of records within a <em>pmResult</em> using a container metric with a value of type <strong>PM_TYPE_EVENT ,</strong> and a <em>pmHighResResult</em> when using a metric of type <strong>PM_TYPE_HIGHRES_EVENT</strong>.</p>
+<p class='spacer'>
+
+<p><strong>pmUnpackEventRecords</strong> and <strong>pmUnpackHighResEventRecords</strong> may be used to unpack event records from a metric value identified by <em>vsp</em> and <em>idx</em>. If the metric has a singular value, <em>idx</em> should be 0, else the ordinal instance value identified by <em>idx</em> will be unpacked, i.e. vsp-&gt;vlist[idx]. The unpacked records are turned into either <em>pmResult</em> or <em>pmHighResResult</em> structures, one per event record and one metric per event parameter, and <em>rap</em> is returned as a pointer to an array (NULL pointer terminated) of pointers to the result structures.</p>
+<p class='spacer'>
+
+<p>The only difference between the two result types is the timestamp scale; the <em>pmHighResResult</em> allows for nanosecond precision, whereas <em>pmResult</em> allows for microsecond resolution.</p>
+<p class='spacer'>
+
+  <p>Some control information from the packed event records is unpacked into additional ``anonymous'' metrics as follows:</p>
+  <dl class='dl-horizontal'>
+    <dt>1.</dt>
+    <dd>
+  <p>If the event record has a non-zero flags value, then the corresponding <em>pmResult</em>/<em>pmHighResResult</em> will have the flags value encoded with the additional metric <strong>event.flags</strong> that is inserted ahead of all other event parameters.</p>
+    </dd>
+    <dt>2.</dt>
+    <dd>
+  <p>If the event record flag is set to <strong>PM_EVENT_FLAG_MISSED</strong>, then the corresponding <em>pmResult</em>/<em>pmHighResResult</em> will have one metric <strong>event.missed</strong> with a value that equals the number of event records ``missed'' because either the PMDA could not keep up, or the PMAPI client did not collect the event records fast enough.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p><strong>pmUnpackEventRecords</strong> returns the number of <em>pmResult</em> structures as the return value, which is &gt;= 0 for success. Similarly, <strong>pmUnpackHighResEventRecords</strong> returns the number of <em>pmHighResResult</em> structures as the return value, which is &gt;= 0 for success.</p>
+<p class='spacer'>
+
+<p><em>rap</em> and the associated <em>pmResult</em> structures may be freed using the convenience function <strong>pmFreeEventResult</strong>(3).</p>
+<p class='spacer'>
+
+<p>Similarly, the <em>hrap</em> and the associated <em>pmHighResResult</em> structures may be freed using the convenience function <strong>pmFreeHighResEventResult</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+  <p>The following errors are possible:</p>
+  <dl class='dl-vertical'>
+    <dt>PM_ERR_CONV</dt>
+    <dd>
+  <p>The values associated with <em>vsp</em> are not encoded using the format PM_VAL_DPTR or PM_VAL_SPTR, or the flags at the head of the event record has an unexpected value.</p>
+    </dd>
+    <dt>PM_ERR_INST</dt>
+    <dd>
+  <p>The value associated with <em>vsp</em> is not singular as expected.</p>
+    </dd>
+    <dt>PM_ERR_TYPE</dt>
+    <dd>
+  <p><em>vsp</em> is not a value of type <strong>PM_TYPE_EVENT</strong>.</p>
+    </dd>
+    <dt>PM_ERR_TOOSMALL</dt>
+    <dd>
+  <p>The value identified by <em>vbp</em> is not legal because the value length is less than the minimum size, or the number of event records encoded in the (value header) <em>pmEventArray</em>/<em>pmEventHighResArray</em> structure is negative, or the number of missed event records in the array is negative.</p>
+    </dd>
+    <dt>PM_ERR_TOOBIG</dt>
+    <dd>
+  <p>Either <strong>vsp</strong> indicates more than one value is present (all the event records are expected to be packed in a single metric value), or when unpacking the event records, the processing continues past the end of the enclosing value.  Indicates corruption of the packed event record.</p>
+    </dd>
+    <dt>PM_ERR_TYPE</dt>
+    <dd>
+  <p>Event parameters must have one of the arithmetic types, else <strong>PM_TYPE_AGGREGATE</strong>, <strong>PM_TYPE_STRING</strong> or <strong>PM_TYPE_AGGREGATE_STATIC</strong>.</p>
+    </dd>
+    <dt>other values &lt; 0</dt>
+    <dd>
+  <p>refer to <strong>pmErrStr</strong>(3).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>PMAPI</strong>(3) and <strong>pmFreeEventResult</strong>(3).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmunloadnamespace.3.html"><span aria-hidden="true">&larr;</span> pmunloadnamespace.3: unload a local performance metrics name space for an application</a></li>
+   <li class="next"><a href="pmusecontext.3.html">pmusecontext.3: change current PMAPI context <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

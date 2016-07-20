@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmtrimnamespace - prune a performance metrics name space</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Prune a performance metrics name space">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmtrimnamespace<small> (3)</small></h1>
+        <p class="lead">Prune a performance metrics name space</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmtrimnamespace.3.html"><span itemprop="title">pmtrimnamespace</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>int pmTrimNameSpace(void);</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>In some (rare) cases it is helpful to prune the Performance Metrics Name Space (PMNS) to match the available metrics.</p>
+<p class='spacer'>
+
+  <p>The default PMNS that is accessible to a Performance Metrics Application Programming Interface (PMAPI) client is provided by the current PMAPI context:</p>
+  <dl class='dl-horizontal'>
+    <dt>&bull;</dt>
+    <dd>
+  <p>for a PMAPI context of type <strong>PM_CONTEXT_HOST</strong> the PMNS is provided by <strong>pmcd</strong>(1) on the associated host and no pruning is required</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>for a PMAPI context of type <strong>PM_CONTEXT_ARCHIVE</strong> the PMNS is stored within the associated Performance Co-Pilot (PCP) archive log and no pruning is required</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>for a PMAPI context of type <strong>PM_CONTEXT_LOCAL</strong> at the first PMAPI call requiring access to the PMNS it is loaded from the default local location <strong>$PCP_VAR_DIR/pmns/root</strong> (or <strong>$PMNS_DEFAULT</strong>) and no pruning is required.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If the default PMNS is in effect then calling <strong>pmTrimNameSpace</strong> is a no-op and returns zero with no change to the PMNS.</p>
+<p class='spacer'>
+
+<p>PMAPI clients also have the option of over-riding the default PMNS by loading a <em>local</em> PMNS from a file (see <strong>pmns</strong>(5) for the format) by calling <strong>pmLoadASCIINameSpace</strong>(3) or <strong>pmLoadNameSpace</strong>(3) and this is when some PMNS pruning <em>may</em> be useful.</p>
+<p class='spacer'>
+
+<p>If a <em>local</em> PMNS is in effect when <strong>pmTrimNameSpace</strong> is called then the first action is to restore the PMNS to the state as of the completion of the last <strong>pmLoadASCIINameSpace</strong>(3) or <strong>pmLoadNameSpace</strong>(3), so that the effects of consecutive calls to <strong>pmTrimNameSpace</strong> are <strong>not</strong> additive.</p>
+<p class='spacer'>
+
+  <p>The subsequent actions of <strong>pmTrimNameSpace</strong> depend on the type of the current PMAPI context.</p>
+  <dl class='dl-horizontal'>
+    <dt>&bull;</dt>
+    <dd>
+  <p>For a context of type <strong>PM_CONTEXT_ARCHIVE</strong> the <em>local</em> PMNS is trimmed to exclude metrics for which no description can be found in the PCP archive log. The PMNS is further trimmed to remove empty subtrees that do not contain any performance metric. Since PCP archives usually contain some subset of all metrics named in a PMNS, <strong>pmTrimNameSpace</strong> effectively prunes the application's PMNS to contain only the names of the metrics in the archive.</p>
+    </dd>
+    <dt>&bull;</dt>
+    <dd>
+  <p>For a context of type <strong>PM_CONTEXT_HOST</strong> or <strong>PM_CONTEXT_LOCAL</strong> no further action is required.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>On success, <strong>pmTrimNameSpace</strong> returns zero.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>, <strong>PMAPI</strong>(3), <strong>pmLoadASCIINameSpace</strong>(3), <strong>pmLoadNameSpace</strong>(3), <strong>pmNewContext</strong>(3) and <strong>pmns</strong>(5).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-horizontal'>
+    <dt>f3PM_ERR_NOPMNSf1</dt>
+    <dd>
+  <p>there has been some earlier problem with establishing the relevant PMNS</p>
+    </dd>
+    <dt>f3PM_ERR_NOCONTEXTf1</dt>
+    <dd>
+  <p>the current PMAPI context is invalid</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmtraversepmns.3.html"><span aria-hidden="true">&larr;</span> pmtraversepmns.3: traverse the performance metrics name space</a></li>
+   <li class="next"><a href="pmunloadnamespace.3.html">pmunloadnamespace.3: unload a local performance metrics name space for an application <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

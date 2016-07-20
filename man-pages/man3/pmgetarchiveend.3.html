@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmgetarchiveend - locate logical end of file for a set of archive logs</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Locate logical end of file for a set of archive logs">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmgetarchiveend<small> (3)</small></h1>
+        <p class="lead">Locate logical end of file for a set of archive logs</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmgetarchiveend.3.html"><span itemprop="title">pmgetarchiveend</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>int pmGetArchiveEnd(struct timeval *<em>tvp</em>);</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>Assuming the current PMAPI context is associated with a set of archive logs, <strong>pmGetArchiveEnd</strong> will attempt to find the logical end of file (after the last complete record in the set of archives), and return the last recorded timestamp via <em>tvp</em>. This timestamp may be passed to <strong>pmSetMode</strong>(3) to reliably position the context at the last valid log record, e.g. in preparation for subsequent reading in reverse chronological order.</p>
+<p class='spacer'>
+
+<p>For archive logs that are not concurrently being written, the physical end of file and the logical end of file are co-incident. However if an archive log is being written by <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a> at the same time an application is trying to read the archive, the logical end of file may be before the physical end of file due to write buffering that is not aligned with the logical record boundaries.</p>
+<p class='spacer'>
+
+<p><strong>pmGetArchiveEnd</strong> returns an error less than zero if the context is neither valid, nor associated with a set of archives, or the set of archives is seriously corrupted. Otherwise, the return value is 0 if there has been no change of state since the last call, or 1 if the logical end of file has advanced since the last call.</p>
+<p class='spacer'>
+
+<p>In the absence of an error, the result returned via <em>tvp</em> is well-defined.</p>
+<p class='spacer'>
+
+<p><strong>pmGetArchiveEnd</strong> preserves the positioning state of the log file prior to this function call.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">PCP ENVIRONMENT</h2>
+        <div class="sectioncontent">
+
+<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <strong>pcp.conf</strong>(5). Values for these variables may be obtained programmatically using the <strong>pmGetConfig</strong>(3) function.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>PMAPI</strong>(3), <strong>pmFetch</strong>(3), <strong>pmFetchArchive</strong>(3), <strong>pmGetArchiveLabel</strong>(3), <strong>pmGetConfig</strong>(3), <strong>pmSetMode</strong>(3), <strong>pcp.conf</strong>(5) and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-horizontal'>
+    <dt>f3PM_ERR_NOCONTEXTf1</dt>
+    <dd>
+  <p>the current PMAPI context is either invalid, or not associated with an set of archive logs</p>
+    </dd>
+    <dt>f3PM_ERR_LOGRECf1</dt>
+    <dd>
+  <p>the set of archives is sufficiently damaged, that not a single valid record can be found</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmfreeprofile.3.html"><span aria-hidden="true">&larr;</span> pmfreeprofile.3: free a PMAPI instance profile</a></li>
+   <li class="next"><a href="pmgetchildren.3.html">pmgetchildren.3: return the descendent nodes of a PMNS node <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

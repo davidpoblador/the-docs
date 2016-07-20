@@ -103,7 +103,7 @@
         </dd>
         <dt>*</dt>
         <dd>
-      <p>set extended file attributes (see <a href="../man1/chattr.1.html"><strong>chattr</strong>(1)</a>) on arbitrary files;</p>
+      <p>set extended file attributes (see <strong>chattr</strong>(1)) on arbitrary files;</p>
         </dd>
         <dt>*</dt>
         <dd>
@@ -141,7 +141,7 @@
     </dd>
     <dt><strong>CAP_LINUX_IMMUTABLE</strong></dt>
     <dd>
-  <p>Set the <strong>FS_APPEND_FL</strong> and <strong>FS_IMMUTABLE_FL</strong> inode flags (see <a href="../man1/chattr.1.html"><strong>chattr</strong>(1)</a>).</p>
+  <p>Set the <strong>FS_APPEND_FL</strong> and <strong>FS_IMMUTABLE_FL</strong> inode flags (see <strong>chattr</strong>(1)).</p>
     </dd>
     <dt><strong>CAP_MAC_ADMIN</strong> (since Linux 2.6.25)</dt>
     <dd>
@@ -605,7 +605,7 @@
 
 <p>Since Linux 3.2, the file <em>/proc/sys/kernel/cap_last_cap</em> exposes the numerical value of the highest capability supported by the running kernel; this can be used to determine the highest bit that may be set in a capability set.</p>
   <h3>File capabilities</h3>
-<p>Since kernel 2.6.24, the kernel supports associating capability sets with an executable file using <strong>setcap</strong>(8). The file capability sets are stored in an extended attribute (see <a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>) named <em>security.capability</em>. Writing to this extended attribute requires the <strong>CAP_SETFCAP</strong> capability. The file capability sets, in conjunction with the capability sets of the thread, determine the capabilities of a thread after an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p>
+<p>Since kernel 2.6.24, the kernel supports associating capability sets with an executable file using <a href="../man8/setcap.8.html"><strong>setcap</strong>(8)</a>. The file capability sets are stored in an extended attribute (see <a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>) named <em>security.capability</em>. Writing to this extended attribute requires the <strong>CAP_SETFCAP</strong> capability. The file capability sets, in conjunction with the capability sets of the thread, determine the capabilities of a thread after an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p>
 <p class='spacer'>
 
   <p>The three file capability sets are:</p>
@@ -623,7 +623,7 @@
   <p>This is not a set, but rather just a single bit. If this bit is set, then during an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> all of the new permitted capabilities for the thread are also raised in the effective set. If this bit is not set, then after an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, none of the new permitted capabilities is in the new effective set.</p>
 <p class='spacer'>
 
-  <p>Enabling the file effective capability bit implies that any file permitted or inheritable capability that causes a thread to acquire the corresponding permitted capability during an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> (see the transformation rules described below) will also acquire that capability in its effective set. Therefore, when assigning capabilities to a file (<strong>setcap</strong>(8), <strong>cap_set_file</strong>(3), <strong>cap_set_fd</strong>(3)), if we specify the effective flag as being enabled for any capability, then the effective flag must also be specified as enabled for all other capabilities for which the corresponding permitted or inheritable flags is enabled.</p>
+  <p>Enabling the file effective capability bit implies that any file permitted or inheritable capability that causes a thread to acquire the corresponding permitted capability during an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> (see the transformation rules described below) will also acquire that capability in its effective set. Therefore, when assigning capabilities to a file (<a href="../man8/setcap.8.html"><strong>setcap</strong>(8)</a>, <a href="../man3/cap_set_file.3.html"><strong>cap_set_file</strong>(3)</a>, <a href="../man3/cap_set_fd.3.html"><strong>cap_set_fd</strong>(3)</a>), if we specify the effective flag as being enabled for any capability, then the effective flag must also be specified as enabled for all other capabilities for which the corresponding permitted or inheritable flags is enabled.</p>
     </dd>
   </dl>
   <h3>Transformation of capabilities during execve()</h3>
@@ -664,10 +664,10 @@ P'(inheritable) = P(inheritable)    [i.e., unchanged]
 
 <p>A privileged file is one that has capabilities or has the set-user-ID or set-group-ID bit set.</p>
   <h3>Safety checking for capability-dumb binaries</h3>
-<p>A capability-dumb binary is an application that has been marked to have file capabilities, but has not been converted to use the <strong>libcap</strong>(3) API to manipulate its capabilities. (In other words, this is a traditional set-user-ID-root program that has been switched to use file capabilities, but whose code has not been modified to understand capabilities.) For such applications, the effective capability bit is set on the file, so that the file permitted capabilities are automatically enabled in the process effective set when executing the file. The kernel recognizes a file which has the effective capability bit set as capability-dumb for the purpose of the check described here.</p>
+<p>A capability-dumb binary is an application that has been marked to have file capabilities, but has not been converted to use the <a href="../man3/libcap.3.html"><strong>libcap</strong>(3)</a> API to manipulate its capabilities. (In other words, this is a traditional set-user-ID-root program that has been switched to use file capabilities, but whose code has not been modified to understand capabilities.) For such applications, the effective capability bit is set on the file, so that the file permitted capabilities are automatically enabled in the process effective set when executing the file. The kernel recognizes a file which has the effective capability bit set as capability-dumb for the purpose of the check described here.</p>
 <p class='spacer'>
 
-<p>When executing a capability-dumb binary, the kernel checks if the process obtained all permitted capabilities that were specified in the file permitted set, after the capability transformations described above have been performed. (The typical reason why this might <em>not</em> occur is that the capability bounding set masked out some of the capabilities in the file permitted set.) If the process did not obtain the full set of file permitted capabilities, then <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> fails with the error <strong>EPERM</strong>. This prevents possible security risks that could arise when a capability-dumb application is executed with less privilege that it needs. Note that, by definition, the application could not itself recognize this problem, since it does not employ the <strong>libcap</strong>(3) API.</p>
+<p>When executing a capability-dumb binary, the kernel checks if the process obtained all permitted capabilities that were specified in the file permitted set, after the capability transformations described above have been performed. (The typical reason why this might <em>not</em> occur is that the capability bounding set masked out some of the capabilities in the file permitted set.) If the process did not obtain the full set of file permitted capabilities, then <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> fails with the error <strong>EPERM</strong>. This prevents possible security risks that could arise when a capability-dumb application is executed with less privilege that it needs. Note that, by definition, the application could not itself recognize this problem, since it does not employ the <a href="../man3/libcap.3.html"><strong>libcap</strong>(3)</a> API.</p>
   <h3>Capabilities and execution of programs by root</h3>
   <p>In order to provide an all-powerful <em>root</em> using capability sets, during an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>:</p>
   <dl class='dl-horizontal'>
@@ -758,7 +758,7 @@ P'(inheritable) = P(inheritable)    [i.e., unchanged]
 
 <p>If a thread that has a 0 value for one or more of its user IDs wants to prevent its permitted capability set being cleared when it resets all of its user IDs to nonzero values, it can do so using the <a href="../man2/prctl.2.html"><strong>prctl</strong>(2)</a> <strong>PR_SET_KEEPCAPS</strong> operation or the <strong>SECBIT_KEEP_CAPS</strong> securebits flag described below.</p>
   <h3>Programmatically adjusting capability sets</h3>
-  <p>A thread can retrieve and change its capability sets using the <a href="../man2/capget.2.html"><strong>capget</strong>(2)</a> and <a href="../man2/capset.2.html"><strong>capset</strong>(2)</a> system calls. However, the use of <strong>cap_get_proc</strong>(3) and <strong>cap_set_proc</strong>(3), both provided in the <em>libcap</em> package, is preferred for this purpose. The following rules govern changes to the thread capability sets:</p>
+  <p>A thread can retrieve and change its capability sets using the <a href="../man2/capget.2.html"><strong>capget</strong>(2)</a> and <a href="../man2/capset.2.html"><strong>capset</strong>(2)</a> system calls. However, the use of <a href="../man3/cap_get_proc.3.html"><strong>cap_get_proc</strong>(3)</a> and <a href="../man3/cap_set_proc.3.html"><strong>cap_set_proc</strong>(3)</a>, both provided in the <em>libcap</em> package, is preferred for this purpose. The following rules govern changes to the thread capability sets:</p>
   <dl class='dl-horizontal'>
     <dt>1.</dt>
     <dd>
@@ -845,7 +845,7 @@ prctl(PR_SET_SECUREBITS,
 <p>The <em>/proc/PID/task/TID/status</em> file can be used to view the capability sets of a thread. The <em>/proc/PID/status</em> file shows the capability sets of a process's main thread. Before Linux 3.8, nonexistent capabilities were shown as being enabled (1) in these sets. Since Linux 3.8, all nonexistent capabilities (above <strong>CAP_LAST_CAP</strong>) are shown as disabled (0).</p>
 <p class='spacer'>
 
-<p>The <em>libcap</em> package provides a suite of routines for setting and getting capabilities that is more comfortable and less likely to change than the interface provided by <a href="../man2/capset.2.html"><strong>capset</strong>(2)</a> and <a href="../man2/capget.2.html"><strong>capget</strong>(2)</a>. This package also provides the <strong>setcap</strong>(8) and <strong>getcap</strong>(8) programs. It can be found at</p>
+<p>The <em>libcap</em> package provides a suite of routines for setting and getting capabilities that is more comfortable and less likely to change than the interface provided by <a href="../man2/capset.2.html"><strong>capset</strong>(2)</a> and <a href="../man2/capget.2.html"><strong>capget</strong>(2)</a>. This package also provides the <a href="../man8/setcap.8.html"><strong>setcap</strong>(8)</a> and <a href="../man8/getcap.8.html"><strong>getcap</strong>(8)</a> programs. It can be found at</p>
 <p class='spacer'>
 
 <p><a href="http://www.kernel.org/pub/linux/libs/security/linux-privs">http://www.kernel.org/pub/linux/libs/security/linux-privs</a></p>
@@ -869,7 +869,7 @@ prctl(PR_SET_SECUREBITS,
         <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
         <div class="sectioncontent">
 
-<p><strong>capsh</strong>(1), <strong>setpriv</strong>(1), <a href="../man2/prctl.2.html"><strong>prctl</strong>(2)</a>, <a href="../man2/setfsuid.2.html"><strong>setfsuid</strong>(2)</a>, <strong>cap_clear</strong>(3), <strong>cap_copy_ext</strong>(3), <strong>cap_from_text</strong>(3), <strong>cap_get_file</strong>(3), <strong>cap_get_proc</strong>(3), <strong>cap_init</strong>(3), <strong>capgetp</strong>(3), <strong>capsetp</strong>(3), <strong>libcap</strong>(3), <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>, <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a>, <strong>getcap</strong>(8), <strong>setcap</strong>(8)</p>
+<p><a href="../man1/capsh.1.html"><strong>capsh</strong>(1)</a>, <a href="../man1/setpriv.1.html"><strong>setpriv</strong>(1)</a>, <a href="../man2/prctl.2.html"><strong>prctl</strong>(2)</a>, <a href="../man2/setfsuid.2.html"><strong>setfsuid</strong>(2)</a>, <a href="../man3/cap_clear.3.html"><strong>cap_clear</strong>(3)</a>, <a href="../man3/cap_copy_ext.3.html"><strong>cap_copy_ext</strong>(3)</a>, <a href="../man3/cap_from_text.3.html"><strong>cap_from_text</strong>(3)</a>, <a href="../man3/cap_get_file.3.html"><strong>cap_get_file</strong>(3)</a>, <a href="../man3/cap_get_proc.3.html"><strong>cap_get_proc</strong>(3)</a>, <a href="../man3/cap_init.3.html"><strong>cap_init</strong>(3)</a>, <a href="../man3/capgetp.3.html"><strong>capgetp</strong>(3)</a>, <a href="../man3/capsetp.3.html"><strong>capsetp</strong>(3)</a>, <a href="../man3/libcap.3.html"><strong>libcap</strong>(3)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>, <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a>, <a href="../man8/getcap.8.html"><strong>getcap</strong>(8)</a>, <a href="../man8/setcap.8.html"><strong>setcap</strong>(8)</a></p>
 <p class='spacer'>
 
 <p><em>include/linux/capability.h</em> in the Linux kernel source tree</p>

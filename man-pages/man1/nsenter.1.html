@@ -84,6 +84,10 @@
     <dd>
   <p>The process will have a distinct set of UIDs, GIDs and capabilities. (<strong>CLONE_NEWUSER</strong> flag)</p>
     </dd>
+    <dt><strong>cgroup namespace</strong></dt>
+    <dd>
+  <p>The process will have a virtualized view of <em>/proc/self/cgroup</em>, and new cgroup mounts will be rooted at the namespace cgroup root. (<strong>CLONE_NEWCGROUP</strong> flag)</p>
+    </dd>
     <dt>See <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> for the exact semantics of the flags.</dt>
     <dd>
     </dd>
@@ -132,6 +136,10 @@
           <dd>
         <p>the user namespace</p>
           </dd>
+          <dt>/proc/<em>pid</em>/ns/cgroup</dt>
+          <dd>
+        <p>the cgroup namespace</p>
+          </dd>
           <dt>/proc/<em>pid</em>/root</dt>
           <dd>
         <p>the root directory</p>
@@ -168,13 +176,21 @@
     <dd>
   <p>Enter the user namespace.  If no file is specified, enter the user namespace of the target process.  If file is specified, enter the user namespace specified by file.  See also the <strong>--setuid</strong> and <strong>--setgid</strong> options.</p>
     </dd>
+    <dt><strong>-C</strong>, <strong>--cgroup</strong>[=<em>file</em>]</dt>
+    <dd>
+  <p>Enter the cgroup namespace.  If no file is specified, enter the cgroup namespace of the target process.  If file is specified, enter the cgroup namespace specified by file.</p>
+    </dd>
     <dt><strong>-G</strong>, <strong>--setgid</strong> <em>gid</em></dt>
     <dd>
-  <p>Set the group ID which will be used in the entered user namespace.</p>
+  <p>Set the group ID which will be used in the entered namespace and drop supplementary groups. <a href="../man1/nsenter.1.html"><strong>nsenter</strong>(1)</a> always sets GID for user namespaces, the default is 0.</p>
     </dd>
     <dt><strong>-S</strong>, <strong>--setuid</strong> <em>uid</em></dt>
     <dd>
-  <p>Set the user ID which will be used in the entered user namespace.</p>
+  <p>Set the user ID which will be used in the entered namespace. <a href="../man1/nsenter.1.html"><strong>nsenter</strong>(1)</a> always sets UID for user namespaces, the default is 0.</p>
+    </dd>
+    <dt><strong>--preserve-credentials</strong></dt>
+    <dd>
+  <p>Don't modify UID and GID when enter user namespace. The default is to drops supplementary groups and sets GID and UID to 0.</p>
     </dd>
     <dt><strong>-r</strong>, <strong>--root</strong>[=<em>directory</em>]</dt>
     <dd>
@@ -187,6 +203,10 @@
     <dt><strong>-F</strong>, <strong>--no-fork</strong></dt>
     <dd>
   <p>Do not fork before exec'ing the specified program.  By default, when entering a PID namespace, <strong>nsenter</strong> calls <strong>fork</strong> before calling <strong>exec</strong> so that any children will also be in the newly entered PID namespace.</p>
+    </dd>
+    <dt><strong>-Z</strong>, <strong>--follow-context</strong></dt>
+    <dd>
+  <p>Set the SELinux security context used for executing a new process according to already running process specified by <strong>--target</strong> PID. (The util-linux has to be compiled with SELinux support otherwise the option is unavailable.)</p>
     </dd>
     <dt><strong>-V</strong>, <strong>--version</strong></dt>
     <dd>
@@ -209,10 +229,13 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
 
-<p><a href="mailto:ebiederm@xmission.com">ebiederm@xmission.com</a> Eric Biederman</p>
+<p><a href="mailto:biederm@xmission.com">biederm@xmission.com</a> Eric Biederman</p>
+<p class='spacer'>
+
+<p><a href="mailto:kzak@redhat.com">kzak@redhat.com</a> Karel Zak</p>
         </div>
       </section>
 

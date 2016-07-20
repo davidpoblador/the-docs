@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>slapo-nssov - NSS and PAM requests through a local Unix Domain socket</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Nss and pam requests through a local unix domain socket">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">slapo-nssov<small> (5)</small></h1>
+        <p class="lead">Nss and pam requests through a local unix domain socket</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/slapo-nssov.5.html"><span itemprop="title">slapo-nssov</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>ETCDIR/slapd.conf</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>nssov</strong> overlay to <strong>slapd</strong>(8) services NSS and PAM requests through a local Unix Domain socket. It uses the same IPC protocol as Arthur de Jong's nss-pam-ldapd. An extract of the nss-ldapd source is included along with the nssov source code to allow the overlay to communicate with the nss-pam-ldapd client stubs.</p>
+<p class='spacer'>
+
+<p>Using a separate IPC protocol for NSS and PAM requests eliminates the libldap dependencies/clashes that the current pam_ldap/nss_ldap solutions all suffer from. Both the original nss-ldapd and this nssov solution are free from these library issues.</p>
+<p class='spacer'>
+
+<p>Unlike nss-pam-ldapd, since this overlay executes inside slapd it allows for the possibility of sophisticated caching, without any of the weaknesses of nscd and other related caching solutions. E.g., a remote LDAP database can be accessed using back-ldap with proxy caching (see <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> and <a href="../man5/slapo-pcache.5.html"><strong>slapo-pcache</strong>(5)</a> ) to leverage back-ldap's connection pooling as well as pcache's persistent caching, to provide high performance and a measure of support for disconnected operation. Alternatively, cache considerations can be completely eliminated by running a regular database with syncrepl to maintain synchronization with a remote LDAP database.</p>
+<p class='spacer'>
+
+<p>Another major benefit of nssov is that it allows all security policy to be administered centrally via LDAP, instead of having fragile rules scattered across multiple flat files. As such, there is no client-side configuration at all for the NSS/PAM stub libraries. (The stubs talk to the server via a Unix domain socket whose path is hardcoded to NSLCDPATH). As a side benefit, this can finally eliminate the perpetual confusion between OpenLDAP's ldap.conf file in ETCDIR/ldap.conf and the similarly named files typically used by pam_ldap and nss_ldap.</p>
+<p class='spacer'>
+
+<p>User authentication is performed by internal simple Binds. User authorization leverages the slapd ACL engine, which offers much more power and flexibility than the simple group/hostname checks in the old pam_ldap code.</p>
+<p class='spacer'>
+
+<p>To use this code, you will need the client-side stub library from nss-pam-ldapd.  You can get it from: http://arthurdejong.org/nss-pam-ldapd You will not need the nslcd daemon; this overlay replaces that part. To disable building of the nslcd daemon in nss-pam-ldapd, add the --disable-nslcd option to the nss-pam-ldapd configure script. You should already be familiar with the RFC2307 and RFC2307bis schema to use this overlay.  See the nss-pam-ldapd README for more information on the schema and which features are supported.</p>
+<p class='spacer'>
+
+<p>You will also need to include the nis.schema in your slapd configuration for RFC2307 support. If you wish to use RFC2307bis you will need a slightly different schema. You will also need the ldapns.schema for PAM authorization management.</p>
+<p class='spacer'>
+
+<p>You must select <strong>ldap</strong> in the appropriate services in <em>/etc/nsswitch.conf</em> in order for these NSS features to take effect. Likewise, you must enable <strong>pam_ldap</strong> for the authenticate, account, session, and password services in <em>/etc/pam.conf</em> or <em>/etc/pam.d</em> for these PAM features to take effect.</p>
+<p class='spacer'>
+
+  <dl class='dl-vertical'>
+    <dt><strong>overlay nssov</strong></dt>
+    <dd>
+  <p>This directive adds the nssov overlay to the current backend.</p>
+    </dd>
+    <dt><strong>nssov-ssd &lt;service&gt; &lt;url&gt;</strong></dt>
+    <dd>
+      <p>This directive configures a Service Search Descriptor (SSD) for each NSS service that will be used.  The &lt;service&gt; may be one of</p>
+<pre>    aliases
+    ethers
+    group
+    hosts
+    netgroup
+    networks
+    passwd
+    protocols
+    rpc
+    services
+    shadow</pre>
+
+      <p>and the &lt;url&gt; must be of the form</p>
+      <dl class='dl-vertical'>
+        <dt><strong>ldap:///[&lt;basedn&gt;][??[&lt;scope&gt;][?&lt;filter&gt;]]</strong></dt>
+        <dd>
+        </dd>
+      </dl>
+  <p>The <strong>&lt;basedn&gt;</strong> will default to the first suffix of the current database. The <strong>&lt;scope&gt;</strong> defaults to "subtree". The default <strong>&lt;filter&gt;</strong> depends on which service is being used.</p>
+    </dd>
+    <dt><strong>nssov-map &lt;service&gt; &lt;orig&gt; &lt;new&gt;</strong></dt>
+    <dd>
+  <p>If the local database is actually a proxy to a foreign LDAP server, some mapping of schema may be needed. This directive allows some simple attribute substitutions to be performed. See the <strong>nss-ldapd/README</strong> for the original attribute names used in this code.</p>
+    </dd>
+    <dt><strong>nssov-pam &lt;option&gt; [...]</strong></dt>
+    <dd>
+        <p>This directive determines a number of PAM behaviors. Multiple options may be used at once, and available levels are:</p>
+        <dl class='dl-vertical'>
+          <dt><strong>userhost</strong></dt>
+          <dd>
+        <p>check host attribute in user entry for authorization</p>
+          </dd>
+          <dt><strong>userservice</strong></dt>
+          <dd>
+        <p>check authorizedService attribute in user entry for authorization</p>
+          </dd>
+          <dt><strong>usergroup</strong></dt>
+          <dd>
+        <p>check that user is a member of specific group for authorization</p>
+          </dd>
+          <dt><strong>hostservice</strong></dt>
+          <dd>
+        <p>check authorizedService attribute in host entry for authorization</p>
+          </dd>
+          <dt><strong>authz2dn</strong></dt>
+          <dd>
+        <p>use authz-regexp mapping to map uid to LDAP DN</p>
+          </dd>
+          <dt><strong>uid2dn</strong></dt>
+          <dd>
+        <p>use NSS passwd SSD to map uid to LDAP DN</p>
+          </dd>
+        </dl>
+<p class='spacer'>
+
+    <p>Setting the <strong>userhost</strong>, <strong>userservice</strong>, and <strong>usergroup</strong> options duplicates the original pam_ldap authorization behavior.</p>
+<p class='spacer'>
+
+    <p>The recommended approach is to use <strong>hostservice</strong> instead. In this case, ipHost entries must be created for all hosts being managed, and they must also have the authorizedServiceObject class to allow authorizedService attributes to be used. Also the NSS host SSD must be configured so that ipHost entries can be found. Authorization is checked by performing an LDAP Compare operation looking for the PAM service name in the authorizedService attribute. <strong>slapd</strong> ACLs should be set to grant or deny <strong>Compare</strong> privilege to the appropriate users or groups as desired.</p>
+<p class='spacer'>
+
+    <p>If the <strong>authz2dn</strong> option is set then authz-regexp mappings will be used to map the PAM username to an LDAP DN. The authentication DN will be of the form <strong>cn=&lt;service&gt;+uid=&lt;user&gt;,cn=&lt;hostname&gt;,cn=pam,cn=auth</strong></p>
+<p class='spacer'>
+
+    <p>If no mapping is found for this authentication DN, then this mapping will be ignored.</p>
+<p class='spacer'>
+
+    <p>If the <strong>uid2dn</strong> option is set then the NSS passwd SSD will be used to map the PAM username to an LDAP DN. The passwd SSD must have already been configured for this mapping to succeed.</p>
+<p class='spacer'>
+
+    <p>If neither the authz2dn nor the uid2dn mapping succeeds, the module will return a PAM_USER_UNKNOWN failure code. If both options are set, the authz mapping is attempted first; if it succeeds the uid2dn mapping will be skipped.</p>
+<p class='spacer'>
+
+  <p>By default only the <strong>uid2dn</strong> option is set.</p>
+    </dd>
+    <dt><strong>nssov-pam-defhost &lt;hostname&gt;</strong></dt>
+    <dd>
+  <p>Specify a default hostname to check if an ipHost entry for the current hostname cannot be found. This setting is only relevant if the <strong>hostservice</strong> option has been set.</p>
+    </dd>
+    <dt><strong>nssov-pam-group-dn &lt;DN&gt;</strong></dt>
+    <dd>
+  <p>Specify the DN of an LDAP group to check for authorization. The LDAP user must be a member of this group for the login to be allowed. There is no default value. This setting is only relevant if the <strong>usergroup</strong> option has been set.</p>
+    </dd>
+    <dt><strong>nssov-pam-group-ad &lt;attribute&gt;</strong></dt>
+    <dd>
+  <p>Specify the attribute to use for group membership checks. There is no default value.  This setting is only relevant if the <strong>usergroup</strong> option has been set.</p>
+    </dd>
+    <dt><strong>nssov-pam-min-uid &lt;integer&gt;</strong></dt>
+    <dd>
+  <p>Specify a minimum uid that is allowed to login. Users with a uidNumber lower than this value will be denied access. The default is zero, which disables this setting.</p>
+    </dd>
+    <dt><strong>nssov-pam-max-uid &lt;integer&gt;</strong></dt>
+    <dd>
+  <p>Specify a maximum uid that is allowed to login. Users with a uidNumber higher than this value will be denied access. The default is zero, which disables this setting.</p>
+    </dd>
+    <dt><strong>nssov-pam-template-ad &lt;attribute&gt;</strong></dt>
+    <dd>
+  <p>Specify an attribute to check in a user's entry for a template login name. The template login feature is used by FreeBSD's PAM framework. It can be viewed as a form of proxying, where a user can authenticate with one username/password pair, but is assigned the identity and credentials of the template user. This setting is disabled by default.</p>
+    </dd>
+    <dt><strong>nssov-pam-template &lt;name&gt;</strong></dt>
+    <dd>
+  <p>Specify a default username to be used if no template attribute is found in the user's entry. The <strong>nssov-pam-template-ad</strong> directive must be configured for this setting to have any effect.</p>
+    </dd>
+    <dt><strong>nssov-pam-session &lt;service&gt;</strong></dt>
+    <dd>
+  <p>Specify a PAM service name whose sessions will be recorded. For the configured services, logins will be recorded in the</p>
+    </dd>
+    <dt><strong>nssov-pam-password-prohibit-message &lt;message&gt;</strong></dt>
+    <dd>
+  <p>Diable password change service and return the specified message to users.</p>
+    </dd>
+    <dt><strong>nssov-pam-pwdmgr-dn &lt;dn&gt;</strong></dt>
+    <dd>
+  <p>Specify the dn of the password manager.</p>
+    </dd>
+    <dt><strong>nssov-pam-pwdmgr-pwd &lt;pwd&gt;</strong></dt>
+    <dd>
+  <p>Specify the pwd of the password manager.</p>
+    </dd>
+    <dt><strong>loginStatus</strong></dt>
+    <dd>
+  <p>operational attribute of the user's entry. The attribute's values are of the form <strong>&lt;generalizedTime&gt; &lt;host&gt; &lt;service&gt; &lt;tty&gt; (&lt;ruser@rhost&gt;)</strong> Upon logout the corresponding value will be deleted. This feature allows a single LDAP Search to be used to check which users are logged in across all the hosts of a network. The rootdn of the database is used to perform the updates of the loginStatus attribute, so a rootdn must already be configured for this feature to work. By default no services are configured.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The PAM functions support LDAP Password Policy as well. If the password policy overlay is in use (see <strong>slapo-ppolicy</strong>(5)), policy information (e.g. password expiration, password quality, etc.) may be returned to the PAM client as a result of authentication, account management, and password modification requests.</p>
+<p class='spacer'>
+
+<p>The overlay also supports dynamic configuration in cn=config. An example of the config entry is</p>
+<p class='spacer'>
+
+<pre>    dn: olcOverlay={0}nssov,ocDatabase={1}hdb,cn=config
+    objectClass: olcOverlayConfig
+    objectClass: olcNssOvConfig
+    olcOverlay: {0}nssov
+    olcNssSsd: passwd ldap:///ou=users,dc=example,dc=com??one
+    olcNssMap: passwd uid accountName
+    olcNssPam: hostservice uid2dn
+    olcNssPamDefHost: defaulthost
+    olcNssPamMinUid: 500
+    olcNssPamMaxUid: 32000
+    olcNssPamSession: login
+    olcNssPamSession: sshd</pre>
+
+<p class='spacer'>
+
+<p>which enables the passwd service, and uses the accountName attribute to fetch what is usually retrieved from the uid attribute. It also enables some PAM authorization controls, and specifies that the PAM <strong>login</strong> and <strong>sshd</strong> services should have their logins recorded.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt>ETCDIR/slapd.conf</dt>
+    <dd>
+  <p>default slapd configuration file</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>slapd.conf</strong>(5), <strong>slapd-config</strong>(5), <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, <a href="../man5/slapo-pcache.5.html"><strong>slapo-pcache</strong>(5)</a>, <strong>slapo-ppolicy</strong>(5), <strong>slapd</strong>(8).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p>Howard Chu, inspired by nss-ldapd by Arthur de Jong and pam_ldap by Luke Howard Enhancements by Ted C. Cheng, Symas Corp.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="slapo-memberof.5.html"><span aria-hidden="true">&larr;</span> slapo-memberof.5: Reverse Group Membership overlay to slapd</a></li>
+   <li class="next"><a href="slapo-pbind.5.html">slapo-pbind.5: proxy bind overlay to slapd <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

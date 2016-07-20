@@ -58,7 +58,41 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 
-<p><strong>free</strong> displays the total amount of free and used physical and swap memory in the system, as well as the buffers used by the kernel. The shared memory column represents either the MemShared value (2.4 series kernels) or the Shmem value (2.6 series kernels and later) taken from the /proc/meminfo file. The value is zero if none of the entries is exported by the kernel.</p>
+  <p><strong>free</strong> displays the total amount of free and used physical and swap memory in the system, as well as the buffers and caches used by the kernel. The information is gathered by parsing /proc/meminfo. The displayed columns are:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>total</strong></dt>
+    <dd>
+  <p>Total installed memory (MemTotal and SwapTotal in /proc/meminfo)</p>
+    </dd>
+    <dt><strong>used</strong></dt>
+    <dd>
+  <p>Used memory (calculated as <strong>total</strong> - <strong>free</strong> - <strong>buffers</strong> - <strong>cache</strong>)</p>
+    </dd>
+    <dt><strong>free</strong></dt>
+    <dd>
+  <p>Unused memory (MemFree and SwapFree in /proc/meminfo)</p>
+    </dd>
+    <dt><strong>shared</strong></dt>
+    <dd>
+  <p>Memory used (mostly) by tmpfs (Shmem in /proc/meminfo)</p>
+    </dd>
+    <dt><strong>buffers</strong></dt>
+    <dd>
+  <p>Memory used by kernel buffers (Buffers in /proc/meminfo)</p>
+    </dd>
+    <dt><strong>cache</strong></dt>
+    <dd>
+  <p>Memory used by the page cache and slabs (Cached and SReclaimable in /proc/meminfo)</p>
+    </dd>
+    <dt><strong>buff/cache</strong></dt>
+    <dd>
+  <p>Sum of <strong>buffers</strong> and <strong>cache</strong></p>
+    </dd>
+    <dt><strong>available</strong></dt>
+    <dd>
+  <p>Estimation of how much memory is available for starting new applications, without swapping. Unlike the data provided by the <strong>cache</strong> or <strong>free</strong> fields, this field takes into account page cache and also that not all reclaimable memory slabs will be reclaimed due to items being in use (MemAvailable in /proc/meminfo, available on kernels 3.14, emulated on kernels 2.6.27+, otherwise the same as <strong>free</strong>)</p>
+    </dd>
+  </dl>
         </div>
       </section>
 
@@ -71,21 +105,45 @@
     <dd>
   <p>Display the amount of memory in bytes.</p>
     </dd>
-    <dt><strong>-k</strong>, <strong>--kilo</strong></dt>
+    <dt><strong>-k</strong>, <strong>--kibi</strong></dt>
     <dd>
-  <p>Display the amount of memory in kilobytes.  This is the default.</p>
+  <p>Display the amount of memory in kibibytes.  This is the default.</p>
     </dd>
-    <dt><strong>-m</strong>, <strong>--mega</strong></dt>
+    <dt><strong>-m</strong>, <strong>--mebi</strong></dt>
     <dd>
-  <p>Display the amount of memory in megabytes.</p>
+  <p>Display the amount of memory in mebibytes.</p>
     </dd>
-    <dt><strong>-g</strong>, <strong>--giga</strong></dt>
+    <dt><strong>-g</strong>, <strong>--gibi</strong></dt>
     <dd>
-  <p>Display the amount of memory in gigabytes.</p>
+  <p>Display the amount of memory in gibibytes.</p>
+    </dd>
+    <dt><strong>--tebi</strong></dt>
+    <dd>
+  <p>Display the amount of memory in tebibytes.</p>
+    </dd>
+    <dt><strong>--pebi</strong></dt>
+    <dd>
+  <p>Display the amount of memory in pebibytes.</p>
+    </dd>
+    <dt><strong>--kilo</strong></dt>
+    <dd>
+  <p>Display the amount of memory in kilobytes. Implies --si.</p>
+    </dd>
+    <dt><strong>--mega</strong></dt>
+    <dd>
+  <p>Display the amount of memory in megabytes. Implies --si.</p>
+    </dd>
+    <dt><strong>--giga</strong></dt>
+    <dd>
+  <p>Display the amount of memory in gigabytes. Implies --si.</p>
     </dd>
     <dt><strong>--tera</strong></dt>
     <dd>
-  <p>Display the amount of memory in terabytes.</p>
+  <p>Display the amount of memory in terabytes. Implies --si.</p>
+    </dd>
+    <dt><strong>--peta</strong></dt>
+    <dd>
+  <p>Display the amount of memory in petabytes. Implies --si.</p>
     </dd>
     <dt><strong>-h</strong>, <strong>--human</strong></dt>
     <dd>
@@ -93,14 +151,19 @@
 <p class='spacer'>
 
 <pre>  B = bytes
-  K = kilos
-  M = megas
-  G = gigas
-  T = teras</pre>
+  K = kibibyte
+  M = mebibyte
+  G = gibibyte
+  T = tebibyte
+  P = pebibyte</pre>
 
 <p class='spacer'>
 
-  <p>If unit is missing, and you have petabyte of RAM or swap, the number is in terabytes and columns might not be aligned with header.</p>
+  <p>If unit is missing, and you have exbibyte of RAM or swap, the number is in tebibytes and columns might not be aligned with header.</p>
+    </dd>
+    <dt><strong>-w</strong>, <strong>--wide</strong></dt>
+    <dd>
+  <p>Switch to the wide mode. The wide mode produces lines longer than 80 characters. In this mode <strong>buffers</strong> and <strong>cache</strong> are reported in two separate columns.</p>
     </dd>
     <dt><strong>-c</strong>, <strong>--count</strong> <em>count</em></dt>
     <dd>
@@ -110,17 +173,13 @@
     <dd>
   <p>Show detailed low and high memory statistics.</p>
     </dd>
-    <dt><strong>-o</strong>, <strong>--old</strong></dt>
+    <dt><strong>-s</strong>, <strong>--seconds</strong> <em>delay</em></dt>
     <dd>
-  <p>Display the output in old format, the only difference being this option will disable the display of the "buffer adjusted" line.</p>
-    </dd>
-    <dt><strong>-s</strong>, <strong>--seconds</strong> <em>seconds</em></dt>
-    <dd>
-  <p>Continuously display the result delay <em>seconds</em> apart.  You may actually specify any floating point number for <em>delay</em>, <a href="../man3/usleep.3.html"><strong>usleep</strong>(3)</a> is used for microsecond resolution delay times.</p>
+  <p>Continuously display the result <em>delay</em>  seconds apart.  You may actually specify any floating point number for <em>delay</em> using either . or , for decimal point. <a href="../man3/usleep.3.html"><strong>usleep</strong>(3)</a> is used for microsecond resolution delay times.</p>
     </dd>
     <dt><strong>--si</strong></dt>
     <dd>
-  <p>Use power of 1000 not 1024.</p>
+  <p>Use kilo, mega, giga etc (power of 1000) instead of kibi, mebi, gibi (power of 1024).</p>
     </dd>
     <dt><strong>-t</strong>, <strong>--total</strong></dt>
     <dd>
@@ -152,32 +211,30 @@
       </section>
 
       <section>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
+        <div class="sectioncontent">
+
+  <p>The value for the <strong>shared</strong> column is not available from kernels before 2.6.32 and is displayed as zero.</p>
+  <dl class='dl-vertical'>
+    <dt>Please send bug reports to</dt>
+    <dd>
+  <p><a href="mailto:procps@freelists.org">procps@freelists.org</a></p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
         <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
         <div class="sectioncontent">
 
-<p><strong>ps</strong>(1), <a href="../man1/slabtop.1.html"><strong>slabtop</strong>(1)</a>, <strong>top</strong>(1), <a href="../man8/vmstat.8.html"><strong>vmstat</strong>(8)</a>.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
-        <div class="sectioncontent">
-
-<p>Written by Brian Edmonds.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">REPORTING BUGS</h2>
-        <div class="sectioncontent">
-
-<p>Please send bug reports to <a href="mailto:procps@freelists.org">procps@freelists.org</a></p>
+<p><strong>ps</strong>(1), <a href="../man1/slabtop.1.html"><strong>slabtop</strong>(1)</a>, <a href="../man1/top.1.html"><strong>top</strong>(1)</a>, <a href="../man8/vmstat.8.html"><strong>vmstat</strong>(8)</a>.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="fold.1.html"><span aria-hidden="true">&larr;</span> fold.1: wrap each input line to fit in specified width</a></li>
-   <li class="next"><a href="getent.1.html">getent.1: get entries from Name Service Switch libraries <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="ganglia2pcp.1.html">ganglia2pcp.1: import ganglia data and create a PCP archive <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 
