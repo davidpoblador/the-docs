@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>slapo-dds - Dynamic Directory Services overlay to slapd</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Dynamic directory services overlay to slapd">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">slapo-dds<small> (5)</small></h1>
+        <p class="lead">Dynamic directory services overlay to slapd</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/slapo-dds.5.html"><span itemprop="title">slapo-dds</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>ETCDIR/slapd.conf</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>dds</strong> overlay to <strong>slapd</strong>(8) implements dynamic objects as per RFC 2589. The name <strong>dds</strong> stands for Dynamic Directory Services. It allows to define dynamic objects, characterized by the <strong>dynamicObject</strong> objectClass.</p>
+<p class='spacer'>
+
+<p>Dynamic objects have a limited lifetime, determined by a time-to-live (TTL) that can be refreshed by means of a specific <strong>refresh</strong> extended operation. This operation allows to set the Client Refresh Period (CRP), namely the period between refreshes that is required to preserve the dynamic object from expiration. The expiration time is computed by adding the requested TTL to the current time. When dynamic objects reach the end of their lifetime without being further refreshed, they are automatically deleted. There is no guarantee of immediate deletion, so clients should not count on it.</p>
+<p class='spacer'>
+
+<p>Dynamic objects can have subordinates, provided these also are dynamic objects. RFC 2589 does not specify what the behavior of a dynamic directory service should be when a dynamic object with (dynamic) subordinates expires. In this implementation, the lifetime of dynamic objects with subordinates is prolonged until all the dynamic subordinates expire.</p>
+<p class='spacer'>
+
+<p>This <strong>slapd.conf</strong>(5) directive adds the <strong>dds</strong> overlay to the current database:</p>
+<p class='spacer'>
+
+  <dl class='dl-vertical'>
+    <dt><strong>overlay dds</strong></dt>
+    <dd>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The database must have a <strong>rootdn</strong> specified, otherwise, the <strong>dds</strong> overlay will not be able to delete expired objects. The <strong>dds</strong> overlay may be used with any backend that implements the <strong>add</strong>, <strong>modify</strong>, <strong>search</strong>, and <strong>delete</strong> operations. Since its use may result in many internal entry lookups, adds and deletes, it should be best used in conjunction with backends that have reasonably good write performances.</p>
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p>The config directives that are specific to the <strong>dds</strong> overlay are prefixed by <strong>dds-</strong>, to avoid potential conflicts with directives specific to the underlying database or to other stacked overlays.</p>
+<p class='spacer'>
+
+  <dl class='dl-vertical'>
+    <dt><strong>dds-max-ttl &lt;ttl&gt;</strong></dt>
+    <dd>
+  <p>Specifies the max TTL value. This is also the default TTL newly created dynamic objects receive, unless <strong>dds-default-ttl</strong> is set. When the client with a refresh extended operation requests a TTL higher than it, sizeLimitExceeded is returned. This value must be between 86400 (1 day, the default) and 31557600 (1 year plus 6 hours, as per RFC 2589).</p>
+<p class='spacer'>
+
+    </dd>
+    <dt><strong>dds-min-ttl &lt;ttl&gt;</strong></dt>
+    <dd>
+  <p>Specifies the min TTL value; clients requesting a lower TTL by means of the refresh extended operation actually obtain this value as CRP. If set to 0 (the default), no lower limit is set.</p>
+<p class='spacer'>
+
+    </dd>
+    <dt><strong>dds-default-ttl &lt;ttl&gt;</strong></dt>
+    <dd>
+  <p>Specifies the default TTL value that newly created dynamic objects get. If set to 0 (the default), the <strong>dds-max-ttl</strong> is used.</p>
+<p class='spacer'>
+
+    </dd>
+    <dt><strong>dds-interval &lt;ttl&gt;</strong></dt>
+    <dd>
+  <p>Specifies the interval between expiration checks; defaults to 1 hour.</p>
+<p class='spacer'>
+
+    </dd>
+    <dt><strong>dds-tolerance &lt;ttl&gt;</strong></dt>
+    <dd>
+  <p>Specifies an extra time that is added to the timer that actually wakes up the thread that will delete an expired dynamic object. So the nominal lifetime of the entry is that specified in the <strong>entryTtl</strong> attribute, but its lifetime will actually be <strong>entryTtl + tolerance</strong>. Note that there is no guarantee that the lifetime of a dynamic object will be <em>exactly</em> the requested TTL; due to implementation details, it may be longer, which is allowed by RFC 2589. By default, tolerance is 0.</p>
+<p class='spacer'>
+
+    </dd>
+    <dt><strong>dds-max-dynamicObjects &lt;num&gt;</strong></dt>
+    <dd>
+  <p>Specifies the maximum number of dynamic objects that can simultaneously exist within a naming context. This allows to limit the amount of resources (mostly in terms of run-queue size) that are used by dynamic objects. By default, no limit is set.</p>
+<p class='spacer'>
+
+    </dd>
+    <dt><strong>dds-state {TRUE|false}</strong></dt>
+    <dd>
+  <p>Specifies if the Dynamic Directory Services feature is enabled or not. By default it is; however, a proxy does not need to keep track of dynamic objects itself, it only needs to inform the frontend that support for dynamic objects is available.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ACCESS CONTROL</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>dds</strong> overlay restricts the refresh operation by requiring <strong>manage</strong> access to the <strong>entryTtl</strong> attribute (see <strong>slapd.access</strong>(5) for details about the <strong>manage</strong> access privilege). Since the <strong>entryTtl</strong> is an operational, NO-USER-MODIFICATION attribute, no direct write access to it is possible. So the <strong>dds</strong> overlay turns refresh extended operation into an internal modification to the value of the <strong>entryTtl</strong> attribute with the <strong>relax</strong> control set.</p>
+<p class='spacer'>
+
+<p>RFC 2589 recommends that anonymous clients should not be allowed to refresh a dynamic object. This can be implemented by appropriately crafting access control to obtain the desired effect.</p>
+<p class='spacer'>
+
+<p>Example: restrict refresh to authenticated clients</p>
+<p class='spacer'>
+
+<pre>access to attrs=entryTtl
+	by users manage
+	by * read
+</pre>
+
+<p>Example: restrict refresh to the creator of the dynamic object</p>
+<p class='spacer'>
+
+<pre>access to attrs=entryTtl
+	by dnattr=creatorsName manage
+	by * read
+</pre>
+
+<p>Another suggested usage of dynamic objects is to implement dynamic meetings; in this case, all the participants to the meeting are allowed to refresh the meeting object, but only the creator can delete it (otherwise it will be deleted when the TTL expires)</p>
+<p class='spacer'>
+
+<p>Example: assuming <em>participant</em> is a valid DN-valued attribute, allow users to start a meeting and to join it; restrict refresh to the participants; restrict delete to the creator</p>
+<p class='spacer'>
+
+<pre>access to dn.base="cn=Meetings"
+		attrs=children
+	by users write
+
+access to dn.onelevel="cn=Meetings"
+		attrs=entry
+	by dnattr=creatorsName write
+	by * read
+
+access to dn.onelevel="cn=Meetings"
+		attrs=participant
+	by dnattr=creatorsName write
+	by users selfwrite
+	by * read
+
+access to dn.onelevel="cn=Meetings"
+		attrs=entryTtl
+	by dnattr=participant manage
+	by * read
+</pre>
+
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">REPLICATION</h2>
+        <div class="sectioncontent">
+
+<p>This implementation of RFC 2589 provides a restricted interpretation of how dynamic objects replicate.  Only the master takes care of handling dynamic object expiration, while replicas simply see the dynamic object as a plain object.</p>
+<p class='spacer'>
+
+<p>When replicating these objects, one needs to explicitly exclude the <strong>dynamicObject</strong> class and the <strong>entryTtl</strong> attribute. This implementation of RFC 2589 introduces a new operational attribute, <strong>entryExpireTimestamp</strong>, that contains the expiration timestamp.  This must be excluded from replication as well.</p>
+<p class='spacer'>
+
+<p>The quick and dirty solution is to set <strong>schemacheck=off</strong> in the syncrepl configuration and, optionally, exclude the operational attributes from replication, using</p>
+<p class='spacer'>
+
+<pre>syncrepl ...
+	exattrs=entryTtl,entryExpireTimestamp</pre>
+
+<p class='spacer'>
+
+<p>In any case the overlay must be either statically built in or run-time loaded by the consumer, so that it is aware of the <strong>entryExpireTimestamp</strong> operational attribute; however, it must not be configured in the shadow database. Currently, there is no means to remove the <strong>dynamicObject</strong> class from the entry; this may be seen as a feature, since it allows to see the dynamic properties of the object.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt>ETCDIR/slapd.conf</dt>
+    <dd>
+  <p>default slapd configuration file</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>slapd.conf</strong>(5), <strong>slapd-config</strong>(5), <strong>slapd</strong>(8).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p>Implemented by Pierangelo Masarati.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="slapo-cloak.5.html"><span aria-hidden="true">&larr;</span> slapo-cloak.5: Attribute cloak overlay to slapd</a></li>
+   <li class="next"><a href="slapo-dyngroup.5.html">slapo-dyngroup.5: Dynamic Group overlay to slapd <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

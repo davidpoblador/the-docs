@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>autofs - Format of the automounter maps</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Format of the automounter maps">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">autofs<small> (5)</small></h1>
+        <p class="lead">Format of the automounter maps</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/"><span itemprop="title">File formats and conventions</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man5/autofs.5.html"><span itemprop="title">autofs</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The automounter maps are FILE, NIS, NISPLUS or LDAP (including LDAP via SSS) referred to by the master map of the automounter (see <strong>auto.master</strong>(5)). These maps describe how file systems below the mount point of the map (given in the master map) are to be mounted.  This page describes the <strong>sun</strong> map format; if another map format, other than <strong>amd ,</strong> is specified (e.g. <strong>hesiod</strong>), this documentation does not apply.</p>
+<p class='spacer'>
+
+<p>Indirect maps, except for the internal hosts map, can be changed on the fly and the automouter will recognize those changes on the next operation it performs on that map. Direct maps require a HUP signal be sent to the daemon to refresh their contents as does the master map.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SUN FORMAT</h2>
+        <div class="sectioncontent">
+
+<p>This is a description of the text file format.  Other methods of specifying these files may exist.  All empty lines or lines beginning with # are ignored. The basic format of one line in such maps is:</p>
+<p class='spacer'>
+
+  <p><strong>key&nbsp;</strong>[<strong>-options</strong>]&nbsp;<strong>location</strong></p>
+  <dl class='dl-vertical'>
+    <dt><strong>key</strong></dt>
+    <dd>
+<p class='spacer'>
+
+  <p>For indirect mounts this is the part of the path name between the mount point and the path into the filesystem when it is mounted. Usually you can think about the key as a sub-directory name below the autofs managed mount point.</p>
+<p class='spacer'>
+
+  <p>For direct mounts this is the full path of each mount point. This map is always associated with the /- mount point in the master map.</p>
+    </dd>
+    <dt><strong>options</strong></dt>
+    <dd>
+<p class='spacer'>
+
+  <p>Zero or more options may be given.  Options can also be given in the <strong>auto.master</strong> file in which case both values are cumulative (this is a difference from SunOS).  The options are a list of comma separated options as customary for the <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a> command.</p>
+<p class='spacer'>
+
+      <p>There are several special options</p>
+      <dl class='dl-vertical'>
+        <dt><strong>-fstype=</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>is used to specify a filesystem type if the filesystem is not of the default NFS type.  This option is processed by the automounter and not by the mount command.</p>
+        </dd>
+        <dt><strong>-strict</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>is used to treat errors when mounting file systems as fatal. This is important when multiple file systems should be mounted (`multi-mounts'). If this option is given, no file system is mounted at all if at least one file system can't be mounted.</p>
+        </dd>
+        <dt><strong>-use-weight-only</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>is used to make the weight the sole factor in selecting a server when multiple servers are present in a map entry. and</p>
+        </dd>
+        <dt><strong>-no-use-weight-only</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>can be used to negate the option if it is present in the master map entry for the map but is not wanted for the given mount.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt><strong>location</strong></dt>
+    <dd>
+  <p>The location specifies from where the file system is to be mounted.  In the most cases this will be an NFS volume and the usual notation <em>host:pathname</em> is used to indicate the remote filesystem and path to be mounted.  If the filesystem to be mounted begins with a / (such as local <em>/dev</em> entries or smbfs shares) a : needs to be prefixed (e.g. <em>:/dev/sda1</em>).</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>Indirect map:</p>
+<p class='spacer'>
+
+<pre>kernel	-ro,soft,intr	ftp.kernel.org:/pub/linux
+boot	-fstype=ext2	:/dev/hda1
+windoze	-fstype=smbfs	://windoze/c
+removable	-fstype=ext2	:/dev/hdd
+cd	-fstype=iso9660,ro	:/dev/hdc
+floppy	-fstype=auto	:/dev/fd0
+server	-rw,hard,intr	/ -ro myserver.me.org:/ &#92;
+			/usr myserver.me.org:/usr &#92;
+			/home myserver.me.org:/home</pre>
+
+<p class='spacer'>
+
+<p>In the first line we have a NFS remote mount of the kernel directory on <em>ftp.kernel.org</em>. This is mounted read-only.  The second line mounts an ext2 volume from a local ide drive.  The third makes a share exported from a Windows machine available for automounting.  The rest should be fairly self-explanatory. The last entry (the last three lines) is an example of a multi-map (see below).</p>
+<p class='spacer'>
+
+<p>If you use the automounter for a filesystem without access permissions (like <strong>vfat</strong>), users usually can't write on such a filesystem because it is mounted as user <strong>root</strong>. You can solve this problem by passing the option <em>gid=&lt;gid&gt;</em>, e.g. <em>gid=floppy</em>. The filesystem is then mounted as group <strong>floppy</strong> instead of <strong>root</strong>. Then you can add the users to this group, and they can write to the filesystem. Here's an example entry for an autofs map:</p>
+<p class='spacer'>
+
+<pre>floppy-vfat  -fstype=vfat,sync,gid=floppy,umask=002  :/dev/fd0</pre>
+
+<p class='spacer'>
+
+<p>Direct map:</p>
+<p class='spacer'>
+
+<pre>/nfs/apps/mozilla	bogus:/usr/local/moxill
+/nfs/data/budgets	tiger:/usr/local/budgets
+/tst/sbin		bogus:/usr/sbin</pre>
+
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FEATURES</h2>
+        <div class="sectioncontent">
+
+  <h3>Map Key Substitution</h3>
+<p>An & character in the <strong>location</strong> is expanded to the value of the <strong>key</strong> field that matched the line (which probably only makes sense together with a wildcard key).</p>
+  <h3>Wildcard Key</h3>
+<p>A map key of * denotes a wild-card entry. This entry is consulted if the specified key does not exist in the map.  A typical wild-card entry looks like this:</p>
+<p class='spacer'>
+
+<pre>*	server:/export/home/&</pre>
+
+<p class='spacer'>
+
+<p>The special character '&' will be replaced by the provided key.  So, in the example above, a lookup for the key 'foo' would yield a mount of server:/export/home/foo.</p>
+  <h3>Variable Substitution</h3>
+<p>The following special variables will be substituted in the location field of an automounter map entry if prefixed with $ as customary from shell scripts (curly braces can be used to separate the field name):</p>
+<p class='spacer'>
+
+<pre>ARCH	Architecture (uname -m)
+CPU	Processor Type
+HOST	Hostname (uname -n)
+OSNAME	Operating System (uname -s)
+OSREL	Release of OS (uname -r)
+OSVERS	Version of OS (uname -v)</pre>
+
+<p class='spacer'>
+
+<p>autofs provides additional variables that are set based on the user requesting the mount:</p>
+<p class='spacer'>
+
+<pre>USER	The user login name
+UID	The user login ID
+GROUP	The user group name
+GID	The user group ID
+HOME	The user home directory
+SHOST	Short hostname (domain part removed if present)</pre>
+
+<p class='spacer'>
+
+<p>If a program map is used these standard environment variables will have a prefix of "AUTOFS_" to prevent interpreted languages like python from being able to load and execute arbitray code from a user home directory.</p>
+<p class='spacer'>
+
+<p>Additional entries can be defined with the -Dvariable=Value map-option to <a href="../man8/automount.8.html"><strong>automount</strong>(8)</a>.</p>
+  <h3>Executable Maps</h3>
+<p>A map can be marked as executable. A <strong>program</strong> map will be called with the key as an argument.  It may return no lines of output if there's an error, or one or more lines containing a map entry (with nbsp;quoting line breaks). The map entry corresponds to what would normally follow a map key.</p>
+<p class='spacer'>
+
+<p>An executable map can return an error code to indicate the failure in addition to no output at all.  All output sent to stderr is logged into the system logs.</p>
+  <h3>Multiple Mounts</h3>
+<p>A <strong>multi-mount map</strong> can be used to name multiple filesystems to mount.  It takes the form:</p>
+<p class='spacer'>
+
+<pre><strong>key [ -options ] [[/] location [/relative-mount-point [ -options ] location...]...</strong></pre>
+
+<p class='spacer'>
+
+<p class='spacer'>
+
+<p>This may extend over multiple lines, quoting the line-breaks with &#96;&#92;\'. If present, the per-mountpoint mount-options are appended to the default mount-options. This behaviour may be overridden by the append_options configuration setting.</p>
+  <h3>Replicated Server</h3>
+<p>A mount location can specify multiple hosts for a location, portentially with a different export path for the same file system. Historically these different locations are read-only and provide the same replicated file system.</p>
+<p class='spacer'>
+
+<pre>Multiple replicated hosts, same path:
+&lt;path&gt; host1,host2,hostn:/path/path
+
+Multiple hosts, some with same path, some with another
+&lt;path&gt; host1,host2:/blah host3:/some/other/path
+
+Multiple replicated hosts, different (potentially) paths:
+&lt;path&gt; host1:/path/pathA host2:/path/pathB
+
+Mutliple weighted, replicated hosts same path:
+&lt;path&gt; <strong>host1</strong>(5),<strong>host2</strong>(6),<strong>host3</strong>(1):/path/path
+
+Multiple weighted, replicated hosts different (potentially) paths:
+&lt;path&gt; <strong>host1</strong>(3):/path/pathA <strong>host2</strong>(5):/path/pathB
+
+Anything else is questionable and unsupported, but these variations will also work:
+&lt;path&gt; <strong>host1</strong>(3),host:/blah</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">UNSUPPORTED</h2>
+        <div class="sectioncontent">
+
+<p>This version of the automounter supports direct maps stored in FILE, NIS, NISPLUS and LDAP (including LDAP via SSS) only.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AMD FORMAT</h2>
+        <div class="sectioncontent">
+
+<p>This is a description of the text file format. Other methods of specifying mount map entries may be required for different map sources.  All empty lines or lines beginning with # are ignored. The basic format of one line in such maps is:</p>
+<p class='spacer'>
+
+  <p><strong>key&nbsp;location-list</strong></p>
+  <dl class='dl-vertical'>
+    <dt><strong>key</strong></dt>
+    <dd>
+<p class='spacer'>
+
+  <p>A <strong>key</strong> is a path (or a single path component alone) that may end in the wildcard key, "*", or the wildcard key alone and must not begin with the "/" character.</p>
+    </dd>
+    <dt><strong>location-list</strong></dt>
+    <dd>
+  <p>Following the <strong>key</strong> is a mount <strong>location-list</strong>.</p>
+    </dd>
+    <dt>A <strong>location-list</strong> list has the following syntax:</dt>
+    <dd>
+    </dd>
+    <dt><strong>location[&nbsp;location[&nbsp;...&nbsp;]]&nbsp;[||&nbsp;location[&nbsp;location[&nbsp;...&nbsp;]]</strong></dt>
+    <dd>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>A mount <strong>location-list</strong> can use the cut operator, <strong>||</strong>, to specify locations that should be tried if none of the locations to the left of it where selected for a mount attempt.</p>
+<p class='spacer'>
+
+<p>A mount <strong>location</strong> consists of an optional colon separated list of <strong>selectors</strong>, followed by a colon separated list of <strong>option:=value</strong> pairs.</p>
+<p class='spacer'>
+
+<p>The <strong>selectors</strong> that may be used return a value or boolean result. Those that return a value may be to used with the comparison operators <strong>==</strong> and <strong>!=</strong> and those that return a boolean result may be negated with the <strong>!</strong>.</p>
+<p class='spacer'>
+
+<p>For a <strong>location</strong> to be selected for a mount attempt all of its <strong>selectors</strong> must evaluate to true. If a <strong>location</strong> is selected for a mount attempt and succeeds the lookup is completed and returns success. If the mount attempt fails the proceedure continues with the next <strong>location</strong> until they have all been tried.</p>
+<p class='spacer'>
+
+<p>In addition some <strong>selectors</strong> take no argumenets, some one argument and others optionally take two arguments.</p>
+<p class='spacer'>
+
+    <p>The <strong>selectors</strong> that take no arguments are:</p>
+    <dl class='dl-vertical'>
+      <dt><strong>arch</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The machine architecture which, if not set in the confugration, is obtained using <a href="../man2/uname.2.html"><strong>uname</strong>(2)</a>.</p>
+      </dd>
+      <dt><strong>karch</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The machine kernel architecture which, if not set in the confugration, is obtained using <a href="../man2/uname.2.html"><strong>uname</strong>(2)</a>.</p>
+      </dd>
+      <dt><strong>os</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The operating system name, if not set in the confugration, is obtained using <a href="../man2/uname.2.html"><strong>uname</strong>(2)</a>.</p>
+      </dd>
+      <dt><strong>osver</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The operating system version, if not set in the confugration, is obtained using <a href="../man2/uname.2.html"><strong>uname</strong>(2)</a>.</p>
+      </dd>
+      <dt><strong>full_os</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The full operating system name, if not set in the confugration this selector has no value.</p>
+      </dd>
+      <dt><strong>vendor</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The operating system vendor name, if not set in the confugration this selector has the value "unknown".</p>
+      </dd>
+      <dt><strong>byte</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The endianness of the hardware.</p>
+      </dd>
+      <dt><strong>cluster</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The name of the local cluster. It has a value only if it is set in the configuration.</p>
+      </dd>
+      <dt><strong>autodir</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The base path under which external mounts are done if they are needed. Most mounts are done in place but some can't be and this is the base path under which those mounts will be done.</p>
+      </dd>
+      <dt><strong>domain</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The local domain name. It is set to the value of the configuration option <strong>sub_domain</strong>. If sub_domain is not given in the configuration it is set to the domain part of the local host name, as given by <a href="../man2/gethostname.2.html"><strong>gethostname</strong>(2)</a>.</p>
+      </dd>
+      <dt><strong>host</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The local host name, without the domain part, as given by <a href="../man2/gethostname.2.html"><strong>gethostname</strong>(2)</a>.</p>
+      </dd>
+      <dt><strong>hostd</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The full host name. If <strong>sub_domain</strong> is given in the configuration this is set to the contatenation of <strong>host</strong> and <strong>sub_domain</strong> deperated by a <strong>.</strong>. If <strong>sub_domain</strong> is not set in the configuration the value of <strong>domain</strong> is used instead of <strong>sub_domain</strong>.</p>
+      </dd>
+      <dt><strong>uid</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The numeric value of the uid of the user that first requested the mount. Note this is usual the same as that used by amd but can be different within autofs.</p>
+      </dd>
+      <dt><strong>gid</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The numeric value of the gid of the user that first requested the mount. Note this is usual the same as that used by amd but can be different within autofs.</p>
+      </dd>
+      <dt><strong>key</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The string value of the key being looked up.</p>
+      </dd>
+      <dt><strong>map</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The string value of the map name used to lookup <strong>key</strong>s.</p>
+      </dd>
+      <dt><strong>path</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>The string value of the full path to the mount being requested.</p>
+      </dd>
+      <dt><strong>dollar</strong></dt>
+      <dd>
+<p class='spacer'>
+
+    <p>Evaluates to the string "$".</p>
+      </dd>
+    </dl>
+  <dl class='dl-vertical'>
+    <dt>The <strong>selectors</strong> that take one argument are:</dt>
+    <dd>
+      <dl class='dl-vertical'>
+        <dt><strong>in_network(network) ,  network(network) ,  netnumber(network) ,  wire(network)</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>These <strong>selectors</strong> are all the same. <strong>in_network()</strong> is the preferred usage. The <strong>network</strong> argument is an address (which may include a subnet mask) or network name. The function compares <strong>network</strong> against each interface and returns true if <strong>network</strong> belongs to the network the interface is connected to.</p>
+        </dd>
+        <dt><strong>xhost(hostname)</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>xhost()</strong> selector compares <strong>hostname</strong> to the <strong>${host}</strong> and if it doesn't match it attempts to lookup the cannonical name of <strong>hostname</strong> and compares it to \f${host} as well.</p>
+        </dd>
+        <dt><strong>exists(filename)</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>Returns true if <strong>filename</strong> exits as determined by <a href="../man2/lstat.2.html"><strong>lstat</strong>(2)</a>.</p>
+        </dd>
+        <dt><strong>true()</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>Evaluates to true, the argument is ignored and may be empty.</p>
+        </dd>
+        <dt><strong>false()</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>Evaluates to false, the argument is ignored and may be empty.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt>The <strong>selectors</strong> that take up to two arguments are:</dt>
+    <dd>
+      <dl class='dl-vertical'>
+        <dt><strong>netgrp(netgroup[,hostname])</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>netgrp()</strong> selector returns true if hostname is a member of the netgroup <strong>netgroup</strong>. If <strong>hostname</strong> is not given <strong>${host}</strong> is used for the comparison.</p>
+        </dd>
+        <dt><strong>netgrpd(netgroup[,hostname])</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>netgrpd()i</strong> selector behaves the same as <strong>netgrp()</strong> except that if <strong>hostname</strong> is not given <strong>${hostd}</strong>, the fully qualified hostname, is used instead of <strong>${host}</strong>.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt>The <strong>options</strong> that may be used are:</dt>
+    <dd>
+      <dl class='dl-vertical'>
+        <dt><strong>type</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>This is the mount filesystem <strong>type</strong>. It can have a value of <strong>auto</strong>, <strong>link</strong>, <strong>linkx</strong>, <strong>host</strong>, <strong>lofs</strong>, <strong>ext2-4</strong>,  <strong>xfs</strong>, <strong>nfs</strong>, <strong>nfsl</strong> or <strong>cdfs</strong>. Other types that are not yet implemented or are not available iin autofs are <strong>nfsx</strong>, <strong>lustre</strong>, <strong>jfs</strong>, <strong>program</strong>, <strong>cachefs</strong> and <strong>direct</strong>.</p>
+        </dd>
+        <dt><strong>maptype</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>maptype</strong> option specifies the type of the map source and can have a value of <strong>file</strong>, <strong>nis</strong>, <strong>nisplus</strong>, <strong>exec</strong>, <strong>ldap</strong> or <strong>hesiod</strong>. Map sources either not yet implemented or not available in autofs are <strong>sss</strong>, <strong>ndbm</strong>, <strong>passwd</strong> and <strong>union</strong>.</p>
+        </dd>
+        <dt><strong>fs</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The option <strong>fs</strong> is used to specify the local filesystem. The meaning of this option (and whether or not it is used) is dependent on the mount filesystem <strong>type</strong>.</p>
+        </dd>
+        <dt><strong>rhost</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The remote host name for network mount requests.</p>
+        </dd>
+        <dt><strong>rfs</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The remote host filesystem path for network mount requests.</p>
+        </dd>
+        <dt><strong>dev</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>Must resolve to the device file for local device mount requests.</p>
+        </dd>
+        <dt><strong>sublink</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>sublink</strong> option is used to specify a subdirectory within the mount location to which this entry will point.</p>
+        </dd>
+        <dt><strong>pref</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>pref</strong> option is used to specify a prefix that is prepended to the lookup key before looking up the map entry key.</p>
+        </dd>
+        <dt><strong>opts</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>opts</strong> option is used to specify mount options to be used for the mount. If a "<strong>-</strong>" is given it is ignored. Options that may be used are dependend on the mount filesystem.</p>
+        </dd>
+        <dt><strong>addopts</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>addopts</strong> option is used to specify additional mount options used in addition to the default mount options for the mount location.</p>
+        </dd>
+        <dt><strong>remopts</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>addopts</strong> option is used to specify mount options used instead the options given in <strong>opts</strong> when the mount location is on a remote retwork.</p>
+        </dd>
+      </dl>
+    </dd>
+    <dt>A number of <strong>options</strong> aren't available or aren't yet implemented</dt>
+    <dd>
+      <p>within autofs, these are:</p>
+      <dl class='dl-vertical'>
+        <dt><strong>cache</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>cache option</strong> isn't used by autofs. The map entry cache is continually updated and stale entries cleaned on re-load when map changes are detected so these configuration entries are not used. The <strong>regex</strong> map key matching is not implemented and may not be due to the potential overhead of the full map scans needed on every key lookup.</p>
+        </dd>
+        <dt><strong>cachedir</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>The <strong>cachefs</strong> filesystem is not available on Linux, a different implementation is used for caching network mounted file systems.</p>
+        </dd>
+        <dt><strong>mount ,  unmount ,  umount</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>These <strong>options</strong> are used by the amd <strong>program</strong> mount type which is not yet implemented.</p>
+        </dd>
+        <dt><strong>delay</strong></dt>
+        <dd>
+<p class='spacer'>
+
+      <p>This <strong>option</strong> is not used by the autofs implementation and is ignored.</p>
+        </dd>
+      </dl>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FEATURES</h2>
+        <div class="sectioncontent">
+
+  <h3>Key Matching</h3>
+<p>The amd parser key matching is unusual.</p>
+<p class='spacer'>
+
+<p>The key string to be looked up is constructed by prepending the prefix, if there is one.</p>
+<p class='spacer'>
+
+<p>The resulting relative path string is matched by first trying the sting itself. If no match is found the last component of the key string is replaced with the wilcard match cahracter ("*") and a wildcard match is attemted. This process continues until a match is found or until the last match, against the wilcard match key alone, fails to match a map entry and the key lookup fails.</p>
+  <h3>Macro Usage</h3>
+<p>Macros are used a lot in the autofs amd implementation.</p>
+<p class='spacer'>
+
+<p>Many of the option values are set as macro variables corresponding to the option name during the map entry parse. So they may be used in subsequent option values. Beware though, the order in which option values is not necessarily left to right so you may get unexpected results.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+<p>Example NFS mount map:</p>
+<p class='spacer'>
+
+<p>Assuming we have the autofs master map entry:</p>
+<p class='spacer'>
+
+<pre>/test	file,amd:/etc/amd.test</pre>
+
+<p class='spacer'>
+
+<p>And the following map in /etc/amd.test:</p>
+<p class='spacer'>
+
+<pre>/defaults	type:=nfs;rhost:=bilbo
+apps	rfs:=/autofs
+util	rhost:=zeus;rfs:=/work/util
+local	rfs:=/shared;sublink:=local</pre>
+
+<p class='spacer'>
+
+<p>In the first line we have an NFS remote mount of the exported directory /autofs from host bilbo which would be mounted on /test/apps. Next another nfs mount for the exported directory /work/util from host zeus. This would be mounted on /test/util.</p>
+<p class='spacer'>
+
+<p>Finally we have an example of the use of the <strong>sublink</strong> option. In this case the filesystem bilbo:/shared would be mounted on a path external the automount directory (under the direcory given by configuration option auto_dir) and the path /test/local either symlinked or bind mounted (depending on the setting autofs_use_lofs) to the "local" subdirectory of the external mount.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p>To be able to use IPv6 within autofs maps the package must be build to use the libtirpc library for its RPC communications. This is becuase the glibc RPC implementation doesn't support IPv6 and is depricated so this is not likely to change.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man8/automount.8.html"><strong>automount</strong>(8)</a>, <strong>auto.master</strong>(5), <strong>autofs</strong>(8), <strong>autofs.conf</strong>(5), <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a>. <strong>autofs_ldap_auth.conf</strong>(5)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p>This manual page was written by Christoph Lameter &lt;chris@waterf.org&gt;, for the Debian GNU/Linux system.  Edited by H. Peter Avian &lt;hpa@transmeta.com&gt;, Jeremy Fitzhardinge &lt;jeremy@goop.org&gt; and Ian Kent &lt;raven@themaw.net&gt;.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="attr.5.html"><span aria-hidden="true">&larr;</span> attr.5: Extended attributes</a></li>
+   <li class="next"><a href="body_checks.5.html">body_checks.5: Postfix built-in content inspection <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

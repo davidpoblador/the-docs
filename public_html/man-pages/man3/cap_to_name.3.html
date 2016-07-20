@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cap_to_name - capability state textual representation translation</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Capability state textual representation translation">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">cap_to_name<small> (3)</small></h1>
+        <p class="lead">Capability state textual representation translation</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/cap_to_name.3.html"><span itemprop="title">cap_to_name</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>#include &lt;sys/capability.h&gt;</strong></p>
+<p class='spacer'>
+
+<p><strong>cap_t cap_from_text(const char *</strong><em>buf_p</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><strong>char *cap_to_text(cap_t </strong><em>caps</em><strong>, ssize_t *</strong><em>length_p</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><strong>int cap_from_name(const char *</strong><em>name</em><strong>, cap_value_t *</strong><em>cap_p</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p><strong>char *cap_to_name(cap_value_t </strong><em>cap</em><strong>);</strong></p>
+<p class='spacer'>
+
+<p>Link with <em>-lcap</em>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>These functions translate a capability state between an internal representation and a textual one. The internal representation is managed by the capability functions in working storage. The textual representation is a structured, human-readable string suitable for display.</p>
+<p class='spacer'>
+
+<p><strong>cap_from_text</strong>() allocates and initializes a capability state in working storage. It then sets the contents of this newly created capability state to the state represented by a human-readable, nul-terminated character string pointed to by <em>buf_p</em>. It returns a pointer to the newly created capability state. When the capability state in working storage is no longer required, the caller should free any releasable memory by calling <strong>cap_free</strong>() with <em>cap_t</em> as an argument.  The function returns an error if it cannot parse the contents of the string pointed to by <em>buf_p</em> or does not recognize any <em>capability_name</em> or flag character as valid.  The function also returns an error if any flag is both set and cleared within a single clause.</p>
+<p class='spacer'>
+
+<p><strong>cap_to_text</strong>() converts the capability state in working storage identified by <em>cap_p</em> into a nul-terminated human-readable string.  This function allocates any memory necessary to contain the string, and returns a pointer to the string.  If the pointer <em>len_p</em> is not NULL, the function shall also return the full length of the string (not including the nul terminator) in the location pointed to by <em>len_p</em>. The capability state in working storage, identified by <em>cap_p</em>, is completely represented in the character string. When the capability state in working storage is no longer required, the caller should free any releasable memory by calling <strong>cap_free</strong>() with the returned string pointer as an argument.</p>
+<p class='spacer'>
+
+<p><strong>cap_from_name</strong>() converts a text representation of a capability, such as "cap_chown", to its numerical representation (<strong>CAP_CHOWN=0</strong>), writing the decoded value into <em>*cap_p</em>. If <em>cap_p</em> is NULL no result is written, but the return code of the function indicates whether or not the specified capability can be represented by the library.</p>
+<p class='spacer'>
+
+<p><strong>cap_to_name</strong>() converts a capability index value, <em>cap</em>, to a libcap-allocated textual string. This string should be deallocated with <strong>cap_free</strong>().</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">TEXTUAL REPRESENTATION</h2>
+        <div class="sectioncontent">
+
+<p>A textual representation of capability sets consists of one or more whitespace-separated <em>clauses</em>. Each clause specifies some operations on a capability set; the set starts out with all capabilities lowered, and the meaning of the string is the state of the capability set after all the clauses have been applied in order.</p>
+<p class='spacer'>
+
+<p>Each clause consists of a list of comma-separated capability names (or the word `<strong>all</strong>'), followed by an <em>action-list</em>. An action-list consists of a sequence of <em>operator flag</em> pairs.  Legal operators are: `<strong>=</strong>', '<strong>+</strong>', and `<strong>-</strong>'. Legal flags are: `<strong>e</strong>', `<strong>i</strong>', and `<strong>p</strong>'. These flags are case-sensitive and specify the Effective, Inheritable and Permitted sets respectively.</p>
+<p class='spacer'>
+
+<p>In the capability name lists, all names are case-insensitive.  The special name `<strong>all</strong>' specifies all capabilities; it is equivalent to a list naming every capability individually.</p>
+<p class='spacer'>
+
+<p>Unnamed capabilities can also be specified by number. This feature ensures that libcap can support capabilities that were not allocated at the time libcap was compiled. However, generally upgrading libcap will add names for recently allocated capabilities.</p>
+<p class='spacer'>
+
+<p>The `<strong>=</strong>' operator indicates that the listed capabilities are first reset in all three capability sets.  The subsequent flags (which are optional when associated with this operator) indicate that the listed capabilities for the corresponding set are to be raised.  For example: "all=p" means lower every capability in the Effective and Inheritable sets but raise all of the Permitted capabilities; or, "cap_fowner=ep" means raise the Effective and Permitted override-file-ownership capability, while lowering this Inheritable capability.</p>
+<p class='spacer'>
+
+<p>In the case that the leading operator is `<strong>=</strong>', and no list of capabilities is provided, the action-list is assumed to refer to `all' capabilities.  For example, the following three clauses are equivalent to each other (and indicate a completely empty capability set): "all="; "="; "cap_chown,&lt;every-other-capability&gt;=".</p>
+<p class='spacer'>
+
+<p>The operators, `+' and `-' both require an explicit preceding capability list and one or more explicit trailing flags.  The `+' operator will raise all of the listed capabilities in the flagged capability sets.  The `-' operator will lower all of the listed capabilities in the flagged capability sets.  For example: "all+p" will raise all of the Permitted capabilities; "cap_fowner+p-i" will raise the override-file-ownership capability in the Permitted capability set and lower this Inheritable capability; "cap_fowner+pe-i" and "cap_fowner=+pe" are equivalent.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p><strong>cap_from_text</strong>(), <strong>cap_to_text</strong>() and <strong>cap_to_name</strong>() return a non-NULL value on success, and NULL on failure. <strong>cap_from_name</strong>() returns 0 for success, and -1 on failure (unknown capability).</p>
+<p class='spacer'>
+
+<p>On failure, <em>errno</em> is set to <strong>EINVAL</strong>, or <strong>ENOMEM</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p><strong>cap_from_text</strong>() and <strong>cap_to_text</strong>() are specified by the withdrawn POSIX.1e draft specification. <strong>cap_from_name</strong>() and <strong>cap_to_name</strong>() are Linux extensions.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <div class="sectioncontent">
+
+  <p>The example program below demonstrates the use of <strong>cap_from_text</strong>() and <strong>cap_to_text</strong>(). The following shell session shows a some example runs:</p>
+<pre>
+$ ./a.out "cap_chown=p cap_chown+e"
+caps_to_text() returned "= cap_chown+ep"
+$ ./a.out "all=pe cap_chown-e cap_kill-pe"
+caps_to_text() returned "=ep cap_chown-e cap_kill-ep"
+</pre>
+
+  <p>The source code of the program is as follows:</p>
+<pre>
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;sys/capability.h&gt;
+
+#define handle_error(msg) &#92;
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+int
+main(int argc, char *argv[])
+{
+    cap_t caps;
+    char *txt_caps;
+
+    if (argc != 2) {
+        fprintf(stderr, "%s &lt;textual-cap-set&gt;&#92;n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    caps = cap_from_text(argv[1]);
+    if (caps == NULL)
+        handle_error("cap_from_text");
+
+    txt_caps = cap_to_text(caps, NULL);
+    if (txt_caps == NULL)
+        handle_error("cap_to_text");
+
+    printf("caps_to_text() returned &#92;"%s&#92;"&#92;n", txt_caps);
+
+    if (cap_free(txt_caps) != 0 || cap_free(caps) != 0)
+        handle_error("cap_free");
+
+    exit(EXIT_SUCCESS);
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man3/libcap.3.html"><strong>libcap</strong>(3)</a>, <a href="../man3/cap_clear.3.html"><strong>cap_clear</strong>(3)</a>, <a href="../man3/cap_compare.3.html"><strong>cap_compare</strong>(3)</a>, <a href="../man3/cap_copy_ext.3.html"><strong>cap_copy_ext</strong>(3)</a>, <a href="../man3/cap_get_file.3.html"><strong>cap_get_file</strong>(3)</a>, <a href="../man3/cap_get_proc.3.html"><strong>cap_get_proc</strong>(3)</a>, <a href="../man3/cap_init.3.html"><strong>cap_init</strong>(3)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="cap_size.3.html"><span aria-hidden="true">&larr;</span> cap_size.3: capability state external representation translation</a></li>
+   <li class="next"><a href="cap_to_text.3.html">cap_to_text.3: capability state textual representation translation <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

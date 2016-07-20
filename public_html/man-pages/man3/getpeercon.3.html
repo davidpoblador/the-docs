@@ -121,7 +121,7 @@
 <p>Since access to file descriptors is revalidated upon use by SELinux, the new context must be explicitly authorized in the policy to use the descriptors opened by the old context if that is desired.  Otherwise, attempts by the process to use any existing descriptors (including <em>stdin</em>, <em>stdout</em>, and <em>stderr</em>) after performing the <strong>setcon</strong>() will fail.</p>
 <p class='spacer'>
 
-<p>A multi-threaded application can perform a <strong>setcon</strong>() prior to creating any child threads, in which case all of the child threads will inherit the new context.  However, <strong>setcon</strong>() will fail if there are any other threads running in the same process.</p>
+<p>A multi-threaded application can perform a <strong>setcon</strong>() prior to creating any child threads, in which case all of the child threads will inherit the new context.  However, prior to Linux 2.6.28, <strong>setcon</strong>() would fail if there are any other threads running in the same process since this would yield an inconsistency among the security contexts of threads sharing the same memory space.  Since Linux 2.6.28, <strong>setcon()</strong> is permitted for threads within a multi-threaded process if the new security context is bounded by the old security context, where the bounded relation is defined through typebounds statements in the policy and guarantees that the new security context has a subset of the permissions of the old security context.</p>
 <p class='spacer'>
 
 <p>If the process was being ptraced at the time of the <strong>setcon</strong>() operation, ptrace permission will be revalidated against the new context and the <strong>setcon</strong>() will fail if it is not allowed by policy.</p>

@@ -87,7 +87,7 @@
     </dd>
     <dt><strong>-d</strong>,<strong> --discard</strong>[<strong>=<em>policy</em>]</strong></dt>
     <dd>
-  <p>Enable swap discards, if the swap backing device supports the discard or trim operation.  This may improve performance on some Solid State Devices, but often it does not.  The option allows one to select between two available swap discard policies: <strong>--discard=once</strong> to perform a single-time discard operation for the whole swap area at swapon; or <strong>--discard=pages</strong> to discard freed swap pages before they are reused, while swapping. If no policy is selected, the default behavior is to enable both discard types. The <em>/etc/fstab</em> mount options <strong>discard</strong>, <strong>discard=once</strong>, or <strong>discard=pages</strong> may also be used to enable discard flags.</p>
+  <p>Enable swap discards, if the swap backing device supports the discard or trim operation.  This may improve performance on some Solid State Devices, but often it does not.  The option allows one to select between two available swap discard policies: <strong>--discard=once</strong> to perform a single-time discard operation for the whole swap area at swapon; or <strong>--discard=pages</strong> to asynchronously discard freed swap pages before they are available for reuse. If no policy is selected, the default behavior is to enable both discard types. The <em>/etc/fstab</em> mount options <strong>discard</strong>, <strong>discard=once</strong>, or <strong>discard=pages</strong> may also be used to enable discard flags.</p>
     </dd>
     <dt><strong>-e</strong>,<strong> --ifexists</strong></dt>
     <dd>
@@ -97,7 +97,7 @@
     </dd>
     <dt><strong>-f</strong>,<strong> --fixpgsz</strong></dt>
     <dd>
-  <p>Reinitialize (exec /sbin/mkswap) the swap space if its page size does not match that of the current running kernel. <strong>mkswap</strong>(2) initializes the whole device and does not check for bad blocks.</p>
+  <p>Reinitialize (exec mkswap) the swap space if its page size does not match that of the current running kernel. <strong>mkswap</strong>(2) initializes the whole device and does not check for bad blocks.</p>
     </dd>
     <dt><strong>-h</strong>,<strong> --help</strong></dt>
     <dd>
@@ -107,17 +107,27 @@
     <dd>
   <p>Use the partition that has the specified <em>label</em>. (For this, access to <em>/proc/partitions</em> is needed.)</p>
     </dd>
+    <dt><strong>-o</strong>,<strong> --options </strong><em>opts</em></dt>
+    <dd>
+      <p>Specify swap options by an fstab-compatible comma-separated string. For example:</p>
+<p class='spacer'>
+
+      <p><strong>swapon -o pri=1,discard=pages,nofail /dev/sda2</strong></p>
+<p class='spacer'>
+
+  <p>The <em>opts</em> string is evaluated last and overrides all other command line options.</p>
+    </dd>
     <dt><strong>-p</strong>,<strong> --priority </strong><em>priority</em></dt>
     <dd>
-  <p>Specify the priority of the swap device. <em>priority</em> is a value between -1 and 32767.  Higher numbers indicate higher priority.  See <a href="../man2/swapon.2.html"><strong>swapon</strong>(2)</a> for a full description of swap priorities.  Add <strong>pri=</strong><em>value</em> to the option field of <em>/etc/fstab</em> for use with <strong>swapon -a</strong>. When priority is not defined it defaults to -1.</p>
+  <p>Specify the priority of the swap device. <em>priority</em> is a value between -1 and 32767.  Higher numbers indicate higher priority.  See <a href="../man2/swapon.2.html"><strong>swapon</strong>(2)</a> for a full description of swap priorities.  Add <strong>pri=</strong><em>value</em> to the option field of <em>/etc/fstab</em> for use with <strong>swapon -a</strong>. When no priority is defined, it defaults to -1.</p>
     </dd>
     <dt><strong>-s</strong>,<strong> --summary</strong></dt>
     <dd>
   <p>Display swap usage summary by device.  Equivalent to "cat /proc/swaps". Not available before Linux 2.1.25.  This output format is DEPRECATED in favour of <strong>--show</strong> that provides better control on output data.</p>
     </dd>
-    <dt><strong>--show</strong> [<em>column</em>, ...]</dt>
+    <dt><strong>--show</strong>[<strong>=<em>column</em></strong>...]</dt>
     <dd>
-  <p>Display definable device table similar to <strong>--summary</strong> output.  See <strong>--help</strong> output for a list of available columns.</p>
+  <p>Display a definable table of swap areas.  See the <strong>--help</strong> output for a list of available columns.</p>
     </dd>
     <dt><strong>--noheadings</strong></dt>
     <dd>
@@ -135,11 +145,11 @@
     <dd>
   <p>Use the partition that has the specified <em>uuid</em>.</p>
     </dd>
-    <dt><strong>-v, --verbose</strong></dt>
+    <dt><strong>-v</strong>,<strong> --verbose</strong></dt>
     <dd>
   <p>Be verbose.</p>
     </dd>
-    <dt><strong>-V, --version</strong></dt>
+    <dt><strong>-V</strong>,<strong> --version</strong></dt>
     <dd>
   <p>Display version information and exit.</p>
     </dd>
@@ -151,13 +161,28 @@
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
 
-<p>You should not use <strong>swapon</strong> on a file with holes. Swap over NFS may not work.</p>
+  <p>You should not use <strong>swapon</strong> on a file with holes. This can be seen in the system log as</p>
 <p class='spacer'>
 
-<p><strong>swapon</strong> automatically detects and rewrites swap space signature with old software suspend data (e.g S1SUSPEND, S2SUSPEND, ...). The problem is that if we don't do it, then we get data corruption the next time an attempt at unsuspending is made.</p>
+  <p><strong>swapon: swapfile has holes.</strong></p>
 <p class='spacer'>
 
-<p><strong>swapon</strong> may not work correctly when using a swap file with some versions of btrfs. This is due to the swap file implementation in the kernel expecting to be able to write to the file directly, without the assistance of the file system. Since btrfs is a copy-on-write file system, the file location may not be static and corruption can result.  Btrfs actively disallows the use of files on its file systems by refusing to map the file.  This can be seen in the system log as "swapon: swapfile has holes."  One possible workaround is to map the file to a loopback device.  This will allow the file system to determine the mapping properly but may come with a performance impact.</p>
+<p>The swap file implementation in the kernel expects to be able to write to the file directly, without the assistance of the filesystem.  This is a problem on preallocated files (e.g. <a href="../man1/fallocate.1.html"><strong>fallocate</strong>(1)</a>) on filesystems like <strong>XFS</strong> or <strong>ext4</strong>, and on copy-on-write filesystems like <strong>btrfs</strong>.</p>
+<p class='spacer'>
+
+<p>It is recommended to use <strong>dd</strong>(1) and <em>/dev/zero</em> to avoid holes on XFS and ext4.</p>
+<p class='spacer'>
+
+<p><strong>swapon</strong> may not work correctly when using a swap file with some versions of <strong>btrfs</strong>.  This is due to btrfs being a copy-on-write filesystem: the file location may not be static and corruption can result.  Btrfs actively disallows the use of swap files on its filesystems by refusing to map the file.</p>
+<p class='spacer'>
+
+<p>One possible workaround is to map the swap file to a loopback device.  This will allow the filesystem to determine the mapping properly but may come with a performance impact.</p>
+<p class='spacer'>
+
+<p>Swap over <strong>NFS</strong> may not work.</p>
+<p class='spacer'>
+
+<p><strong>swapon</strong> automatically detects and rewrites a swap space signature with old software suspend data (e.g S1SUSPEND, S2SUSPEND, ...). The problem is that if we don't do it, then we get data corruption the next time an attempt at unsuspending is made.</p>
 <p class='spacer'>
 
         </div>
@@ -168,9 +193,13 @@
         <div class="sectioncontent">
 
   <dl class='dl-horizontal'>
-    <dt>LIBMOUNT_DEBUG=0xffff</dt>
+    <dt>LIBMOUNT_DEBUG=all</dt>
     <dd>
-  <p>enables debug output.</p>
+  <p>enables libmount debug output.</p>
+    </dd>
+    <dt>LIBBLKID_DEBUG=all</dt>
+    <dd>
+  <p>enables libblkid debug output.</p>
 <p class='spacer'>
 
     </dd>

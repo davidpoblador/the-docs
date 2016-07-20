@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmdaattribute - informs a PMDA about client connection attributes</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Informs a pmda about client connection attributes">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmdaattribute<small> (3)</small></h1>
+        <p class="lead">Informs a pmda about client connection attributes</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmdaattribute.3.html"><span itemprop="title">pmdaattribute</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/impl.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/pmda.h&gt;</p>
+<p class='spacer'>
+
+<p>int pmdaAttribute(int <em>context</em>, int <em>key</em>, char *<em>value</em>, int <em>length</em>, pmdaExt *<em>pmda</em>);</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp_pmda -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>As part of the Performance Metrics Domain Agent (PMDA) API (see <strong>PMDA</strong>(3)), <strong>pmdaAttribute</strong> is the generic callback for responding to client connection attributes. These attributes include client credential information, such as user ID and group ID.</p>
+<p class='spacer'>
+
+<p>A PMDA that supports connection attributes will provide a private <strong>pmdaAttribute</strong> callback by assignment to <em>version.six.attribute</em> of the <em>pmdaInterface</em> structure, and implement custom logic for any of the attribute <em>key</em>-<em>.I</em>value pairs of interest to it.</p>
+<p class='spacer'>
+
+<p>All attributes are associated with a specific client context, and these can be uniquely identified using the <em>ctx</em> first argument. The PMDA should track client connections, and disconnections using the <strong>pmdaSetEndContextCallBack</strong>(3) interface, as a result. The <strong>pmdaGetContext</strong>(3) interface may be particularly helpful also.</p>
+<p class='spacer'>
+
+<p>All attributes are passed as <em>key</em>-<em>.I</em>value pairs and the <em>value</em> is always passed as a null-terminated string of given <em>length</em>. This includes numeric attributes like the user ID.</p>
+<p class='spacer'>
+
+<p>The most commonly used attributes would be PCP_ATTR_USERID and PCP_ATTR_GROUPID but others may also be optionally passed (such as PCP_ATTR_USERNAME) if they are available. Some attributes will be consumed by <strong>pmcd</strong> and never through passed to PMDAs, such as PCP_ATTR_PASSWORD. A complete list of all possible attributes can be found in the headers listed above, all are prefixed by PCP_ATTR.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+
+<p><strong>pmdaAttribute</strong> should return either zero on success, or a negative return code to indicate an error in handling the attribute. This return code cannot be used to indicate a client should be disallowed access - such functionality must be performed by the agent in response to callbacks for the client in question (using PM_ERR_PERMISSION for those specific callbacks, for that specific client. In other words, errors will be be passed to PMCD but there is no guarantee made that the error will be return to the client and result in termination of the client, for example.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CAVEAT</h2>
+        <div class="sectioncontent">
+
+<p>The PMDA must be using <strong>PMDA_PROTOCOL_6</strong> or later, as specified in the call to <strong>pmdaDSO</strong>(3) or <strong>pmdaDaemon</strong>(3).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>PMAPI</strong>(3), <strong>PMDA</strong>(3), <strong>pmdaDaemon</strong>(3), <strong>pmdaDSO</strong>(3), <strong>pmdaMain</strong>(3) and <strong>pmdaGetContext</strong>(3).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmda.3.html"><span aria-hidden="true">&larr;</span> pmda.3: introduction to the Performance Metrics Domain Agent support library</a></li>
+   <li class="next"><a href="pmdachildren.3.html">pmdachildren.3: translate a PMID to a set of dynamic performance metric names <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

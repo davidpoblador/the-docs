@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>uuid_generate_time_safe - create a new unique UUID value</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Create a new unique uuid value">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">uuid_generate_time_safe<small> (3)</small></h1>
+        <p class="lead">Create a new unique uuid value</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/uuid_generate_time_safe.3.html"><span itemprop="title">uuid_generate_time_safe</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;uuid.h&gt;</strong>
+
+<strong>void uuid_generate(uuid_t </strong><em>out</em><strong>);</strong>
+<strong>void uuid_generate_random(uuid_t </strong><em>out</em><strong>);</strong>
+<strong>void uuid_generate_time(uuid_t </strong><em>out</em><strong>);</strong>
+<strong>int uuid_generate_time_safe(uuid_t </strong><em>out</em><strong>);</strong></pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>The <strong>uuid_generate</strong> function creates a new universally unique identifier (UUID).  The uuid will be generated based on high-quality randomness from <em>/dev/urandom</em>, if available.  If it is not available, then <strong>uuid_generate</strong> will use an alternative algorithm which uses the current time, the local ethernet MAC address (if available), and random data generated using a pseudo-random generator.</p>
+<p class='spacer'>
+
+<p>The <strong>uuid_generate_random</strong> function forces the use of the all-random UUID format, even if a high-quality random number generator (i.e., <em>/dev/urandom</em>) is not available, in which case a pseudo-random generator will be substituted.  Note that the use of a pseudo-random generator may compromise the uniqueness of UUIDs generated in this fashion.</p>
+<p class='spacer'>
+
+<p>The <strong>uuid_generate_time</strong> function forces the use of the alternative algorithm which uses the current time and the local ethernet MAC address (if available). This algorithm used to be the default one used to generate UUID, but because of the use of the ethernet MAC address, it can leak information about when and where the UUID was generated.  This can cause privacy problems in some applications, so the <strong>uuid_generate</strong> function only uses this algorithm if a high-quality source of randomness is not available.  To guarantee uniqueness of UUIDs generated by concurrently running processes, the uuid library uses global clock state counter (if the process has permissions to gain exclusive access to this file) and/or the <strong>uuidd</strong> daemon, if it is running already or can be spawned by the process (if installed and the process has enough permissions to run it).  If neither of these two synchronization mechanisms can be used, it is theoretically possible that two concurrently running processes obtain the same UUID(s).  To tell whether the UUID has been generated in a safe manner, use <strong>uuid_generate_time_safe</strong>.</p>
+<p class='spacer'>
+
+<p>The <strong>uuid_generate_time_safe</strong> is similar to <strong>uuid_generate_time</strong>, except that it returns a value which denotes whether any of the synchronization mechanisms (see above) has been used.</p>
+<p class='spacer'>
+
+<p>The UUID is 16 bytes (128 bits) long, which gives approximately 3.4x10^38 unique values (there are approximately 10^80 elementary particles in the universe according to Carl Sagan's <em>Cosmos</em>). The new UUID can reasonably be considered unique among all UUIDs created on the local system, and among UUIDs created on other systems in the past and in the future.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>The newly created UUID is returned in the memory location pointed to by <em>out</em>. <strong>uuid_generate_time_safe</strong> returns zero if the UUID has been generated in a safe manner, -1 otherwise.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
+        <div class="sectioncontent">
+
+<p>OSF DCE 1.1</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p>Theodore Y. Ts'o</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
+        <div class="sectioncontent">
+
+<p><strong>libuuid</strong> is part of the util-linux package since version 2.15.1 and is available from ftp://ftp.kernel.org/pub/linux/utils/util-linux/.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man3/uuid.3.html"><strong>uuid</strong>(3)</a>, <a href="../man1/uuidgen.1.html"><strong>uuidgen</strong>(1)</a>, <strong>uuidd</strong>(8), <a href="../man3/uuid_clear.3.html"><strong>uuid_clear</strong>(3)</a>, <a href="../man3/uuid_compare.3.html"><strong>uuid_compare</strong>(3)</a>, <a href="../man3/uuid_copy.3.html"><strong>uuid_copy</strong>(3)</a>, <a href="../man3/uuid_is_null.3.html"><strong>uuid_is_null</strong>(3)</a>, <a href="../man3/uuid_parse.3.html"><strong>uuid_parse</strong>(3)</a>, <a href="../man3/uuid_time.3.html"><strong>uuid_time</strong>(3)</a>, <a href="../man3/uuid_unparse.3.html"><strong>uuid_unparse</strong>(3)</a></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="uuid_generate_time.3.html"><span aria-hidden="true">&larr;</span> uuid_generate_time.3: create a new unique UUID value</a></li>
+   <li class="next"><a href="uuid_is_null.3.html">uuid_is_null.3: compare the value of the UUID to the NULL value <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

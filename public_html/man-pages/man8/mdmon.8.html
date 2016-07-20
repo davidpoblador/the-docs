@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mdmon - monitor MD external metadata arrays</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Monitor md external metadata arrays">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">mdmon<small> (8)</small></h1>
+        <p class="lead">Monitor md external metadata arrays</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/mdmon.8.html"><span itemprop="title">mdmon</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><strong>mdmon</strong><em> [--all] [--takeover] [--foreground] CONTAINER</em></p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OVERVIEW</h2>
+        <div class="sectioncontent">
+
+<p>The 2.6.27 kernel brings the ability to support external metadata arrays. External metadata implies that user space handles all updates to the metadata. The kernel's responsibility is to notify user space when a "metadata event" occurs, like disk failures and clean-to-dirty transitions.  The kernel, in important cases, waits for user space to take action on these notifications.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+  <h3>Metadata updates:</h3>
+    <p>To service metadata update requests a daemon, <em>mdmon</em>, is introduced. <em>Mdmon</em> is tasked with polling the sysfs namespace looking for changes in <strong>array_state</strong>, <strong>sync_action</strong>, and per disk <strong>state</strong> attributes.  When a change is detected it calls a per metadata type handler to make modifications to the metadata.  The following actions are taken:</p>
+    <dl class='dl-vertical'>
+      <dt><strong>array_state - inactive</strong></dt>
+      <dd>
+    <p>Clear the dirty bit for the volume and let the array be stopped</p>
+      </dd>
+      <dt><strong>array_state - write pending</strong></dt>
+      <dd>
+    <p>Set the dirty bit for the array and then set <strong>array_state</strong> to <strong>active</strong>. Writes are blocked until userspace writes <strong>active.</strong></p>
+      </dd>
+      <dt><strong>array_state - active-idle</strong></dt>
+      <dd>
+    <p>The safe mode timer has expired so set array state to clean to block writes to the array</p>
+      </dd>
+      <dt><strong>array_state - clean</strong></dt>
+      <dd>
+    <p>Clear the dirty bit for the volume</p>
+      </dd>
+      <dt><strong>array_state - read-only</strong></dt>
+      <dd>
+        <p>This is the initial state that all arrays start at. <em>mdmon</em> takes one of the three actions:</p>
+        <dl class='dl-horizontal'>
+          <dt>1/</dt>
+          <dd>
+        <p>Transition the array to read-auto keeping the dirty bit clear if the metadata handler determines that the array does not need resyncing or other modification</p>
+          </dd>
+          <dt>2/</dt>
+          <dd>
+        <p>Transition the array to active if the metadata handler determines a resync or some other manipulation is necessary</p>
+          </dd>
+          <dt>3/</dt>
+          <dd>
+        <p>Leave the array read-only if the volume is marked to not be monitored; for example, the metadata version has been set to "external:-dev/md127" instead of "external:/dev/md127"</p>
+          </dd>
+        </dl>
+      </dd>
+      <dt><strong>sync_action - resync-to-idle</strong></dt>
+      <dd>
+    <p>Notify the metadata handler that a resync may have completed.  If a resync process is idled before it completes this event allows the metadata handler to checkpoint resync.</p>
+      </dd>
+      <dt><strong>sync_action - recover-to-idle</strong></dt>
+      <dd>
+    <p>A spare may have completed rebuilding so tell the metadata handler about the state of each disk.  This is the metadata handler's opportunity to clear any "out-of-sync" bits and clear the volume's degraded status.  If a recovery process is idled before it completes this event allows the metadata handler to checkpoint recovery.</p>
+      </dd>
+      <dt><strong>&lt;disk&gt;/state - faulty</strong></dt>
+      <dd>
+    <p>A disk failure kicks off a series of events.  First, notify the metadata handler that a disk has failed, and then notify the kernel that it can unblock writes that were dependent on this disk.  After unblocking the kernel this disk is set to be removed+ from the member array.  Finally the disk is marked failed in all other member arrays in the container.</p>
+<p class='spacer'>
+
+    <p>+ Note This behavior differs slightly from native MD arrays where removal is reserved for a <strong>mdadm --remove</strong> event.  In the external metadata case the container holds the final reference on a block device and a <strong>mdadm --remove &lt;container&gt; &lt;victim&gt;</strong> call is still required.</p>
+      </dd>
+    </dl>
+<p class='spacer'>
+
+  <h3>Containers:</h3>
+<p class='spacer'>
+
+<p>External metadata formats, like DDF, differ from the native MD metadata formats in that they define a set of disks and a series of sub-arrays within those disks.  MD metadata in comparison defines a 1:1 relationship between a set of block devices and a RAID array.  For example to create 2 arrays at different RAID levels on a single set of disks, MD metadata requires the disks be partitioned and then each array can be created with a subset of those partitions.  The supported external formats perform this disk carving internally.</p>
+<p class='spacer'>
+
+<p>Container devices simply hold references to all member disks and allow tools like <em>mdmon</em> to determine which active arrays belong to which container.  Some array management commands like disk removal and disk add are now only valid at the container level.  Attempts to perform these actions on member arrays are blocked with error messages like:</p>
+<p class='spacer'>
+
+<p>"mdadm: Cannot remove disks from a \'member\' array, perform this operation on the parent container"</p>
+<p class='spacer'>
+
+<p>Containers are identified in /proc/mdstat with a metadata version string "external:&lt;metadata name&gt;". Member devices are identified by "external:/&lt;container device&gt;/&lt;member index&gt;", or "external:-&lt;container device&gt;/&lt;member index&gt;" if the array is to remain readonly.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-vertical'>
+    <dt>CONTAINER</dt>
+    <dd>
+  <p>The <strong>container</strong> device to monitor.  It can be a full path like /dev/md/container, or a simple md device name like md127.</p>
+    </dd>
+    <dt><strong>--foreground</strong></dt>
+    <dd>
+  <p>Normally, <em>mdmon</em> will fork and continue in the background.  Adding this option will skip that step and run <em>mdmon</em> in the foreground.</p>
+    </dd>
+    <dt><strong>--takeover</strong></dt>
+    <dd>
+  <p>This instructs <em>mdmon</em> to replace any active <em>mdmon</em> which is currently monitoring the array.  This is primarily used late in the boot process to replace any <em>mdmon</em> which was started from an <strong>initramfs</strong> before the root filesystem was mounted.  This avoids holding a reference on that <strong>initramfs</strong> indefinitely and ensures that the <em>pid</em> and <em>sock</em> files used to communicate with <em>mdmon</em> are in a standard place.</p>
+    </dd>
+    <dt><strong>--all</strong></dt>
+    <dd>
+  <p>This tells mdmon to find any active containers and start monitoring each of them if appropriate.  This is normally used with <strong>--takeover</strong> late in the boot sequence. A separate <em>mdmon</em> process is started for each container as the <strong>--all</strong> argument is over-written with the name of the container.  To allow for containers with names longer than 5 characters, this argument can be arbitrarily extended, e.g. to <strong>--all-active-arrays</strong>.</p>
+    </dd>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <dl class='dl-vertical'>
+    <dt>Note that</dt>
+    <dd>
+  <p><em>mdmon</em> is automatically started by <em>mdadm</em> when needed and so does not need to be considered when working with RAID arrays.  The only times it is run other than by <em>mdadm</em> is when the boot scripts need to restart it after mounting the new root filesystem.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">START UP AND SHUTDOWN</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>As <em>mdmon</em> needs to be running whenever any filesystem on the monitored device is mounted there are special considerations when the root filesystem is mounted from an <em>mdmon</em> monitored device. Note that in general <em>mdmon</em> is needed even if the filesystem is mounted read-only as some filesystems can still write to the device in those circumstances, for example to replay a journal after an unclean shutdown.</p>
+<p class='spacer'>
+
+<p>When the array is assembled by the <strong>initramfs</strong> code, mdadm will automatically start <em>mdmon</em> as required.  This means that <em>mdmon</em> must be installed on the <strong>initramfs</strong> and there must be a writable filesystem (typically tmpfs) in which <strong>mdmon</strong> can create a <strong>.pid</strong> and <strong>.sock</strong> file.  The particular filesystem to use is given to mdmon at compile time and defaults to <strong>/run/mdadm</strong>.</p>
+<p class='spacer'>
+
+<p>This filesystem must persist through to shutdown time.</p>
+<p class='spacer'>
+
+<p>After the final root filesystem has be instantiated (usually with <strong>pivot_root</strong>) <em>mdmon</em> should be run with <em>--all --takeover</em> so that the <em>mdmon</em> running from the <strong>initramfs</strong> can be replaced with one running in the main root, and so the memory used by the initramfs can be released.</p>
+<p class='spacer'>
+
+<p>At shutdown time, <em>mdmon</em> should not be killed along with other processes.  Also as it holds a file (socket actually) open in <strong>/dev</strong> (by default) it will not be possible to unmount <strong>/dev</strong> if it is a separate filesystem.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p><strong>  mdmon --all-active-arrays --takeover</strong></p>
+<p class='spacer'>
+
+<p>Any <em>mdmon</em> which is currently running is killed and a new instance is started. This should be run during in the boot sequence if an initramfs was used, so that any mdmon running from the initramfs will not hold the initramfs active.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>mdadm</strong>(8), <em>md</em>(4).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="mdassemble.8.html"><span aria-hidden="true">&larr;</span> mdassemble.8: assemble MD devices aka Linux Software RAID</a></li>
+   <li class="next"><a href="migratepages.8.html">migratepages.8: Migrate the physical location a processes pages <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

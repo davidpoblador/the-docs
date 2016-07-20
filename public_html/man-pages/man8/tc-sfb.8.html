@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tc-sfb - Stochastic Fair Blue</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Stochastic fair blue">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">tc-sfb<small> (8)</small></h1>
+        <p class="lead">Stochastic fair blue</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/"><span itemprop="title">System administration commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man8/tc-sfb.8.html"><span itemprop="title">tc-sfb</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>tc qdisc ... blue</strong> <strong>rehash</strong> milliseconds <strong>db</strong> milliseconds <strong>limit</strong> packets <strong>max</strong> packets <strong>target</strong> packets <strong>increment</strong> float <strong>decrement</strong> float <strong>penalty_rate</strong> packets per second <strong>penalty_burst</strong> packets</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>Stochastic Fair Blue is a classless qdisc to manage congestion based on packet loss and link utilization history while trying to prevent non-responsive flows (i.e. flows that do not react to congestion marking or dropped packets) from impacting performance of responsive flows. Unlike RED, where the marking probability has to be configured, BLUE tries to determine the ideal marking probability automatically.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ALGORITHM</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The <strong>BLUE</strong> algorithm maintains a probability which is used to mark or drop packets that are to be queued. If the queue overflows, the mark/drop probability is increased. If the queue becomes empty, the probability is decreased. The <strong>Stochastic Fair Blue</strong> (SFB) algorithm is designed to protect TCP flows against non-responsive flows.</p>
+<p class='spacer'>
+
+<p>This SFB implementation maintains 8 levels of 16 bins each for accounting. Each flow is mapped into a bin of each level using a per-level hash value.</p>
+<p class='spacer'>
+
+<p>Every bin maintains a marking probability, which gets increased or decreased based on bin occupancy. If the number of packets exceeds the size of that bin, the marking probability is increased. If the number drops to zero, it is decreased.</p>
+<p class='spacer'>
+
+<p>The marking probability is based on the minimum value of all bins a flow is mapped into, thus, when a flow does not respond to marking or gradual packet drops, the marking probability quickly reaches one.</p>
+<p class='spacer'>
+
+<p>In this case, the flow is rate-limited to <strong>penalty_rate</strong> packets per second.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">LIMITATIONS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>Due to SFBs nature, it is possible for responsive flows to share all of its bins with a non-responsive flow, causing the responsive flow to be misidentified as being non-responsive.</p>
+<p class='spacer'>
+
+<p>The probability of a responsive flow to be misidentified is dependent on the number of non-responsive flows, M. It is (1 - (1 - (1 / 16.0)) ** M) **8, so for example with 10 non-responsive flows approximately 0.2% of responsive flows will be misidentified.</p>
+<p class='spacer'>
+
+<p>To mitigate this, SFB performs performs periodic re-hashing to avoid misclassification for prolonged periods of time.</p>
+<p class='spacer'>
+
+<p>The default hashing method will use source and destination ip addresses and port numbers if possible, and also supports tunneling protocols. Alternatively, an external classifier can be configured, too.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">PARAMETERS</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-horizontal'>
+    <dt>rehash</dt>
+    <dd>
+  <p>Time interval in milliseconds when queue perturbation occurs to avoid erroneously detecting unrelated, responsive flows as being part of a non-responsive flow for prolonged periods of time. Defaults to 10 minutes.</p>
+    </dd>
+    <dt>db</dt>
+    <dd>
+  <p>Double buffering warmup wait time, in milliseconds. To avoid destroying the probability history when rehashing is performed, this implementation maintains a second set of levels/bins as described in section 4.4 of the SFB reference. While one set is used to manage the queue, a second set is warmed up: Whenever a flow is then determined to be non-responsive, the marking probabilities in the second set are updated. When the rehashing happens, these bins will be used to manage the queue and all non-responsive flows can be rate-limited immediately. This value determines how much time has to pass before the 2nd set will start to be warmed up. Defaults to one minute, should be lower than rehash.</p>
+    </dd>
+    <dt>limit</dt>
+    <dd>
+  <p>Hard limit on the real (not average) total queue size in packets. Further packets are dropped. Defaults to the transmit queue length of the device the qdisc is attached to.</p>
+    </dd>
+    <dt>max</dt>
+    <dd>
+  <p>Maximum length of a buckets queue, in packets, before packets start being dropped. Should be sightly larger than <strong>target</strong> , but should not be set to values exceeding 1.5 times that of <strong>target .</strong> Defaults to 25.</p>
+    </dd>
+    <dt>target</dt>
+    <dd>
+  <p>The desired average bin length. If the bin queue length reaches this value, the marking probability is increased by <strong>increment.</strong> The default value depends on the <strong>max</strong> setting, with max set to 25 <strong>target</strong> will default to 20.</p>
+    </dd>
+    <dt>increment</dt>
+    <dd>
+  <p>A value used to increase the marking probability when the queue appears to be over-used. Must be between 0 and 1.0. Defaults to 0.00050.</p>
+    </dd>
+    <dt>decrement</dt>
+    <dd>
+  <p>Value used to decrease the marking probability when the queue is found to be empty. Must be between 0 and 1.0. Defaults to 0.00005.</p>
+    </dd>
+    <dt>penalty_rate</dt>
+    <dd>
+  <p>The maximum number of packets belonging to flows identified as being non-responsive that can be enqueued per second. Once this number has been reached, further packets of such non-responsive flows are dropped. Set this to a reasonable fraction of your uplink throughput; the default value of 10 packets is probably too small.</p>
+    </dd>
+    <dt>penalty_burst</dt>
+    <dd>
+  <p>The number of packets a flow is permitted to exceed the penalty rate before packets start being dropped. Defaults to 20 packets.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">STATISTICS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+  <p>This qdisc exposes additional statistics via 'tc -s qdisc' output. These are:</p>
+  <dl class='dl-vertical'>
+    <dt>earlydrop</dt>
+    <dd>
+  <p>The number of packets dropped before a per-flow queue was full.</p>
+    </dd>
+    <dt>ratedrop</dt>
+    <dd>
+  <p>The number of packets dropped because of rate-limiting. If this value is high, there are many non-reactive flows being sent through sfb. In such cases, it might be better to embed sfb within a classful qdisc to better control such flows using a different, shaping qdisc.</p>
+    </dd>
+    <dt>bucketdrop</dt>
+    <dd>
+  <p>The number of packets dropped because a per-flow queue was full. High bucketdrop may point to a high number of aggressive, short-lived flows.</p>
+    </dd>
+    <dt>queuedrop</dt>
+    <dd>
+  <p>The number of packets dropped due to reaching limit. This should normally be 0.</p>
+    </dd>
+    <dt>marked</dt>
+    <dd>
+  <p>The number of packets marked with ECN.</p>
+    </dd>
+    <dt>maxqlen</dt>
+    <dd>
+  <p>The length of the current longest per-flow (virtual) queue.</p>
+    </dd>
+    <dt>maxprob</dt>
+    <dd>
+  <p>The maximum per-flow drop probability. 1 means that some flows have been detected as non-reactive.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>SFB automatically enables use of Explicit Congestion Notification (ECN). Also, this SFB implementation does not queue packets itself. Rather, packets are enqueued to the inner qdisc (defaults to pfifo). Because sfb maintains virtual queue states, the inner qdisc must not drop a packet previously queued. Furthermore, if a buckets queue has a very high marking rate, this implementation will start dropping packets instead of marking them, as such a situation points to either bad congestion, or an unresponsive flow.</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLE & USAGE</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>To attach to interface $DEV, using default options:</p>
+<p class='spacer'>
+
+<p># tc qdisc add dev $DEV handle 1: root sfb</p>
+<p class='spacer'>
+
+<p>Only use destination ip addresses for assigning packets to bins, perturbing hash results every 10 minutes:</p>
+<p class='spacer'>
+
+<p># tc filter add dev $DEV parent 1: handle 1 flow hash keys dst perturb 600</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>tc</strong>(8), <a href="../man8/tc-red.8.html"><strong>tc-red</strong>(8)</a>, <a href="../man8/tc-sfq.8.html"><strong>tc-sfq</strong>(8)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SOURCES</h2>
+        <div class="sectioncontent">
+
+  <dl class='dl-horizontal'>
+    <dt>o</dt>
+    <dd>
+  <p>W. Feng, D. Kandlur, D. Saha, K. Shin, BLUE: A New Class of Active Queue Management Algorithms, U. Michigan CSE-TR-387-99, April 1999.</p>
+<p class='spacer'>
+
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>This SFB implementation was contributed by Juliusz Chroboczek and Eric Dumazet.</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="tc-red.8.html"><span aria-hidden="true">&larr;</span> tc-red.8: Random Early Detection</a></li>
+   <li class="next"><a href="tc-sfq.8.html">tc-sfq.8: Stochastic Fairness Queueing <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

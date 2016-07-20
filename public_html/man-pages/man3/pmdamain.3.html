@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pmdamain - generic PDU processing for a PMDA</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Generic pdu processing for a pmda">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pmdamain<small> (3)</small></h1>
+        <p class="lead">Generic pdu processing for a pmda</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/pmdamain.3.html"><span itemprop="title">pmdamain</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p>#include &lt;pcp/pmapi.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/impl.h&gt;</p>
+<p class='spacer'>
+
+<p>#include &lt;pcp/pmda.h&gt;</p>
+<p class='spacer'>
+
+<p>cc ... -lpcp_pmda -lpcp</p>
+<p class='spacer'>
+
+<p>void pmdaMain(pmdaInterface *<em>dispatch</em>);</p>
+<p class='spacer'>
+
+<p>void pmdaSetCheckCallBack(pmdaInterface *<em>dispatch</em>, pmdaCheckCallBack&nbsp;<em>callback</em>);</p>
+<p class='spacer'>
+
+<p>void pmdaSetDoneCallBack(pmdaInterface *<em>dispatch</em>, pmdaDoneCallBack&nbsp;<em>callback</em>);</p>
+<p class='spacer'>
+
+<p>void pmdaSetResultCallBack(pmdaInterface *<em>dispatch</em>, pmdaResultCallBack&nbsp;<em>callback</em>);</p>
+<p class='spacer'>
+
+<p>void pmdaSetEndContextCallBack(pmdaInterface *<em>dispatch</em>, pmdaEndContextCallBack&nbsp;<em>callback</em>);</p>
+<p class='spacer'>
+
+<p>int pmdaGetContext(void);</p>
+<p class='spacer'>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p>For Performance Metric Domain Agents (<strong>PMDA</strong>(3)) using the binary PDU protocols to communicate with <strong>pmcd</strong>(1), the routine <strong>pmdaMain</strong> provides a generic implementation of the PDU-driven main loop.</p>
+<p class='spacer'>
+
+<p><em>dispatch</em> describes how to process each incoming PDU. It is a vector of function pointers, one per request PDU type, as used in the DSO interface for a PMDA, namely:</p>
+<p class='spacer'>
+
+<pre>/*
+ * Interface Definitions for PMDA Methods
+ */
+typedef struct {
+    int domain;         /* set/return performance metrics domain id here */
+    struct {
+        unsigned int    pmda_interface: 8; /* PMDA DSO interface version */
+        unsigned int    pmapi_version : 8; /* PMAPI version */
+        unsigned int    flags : 16;        /* optional feature flags */
+    } comm;             /* set/return communication and version info */
+    int status;         /* return initialization status here */
+
+    union {
+        struct {                              /* PMDA_INTERFACE_2 or _3 */
+            pmdaExt *ext;
+            int (*profile)(__pmProfile *, pmdaExt *);
+            int (*fetch)(int, pmID *, pmResult **, pmdaExt *);
+            int (*desc)(pmID, pmDesc *, pmdaExt *);
+            int (*instance)(pmInDom, int, char *, __pmInResult **, pmdaExt *);
+            int (*text)(int, int, char **, pmdaExt *);
+            int (*store)(pmResult *, pmdaExt *);
+        } two, three;
+
+        struct {                              /* PMDA_INTERFACE_4 or _5 */
+            pmdaExt *ext;
+            int     (*profile)(__pmProfile *, pmdaExt *);
+            int     (*fetch)(int, pmID *, pmResult **, pmdaExt *);
+            int     (*desc)(pmID, pmDesc *, pmdaExt *);
+            int     (*instance)(pmInDom, int, char *, __pmInResult **, pmdaExt *);
+            int     (*text)(int, int, char **, pmdaExt *);
+            int     (*store)(pmResult *, pmdaExt *);
+            int     (*pmid)(char *, pmID *, pmdaExt *);
+            int     (*name)(pmID, char ***, pmdaExt *);
+            int     (*children)(char *, int, char ***, int **, pmdaExt *);
+        } four, five;
+
+        struct {                              /* PMDA_INTERFACE_6 */
+            pmdaExt *ext;
+            int     (*profile)(__pmProfile *, pmdaExt *);
+            int     (*fetch)(int, pmID *, pmResult **, pmdaExt *);
+            int     (*desc)(pmID, pmDesc *, pmdaExt *);
+            int     (*instance)(pmInDom, int, char *, __pmInResult **, pmdaExt *);
+            int     (*text)(int, int, char **, pmdaExt *);
+            int     (*store)(pmResult *, pmdaExt *);
+            int     (*pmid)(char *, pmID *, pmdaExt *);
+            int     (*name)(pmID, char ***, pmdaExt *);
+            int     (*children)(char *, int, char ***, int **, pmdaExt *);
+            int     (*attribute)(int, int, const char *, int, pmdaExt *);
+        } six;
+    } version;
+
+} pmdaInterface;</pre>
+
+<p class='spacer'>
+
+<p>This structure has been extended to incorporate the multiple interface versions that have evolved over time. For <strong>pmdaMain,</strong> <em>dispatch-&gt;domain</em> and <em>dispatch-&gt;status</em> are ignored.  The <em>comm.pmda_interface</em> field is used to determine the interface used by the PMDA.  Setting this field to <strong>PMDA_INTERFACE_2</strong> or <strong>PMDA_INTERFACE_3</strong> will force <strong>pmdaMain</strong> to use the callbacks in the <em>version.two</em> or <em>version.three</em> structure. A setting of <strong>PMDA_INTERFACE_4</strong> or <strong>PMDA_INTERFACE_5</strong> will force <strong>pmdaMain</strong> to use the callbacks in the <em>version.four</em> or <em>version.five</em> structure, and similarly a <strong>PMDA_INTERFACE_6</strong> setting forces <strong>pmdaMain</strong> to use the callbacks in the <em>version.six</em> structure. Any other value will result in an error and termination of <strong>pmdaMain</strong>.</p>
+<p class='spacer'>
+
+<p>Note that the use of <strong>dispatch</strong> as the interface between the <strong>pmcd</strong>(1) and the methods of the PMDA allows each PMDA to be implemented as though it were a DSO, with <strong>pmdaMain</strong> providing a convenient wrapper that may be used to convert from the DSO interface to the binary PDU (daemon PMDA) interface.</p>
+<p class='spacer'>
+
+<p><strong>pmdaMain</strong> executes as a continuous loop, returning only when an end of file is encountered on the PDU input file descriptor.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CALLBACKS</h2>
+        <div class="sectioncontent">
+
+<p>In addition to the individual PDU processing callbacks - <strong>pmdaProfile</strong>(3), <strong>pmdaFetch</strong>(3), <strong>pmdaDesc</strong>(3), <strong>pmdaInstance</strong>(3), <strong>pmdaText</strong>(3), <strong>pmdaStore</strong>(3), <strong>pmdaPMID</strong>(3), <strong>pmdaName</strong>(3), <strong>pmdaChildren</strong>(3), and <strong>pmdaAttribute</strong>(3) there are other callbacks that can affect or inform all PDU processing within a PMDA, namely <em>check</em>, <em>done</em> and <em>end</em>. These callbacks should be set with <strong>pmdaSetCheckCallBack</strong>, <strong>pmdaSetDoneCallBack</strong> and <strong>pmdaSetEndContextCallBack</strong>.</p>
+<p class='spacer'>
+
+<p>If not null, <em>check</em> is called after each PDU is received (but before it was processed), and <em>done</em> is called after each PDU is sent. If <em>check</em> returns a value less than zero (typically PM_ERR_AGAIN), the PDU processing is skipped and in most cases the function value is returned as an error PDU to <strong>pmcd</strong>(1) - this may be used for PMDAs that require some sort of deferred connection or reconnect protocols for the underlying sources of performance metrics, e.g. a DBMS. The error indication from <em>check</em> is not passed back to <strong>pmcd</strong>(1) in the cases where no acknowledgment is expected, e.g. for a PDU_PROFILE.</p>
+<p class='spacer'>
+
+<p>The <em>end</em> callback allows a PMDA to keep track of state for individual clients that are requesting it to perform actions (PDU processing). Using <strong>pmdaGetContext</strong> a PMDA can determine, at any point, an integer identifier that uniquely identifies the client tools at the remote end of PMCD (for local context modes, this identifier is always zero). This becomes very important for handling event metrics, where each event must be propagated once only to each interested client. It also underlies the mechanism whereby connection information is passed to the PMDA, such as the the credentials (user and group identifiers) for the client tool.</p>
+<p class='spacer'>
+
+<p>One final callback mechanism is provided for handling the <strong>pmResult</strong> built for a PDU_RESULT in response to a PDU_FETCH request. By default, <strong>pmdaMain</strong> will free the <strong>pmResult</strong> once the result has been sent to the <strong>pmcd</strong>(1). For some PMDAs this is inappropriate, e.g. the <strong>pmResult</strong> is statically allocated, or contains a hybrid of pinned PDU buffer information and dynamically allocated information. <strong>pmdaSetResultCallback</strong> may be used to define an alternative <strong>callback</strong> from <strong>pmdaMain</strong>.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+
+  <p>These messages may be appended to the PMDA's log file:</p>
+  <dl class='dl-vertical'>
+    <dt><strong>PMDA interface version </strong><em>interface</em><strong> not supported</strong></dt>
+    <dd>
+  <p>The <em>interface</em> version is not supported by <strong>pmdaMain</strong>.</p>
+    </dd>
+    <dt><strong>Unrecognized pdu type</strong></dt>
+    <dd>
+  <p>The PMDA received a PDU from <strong>pmcd</strong> that it does not recognize. This may indicate that the <strong>pmcd</strong> process is using a more advanced interface than <strong>pmdaMain</strong>.</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>If the <strong>PMAPI</strong>(3) debug control variable (<strong>pmdebug</strong>) has the DBG_TRACE_LIBPMDA flag set then each PDU that is received is reported in the PMDA's log file.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>pmcd</strong>(1), <strong>PMAPI</strong>(3), <strong>PMDA</strong>(3), <strong>pmdaProfile</strong>(3), <strong>pmdaFetch</strong>(3), <strong>pmdaDesc</strong>(3), <strong>pmdaInstance</strong>(3), <strong>pmdaText</strong>(3), <strong>pmdaStore</strong>(3), <strong>pmdaPMID</strong>(3), <strong>pmdaName</strong>(3), <strong>pmdaChildren</strong>(3), and <strong>pmdaAttribute</strong>(3).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pmdainterfacemoved.3.html"><span aria-hidden="true">&larr;</span> pmdainterfacemoved.3: reset internal state of a \f2pmdaInterface\f1 structure</a></li>
+   <li class="next"><a href="pmdaname.3.html">pmdaname.3: translate a PMID to a set of dynamic performance metric names <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

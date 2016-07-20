@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>seccomp_export_bpf - Export the seccomp filter</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Export the seccomp filter">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">seccomp_export_bpf<small> (3)</small></h1>
+        <p class="lead">Export the seccomp filter</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/"><span itemprop="title">Library calls</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man3/seccomp_export_bpf.3.html"><span itemprop="title">seccomp_export_bpf</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<pre><strong>#include &lt;seccomp.h&gt;</strong>
+
+<strong>typedef void * scmp_filter_ctx;</strong>
+
+<strong>int seccomp_export_bpf(const scmp_filter_ctx </strong><em>ctx</em><strong>, int </strong><em>fd</em><strong>);</strong>
+<strong>int seccomp_export_pfc(const scmp_filter_ctx </strong><em>ctx</em><strong>, int </strong><em>fd</em><strong>);</strong>
+
+Link with <em>-lseccomp</em>.</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>The <strong>seccomp_export_bpf</strong>() and <strong>seccomp_export_pfc</strong>() functions generate and output the current seccomp filter in either BPF (Berkley Packet Filter) or PFC (Pseudo Filter Code).  The output of <strong>seccomp_export_bpf</strong>() is suitable for loading into the kernel, while the output of <strong>seccomp_export_pfc</strong>() is human readable and is intended primarily as a debugging tool for developers using libseccomp.  Both functions write the filter to the <em>fd</em> file descriptor.</p>
+<p class='spacer'>
+
+<p>The filter context <em>ctx</em> is the value returned by the call to <a href="../man3/seccomp_init.3.html"><strong>seccomp_init</strong>(3)</a>.</p>
+<p class='spacer'>
+
+<p>While the two output formats are guaranteed to be functionally equivalent for the given seccomp filter configuration, the filter instructions, and their ordering, are not guaranteed to be the same in both the BPF and PFC formats.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
+        <div class="sectioncontent">
+
+<p>Returns zero on success, negative errno values on failure.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
+        <div class="sectioncontent">
+
+<pre>#include &lt;seccomp.h&gt;
+
+int main(int argc, char *argv[])
+{
+	int rc = -1;
+	scmp_filter_ctx ctx;
+	int filter_fd;
+
+	ctx = seccomp_init(SCMP_ACT_KILL);
+	if (ctx == NULL)
+		goto out;
+
+	/* ... */
+
+	filter_fd = open("/tmp/seccomp_filter.bpf", O_WRONLY);
+	if (filter_fd == -1) {
+		rc = -errno;
+		goto out;
+	}
+
+	rc = seccomp_export_bpf(ctx, filter_fd);
+	if (rc &lt; 0) {
+		close(filter_fd);
+		goto out;
+	}
+	close(filter_fd);
+
+	/* ... */
+
+out:
+	seccomp_release(ctx);
+	return -rc;
+}</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+
+<p class='spacer'>
+
+<p>While the seccomp filter can be generated independent of the kernel, kernel support is required to load and enforce the seccomp filter generated by libseccomp.</p>
+<p class='spacer'>
+
+<p>The libseccomp project site, with more information and the source code repository, can be found at https://github.com/seccomp/libseccomp.  This tool, as well as the libseccomp library, is currently under development, please report any bugs at the project site or directly to the author.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<p>Paul Moore &lt;paul@paul-moore.com&gt;</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><a href="../man3/seccomp_init.3.html"><strong>seccomp_init</strong>(3)</a>, <a href="../man3/seccomp_release.3.html"><strong>seccomp_release</strong>(3)</a></p>
+<p class='spacer'>
+
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="seccomp_attr_set.3.html"><span aria-hidden="true">&larr;</span> seccomp_attr_set.3: Manage the seccomp filter attributes</a></li>
+   <li class="next"><a href="seccomp_export_pfc.3.html">seccomp_export_pfc.3: Export the seccomp filter <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

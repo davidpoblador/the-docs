@@ -96,11 +96,14 @@
     </dd>
     <dt><strong>--fake</strong></dt>
     <dd>
-  <p>Causes everything to be done except for the actual system call; this 'fakes' unmounting the filesystem.  It can be used to remove entries from <em>/etc/mtab</em> that were unmounted earlier with the <strong>-n</strong> option.</p>
+  <p>Causes everything to be done except for the actual system call or umount helper execution; this 'fakes' unmounting the filesystem.  It can be used to remove entries from <em>/etc/mtab</em> that were unmounted earlier with the <strong>-n</strong> option.</p>
     </dd>
     <dt><strong>-f</strong>,<strong> --force</strong></dt>
     <dd>
   <p>Force an unmount (in case of an unreachable NFS system).  (Requires kernel 2.1.116 or later.)</p>
+<p class='spacer'>
+
+  <p>Note that this option does not guarantee that umount command does not hang. It's strongly recommended to use absolute paths without symlinks to avoid unwanted readlink and stat syscalls on unreachable NFS in umount.</p>
     </dd>
     <dt><strong>-i</strong>,<strong> --internal-only</strong></dt>
     <dd>
@@ -128,7 +131,7 @@
     </dd>
     <dt><strong>-t</strong>,<strong> --types </strong><em>type</em>...</dt>
     <dd>
-  <p>Indicate that the actions should only be taken on filesystems of the specified <em>type</em>. More than one type may be specified in a comma-separated list.  The list of filesystem types can be prefixed with <strong>no</strong> to indicate that no action should be taken for all of the mentioned types.</p>
+  <p>Indicate that the actions should only be taken on filesystems of the specified <em>type</em>. More than one type may be specified in a comma-separated list.  The list of filesystem types can be prefixed with <strong>no</strong> to indicate that no action should be taken for all of the mentioned types. Note that <strong>umount</strong> reads information about mounted filesystems from kernel (/proc/mounts) and filesystem names may be different than filesystem names used in the /etc/fstab (e.g. "nfs4" vs. "nfs").</p>
     </dd>
     <dt><strong>-v</strong>,<strong> --verbose</strong></dt>
     <dd>
@@ -161,16 +164,19 @@
 <p>The syntax of external unmount helpers is:</p>
 <p class='spacer'>
 
-<p><strong>/sbin/umount.</strong><em>suffix</em> {<em>directory</em>|<em>device</em>} [<strong>-flnrv</strong>] [<strong>-t</strong> <em>type</em>.<em>subtype</em>]</p>
+<p><strong>umount.</strong><em>suffix</em> {<em>directory</em>|<em>device</em>} [<strong>-flnrv</strong>] [<strong>-t</strong> <em>type</em>.<em>subtype</em>]</p>
 <p class='spacer'>
 
-<p>where <em>suffix</em> is the filesystem type or a value from a "uhelper=" or "helper=" mtab option.  The <strong>-t</strong> option can be used for filesystems with subtypes support (for example <strong>/sbin/mount.fuse -t fuse.sshfs</strong>).</p>
+<p>where <em>suffix</em> is the filesystem type (or the value from a <strong>uhelper=</strong> or <strong>helper=</strong> marker in the mtab file). The <strong>-t</strong> option can be used for filesystems that have subtype support.  For example:</p>
 <p class='spacer'>
 
-<p>The <strong>uhelper=</strong> (unprivileged unmount helper) mount option can be used when non-root users need to be able to unmount a mountpoint which is not defined in <em>/etc/fstab</em> (e.g. devices mounted by udisk).</p>
+<p><strong>umount.fuse -t fuse.sshfs</strong></p>
 <p class='spacer'>
 
-<p>The <strong>helper=</strong> mount option redirects all unmount requests to the /sbin/umount.<em>type</em> helper independently of UID.</p>
+<p>A <strong>uhelper=<em>something</em> marker (unprivileged helper) can appear in the <em>/etc/mtab</em> file when ordinary users need to be able to unmount a mountpoint that is not defined in <em>/etc/fstab</em> (for example for a device that was mounted by <strong>udisks</strong>(1)).</p>
+<p class='spacer'>
+
+<p>A helper=<em>type</em> marker in the mtab file will redirect all unmount requests to the /sbin/umount.<em>type</em> helper independently of UID.</p>
         </div>
       </section>
 
@@ -185,7 +191,7 @@
     </dd>
     <dt><strong>/etc/fstab</strong></dt>
     <dd>
-  <p>checked when option <strong>-O</strong> is given</p>
+  <p>table of known filesystems</p>
     </dd>
   </dl>
         </div>
@@ -198,15 +204,15 @@
   <dl class='dl-horizontal'>
     <dt>LIBMOUNT_FSTAB=&lt;path&gt;</dt>
     <dd>
-  <p>overrides the default location of the fstab file</p>
+  <p>overrides the default location of the fstab file (ignored for suid)</p>
     </dd>
     <dt>LIBMOUNT_MTAB=&lt;path&gt;</dt>
     <dd>
-  <p>overrides the default location of the mtab file</p>
+  <p>overrides the default location of the mtab file (ignored for suid)</p>
     </dd>
-    <dt>LIBMOUNT_DEBUG=0xffff</dt>
+    <dt>LIBMOUNT_DEBUG=all</dt>
     <dd>
-  <p>enables debug output</p>
+  <p>enables libmount debug output</p>
     </dd>
   </dl>
         </div>

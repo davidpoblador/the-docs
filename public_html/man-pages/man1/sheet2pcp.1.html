@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sheet2pcp - import spreadsheet data and create a PCP archive</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Import spreadsheet data and create a pcp archive">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">sheet2pcp<small> (1)</small></h1>
+        <p class="lead">Import spreadsheet data and create a pcp archive</p>
+      </div>
+
+    <ol class="breadcrumb">
+	<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/"><span itemprop="title">Linux Man Pages</span></a>
+	</li>
+	<li id="breadcrumb_section" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_page" itemprop="child">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/"><span itemprop="title">Executable programs or shell commands</span></a>
+	</li>
+	<li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+		<a itemprop="url" href="https://www.carta.tech/man-pages/man1/sheet2pcp.1.html"><span itemprop="title">sheet2pcp</span></a>
+	</li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
+        <div class="sectioncontent">
+
+<p><strong>sheet2pcp</strong> [<strong>-h</strong> <em>host</em>] [<strong>-Z</strong> <em>timezone</em>] <em>infile</em> <em>mapfile</em> <em>outfile</em></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+
+<p><strong>sheet2pcp</strong> is intended to read a data spreadsheet (<em>infile</em>) translate this into a Performance Co-Pilot (\s-1PCP\s0) archive with the basename <em>outfile</em>.</p>
+<p class='spacer'>
+
+<p>The input spreadsheet can be in any of the common formats, provided the appropriate Perl modules have been installed (see the <strong>\s-1CAVEATS\s0</strong> section below).  The spreadsheet must be \*(L"normalized\*(R" so that each row contains data for the same time interval, and one of the columns contains the date and time for the data in each row.</p>
+<p class='spacer'>
+
+<p>The resultant \s-1PCP\s0 archive may be used with all the \s-1PCP\s0 client tools to graph subsets of the data using <strong>pmchart</strong>(1), perform data reduction and reporting, filter with the \s-1PCP\s0 inference engine <a href="../man1/pmie.1.html"><strong>pmie</strong>(1)</a>, etc.</p>
+<p class='spacer'>
+
+<p>The <em>mapfile</em> controls the import process and defines the data mapping from the spreadsheet columns onto the \s-1PCP\s0 data model.  The file is written in \s-1XML\s0 and conforms to the syntax defined in the <strong>\s-1MAPPING\s0 \s-1CONFIGURATION\s0</strong> section below.</p>
+<p class='spacer'>
+
+<p>A series of physical files will be created with the prefix <em>outfile</em>. These are <em>outfile</em><strong>.0</strong> (the performance data), <em>outfile</em><strong>.meta</strong> (the metadata that describes the performance data) and <em>outfile</em><strong>.index</strong> (a temporal index to improve efficiency of replay operations for the archive).  If any of these files exists already, then <strong>sheet2pcp</strong> will <strong>not</strong> overwrite them and will exit with an error message.</p>
+<p class='spacer'>
+
+<p>The <strong>-h</strong> option is an alternate to the <strong>hostname</strong> attribute of the <strong>&lt;sheet&gt;</strong> element in <em>mapfile</em> described below.  If both are specified, the value from <em>mapfile</em> is used.</p>
+<p class='spacer'>
+
+<p>The <strong>-Z</strong> option is an alternate to the <strong>timezone</strong> attribute of the <strong>&lt;sheet&gt;</strong> element in <em>mapfile</em> described below.  If both are specified, the value from <em>mapfile</em> is used.</p>
+<p class='spacer'>
+
+<p><strong>sheet2pcp</strong> is a Perl script that uses the PCP::LogImport Perl wrapper around the \s-1PCP\s0 <em>libpcp_import</em> library, and as such could be used as an example to develop new tools to import other types of performance data and create \s-1PCP\s0 archives.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">MAPPING CONFIGURATION</h2>
+        <div class="sectioncontent">
+
+<p>The <em>mapfile</em> contains specifications in standard \s-1XML\s0 format.</p>
+<p class='spacer'>
+
+  <p>The whole specification is wrapped in a <strong>&lt;sheet&gt;</strong> ... <strong>&lt;/sheet&gt;</strong> element. The  <strong>sheet</strong> tag supports the following optional attributes:</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>heading</strong></dt>
+    <dd>
+  <p>Specifies the number of heading rows to skip at the start of the spreadsheet before processing data. Example: heading=\*(L"1\*(R".</p>
+    </dd>
+    <dt><strong>hostname</strong></dt>
+    <dd>
+  <p>Set the source hostname in the \s-1PCP\s0 archive (the default is to use the hostname of the local host). Example: hostname=\*(L"some.where.com\*(R".</p>
+    </dd>
+    <dt><strong>timezone</strong></dt>
+    <dd>
+  <p>Set the source timezone in the \s-1PCP\s0 archive (the default is to use \s-1UTC\s0).  The timezone must have the format +HHMM (for hours and minutes East of \s-1UTC\s0) or -HHMM (for hours and minutes West of \s-1UTC\s0).  Note in particular that <strong>neither</strong> the <strong>zoneinfo</strong> (aka Olson) format, e.g. Europe/Paris, nor the Posix <strong>\s-1TZ\s0</strong> format, e.g. \s-1EST+5\s0 is allowed. Example: timezone=\*(L"+1100\*(R".</p>
+    </dd>
+    <dt><strong>datefmt</strong></dt>
+    <dd>
+  <p>The format of the date imported from the spreadsheet may be specified as a concatenation of values that specify the order of the year (<strong>Y</strong>), month (<strong>M</strong>) and day (<strong>D</strong>) fields in a date. The supported variants are <strong>\s-1DMY\s0</strong> (the default), <strong>\s-1MDY\s0</strong> and <strong>\s-1YMD\s0</strong>. Example: datefmt=\*(L"\s-1YMD\s0\*(R".</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+  <p>A <strong>&lt;sheet&gt;</strong> element contains one or more metric specifications of the form <strong>&lt;metric&gt;</strong><em>metricname</em><strong>&lt;/metric&gt;</strong>.  The <strong>metric</strong> tag supports the following optional attributes:</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>pmid</strong></dt>
+    <dd>
+  <p>The Performance Metrics Identifier (\s-1PMID\s0), specified as 3 numbers separated by a periods (.) to set the <strong>domain</strong>, <strong>cluster</strong> and <strong>item</strong> fields of the \s-1PMID\s0, see <strong>\s-1PMNS\s0</strong>(5) for more details of PMIDs.  If omitted, the \s-1PMID\s0 will be automatically assigned by <strong>pmiAddMetric</strong>(3). The value <strong>\s-1PM_ID_NULL\s0</strong> may be used to explicitly nominate the default behaviour. Examples: pmid=\*(L"60.0.2\*(R", pmid=\*(L"\s-1PM_ID_NULL\s0\*(R".</p>
+    </dd>
+    <dt><strong>indom</strong></dt>
+    <dd>
+  <p>Each metric may have one or more values.  If a metric <strong>always</strong> has one value, it is singular and the Instance Domain should be set to <strong>\s-1PM_INDOM_NULL\s0</strong>. Otherwise <strong>indom</strong> should be specified as 2 numbers separated by a period (.) to set the <strong>domain</strong> and <strong>ordinal</strong> fields of the Instance Domain, see the <strong>_\|_pmInDom_int</strong> typedef in <em>&lt;pcp/impl.h&gt;</em>. Examples: indom=\*(L"\s-1PM_INDOM_NULL\s0\*(R", indom=\*(L"60.3\*(R", indom=\*(L"\s-1PMI_DOMAIN\s0.4\*(R".</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>More than one metric can share the same Instance Domain when the metrics have defined values over similar sets of instances, e.g. all the metrics for each network interface.  It is standard practice for the <strong>domain</strong> field to be the same for the <strong>pmid</strong> and the <strong>indom</strong>; if the <strong>pmid</strong> attribute is missing, then the <strong>domain</strong> field for the <strong>indom</strong> should be the reserved domain <strong>\s-1PMI_DOMAIN\s0</strong>.</p>
+<p class='spacer'>
+
+  <p>If the <strong>indom</strong> attribute is omitted then the default Instance Domain for the metric is <strong>\s-1PM_INDOM_NULL\s0</strong>.</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>units</strong></dt>
+    <dd>
+  <p>The scale and dimension of the metric values along the axes of space, time and count (events, messages, packets, etc.) is specified with a 6-tuple. These values are passed to the <strong>pmiUnits</strong>(3) function to generate a <em>pmUnits</em> structure.  Refer to <strong>pmLookupDesc</strong>(3) for a full description of all the fields of this structure. The default is to assign no scale or dimension to the metric, i.e. units=\*(L"0,0,0,0,0,0\*(R". Examples: units=\*(L"0,1,0,0,PM_TIME_MSEC,0\*(R" (milliseconds), units=\*(L"1,-1,0,PM_SPACE_MBYTE,PM_TIME_SEC,0\*(R" (Mbytes/sec), units=\*(L"0,1,-1,0,PM_TIME_USEC,PM_COUNT_ONE\*(R" (microseconds/event).</p>
+    </dd>
+    <dt><strong>type</strong></dt>
+    <dd>
+  <p>Defines the data type for the metric. Refer to <strong>pmLookupDesc</strong>(3) for a full description of the possible type values; the default is <strong>\s-1PM_TYPE_FLOAT\s0</strong>. Examples: type=\*(L"\s-1PM_TYPE_32\s0\*(R", type=\*(L"\s-1PM_TYPE_U64\s0\*(R", type=\*(L"\s-1PM_TYPE_STRING\s0\*(R".</p>
+    </dd>
+    <dt><strong>sem</strong></dt>
+    <dd>
+  <p>Defines the semantics of the metric. Refer to <strong>pmLookupDesc</strong>(3) for a full description of the possible values; the default is <strong>\s-1PM_SEM_INSTANT\s0</strong>. Examples: sem=\*(L"\s-1PM_SEM_COUNTER\s0\*(R", type=\*(L"\s-1PM_SEM_DISCRETE\s0\*(R".</p>
+    </dd>
+  </dl>
+<p class='spacer'>
+
+<p>The remaining specifications define the data columns <strong>in order</strong> using <strong>exactly</strong> one <strong>&lt;datetime&gt;</strong><strong>&lt;/datetime&gt;</strong> element, one or more <strong>&lt;data&gt;</strong><em>metricspec</em><strong>&lt;/data&gt;</strong> elements and one or more <strong>&lt;skip&gt;</strong><strong>&lt;/skip&gt;</strong> elements.</p>
+<p class='spacer'>
+
+<p>The <strong>&lt;datetime&gt;</strong> element defines the column in which a date and time will be found to form the timestamp in the \s-1PCP\s0 archive for all the data in each row of the \s-1PCP\s0 archive.</p>
+<p class='spacer'>
+
+<p>For the <strong>&lt;data&gt;</strong> element, a <em>metricspec</em> consists of a metric name (as defined in an earlier <strong>&lt;metric&gt;</strong> element), optionally followed by an instance name that is enclosed by square brackets, e.g. &lt;data&gt;hinv.ncpu&lt;/data&gt;, &lt;data&gt;kernel.all.load[1 minute]&lt;/data&gt;.</p>
+<p class='spacer'>
+
+<p>The <strong>skip</strong> tag defines the column that should be skipped when preparing data for the \s-1PCP\s0 archive.</p>
+<p class='spacer'>
+
+<p>The order of the <strong>&lt;datetime&gt;</strong>, <strong>&lt;data&gt;</strong> and <strong>&lt;skip&gt;</strong> elements matches the order of columns in the spreadsheet.  If the number of elements is not the same as the number of columns a warning is issued, and the extra elements or columns generate no metric values in the output archive.</p>
+  <h3>\s-1EXAMPLE\s0</h3>
+<p>The <em>mapfile</em> ...</p>
+<p class='spacer'>
+
+<pre>    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+    &lt;sheet heading="1"&gt;
+        &lt;!-- simple example --&gt;
+        &lt;metric pmid="60.0.2" indom="60.0" units="0,1,0,0,PM_TIME_MSEC,0"
+            type="PM_TYPE_U64" sem="PM_SEM_COUNTER"&gt;
+        kernel.percpu.cpu.sys&lt;/metric&gt;
+        &lt;datetime&gt;&lt;/datetime&gt;
+        &lt;skip&gt;&lt;/skip&gt;
+        &lt;data&gt;kernel.percpu.cpu.sys[cpu0]&lt;/data&gt;
+        &lt;data&gt;kernel.percpu.cpu.sys[cpu1]&lt;/data&gt;
+    &lt;/sheet&gt;</pre>
+
+<p class='spacer'>
+
+<p>could be used for a spreadsheet in which the first few rows are ...</p>
+<p class='spacer'>
+
+<pre>    Date;"Status";"SysTime - 0";"SysTime - 1";
+    26/01/2001 14:05:22;"Some Busy";0.750;0.133
+    26/01/2001 14:05:37;"OK";0.150;0.273
+    26/01/2001 14:05:52;"All Busy";0.733;0.653</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">CAVEATS</h2>
+        <div class="sectioncontent">
+
+<p>Only the first sheet from <em>infile</em> will be processed.</p>
+<p class='spacer'>
+
+  <p>Additional Perl modules must be installed for the various spreadsheet formats, although these are checked for ar run-time so only the modules required for the specific types of spreadsheets you wish to process need be installed:</p>
+  <dl class='dl-horizontal'>
+    <dt><strong>*.csv</strong></dt>
+    <dd>
+  <p>Spreadsheets in the Comma Separated Values (\s-1CSV\s0) format require <strong>Text::CSV_XS</strong>(3pm).</p>
+    </dd>
+    <dt><strong>*.sxc</strong> or <strong>*.ods</strong></dt>
+    <dd>
+  <p>OpenOffice documents require <strong>Spreadsheet::ReadSXC</strong>(3pm), which in turn requires <strong>Archive::Zip</strong>(3pm).</p>
+    </dd>
+    <dt><strong>*.xls</strong></dt>
+    <dd>
+  <p>Classical Microsoft Office documents require <strong>Spreadsheet::ParseExcel</strong>(3pm), which in turn requires <strong>OLE::Storage_Lite</strong>(3pm).</p>
+    </dd>
+    <dt><strong>*.xlsx</strong></dt>
+    <dd>
+  <p>Microsoft OpenXML documents require <strong>Spreadsheet::XLSX</strong>(3pm).  <strong>sheet2pcp</strong> does not appear to work with OpenXML documents saved from OpenOffice.</p>
+    </dd>
+  </dl>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">PCP ENVIRONMENT</h2>
+        <div class="sectioncontent">
+
+<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <strong>pcp.conf</strong>(5).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SEE ALSO</h2>
+        <div class="sectioncontent">
+
+<p><strong>pmchart</strong>(1), <a href="../man1/pmie.1.html"><strong>pmie</strong>(1)</a>, <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>, <a href="../man1/sed.1.html"><strong>sed</strong>(1)</a>, <strong>pmiAddMetric</strong>(3), <strong>pmLookupDesc</strong>(3), <strong>pmiUnits</strong>(3), <strong>Archive::Zip</strong>(3pm), <strong>Date::Format</strong>(3pm), <strong>Date::Parse</strong>(3pm), <strong>PCP::LogImport</strong>(3pm), <strong>OLE::Storage_Lite</strong>(3pm), <strong>Spreadsheet::ParseExcel</strong>(3pm), <strong>Spreadsheet::ReadSXC</strong>(3pm), <strong>Spreadsheet::XLSX</strong>(3pm), <strong>Text::CSV_XS</strong>(3pm), <strong>XML::TokeParser</strong>(3pm) and <strong>LOGIMPORT</strong>(3).</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="shar.1.html"><span aria-hidden="true">&larr;</span> shar.1: create a shell archive</a></li>
+   <li class="next"><a href="show-changed-rco.1.html">show-changed-rco.1: show changes in an RPM package <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
