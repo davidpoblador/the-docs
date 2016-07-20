@@ -283,12 +283,15 @@ class HeaderMacroParser(MacroParser):
     valid_macros = ("TH", "so", "Dd")
 
     def p_TH(self):
-        headers = toargs(self.data)
+        try:
+            headers = toargs(self.data)
 
-        self.manpage.header = {
-            "title": headers[0],
-            "section": headers[1],
-        }
+            self.manpage.header = {
+                "title": headers[0],
+                "section": headers[1],
+            }
+        except:
+            raise NotSupportedFormat
 
         self.state(ManPageStates.TITLE)
 
