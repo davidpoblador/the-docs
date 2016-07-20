@@ -16,11 +16,11 @@
 cfdisk \- display or manipulate a disk partition table
 .SH SYNOPSIS
 .B cfdisk
-.RB [ options ]
+[options]
 .RI [ device ]
 .SH DESCRIPTION
 .B cfdisk
-is a curses/slang-based program for partitioning any block device.
+is a curses-based program for partitioning any block device.
 The default device is
 .BR /dev/sda .
 
@@ -56,9 +56,10 @@ If you want to remove an old partition table from a device, use
 Display help text and exit.
 .TP
 .BR \-L , " \-\-color" [ = \fIwhen\fR]
-Colorize the output; enabled by default.  The optional argument \fIwhen\fP can be
-\fBauto\fR, \fBnever\fR or \fBalways\fR.  If the \fIwhen\fR argument is omitted,
-it defaults to \fBauto\fR.
+Colorize the output.  The optional argument \fIwhen\fP
+can be \fBauto\fR, \fBnever\fR or \fBalways\fR.  If the \fIwhen\fR argument is omitted,
+it defaults to \fBauto\fR.  The colors can be disabled, for the current built-in default 
+see \fB\-\-help\fR output. See also the COLORS section.
 .TP
 .BR \-V , " \-\-version"
 Display version information and exit.
@@ -66,7 +67,8 @@ Display version information and exit.
 .BR \-z , " \-\-zero"
 Start with an in-memory zeroed partition table.  This option does not zero the
 partition table on the disk; rather, it simply starts the program without
-reading the existing partition table.
+reading the existing partition table.  This option allows you to create a new
+partition table from scratch or from an sfdisk-compatible script.
 
 .SH COMMANDS
 The commands for
@@ -105,10 +107,26 @@ MiB (=1024*1024), and so on for GiB, TiB, PiB, EiB, ZiB and YiB
 Quit the program.  This will exit the program without writing any data to
 the disk.
 .TP
+.B s
+Sort the partitions in ascending start-sector order.  When deleting and
+adding partitions, it is likely that the numbering of the partitions will
+no longer match their order on the disk.  This command restores that match.
+.TP
 .B t
 Change the partition type.  By default, new partitions are created as
 .I Linux
 partitions.
+.TP
+.B u
+Dump the current in-memory partition table to an sfdisk-compatible script file.
+.sp
+The script files are compatible between \fBcfdisk\fR, \fBfdisk\fR, \fBsfdisk\fR
+and other libfdisk applications.  For more details see
+.BR sfdisk (8).
+.sp
+It is also possible to load an sfdisk-script into \fBcfdisk\fR if there is
+no partition table on the device or when you start \fBcfdisk\fR with the
+\fB--zero\fR command-line option.
 .TP
 .B W
 Write the partition table to disk (you must enter an uppercase W).  Since
@@ -125,18 +143,25 @@ or
 .BR partx (8),
 or by rebooting the system.
 .TP
+.B x
+Toggle extra information about a partition.
+.TP
 .IR "Up Arrow" , " Down Arrow"
 Move the cursor to the previous or next partition.  If there are more
 partitions than can be displayed on a screen, you can display the next
 (previous) set of partitions by moving down (up) at the last (first)
 partition displayed on the screen.
+.TP
+.IR "Left Arrow" , " Right Arrow"
+Select the preceding or the next menu item.  Hitting \fIEnter\fR will
+execute the currently selected item.
 
 .PP
 All commands can be entered with either uppercase or lowercase
 letters (except for
 .BR W rite).
-When in a submenu or at a prompt for entering a size, you can hit the
-.I ESC
+When in a submenu or at a prompt, you can hit the
+.I Esc
 key to return to the main menu.
 
 .SH COLORS
@@ -150,12 +175,22 @@ for more details about colorization configuration.
 .B cfdisk
 does not support color customization with a color-scheme file.
 
+.SH ENVIRONMENT
+.IP CFDISK_DEBUG=all
+enables cfdisk debug output.
+.IP LIBFDISK_DEBUG=all
+enables libfdisk debug output.
+.IP LIBBLKID_DEBUG=all
+enables libblkid debug output.
+.IP LIBSMARTCOLS_DEBUG=all
+enables libsmartcols debug output.
+
 .SH "SEE ALSO"
 .BR fdisk (8),
 .BR sfdisk (8),
 .BR parted (8),
 .BR partprobe (8),
-.BR partx(8)
+.BR partx (8)
 .SH AUTHOR
 Karel Zak <kzak@redhat.com>
 .PP

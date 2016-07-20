@@ -1,10 +1,9 @@
-.\" -*- nroff -*-
 .TH LSBLK 8 "February 2013" "util-linux" "System Administration"
 .SH NAME
 lsblk \- list block devices
 .SH SYNOPSIS
 .B lsblk
-.RB [ options ]
+[options]
 .RI [ device ...]
 .SH DESCRIPTION
 .B lsblk
@@ -61,7 +60,7 @@ top-level devices only.
 .TP
 .BR \-f , " \-\-fs"
 Output info about filesystems.  This option is equivalent to
-.BR -o\ NAME,FSTYPE,LABEL,MOUNTPOINT .
+.BR -o\ NAME,FSTYPE,LABEL,UUID,MOUNTPOINT .
 The authoritative information about filesystems and raids is provided by the
 .BR blkid (8)
 command.
@@ -75,6 +74,9 @@ The filter is applied to the top-level devices only.
 .TP
 .BR \-i , " \-\-ascii"
 Use ASCII characters for tree formatting.
+.TP
+.BR \-J , " \-\-json"
+Use JSON output format.
 .TP
 .BR \-l , " \-\-list"
 Produce output in the form of a list.
@@ -94,7 +96,7 @@ to get a list of all supported columns.
 The default list of columns may be extended if \fIlist\fP is
 specified in the format \fI+list\fP (e.g. \fBlsblk -o +UUID\fP).
 .TP
-.BR \-O , " \-\-output-all "
+.BR \-O , " \-\-output\-all "
 Output all available columns.
 .TP
 .BR \-P , " \-\-pairs"
@@ -117,13 +119,13 @@ Print dependencies in inverse order.
 .BR \-t , " \-\-topology"
 Output info about block-device topology.
 This option is equivalent to
-.BR -o\ NAME,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,WSAME .
+.BR -o\ NAME,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,RA,WSAME .
 .TP
 .BR \-V , " \-\-version"
 Display version information and exit.
 .TP
 .BR \-x , " \-\-sort " \fIcolumn\fP
-Sort output lines by output \fIcolumn\fP.
+Sort output lines by \fIcolumn\fP.
 .SH NOTES
 For partitions, some information (e.g. queue attributes) is inherited from the
 parent device.
@@ -136,13 +138,29 @@ which is done by using
 This sysfs block directory appeared in kernel 2.6.27 (October 2008).
 In case of problems with a new enough kernel, check that CONFIG_SYSFS
 was enabled at the time of the kernel build.
+
+.SH RETURN CODES
+.IP 0
+success
+.IP 1
+failure
+.IP 32
+not found all specified devices
+.IP 64
+some specified devices found, some not found
+
 .SH AUTHORS
 .nf
 Milan Broz <mbroz@redhat.com>
 Karel Zak <kzak@redhat.com>
 .fi
 .SH ENVIRONMENT
-.IP "Setting LIBMOUNT_DEBUG=0xffff enables debug output."
+.IP LIBBLKID_DEBUG=all
+enables libblkid debug output.
+.IP LIBMOUNT_DEBUG=all
+enables libmount debug output.
+.IP LIBSMARTCOLS_DEBUG=all
+enables libsmartcols debug output.
 .SH SEE ALSO
 .BR findmnt (8),
 .BR blkid (8),

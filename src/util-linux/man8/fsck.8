@@ -1,4 +1,3 @@
-.\" -*- nroff -*-
 .\" Copyright 1993, 1994, 1995 by Theodore Ts'o.  All Rights Reserved.
 .\" This file may be copied under the terms of the GNU Public License.
 .\"
@@ -7,7 +6,9 @@
 fsck \- check and repair a Linux filesystem
 .SH SYNOPSIS
 .B fsck
-.RB [ \-lrsAVRTMNP ]
+.RB [ \-lsAVRTMNP ]
+.RB [ \-r
+.RI [ fd ]]
 .RB [ \-C
 .RI [ fd ]]
 .RB [ \-t
@@ -81,14 +82,11 @@ In actuality,
 .B fsck
 is simply a front-end for the various filesystem checkers
 (\fBfsck\fR.\fIfstype\fR) available under Linux.  The
-filesystem-specific checker is searched for in
-.I /sbin
-first, then in
-.I /etc/fs
-and
-.IR /etc ,
-and finally in the directories listed in the PATH environment
-variable.  Please see the filesystem-specific checker manual pages for
+filesystem-specific checker is searched for in the
+PATH environment variable. If the PATH is undefined then
+fallback to "/sbin".
+.PP
+Please see the filesystem-specific checker manual pages for
 further details.
 .SH OPTIONS
 .TP
@@ -104,13 +102,20 @@ multiple devices or for non-rotating disks.  \fBfsck\fR does not lock underlying
 devices when executed to check stacked devices (e.g.\& MD or DM) \(en this feature is
 not implemented yet.
 .TP
-.B \-r
+.BR \-r \ [ \fIfd\fR ]
 Report certain statistics for each fsck when it completes.  These statistics
 include the exit status, the maximum run set size (in kilobytes), the elapsed
 all-clock time and the user and system CPU time used by the fsck run.  For
 example:
 
 /dev/sda1: status 0, rss 92828, real 4.002804, user 2.677592, sys 0.86186
+
+GUI front-ends may specify a file descriptor
+.IR fd ,
+in which case the progress bar information will be sent to that file descriptor
+in a machine parsable format.  For example:
+
+/dev/sda1 0 92828 4.002804 2.677592 0.86186
 .TP
 .B \-s
 Serialize
@@ -233,7 +238,7 @@ multiple filesystem checks on the same physical disk.
 .B fsck
 does not check stacked devices (RAIDs, dm-crypt, \&...\&) in parallel with any other
 device.  See below for FSCK_FORCE_ALL_PARALLEL setting.  The /sys filesystem is
-used to detemine dependencies between devices.
+used to determine dependencies between devices.
 .sp
 Hence, a very common configuration in
 .I /etc/fstab
@@ -417,17 +422,7 @@ be run based on gathering accounting data from the operating system.
 .B PATH
 The
 .B PATH
-environment variable is used to find filesystem checkers.  A set of
-system directories are searched first:
-.BR /sbin ,
-.BR /sbin/fs.d ,
-.BR /sbin/fs ,
-.BR /etc/fs ,
-and
-.BR /etc .
-Then the set of directories found in the
-.B PATH
-environment are searched.
+environment variable is used to find filesystem checkers.
 .TP
 .B FSTAB_FILE
 This environment variable allows the system administrator
@@ -436,11 +431,11 @@ to override the standard location of the
 file.  It is also useful for developers who are testing
 .BR fsck .
 .TP
-.B LIBBLKID_DEBUG=0xffff
-enables debug output.
+.B LIBBLKID_DEBUG=all
+enables libblkid debug output.
 .TP
-.B LIBMOUNT_DEBUG=0xffff
-enables debug output.
+.B LIBMOUNT_DEBUG=all
+enables libmount debug output.
 .SH SEE ALSO
 .na
 .BR fstab (5),

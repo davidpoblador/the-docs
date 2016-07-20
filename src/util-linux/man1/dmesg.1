@@ -9,43 +9,45 @@ dmesg \- print or control the kernel ring buffer
 .sp
 .B dmesg \-\-clear
 .br
-.BR "dmesg \-\-read-clear " [options]
+.BR "dmesg \-\-read\-clear " [options]
 .br
-.BI "dmesg \-\-console-level " level
+.BI "dmesg \-\-console\-level " level
 .br
-.B dmesg \-\-console-on
+.B dmesg \-\-console\-on
 .br
-.B dmesg \-\-console-off
+.B dmesg \-\-console\-off
 .SH DESCRIPTION
 .B dmesg
 is used to examine or control the kernel ring buffer.
 .PP
-The default action is to read all messages from the kernel ring buffer.
+The default action is to display all messages from the kernel ring buffer.
 .SH OPTIONS
 The
 .BR \-\-clear ,
-.BR \-\-read-clear ,
-.BR \-\-console-on ,
-.BR \-\-console-off ,
+.BR \-\-read\-clear ,
+.BR \-\-console\-on ,
+.BR \-\-console\-off ,
 and
-.B \-\-console-level
+.B \-\-console\-level
 options are mutually exclusive.
 .PP
 .IP "\fB\-C\fR, \fB\-\-clear\fR"
 Clear the ring buffer.
-.IP "\fB\-c\fR, \fB\-\-read-clear\fR"
+.IP "\fB\-c\fR, \fB\-\-read\-clear\fR"
 Clear the ring buffer after first printing its contents.
-.IP "\fB\-D\fR, \fB\-\-console-off\fR"
+.IP "\fB\-D\fR, \fB\-\-console\-off\fR"
 Disable the printing of messages to the console.
-.IP "\fB\-d\fR, \fB\-\-show-delta\fR"
+.IP "\fB\-d\fR, \fB\-\-show\-delta\fR"
 Display the timestamp and the time delta spent between messages.  If used
 together with
 .B \-\-notime
 then only the time delta without the timestamp is printed.
-.IP "\fB\-E\fR, \fB\-\-console-on\fR"
+.IP "\fB\-E\fR, \fB\-\-console\-on\fR"
 Enable printing messages to the console.
 .IP "\fB\-e\fR, \fB\-\-reltime\fR"
-Display the local time and the delta in human-readable format.
+Display the local time and the delta in human-readable format.  Be aware that
+conversion to the local time could be inaccurate (see \fB\-T\fR for more
+details).
 .IP "\fB\-F\fR, \fB\-\-file \fIfile\fR"
 Read the messages from the given
 .IR file .
@@ -65,14 +67,13 @@ output.
 .IP "\fB\-H\fR, \fB\-\-human\fR"
 Enable human-readable output.  See also \fB\-\-color\fR, \fB\-\-reltime\fR
 and \fB\-\-nopager\fR.
-.IP "\fB\-h\fR, \fB\-\-help\fR"
-Display help text and exit.
 .IP "\fB\-k\fR, \fB\-\-kernel\fR"
 Print kernel messages.
 .IP "\fB\-L\fR, \fB\-\-color\fR[=\fIwhen\fR]"
-Colorize important messages (enabled by default).  The optional argument \fIwhen\fP
+Colorize the output.  The optional argument \fIwhen\fP
 can be \fBauto\fR, \fBnever\fR or \fBalways\fR.  If the \fIwhen\fR argument is omitted,
-it defaults to \fBauto\fR.
+it defaults to \fBauto\fR.  The colors can be disabled; for the current built-in default
+see the \fB\-\-help\fR output.  See also the \fBCOLORS\fR section below.
 .IP  "\fB\-l\fR, \fB\-\-level \fIlist\fR"
 Restrict output to the given (comma-separated)
 .I list
@@ -85,7 +86,7 @@ of levels.  For example:
 will print error and warning messages only.  For all supported levels see the
 .B \-\-help
 output.
-.IP "\fB\-n\fR, \fB\-\-console-level \fIlevel\fR
+.IP "\fB\-n\fR, \fB\-\-console\-level \fIlevel\fR
 Set the
 .I level
 at which printing of messages is done to the console.  The
@@ -133,7 +134,7 @@ kernel interface to read kernel messages.  The default is to use /dev/kmsg rathe
 than
 .BR syslog (2)
 since kernel 3.5.0.
-.IP "\fB\-s\fR, \fB\-\-buffer-size \fIsize\fR
+.IP "\fB\-s\fR, \fB\-\-buffer\-size \fIsize\fR
 Use a buffer of
 .I size
 to query the kernel ring buffer.  This is 16392 by default.  (The default
@@ -143,7 +144,7 @@ then this option can be used to view the entire buffer.
 .IP "\fB\-T\fR, \fB\-\-ctime\fR"
 Print human-readable timestamps.
 .IP
-Be aware that the timestamp could be inaccurate!
+.B Be aware that the timestamp could be inaccurate!
 The
 .B time
 source used for the logs is
@@ -152,15 +153,6 @@ system
 .BR SUSPEND / RESUME .
 .IP "\fB\-t\fR, \fB\-\-notime\fR"
 Do not print kernel's timestamps.
-.IP "\fB\-u\fR, \fB\-\-userspace\fR"
-Print userspace messages.
-.IP "\fB\-V\fR, \fB\-\-version\fR"
-Display version information and exit.
-.IP "\fB\-w\fR, \fB\-\-follow\fR"
-Wait for new messages.  This feature is supported only on systems with
-a readable /dev/kmsg (since kernel 3.5.0).
-.IP "\fB\-x\fR, \fB\-\-decode\fR"
-Decode facility and level (priority) numbers to human-readable prefixes.
 .IP "\fB\-\-time\-format\fR \fIformat\fR"
 Print timestamps using the given \fIformat\fR, which can be
 .BR ctime ,
@@ -183,6 +175,22 @@ The
 format has the same issue as
 .BR ctime :
 the time may be inaccurate when a system is suspended and resumed.
+.TP
+.BR \-u , " \-\-userspace"
+Print userspace messages.
+.TP
+.BR \-w , " \-\-follow"
+Wait for new messages.  This feature is supported only on systems with
+a readable /dev/kmsg (since kernel 3.5.0).
+.TP
+.BR \-x , " \-\-decode"
+Decode facility and level (priority) numbers to human-readable prefixes.
+.TP
+.BR \-V , " \-\-version"
+Display version information and exit.
+.TP
+.BR \-h , " \-\-help"
+Display help text and exit.
 .SH COLORS
 Implicit coloring can be disabled by an empty file \fI/etc/terminal-colors.d/dmesg.disable\fR.
 See
@@ -198,6 +206,10 @@ The message sub-system prefix (e.g. "ACPI:").
 .TP
 .B time
 The message timestamp.
+.TP
+.B timebreak
+The message timestamp in short ctime format in \fB\-\-reltime\fR 
+or \fB\-\-human\fR output.
 .TP
 .B alert
 The text of the message with the alert log priority.

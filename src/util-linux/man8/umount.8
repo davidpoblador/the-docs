@@ -63,7 +63,7 @@ All of the filesystems described in
 .I /etc/mtab
 are unmounted, except the \fIproc\fR filesystem.
 .TP
-.BR \-A , " \-\-all-targets"
+.BR \-A , " \-\-all\-targets"
 Unmount all mountpoints in the current namespace for the specified filesystem.
 The filesystem can be specified by one of the mountpoints or the device name (or
 UUID, etc.).  When this option is used together with \fB\-\-recursive\fR, then
@@ -71,20 +71,21 @@ all nested mounts within the filesystem are recursively unmounted.
 This option is only supported on systems where /etc/mtab is a symlink
 to /proc/mounts.
 .TP
-.BR \-c , " \-\-no-canonicalize"
+.BR \-c , " \-\-no\-canonicalize"
 Do not canonicalize paths.  For more details about this option see the
 .BR mount (8)
 man page.  Note that \fBumount\fR does not pass this option to the
 .BI /sbin/umount. type
 helpers.
 .TP
-.BR \-d , " \-\-detach-loop"
+.BR \-d , " \-\-detach\-loop"
 When the unmounted device was a loop device, also free this loop
 device.
 .TP
 .B \-\-fake
-Causes everything to be done except for the actual system call; this 'fakes'
-unmounting the filesystem.  It can be used to remove entries from
+Causes everything to be done except for the actual system call or umount helper
+execution; this 'fakes' unmounting the filesystem.  It can be used to remove
+entries from
 .I /etc/mtab
 that were unmounted earlier with the
 .B \-n
@@ -93,8 +94,12 @@ option.
 .BR \-f , " \-\-force"
 Force an unmount (in case of an unreachable NFS system).  (Requires kernel
 2.1.116 or later.)
+
+Note that this option does not guarantee that umount command does not hang.
+It's strongly recommended to use absolute paths without symlinks to avoid
+unwanted readlink and stat syscalls on unreachable NFS in umount.
 .TP
-.BR \-i , " \-\-internal-only"
+.BR \-i , " \-\-internal\-only"
 Do not call the \fB/sbin/umount.\fIfilesystem\fR helper even if it exists.
 By default such a helper program is called if it exists.
 .TP
@@ -103,11 +108,11 @@ Lazy unmount.  Detach the filesystem from the file hierarchy now,
 and clean up all references to this filesystem as soon as it is not busy
 anymore.  (Requires kernel 2.4.11 or later.)
 .TP
-.BR \-n , " \-\-no-mtab"
+.BR \-n , " \-\-no\-mtab"
 Unmount without writing in
 .IR /etc/mtab .
 .TP
-.BR \-O , " \-\-test-opts " \fIoption\fR...
+.BR \-O , " \-\-test\-opts " \fIoption\fR...
 Unmount only the filesystems that have the specified option set in
 .IR /etc/fstab .
 More than one option may be specified in a comma-separated list.
@@ -122,7 +127,7 @@ between mountpoints is determined by /proc/self/mountinfo entries.  The filesyst
 must be specified by mountpoint path; a recursive unmount by device name (or UUID)
 is unsupported.
 .TP
-.BR \-r , " \-\-read-only"
+.BR \-r , " \-\-read\-only"
 When an unmount fails, try to remount the filesystem read-only.
 .TP
 .BR \-t , " \-\-types " \fItype\fR...
@@ -133,6 +138,12 @@ More than one type may be specified in a comma-separated list.  The list
 of filesystem types can be prefixed with
 .B no
 to indicate that no action should be taken for all of the mentioned types.
+.BR
+Note that
+.B umount
+reads information about mounted filesystems from kernel (/proc/mounts) and
+filesystem names may be different than filesystem names used in the /etc/fstab
+(e.g. "nfs4" vs. "nfs").
 .TP
 .BR \-v , " \-\-verbose"
 Verbose mode.
@@ -151,39 +162,48 @@ it finds the option \fBloop=...\fR in
 or when the \fB\-d\fR option was given.  Any still associated loop devices
 can be freed by using \fBlosetup -d\fR; see
 .BR losetup (8).
-.SH "EXTERNAL HELPERS"
+.SH EXTERNAL HELPERS
 The syntax of external unmount helpers is:
 .PP
-.BI /sbin/umount. suffix
+.RS
+.BI umount. suffix
 .RI { directory | device }
 .RB [ \-flnrv ]
 .RB [ \-t
 .IR type . subtype ]
+.RE
 .PP
-where \fIsuffix\fR is the filesystem type or a value from a "uhelper=" or
-"helper=" mtab option.  The \fB\-t\fR option can be used for filesystems
-with subtypes support (for example \fB/sbin/mount.fuse -t fuse.sshfs\fR).
+where \fIsuffix\fR is the filesystem type (or the value from a
+\fBuhelper=\fR or \fBhelper=\fR marker in the mtab file).
+The \fB\-t\fR option can be used for filesystems that
+have subtype support.  For example:
 .PP
-The \fBuhelper=\fR (unprivileged unmount helper) mount option can be used
-when non-root users need to be able to unmount a mountpoint which is not
-defined in \fI/etc/fstab\fR (e.g. devices mounted by udisk).
+.RS
+.B umount.fuse \-t fuse.sshfs
+.RE
 .PP
-The \fBhelper=\fR mount option redirects all unmount requests to the
-\fB/sbin/umount.\fItype\fR helper independently of UID.
+A \fBuhelper=\fIsomething\fR marker (unprivileged helper) can appear in
+the \fI/etc/mtab\fR file when ordinary users need to be able to unmount
+a mountpoint that is not defined in \fI/etc/fstab\fR
+(for example for a device that was mounted by \fBudisks\fR(1)).
+.PP
+A \fBhelper=\fItype\fR marker in the mtab file will redirect
+all unmount requests
+to the \fB/sbin/umount.\fItype\fR helper independently of UID.
 .SH FILES
 .TP
 .B /etc/mtab
 table of mounted filesystems
 .TP
 .B /etc/fstab
-checked when option \fB\-O\fR is given
+table of known filesystems
 .SH ENVIRONMENT
 .IP LIBMOUNT_FSTAB=<path>
-overrides the default location of the fstab file
+overrides the default location of the fstab file (ignored for suid)
 .IP LIBMOUNT_MTAB=<path>
-overrides the default location of the mtab file
-.IP LIBMOUNT_DEBUG=0xffff
-enables debug output
+overrides the default location of the mtab file (ignored for suid)
+.IP LIBMOUNT_DEBUG=all
+enables libmount debug output
 .SH "SEE ALSO"
 .BR umount (2),
 .BR mount (8),

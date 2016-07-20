@@ -54,6 +54,12 @@ The process will have a distinct set of UIDs, GIDs and capabilities.
 .RB ( CLONE_\:NEWUSER
 flag)
 .TP
+.B cgroup namespace
+The process will have a virtualized view of \fI/proc\:/self\:/cgroup\fP, and new
+cgroup mounts will be rooted at the namespace cgroup root.
+.RB ( CLONE_\:NEWCGROUP
+flag)
+.TP
 See \fBclone\fP(2) for the exact semantics of the flags.
 .TP
 If \fIprogram\fP is not given, then ``${SHELL}'' is run (default: /bin\:/sh).
@@ -86,6 +92,9 @@ the PID namespace
 .TP
 /proc/\fIpid\fR/ns/user
 the user namespace
+.TP
+/proc/\fIpid\fR/ns/cgroup
+the cgroup namespace
 .TP
 /proc/\fIpid\fR/root
 the root directory
@@ -125,11 +134,25 @@ Enter the user namespace.  If no file is specified, enter the user namespace of
 the target process.  If file is specified, enter the user namespace specified by
 file.  See also the \fB\-\-setuid\fR and \fB\-\-setgid\fR options.
 .TP
+\fB\-C\fR, \fB\-\-cgroup\fR[=\fIfile\fR]
+Enter the cgroup namespace.  If no file is specified, enter the cgroup namespace of
+the target process.  If file is specified, enter the cgroup namespace specified by
+file.
+.TP
 \fB\-G\fR, \fB\-\-setgid\fR \fIgid\fR
-Set the group ID which will be used in the entered user namespace.
+Set the group ID which will be used in the entered namespace and drop
+supplementary groups.
+.BR nsenter (1)
+always sets GID for user namespaces, the default is 0.
 .TP
 \fB\-S\fR, \fB\-\-setuid\fR \fIuid\fR
-Set the user ID which will be used in the entered user namespace.
+Set the user ID which will be used in the entered namespace.
+.BR nsenter (1)
+always sets UID for user namespaces, the default is 0.
+.TP
+\fB\-\-preserve\-credentials\fR
+Don't modify UID and GID when enter user namespace. The default is to
+drops supplementary groups and sets GID and UID to 0.
 .TP
 \fB\-r\fR, \fB\-\-root\fR[=\fIdirectory\fR]
 Set the root directory.  If no directory is specified, set the root directory to
@@ -141,10 +164,15 @@ Set the working directory.  If no directory is specified, set the working
 directory to the working directory of the target process.  If directory is
 specified, set the working directory to the specified directory.
 .TP
-\fB\-F\fR, \fB\-\-no-fork\fR
+\fB\-F\fR, \fB\-\-no\-fork\fR
 Do not fork before exec'ing the specified program.  By default, when entering a
 PID namespace, \fBnsenter\fP calls \fBfork\fP before calling \fBexec\fP so that
 any children will also be in the newly entered PID namespace.
+.TP
+\fB\-Z\fR, \fB\-\-follow\-context\fR
+Set the SELinux security context used for executing a new process according to
+already running process specified by \fB\-\-target\fR PID. (The util-linux has
+to be compiled with SELinux support otherwise the option is unavailable.)
 .TP
 \fB\-V\fR, \fB\-\-version\fR
 Display version information and exit.
@@ -154,10 +182,14 @@ Display help text and exit.
 .SH SEE ALSO
 .BR setns (2),
 .BR clone (2)
-.SH AUTHOR
-.MT ebiederm@xmission.com
+.SH AUTHORS
+.UR biederm@xmission.com
 Eric Biederman
-.ME
+.UE
+.br
+.UR kzak@redhat.com
+Karel Zak
+.UE
 .SH AVAILABILITY
 The nsenter command is part of the util-linux package and is available from
 .UR ftp://\:ftp.kernel.org\:/pub\:/linux\:/utils\:/util-linux/

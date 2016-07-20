@@ -1,14 +1,13 @@
 .\" Copyright 1998 Andries E. Brouwer (aeb@cwi.nl)
 .\"
 .\" May be distributed under the GNU General Public License
-.\" Rewritten for 2.1.117, aeb, 981010.
 .\"
 .TH MKSWAP 8 "March 2009" "util-linux" "System Administration"
 .SH NAME
 mkswap \- set up a Linux swap area
 .SH SYNOPSIS
 .B mkswap
-.RI [ options ]
+[options]
 .I device
 .RI [ size ]
 .SH DESCRIPTION
@@ -129,13 +128,23 @@ e.g.\& using a command like
 .RE
 .fi
 
-Note that a swap file must not contain any holes (so, using
+Note that a swap file must not contain any holes.  Using
 .BR cp (1)
-to create the file is not acceptable).
+to create the file is not acceptable.  Neither is use of
+.BR fallocate (1)
+on file systems that support preallocated files, such as
+.BR XFS " or " ext4 ,
+or on copy-on-write filesystems like
+.BR btrfs .
+It is recommended to use
+.BR dd (1)
+and /dev/zero in these cases.  Please read notes from
+.BR swapon (8)
+before adding a swap file to copy-on-write filesystems.
 
 .SH ENVIRONMENT
-.IP LIBBLKID_DEBUG=0xffff
-enables debug output.
+.IP LIBBLKID_DEBUG=all
+enables libblkid debug output.
 
 .SH "SEE ALSO"
 .BR fdisk (8),
