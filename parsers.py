@@ -267,9 +267,11 @@ class TitleMacroParser(MacroParser):
                 self.manpage.title, self.manpage.subtitle = map(
                     str.strip, " ".join(title_buffer).split(' -- ', 1))
             except:
-                self.manpage.title, self.manpage.subtitle = map(
-                    str.strip, " ".join(title_buffer).split('-', 1))
-
+                try:
+                    self.manpage.title, self.manpage.subtitle = map(
+                        str.strip, " ".join(title_buffer).split('-', 1))
+                except:
+                    raise NotSupportedFormat
 
 class HeaderMacroParser(MacroParser):
     def __bool__(self):
