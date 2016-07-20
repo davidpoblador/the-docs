@@ -29,9 +29,11 @@ def main():
             #repo.remotes[0].pull()
         else:
             logging.info("%s not found, cloning from %s", package, url)
-
-            repo = git.Repo.clone_from(url, package_dir, depth=1)
-
+            try:
+                repo = git.Repo.clone_from(url, package_dir, depth=1)
+            except:
+                logging.error("%s is not valid. Skipping.", package)
+                continue
 
         manpages = defaultdict(set)
         for (dirpath, dirnames, filenames) in os.walk(package_dir, topdown = True):
