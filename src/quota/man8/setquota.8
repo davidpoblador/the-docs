@@ -1,0 +1,234 @@
+.TH SETQUOTA 8
+.SH NAME
+setquota \- set disk quotas
+.SH SYNOPSIS
+.B setquota
+[
+.B \-rm
+]
+[
+.B \-u
+|
+.B \-g
+|
+.B \-P
+]
+[
+.B \-F
+.I quotaformat
+]
+.I name
+.I block-softlimit
+.I block-hardlimit
+.I inode-softlimit
+.I inode-hardlimit
+.B \-a
+|
+.I filesystem...
+.LP
+.B setquota
+[
+.B \-rm
+]
+[
+.B \-u
+|
+.B \-g
+|
+.B \-P
+]
+[
+.B \-F
+.I quotaformat
+]
+[
+.B \-p
+.I protoname 
+]
+.I name
+.B \-a
+|
+.I filesystem...
+.LP
+.B setquota
+.B \-b
+[
+.B \-rm
+]
+[
+.B \-u
+|
+.B \-g
+|
+.B \-P
+]
+[
+.B \-F
+.I quotaformat
+]
+.B \-a
+|
+.I filesystem...
+.LP
+.B setquota
+.B \-t
+[
+.B \-u
+|
+.B \-g
+|
+.B \-P
+]
+[
+.B \-F
+.I quotaformat
+]
+.I block-grace
+.I inode-grace
+.B \-a
+|
+.I filesystem...
+.LP
+.B setquota
+.B \-T
+[
+.B \-u
+|
+.B \-g
+|
+.B \-P
+]
+[
+.B \-F
+.I quotaformat
+]
+.I name
+.I block-grace
+.I inode-grace
+.B \-a
+|
+.I filesystem...
+.SH DESCRIPTION
+.IX  "setquota command"  ""  "\fLsetquota\fP \(em set disk quotas"
+.IX  set "disk quotas \(em \fLsetquota\fP"
+.IX  "disk quotas"  "setquota command"  ""  "\fLsetquota\fP \(em set disk quotas"
+.IX  "disk quotas"  "setquota command"  ""  "\fLsetquota\fP \(em set disk quotas"
+.IX  "quotas"  "setquota command"  ""  "\fLsetquota\fP \(em set disk quotas"
+.IX  "filesystem"  "setquota command"  ""  "\fLsetquota\fP \(em set disk quotas"
+.B setquota
+is a command line quota editor.
+The filesystem, user/group/project name and new quotas for this
+filesystem can be specified on the command line. Note that if a number is
+given in the place of a user/group/project name it is treated as an UID/GID/project ID.
+.TP
+.B -r, --remote
+Edit also remote quota use rpc.rquotad on remote server to set quota. This
+option is available only if quota tools were compiled with enabled support
+for setting quotas over RPC.
+.TP
+.B -m, --no-mixed-pathnames
+Currently, pathnames of NFSv4 mountpoints are sent without leading slash in the path.
+.BR rpc.rquotad
+uses this to recognize NFSv4 mounts and properly prepend pseudoroot of NFS filesystem
+to the path. If you specify this option,
+.BR setquota
+will always send paths with a leading slash. This can be useful for legacy reasons but
+be aware that quota over RPC will stop working if you are using new
+.BR rpc.rquotad .
+.TP
+.B -F, --format=\f2quotaformat\f1
+Perform setting for specified format (ie. don't perform format autodetection).
+Possible format names are:
+.B vfsold
+Original quota format with 16-bit UIDs / GIDs,
+.B vfsv0
+Quota format with 32-bit UIDs / GIDs, 64-bit space usage, 32-bit inode usage and limits,
+.B vfsv1
+Quota format with 64-bit quota limits and usage,
+.B rpc
+(quota over NFS),
+.B xfs
+(quota on XFS filesystem)
+.TP
+.B -u, --user
+Set user quotas for named user. This is the default.
+.TP
+.B -g, --group
+Set group quotas for named group.
+.TP
+.B -P, --project
+Set project quotas for named project.
+.TP
+.B -p, --prototype=\f2protoname\f1
+Use quota settings of user, group or project
+.I protoname
+to set the quota for the named user, group or project.
+.TP
+.B --always-resolve
+Always try to translate user / group / project name to
+uid / gid / project ID even if the name is composed of
+digits only.
+.TP
+.B -b, --batch
+Read information to set from stdin (input format is
+.I name block-softlimit block-hardlimit inode-softlimit inode-hardlimit
+). Empty lines and lines starting with # are ignored.
+.TP
+.B -c, --continue-batch
+If parsing of an input line in batch mode fails, continue with processing the next line.
+.TP
+.B -t, --edit-period
+Set grace times for users/groups/projects. Times
+.B block-grace
+and
+.B inode-grace
+are specified in seconds.
+.TP
+.B -T, --edit-times
+Alter times for individual user/group/project when softlimit is enforced. Times
+.B block-grace
+and
+.B inode-grace
+are specified in seconds or can be string 'unset'.
+.TP
+.B -a, --all
+Go through all filesystems with quota in
+.B /etc/mtab
+and perform setting.
+.PP
+.I block-softlimit
+and
+.I block-hardlimit
+are interpreted as multiples of kibibyte (1024 bytes) blocks by default.
+Symbols K, M, G, and T can be appended to numeric value to express kibibytes,
+mebibytes, gibibytes, and tebibytes.
+.PP
+.I inode-softlimit
+and
+.I inode-hardlimit
+are interpreted literally. Symbols k, m, g, and t can be appended to numeric
+value to express multiples of 10^3, 10^6, 10^9, and 10^12 inodes.
+.PP
+To disable a quota, set the corresponding parameter to 0. To change quotas
+for several filesystems, invoke once for each filesystem.
+.PP
+Only the super-user may edit quotas.
+.SH FILES
+.PD 0
+.TP 20
+.B aquota.user or aquota.group
+quota file at the filesystem root (version 2 quota, non-XFS filesystems)
+.TP
+.B quota.user or quota.group
+quota file at the filesystem root (version 1 quota, non-XFS filesystems)
+.TP
+.B /etc/mtab
+mounted filesystem table
+.PD
+.SH SEE ALSO
+.BR edquota (8),
+.BR quota (1),
+.BR quotactl (2),
+.BR quotacheck (8),
+.BR quotaon (8),
+.BR repquota (8)

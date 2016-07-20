@@ -1,0 +1,223 @@
+.TH QUOTA 1
+.SH NAME
+quota \- display disk usage and limits
+.SH SYNOPSIS
+.B quota
+[
+.B -F
+.I format-name
+] [
+.B -guqvswi
+] [
+.BR -l \ |
+[
+.BR -QAm
+]]
+.br
+.B quota
+[
+.B -F
+.I format-name
+] [
+.B -qvswi
+] [
+.BR -l \ |
+[
+.BR -QAm
+]]
+.B -u
+.IR user ...
+.br
+.B quota
+[
+.B -F
+.I format-name
+] [
+.B -qvswi
+] [
+.BR -l \ |
+[
+.BR -QAm
+]]
+.B -g
+.IR group ...
+.br
+.B quota
+[
+.B -F
+.I format-name
+] [
+.B -qvswi
+] [
+.BR -l \ |
+[
+.BR -QAm
+]]
+.B -P
+.IR project ...
+.br
+.B quota
+[
+.B -F
+.I format-name
+] [
+.B -qvswugQm
+]
+.B -f
+.IR filesystem ...
+.SH DESCRIPTION
+.B quota
+displays users' disk usage and limits.
+By default only the user quotas are printed. By default space usage and limits
+are shown in kbytes (and are named blocks for historical reasons).
+.PP
+.B quota
+reports the quotas of all the filesystems listed in
+.BR /etc/mtab .
+For filesystems that are NFS-mounted a call to the rpc.rquotad on
+the server machine is performed to get the information.
+.SH OPTIONS
+.TP
+.B -F, --format=\f2format-name\f1
+Show quota for specified format (ie. don't perform format autodetection).
+Possible format names are:
+.B vfsold
+Original quota format with 16-bit UIDs / GIDs,
+.B vfsv0
+Quota format with 32-bit UIDs / GIDs, 64-bit space usage, 32-bit inode usage and limits,
+.B vfsv1
+Quota format with 64-bit quota limits and usage,
+.B rpc
+(quota over NFS),
+.B xfs
+(quota on XFS filesystem)
+.TP
+.B -g, --group
+Print group quotas for the group 
+of which the user is a member.
+The optional 
+.B group
+argument(s) restricts the display to the specified group(s).
+.TP
+.B -u, --user
+flag is equivalent to the default.
+.TP
+.B -P, --project
+Print project quotas for the specified project.
+.TP
+.B -v, --verbose
+will display quotas on filesystems
+where no storage is allocated.
+.TP
+.B -s, --human-readable
+option will make
+.BR quota (1)
+try to choose units for showing limits, used space and used inodes.
+.TP
+.B --always-resolve
+Always try to translate user / group name to uid / gid even if the name
+is composed of digits only.
+.TP
+.B -p, --raw-grace
+When user is in grace period, report time in seconds since epoch when his grace
+time runs out (or has run out). Field is '0' when no grace time is in effect.
+This is especially useful when parsing output by a script.
+.TP
+.B -i, --no-autofs
+ignore mountpoints mounted by automounter
+.TP
+.B -l, --local-only
+report quotas only on local filesystems (ie. ignore NFS mounted filesystems).
+.TP
+.B -A, --all-nfs
+report quotas for all NFS filesystems even if they report to be on the same
+device.
+.TP
+.B -f, --filesystem-list
+report quotas only for filesystems specified on command line.
+.TP
+.B -m, --no-mixed-pathnames
+Currently, pathnames of NFSv4 mountpoints are sent without leading slash in the path.
+.BR rpc.rquotad
+uses this to recognize NFSv4 mounts and properly prepend pseudoroot of NFS filesystem
+to the path. If you specify this option, 
+.BR quota 
+will always send paths with a leading slash. This can be useful for legacy reasons but
+be aware that quota over RPC will stop working if you are using new
+.BR rpc.rquotad .
+.TP
+.B -q, --quiet
+Print a more terse message,
+containing only information
+on filesystems where usage is over quota.
+.TP
+.B -Q, --quiet-refuse
+Do not print error message if connection to
+.BR rpc.rquotad
+is refused (usually this happens when
+.BR rpc.rquotad
+is not running on the server).
+.TP
+.B -w, --no-wrap
+Do not wrap the line if the device name is too long. This can be useful when parsing
+the output of
+.BR quota (1)
+by a script.
+.TP
+.B --show-mntpoint
+Show also mount point as a filesystem identification.
+.TP
+.B --hide-device
+Do not show device name in a filesystem identification.
+.LP
+Specifying both
+.B \-g
+and
+.B \-u
+displays both the user quotas and the group quotas (for
+the user).
+.LP
+Only the super-user may use the
+.B \-u
+flag and the optional
+.B user
+argument to view the limits of other users. Also viewing of project quota
+usage and limits is limited to super-user only.
+Non-super-users can use the
+.B \-g
+flag and optional
+.B group
+argument to view only the limits of groups of which they are members.
+.LP
+The
+.B \-q
+flag takes precedence over the
+.B \-v
+flag.
+.SH DIAGNOSTICS
+If
+.B quota
+exits with a non-zero status, one or more filesystems
+are over quota.
+.SH FILES
+.PD 0
+.TP 20
+.B aquota.user " or " aquota.group
+quota file at the filesystem root (version 2 quota, non-XFS filesystems)
+.TP 20
+.B quota.user " or " quota.group
+quota file at the filesystem root (version 1 quota, non-XFS filesystems)
+.TP
+.B /etc/mtab
+default filesystems
+.PD
+.SH SEE ALSO
+.BR quotactl (2),
+.BR fstab (5),
+.BR edquota (8),
+.BR quotacheck (8),
+.BR quotaon (8),
+.BR quota_nld (8),
+.BR repquota (8),
+.BR warnquota (8),
+.BR setquota (8)

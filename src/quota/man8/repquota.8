@@ -1,0 +1,171 @@
+.TH REPQUOTA 8
+.UC 4
+.SH NAME
+repquota \- summarize quotas for a filesystem
+.SH SYNOPSIS
+.B /usr/sbin/repquota
+[
+.B \-vspiugP
+] [
+.B \-c
+|
+.B \-C
+] [
+.B \-t
+|
+.B \-n
+] [
+.B \-F
+.I format-name
+]
+.IR filesystem .\|.\|.
+.LP
+.B /usr/sbin/repquota
+[
+.B \-avtpsiugP
+] [
+.B \-c
+|
+.B \-C
+] [
+.B \-t
+|
+.B \-n
+] [
+.B \-F
+.I format-name
+]
+.SH DESCRIPTION
+.IX  "repquota command"  ""  "\fLrepquota\fP \(em summarize quotas"
+.IX  "user quotas"  "repquota command"  ""  "\fLrepquota\fP \(em summarize quotas"
+.IX  "disk quotas"  "repquota command"  ""  "\fLrepquota\fP \(em summarize quotas"
+.IX  "quotas"  "repquota command"  ""  "\fLrepquota\fP \(em summarize quotas"
+.IX  "filesystem"  "repquota command"  ""  "\fLrepquota\fP \(em summarize quotas"
+.IX  "summarize filesystem quotas repquota"  ""  "summarize filesystem quotas \(em \fLrepquota\fP"
+.IX  "report filesystem quotas repquota"  ""  "report filesystem quotas \(em \fLrepquota\fP"
+.IX  display "filesystem quotas \(em \fLrepquota\fP"
+.LP
+.B repquota
+prints a summary of the disc usage and quotas for the specified file
+systems.  For each user the current number of files and amount of space
+(in kilobytes) is printed, along with any quota limits set with
+.BR edquota (8) 
+or
+.BR setquota (8).
+In the second column repquota prints two characters marking which limits are
+exceeded. If user is over his space softlimit or reaches his space hardlimit in
+case softlimit is unset, the first character is '+'. Otherwise the character
+printed is '-'. The second character denotes the state of inode usage
+analogously.
+
+.B repquota
+has to translate ids of all users/groups/projects to names (unless option
+.B -n
+was specified) so it may take a while to
+print all the information. To make translating as fast as possible
+.B repquota
+tries to detect (by reading
+.BR /etc/nsswitch.conf )
+whether entries are stored in standard plain text file or in a database and either
+translates chunks of 1024 names or each name individually. You can override this
+autodetection by
+.B -c
+or
+.B -C
+options.
+.SH OPTIONS
+.TP
+.B -a, --all
+Report on all filesystems indicated in
+.B /etc/mtab
+to be read-write with quotas.
+.TP
+.B -v, --verbose
+Report all quotas, even if there is no usage. Be also more verbose about quotafile
+information.
+.TP
+.B -c, --cache
+Cache entries to report and translate uids/gids to names in big chunks by scanning
+all users (default). This is good (fast) behaviour when using /etc/passwd file.
+.TP
+.B -C, --no-cache
+Translate individual entries. This is faster when you have users stored in database.
+.TP
+.B -t, --truncate-names
+Truncate user/group names longer than 9 characters. This results in nicer output when
+there are such names.
+.TP
+.B -n, --no-names
+Don't resolve UIDs/GIDs to names. This can speedup printing a lot.
+.TP
+.B -s, --human-readable
+Try to report used space, number of used inodes and limits in more appropriate units
+than the default ones.
+.TP
+.B -p, --raw-grace
+When user is in grace period, report time in seconds since epoch when his grace
+time runs out (or has run out). Field is '0' when no grace time is in effect.
+This is especially useful when parsing output by a script.
+.TP
+.B -i, --no-autofs
+Ignore mountpoints mounted by automounter.
+.TP
+.B \-F, --format=\f2format-name\f1
+Report quota for specified format (ie. don't perform format autodetection).
+Possible format names are:
+.B vfsold
+Original quota format with 16-bit UIDs / GIDs,
+.B vfsv0
+Quota format with 32-bit UIDs / GIDs, 64-bit space usage, 32-bit inode usage and limits,
+.B vfsv1
+Quota format with 64-bit quota limits and usage,
+.B xfs
+(quota on XFS filesystem)
+.TP
+.B -g, --group
+Report quotas for groups.
+.TP
+.B -P, --project
+Report quotas for projects.
+.TP
+.B -u, --user
+Report quotas for users. This is the default.
+.TP
+.B -O, --output=\f2format-name\f1
+Output quota report in the specified format.
+Possible format names are:
+.B default
+The default format, optimized for console viewing
+.B csv
+Comma-separated values, a text file with the columns delimited by commas
+.B xml
+Output is XML encoded, useful for processing with XSLT
+.LP
+Only the super-user may view quotas which are not their own.
+.SH FILES
+.PD 0
+.TP 20
+.BR aquota.user " or " aquota.group
+quota file at the filesystem root (version 2 quota, non-XFS filesystems)
+.TP
+.BR quota.user " or " quota.group
+quota file at the filesystem root (version 1 quota, non-XFS filesystems)
+.TP
+.B /etc/mtab
+default filesystems
+.TP
+.B /etc/passwd
+default set of users
+.TP
+.B /etc/group
+default set of groups
+.PD
+.SH SEE ALSO
+.BR quota (1),
+.BR quotactl (2),
+.BR edquota (8),
+.BR quotacheck (8),
+.BR quotaon (8),
+.BR quota_nld (8),
+.BR setquota (8),
+.BR warnquota (8)
