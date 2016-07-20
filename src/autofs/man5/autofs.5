@@ -1,0 +1,611 @@
+.\" t
+.TH AUTOFS 5 "9 Feb 2014"
+.SH NAME
+autofs \- Format of the automounter maps
+.SH "DESCRIPTION"
+The automounter maps are FILE, NIS, NISPLUS or LDAP (including LDAP via SSS)
+referred to by the master map of the automounter (see
+.BR auto.master (5)).
+These maps describe how file systems below the mount point of the map
+(given in the master map) are to be mounted.  This page describes the
+.B sun
+map format; if another map format, other than
+.B amd ,
+is specified (e.g. \fBhesiod\fP),
+this documentation does not apply.
+
+Indirect maps, except for the internal hosts map, can be changed on the fly
+and the automouter will recognize those changes on the next operation it
+performs on that map. Direct maps require a HUP signal be sent to the
+daemon to refresh their contents as does the master map.
+.SH "SUN FORMAT"
+This is a description of the text file format.  Other methods of specifying
+these files may exist.  All empty lines or lines beginning with # are
+ignored. The basic format of one line in such maps is:
+.P
+.BR key\  [ \-options ]\  location
+.TP
+.B key
+.br
+For indirect mounts this is the part of the path name between the mount point
+and the path into the filesystem when it is mounted. Usually you can think about the
+key as a sub-directory name below the autofs managed mount point.
+
+For direct mounts this is the full path of each mount point. This map is always
+associated with the /- mount point in the master map. 
+.TP
+.B options
+.br
+Zero or more options may be given.  Options can also be given in the 
+.B auto.master
+file in which case both values are cumulative (this is a difference
+from SunOS).  The options are a list of comma separated options as
+customary for the
+.BR mount (8)
+command.
+
+There are several special options
+.RS
+.TP
+.B \-fstype=
+.br
+is used to specify a filesystem type if the filesystem is not of the default
+NFS type.  This option is processed by the automounter and not by the mount
+command.
+.TP
+.B \-strict
+.br
+is used to treat errors when mounting file systems as fatal. This is important when
+multiple file systems should be mounted (`multi-mounts'). If this option
+is given, no file system is mounted at all if at least one file system
+can't be mounted.
+.TP
+.B \-use-weight-only
+.br
+is used to make the weight the sole factor in selecting a server when multiple
+servers are present in a map entry.
+and
+.TP
+.B \-no-use-weight-only
+.br
+can be used to negate the option if it is present in the master map entry
+for the map but is not wanted for the given mount.
+.RE
+.TP
+.B location
+The location specifies from where the file system is to be mounted.  In the
+most cases this will be an NFS volume and the usual notation
+.I host:pathname
+is used to indicate the remote filesystem and path to be mounted.  If
+the filesystem to be mounted begins with a / (such as local
+.I /dev
+entries or smbfs shares) a : needs to be prefixed (e.g. 
+.IR :/dev/sda1 ).
+.SH EXAMPLE
+Indirect map:
+.sp
+.RS +.2i
+.ta 1.0i 3.0i
+.nf
+kernel	\-ro,soft,intr	ftp.kernel.org:/pub/linux
+boot	\-fstype=ext2	:/dev/hda1
+windoze	\-fstype=smbfs	://windoze/c
+removable	\-fstype=ext2	:/dev/hdd
+cd	\-fstype=iso9660,ro	:/dev/hdc
+floppy	\-fstype=auto	:/dev/fd0
+server	\-rw,hard,intr	/ \-ro myserver.me.org:/ \\
+			/usr myserver.me.org:/usr \\
+			/home myserver.me.org:/home
+.fi
+.RE
+.sp
+In the first line we have a NFS remote mount of the kernel directory on
+.IR ftp.kernel.org .
+This is mounted read-only.  The second line mounts an ext2 volume from a
+local ide drive.  The third makes a share exported from a Windows
+machine available for automounting.  The rest should be fairly
+self-explanatory. The last entry (the last three lines) is an example
+of a multi-map (see below).
+
+If you use the automounter for a filesystem without access permissions
+(like \fBvfat\fP), users usually can't write on such a filesystem
+because it is mounted as user \fBroot\fP.
+You can solve this problem by passing the option \fIgid=<gid>\fP,
+e.g. \fIgid=floppy\fP. The filesystem is then mounted as group
+\fBfloppy\fP instead of \fBroot\fP. Then you can add the users
+to this group, and they can write to the filesystem. Here's an
+example entry for an autofs map:
+.sp
+.RS +.2i
+.ta 1.0i 3.0i
+.nf
+floppy-vfat  \-fstype=vfat,sync,gid=floppy,umask=002  :/dev/fd0
+.fi
+.RE
+.sp
+Direct map:
+.sp
+.RS +.2i
+.ta 1.0i 3.0i
+.nf
+/nfs/apps/mozilla	bogus:/usr/local/moxill
+/nfs/data/budgets	tiger:/usr/local/budgets
+/tst/sbin		bogus:/usr/sbin
+.fi
+.RE
+.sp
+.SH FEATURES
+.SS Map Key Substitution
+An & character in the
+.B location
+is expanded to the value of the 
+.B key
+field that matched the line (which probably only makes sense together with
+a wildcard key).
+.SS Wildcard Key
+A map key of * denotes a wild-card entry. This entry is consulted
+if the specified key does not exist in the map.  A typical wild-card
+entry looks like this:
+.sp
+.RS +.2i
+.ta 1.0i
+.nf
+*	server:/export/home/&
+.fi
+.RE
+.sp
+The special character '&' will be replaced by the provided key.  So,
+in the example above, a lookup for the key 'foo' would yield a mount
+of server:/export/home/foo.
+.SS Variable Substitution
+The following special variables will be substituted in the location
+field of an automounter map entry if prefixed with $ as customary
+from shell scripts (curly braces can be used to separate the field
+name):
+.sp
+.RS +.2i
+.ta 1.5i
+.nf
+ARCH	Architecture (uname \-m)
+CPU	Processor Type
+HOST	Hostname (uname \-n)
+OSNAME	Operating System (uname \-s)
+OSREL	Release of OS (uname \-r)
+OSVERS	Version of OS (uname \-v)
+.fi
+.RE
+.sp
+autofs provides additional variables that are set based on the
+user requesting the mount:
+.sp 
+.RS +.2i
+.ta 1.5i
+.nf
+USER	The user login name
+UID	The user login ID
+GROUP	The user group name
+GID	The user group ID
+HOME	The user home directory
+SHOST	Short hostname (domain part removed if present)
+.fi
+.RE
+.sp
+If a program map is used these standard environment variables will have
+a prefix of "AUTOFS_" to prevent interpreted languages like python from
+being able to load and execute arbitray code from a user home directory.
+.RE
+.sp
+Additional entries can be defined with the \-Dvariable=Value map-option to
+.BR automount (8).
+.SS Executable Maps
+A map can be marked as executable. A
+.B program
+map will be called with the key as an argument.  It may
+return no lines of output if there's an error, or one or more lines
+containing a map entry (with \\ quoting line breaks). The map entry
+corresponds to what would normally follow a map key.
+.P
+An executable map can return an error code to indicate the failure in addition
+to no output at all.  All output sent to stderr is logged into the system
+logs.
+.SS Multiple Mounts
+A
+.B multi-mount map
+can be used to name multiple filesystems to mount.  It takes the form:
+.sp
+.RS +.2i
+.ta 1.0i
+.nf
+.BI "key [ \-options ] [[/] location [/relative-mount-point [ \-options ] location...]..."
+.fi
+.RE
+.sp
+.P
+This may extend over multiple lines, quoting the line-breaks with \`\\\'.
+If present, the per-mountpoint mount-options are appended to the
+default mount-options. This behaviour may be overridden by the append_options
+configuration setting.
+.SS Replicated Server
+A mount location can specify multiple hosts for a location, portentially
+with a different export path for the same file system. Historically these
+different locations are read-only and provide the same replicated file system.
+.sp
+.RS +.2i
+.ta 1.5i
+.nf
+Multiple replicated hosts, same path:
+<path> host1,host2,hostn:/path/path
+
+Multiple hosts, some with same path, some with another
+<path> host1,host2:/blah host3:/some/other/path
+
+Multiple replicated hosts, different (potentially) paths:
+<path> host1:/path/pathA host2:/path/pathB
+
+Mutliple weighted, replicated hosts same path:
+<path> host1(5),host2(6),host3(1):/path/path
+
+Multiple weighted, replicated hosts different (potentially) paths:
+<path> host1(3):/path/pathA host2(5):/path/pathB
+
+Anything else is questionable and unsupported, but these variations will also work:
+<path> host1(3),host:/blah
+.fi
+.RE
+.SH UNSUPPORTED
+This version of the automounter supports direct maps stored in FILE, NIS, NISPLUS
+and LDAP (including LDAP via SSS) only.
+.P
+.SH "AMD FORMAT"
+This is a description of the text file format. Other methods of specifying
+mount map entries may be required for different map sources.  All empty
+lines or lines beginning with # are ignored. The basic format of one
+line in such maps is:
+.P
+.BR key\ location-list
+.TP
+.B key
+.br
+A \fBkey\fP is a path (or a single path component alone) that may end
+in the wildcard key, "*", or the wildcard key alone and must not begin
+with the "/" character.
+.TP
+.B location-list
+Following the \fBkey\fP is a mount \fBlocation-list\fP.
+.TP
+A \fBlocation-list\fP list has the following syntax:
+.TP
+.B location[\ location[\ ...\ ]]\ [||\ location[\ location[\ ...\ ]]
+.P
+A mount \fBlocation-list\fP can use the cut operator, \fB||\fP, to specify
+locations that should be tried if none of the locations to the left of it
+where selected for a mount attempt.
+
+A mount \fBlocation\fP consists of an optional colon separated list
+of \fBselectors\fP, followed by a colon separated list of \fBoption:=value\fP
+pairs.
+
+The \fBselectors\fP that may be used return a value or boolean result.
+Those that return a value may be to used with the comparison
+operators \fB==\fP and \fB!=\fP and those that return a boolean result
+may be negated with the \fB!\fP.
+
+For a \fBlocation\fP to be selected for a mount attempt all of its \fBselectors\fP
+must evaluate to true. If a \fBlocation\fP is selected for a mount attempt
+and succeeds the lookup is completed and returns success. If the mount
+attempt fails the proceedure continues with the next \fBlocation\fP until
+they have all been tried.
+
+In addition some \fBselectors\fP take no argumenets, some one argument
+and others optionally take two arguments.
+
+The \fBselectors\fP that take no arguments are:
+.RS
+.TP
+.B arch
+.br
+The machine architecture which, if not set in the confugration, is
+obtained using uname(2).
+.TP
+.B karch
+.br
+The machine kernel architecture which, if not set in the confugration,
+is obtained using uname(2).
+.TP
+.B os
+.br
+The operating system name, if not set in the confugration, is obtained
+using uname(2).
+.TP
+.B osver
+.br
+The operating system version, if not set in the confugration, is obtained
+using uname(2).
+.TP
+.B full_os
+.br
+The full operating system name, if not set in the confugration this selector
+has no value.
+.TP
+.B vendor
+.br
+The operating system vendor name, if not set in the confugration this selector
+has the value "unknown".
+.TP
+.B byte
+.br
+The endianness of the hardware.
+.TP
+.B cluster
+.br
+The name of the local cluster. It has a value only if it is set in the
+configuration.
+.TP
+.B autodir
+.br
+The base path under which external mounts are done if they are needed.
+Most mounts are done in place but some can't be and this is the base
+path under which those mounts will be done.
+.TP
+.B domain
+.br
+The local domain name. It is set to the value of the configuration
+option \fBsub_domain\fP. If sub_domain is not given in the configuration
+it is set to the domain part of the local host name, as given by
+gethostname(2).
+.TP
+.B host
+.br
+The local host name, without the domain part, as given by gethostname(2).
+.TP
+.B hostd
+.br
+The full host name. If \fBsub_domain\fP is given in the configuration
+this is set to the contatenation of \fBhost\fP and \fBsub_domain\fP deperated
+by a \fB.\fP. If \fBsub_domain\fP is not set in the configuration the value
+of \fBdomain\fP is used instead of \fBsub_domain\fP.
+.TP
+.B uid
+.br
+The numeric value of the uid of the user that first requested the mount. Note
+this is usual the same as that used by amd but can be different within autofs.
+.TP
+.B gid
+.br
+The numeric value of the gid of the user that first requested the mount. Note
+this is usual the same as that used by amd but can be different within autofs.
+.TP
+.B key
+.br
+The string value of the key being looked up.
+.TP
+.B map
+.br
+The string value of the map name used to lookup \fBkey\fPs.
+.TP
+.B path
+.br
+The string value of the full path to the mount being requested.
+.TP
+.B dollar
+.br
+Evaluates to the string "$".
+.RE
+.TP
+The \fBselectors\fP that take one argument are:
+.RS
+.TP
+.B in_network(network) ", " network(network) ", " netnumber(network) ", " wire(network)
+.br
+These \fBselectors\fP are all the same. \fBin_network()\fP is the
+preferred usage. The \fBnetwork\fP argument is an address (which may include
+a subnet mask) or network name. The function compares \fBnetwork\fP
+against each interface and returns true if \fBnetwork\fP belongs to
+the network the interface is connected to.
+.TP
+.B xhost(hostname)
+.br
+The \fBxhost()\fP selector compares \fBhostname\fP to the \fB${host}\fP
+and if it doesn't match it attempts to lookup the cannonical name
+of \fBhostname\fP and compares it to \f${host}\fP as well.
+.TP
+.B exists(filename)
+.br
+Returns true if \fBfilename\fP exits as determined by lstat(2).
+.TP
+.B true()
+.br
+Evaluates to true, the argument is ignored and may be empty.
+.TP
+.B false()
+.br
+Evaluates to false, the argument is ignored and may be empty.
+.RE
+.TP
+The \fBselectors\fP that take up to two arguments are:
+.RS
+.TP
+.B netgrp(netgroup[,hostname])
+.br
+The \fBnetgrp()\fP selector returns true if \fPhostname\fP is a member of
+the netgroup \fBnetgroup\fP. If \fBhostname\fP is not given \fB${host}\fP
+is used for the comparison.
+.TP
+.B netgrpd(netgroup[,hostname])
+.br
+The \fBnetgrpd()i\fP selector behaves the same as \fBnetgrp()\fP except
+that if \fBhostname\fP is not given \fB${hostd}\fP, the fully qualified
+hostname, is used instead of \fB${host}\fP.
+.RE
+.TP
+The \fBoptions\fP that may be used are:
+.RS
+.TP
+.B type
+.br
+This is the mount filesystem \fBtype\fP.
+It can have a value of
+.BR auto ", " link ", " linkx ", " host ", " lofs ", " ext2-4 ", "
+.BR xfs ", " nfs ", " nfsl " or " cdfs "."
+Other types that are not yet implemented or are not available iin autofs are
+.BR nfsx ", " lustre ", " jfs ", " program ", " cachefs " and " direct "."
+.TP
+.B maptype
+.br
+The \fBmaptype\fP option specifies the type of the map source and can
+have a value of \fBfile\fP, \fBnis\fP, \fBnisplus\fP, \fBexec\fP, \fBldap\fP
+or \fBhesiod\fP. Map sources either not yet implemented or not available in
+autofs are \fBsss\fP, \fBndbm\fP, \fBpasswd\fP and \fBunion\fP.
+.TP
+.B fs
+.br
+The option \fBfs\fP is used to specify the local filesystem. The meaning of
+this option (and whether or not it is used) is dependent on the mount
+filesystem \fBtype\fP.
+.TP
+.B rhost
+.br
+The remote host name for network mount requests.
+.TP
+.B rfs
+.br
+The remote host filesystem path for network mount requests.
+.TP
+.B dev
+.br
+Must resolve to the device file for local device mount
+requests.
+.TP
+.B sublink
+.br
+The \fBsublink\fP option is used to specify a subdirectory
+within the mount location to which this entry will point.
+.TP
+.B pref
+.br
+The \fBpref\fP option is used to specify a prefix that is
+prepended to the lookup key before looking up the map entry
+key.
+.TP
+.B opts
+.br
+The \fBopts\fP option is used to specify mount options to be
+used for the mount. If a "\fB-\fP" is given it is ignored.
+Options that may be used are dependend on the mount filesystem.
+.TP
+.B addopts
+.br
+The \fBaddopts\fP option is used to specify additional mount
+options used in addition to the default mount options for the
+mount location.
+.TP
+.B remopts
+.br
+The \fBaddopts\fP option is used to specify mount options used
+instead the options given in \fBopts\fP when the mount location
+is on a remote retwork.
+.RE
+.TP
+A number of \fBoptions\fP aren't available or aren't yet implemented
+within autofs, these are:
+.RS
+.TP
+.B cache
+.br
+The \fBcache option\fP isn't used by autofs. The map entry cache is
+continually updated and stale entries cleaned on re-load when map
+changes are detected so these configuration entries are not used.
+The \fBregex\fP map key matching is not implemented and may not be
+due to the potential overhead of the full map scans needed on every
+key lookup.
+.TP
+.B cachedir
+.br
+The \fBcachefs\fP filesystem is not available on Linux, a different
+implementation is used for caching network mounted file systems.
+.TP
+.B mount ", " unmount ", " umount
+.br
+These \fBoptions\fP are used by the amd \fBprogram\fP mount type which
+is not yet implemented.
+.TP
+.B delay
+.br
+This \fBoption\fP is not used by the autofs implementation and is ignored.
+.RE
+.BR
+.SH FEATURES
+.SS Key Matching
+The amd parser key matching is unusual.
+
+The key string to be looked up is constructed by prepending the prefix, if
+there is one.
+
+The resulting relative path string is matched by first trying the sting
+itself. If no match is found the last component of the key string is
+replaced with the wilcard match cahracter ("*") and a wildcard match is
+attemted. This process continues until a match is found or until the
+last match, against the wilcard match key alone, fails to match a map
+entry and the key lookup fails.
+.SS Macro Usage
+Macros are used a lot in the autofs amd implementation.
+
+Many of the option values are set as macro variables corresponding to the
+option name during the map entry parse. So they may be used in subsequent
+option values. Beware though, the order in which option values is not
+necessarily left to right so you may get unexpected results.
+.BR
+.SH EXAMPLE
+Example NFS mount map:
+.P
+Assuming we have the autofs master map entry:
+.sp
+.RS +.2i
+.ta 1.0i 3.0i
+.nf
+/test	file,amd:/etc/amd.test
+.fi
+.RE
+.sp
+And the following map in /etc/amd.test:
+.sp
+.RS +.2i
+.ta 1.0i 3.0i
+.nf
+/defaults	type:=nfs;rhost:=bilbo
+apps	rfs:=/autofs
+util	rhost:=zeus;rfs:=/work/util
+local	rfs:=/shared;sublink:=local
+.fi
+.RE
+.sp
+In the first line we have an NFS remote mount of the exported directory
+/autofs from host bilbo which would be mounted on /test/apps. Next
+another nfs mount for the exported directory /work/util from host zeus.
+This would be mounted on /test/util.
+
+Finally we have an example of the use of the \fBsublink\fP option. In
+this case the filesystem bilbo:/shared would be mounted on a path
+external the automount directory (under the direcory given by
+configuration option auto_dir) and the path /test/local either
+symlinked or bind mounted (depending on the setting autofs_use_lofs)
+to the "local" subdirectory of the external mount.
+.BR
+.SH "NOTES"
+To be able to use IPv6 within autofs maps the package must be build
+to use the libtirpc library for its RPC communications. This is
+becuase the glibc RPC implementation doesn't support IPv6 and is
+depricated so this is not likely to change.
+.BR
+.SH "SEE ALSO"
+.BR automount (8),
+.BR auto.master (5),
+.BR autofs (8),
+.BR autofs.conf (5),
+.BR mount (8).
+.BR autofs_ldap_auth.conf (5)
+.SH AUTHOR
+This manual page was written by Christoph Lameter <chris@waterf.org>,
+for the Debian GNU/Linux system.  Edited by H. Peter Avian
+<hpa@transmeta.com>, Jeremy Fitzhardinge <jeremy@goop.org> and
+Ian Kent <raven@themaw.net>.

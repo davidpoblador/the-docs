@@ -1,0 +1,188 @@
+.\" Linux man page by B. James Phillippe, 1997 <bryan@Terran.ORG>
+.\"
+.\" This page was written to contribute to the Linux kernel autofs
+.\" implementation by H. Peter Anvin (1997).  It is loosly based on
+.\" the documentation for mount(8) and amd(8) Linux manpages.
+.\"
+.\" This is free documentation.
+.\"
+.TH AUTOMOUNT 8 "12 Apr 2006"
+.SH NAME
+automount \- manage autofs mount points
+.SH SYNOPSIS
+\fBautomount\fP [\fIoptions\fP] [\fImaster_map\fP]
+.SH DESCRIPTION
+The \fBautomount\fP program is used to manage mount points for
+autofs, the inlined Linux automounter.  \fBautomount\fP works by
+reading the
+.nh
+.BR auto.master (5)
+.hy
+map and sets up mount points for each entry in the master map allowing
+them to be automatically mounted when accessed. The file systems are
+then automatically umounted after a period of inactivity.
+.SH OPTIONS
+.TP
+.I "\-h, \-\-help"
+Print brief help on program usage.
+.TP
+.I "\-p, \-\-pid-file"
+Write the pid of the daemon to the specified file.
+.TP
+.I "\-t <seconds>, \-\-timeout <seconds>"
+Set the global minimum timeout, in seconds, until directories
+are unmounted. The default is 10 minutes. Setting the timeout
+to zero disables umounts completely.
+The internal program default is 10 minutes, but the default
+installed configuration overrides this and sets the timeout
+to 5 minutes to be consistent with earlier autofs releases.
+.TP
+.I "\-n <seconds>, \-\-negative\-timeout <seconds>"
+Set the default timeout for caching failed key lookups. The default is 60 seconds.
+.TP
+.I "\-v, \-\-verbose"
+Enables logging of general status and progress messages for all
+autofs managed mounts.
+.TP
+.I "\-d, \-\-debug"
+Enables logging of general status and progress messages as well as
+debugging messages for all autofs managed mounts.
+.TP
+.I "\-Dvariable=value, --define variable=value"
+Define a global macro substitution variable. Global definitions
+are over-ridden macro definitions of the same name specified in
+mount entries.
+.TP
+.I "\-f, \-\-foreground"
+Run the daemon in the foreground and log to stderr instead of syslog."
+.TP
+.I "\-r, \-\-random-multimount-selection"
+Enables the use of ramdom selection when choosing a host from a
+list of replicated servers.
+.TP
+.I "\-m, \-\-dumpmaps [<map type> <map name>]"
+With no parameters, list information about the configured automounter
+maps, then exit.
+
+If the dumpmaps option is given and is followed by two parameters,
+"<map type> <map name>" then simple "<key, value>" pairs that would
+be read in by a map read are printed to stdout if the given map type
+and map name are found in the map configuration.
+
+If the map is an LDAP map and there is more than one map of same name
+in different base dns only the first map encountered by autofs will
+be listed. Similarly, if the map is a file map and there is more than
+one map of the same name in different directories, only the first map
+encountered will be listed.
+
+If the map type is an old style multi-map and any one of the map
+names in the multi-map entry matches the given map name the entries
+that would be used by autofs for the whole multi-map will be listed.
+.TP
+.I "\-O, \-\-global-options"
+Allows the specification of global mount options used for all master
+map entries. These options will either replace or be appened to options
+given in a master map entry depending on the APPEND_OPTIONS configuration
+setting.
+.TP
+.I "\-V, \-\-version"
+Display the version number, then exit.
+.TP
+.I "\-l, \-\-set-log-priority priority path [path,...]"
+Set the daemon log priority to the specified value.  Valid values include
+the numbers 0-7, or the strings emerg, alert, crit, err, warning, notice,
+info, or debug. Log level debug will log everything, log levels info, warn
+(or warning), or notice with enable the daemon verbose logging. Any other
+level will set basic logging. Note that enabling debug or verbose
+logging in the autofs global configuration will override dynamic log level
+changes. For example, if verbose logging is set in the configuration then
+attempting to set logging to basic logging, by using alert, crit, err
+or emerg won't stop the verbose logging. However, setting logging to debug
+will lead to everything (debug logging) being logged witch can then also
+be disabled, returning the daemon to verbose logging. This option can be
+specified to change the logging priority of an already running automount
+process.
+.P
+The \fIpath\fP argument corresponds to the automounted
+path name as specified in the master map.
+.TP
+.I "\-C, \-\-dont-check-daemon"
+Don't check if the daemon is currently running (see NOTES).
+.TP
+.I "\-F, \-\-force"
+Force an unlink umount of existing mounts under autofs managed mount points
+during startup. This can cause problems for processes with working directories
+within these mounts (see NOTES).
+.SH ARGUMENTS
+\fBautomount\fP takes one optional argument, the name of the master map to
+use.
+.TP
+\fBmaster_map\fP
+Location for autofs master map that defines autofs managed mount points
+and the mount maps they will use. The default is
+.nh
+\fBauto.master\fP.
+.hy
+.RE
+.SH NOTES
+If the \fBautomount\fP daemon catches a USR1 signal, it will umount all
+currently unused autofs managed mounted file systems and continue running
+(forced expire).  If it catches the TERM signal it will umount
+all unused autofs managed mounted file systems and exit if there are
+no remaining busy file systems. If autofs has been compiled with the
+option to ignore busy mounts on exit it will exit leaving any busy
+mounts in place otherwise busy file systems will not be umounted
+and autofs will not exit.
+Alternatively, if autofs has been compiled with the option to enable
+forced shutdown then a USR2 signal to the daemon will cause all
+mounts to be umounted and any busy mounts to be forcibly umounted,
+including autofs mount point directories (summary execution). Note
+that the forced umount is an unlink operation and the actual umount
+will not happen in the kernel until active file handles are released.
+The daemon also responds to a HUP signal which triggers an update of
+the maps for each mount point.
+.P
+If any autofs mount point directories are busy when the daemon is sent
+an exit signal the daemon will not exit. The exception to this is
+if autofs has been built with configure options to either ignore busy
+mounts at exit or force umount at exit. If the ignore busy mounts at
+exit option is used the filesystems will be left in a catatonic
+(non-functional) state and can be manually umounted when they become
+unused. If the force umount at exit option is used the filesystems
+will be umounted but the mount will not be released by the kernel
+until they are no longer in use by the processes that held them busy.
+If automount managed filesystems are found mounted when autofs is
+started they will be recovered unless they are no longer present in
+the map in which case they need to umounted manually.
+.P
+If the option to disable the check to see if the daemon is already
+running is used be aware that autofs currently may not function correctly
+for certain types of automount maps. The mounts of the separate daemons
+might interfere with one another. The implications of running multiple
+daemon instances needs to be checked and tested before we can say this
+is supported.
+.P
+If the option to force an unlink of mounts at startup is used then processes
+whose working directory is within unlinked automounted directories will not
+get the correct pwd from the system. This is because, after the mount is
+unlinked from the mount tree, anything that needs to walk back up the mount
+tree to construct a path, such as getcwd(2) and the proc filesystem
+/proc/<pid>/cwd, cannot work because the point from which the path is
+constructed has been detached from the mount tree.
+.SH "SEE ALSO"
+.BR autofs (5),
+.BR autofs (8),
+.BR autofs.conf (5),
+.BR auto.master (5),
+.BR mount (8).
+.BR autofs_ldap_auth.conf (5)
+.SH BUGS
+Don't know, I've fixed everything I know about.
+
+The documentation could be better.
+
+Please report other bugs along with a detailed description to
+<autofs@vger.kernel.org>. Visit http://vger.kernel.org/vger-lists.html#autofs
+for information about the list.
+.SH AUTHOR
+H. Peter Anvin <hpa@transmeta.com> and Ian Kent <raven@themaw.net>.
