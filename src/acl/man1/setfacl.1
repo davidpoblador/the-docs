@@ -37,17 +37,17 @@ This utility sets Access Control Lists (ACLs) of files and directories.
 On the command line, a sequence of commands is followed by a sequence of
 files (which in turn can be followed by another sequence of commands, ...).
 
-The options
-.I \-m,
+The
+.I \-m
 and
 .I \-x
-expect an ACL on the command line. Multiple ACL entries are separated
-by comma characters (`,'). The options
-.I \-M,
+options expect an ACL on the command line. Multiple ACL entries are separated
+by comma characters (`,'). The
+.I \-M
 and
 .I \-X
-read an ACL from a file or from standard input. The ACL entry format is described in Section
-ACL ENTRIES.
+options read an ACL from a file or from standard input. The ACL entry format is
+described in Section ACL ENTRIES.
 
 The
 .IR "\-\-set" " and " "\-\-set-file"
@@ -68,7 +68,7 @@ does not exist.  Only ACL entries without the
 field are accepted as parameters, unless POSIXLY_CORRECT is defined.
 
 When reading from files using the 
-.I \-M,
+.I \-M
 and
 .IR \-X
 options, setfacl accepts the output getfacl produces.
@@ -190,22 +190,42 @@ For
 .I uid
 and
 .I gid
-you can specify either a name or a number.
+you can specify either a name or a number.  Character literals may be specified
+with a backslash followed by the 3-digit octal digits corresponding to the
+ASCII code for the character (e.g.,
+.I \e101
+for 'A').  If the name contains a literal backslash followed by 3 digits, the
+backslash must be escaped (i.e.,
+.IR "\e\e" ).
 .PP
 The
 .I perms
-field is a combination of characters that indicate the permissions: read
+field is a combination of characters that indicate the read
 .IR (r) ,
 write
 .IR (w) ,
 execute
-.IR (x) ,
-execute only if the file is a directory or already has execute permission
-for some user
-.IR (X) .
-Alternatively, the
+.IR (x)
+permissions.  Dash characters in the
 .I perms
-field can be an octal digit (0\-7).
+field
+.IR (\-)
+are ignored.  The character
+.I X
+stands for the execute permission if the file is a directory or already has
+execute permission for some user.  Alternatively, the
+.I perms
+field can define the permissions numerically, as a bit-wise combination of read
+.IR (4) ,
+write
+.IR (2) ,
+and execute
+.IR (1) .
+Zero
+.I perms
+fields or
+.I perms
+fields that only consist of dashes indicate no permissions.
 .PP
 .SS AUTOMATICALLY CREATED ENTRIES
 Initially, files and directories contain only the three base ACL entries
@@ -240,8 +260,8 @@ owner, owning group, or others entry, a copy of the ACL owner, owning group, or 
 .IP * 4
 If a Default ACL contains named user entries or named group entries, and no mask entry exists, a mask entry containing the same permissions as the default Default ACL's group entry is added. Unless the
 .I \-n
-option is given, the permissions of the mask entry are further adjusted to inclu
-de the union of all permissions affected by the mask entry. (See the
+option is given, the permissions of the mask entry are further adjusted to
+include the union of all permissions affected by the mask entry. (See the
 .I \-n
 option description).
 .PP
