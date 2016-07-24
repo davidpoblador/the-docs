@@ -273,6 +273,7 @@ class TitleMacroParser(MacroParser):
                 except:
                     raise NotSupportedFormat
 
+
 class HeaderMacroParser(MacroParser):
     def __bool__(self):
         if self.comment or not self.macro:

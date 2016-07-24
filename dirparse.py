@@ -10,7 +10,7 @@ from collections import defaultdict, Counter
 
 from manpage import ManPage
 
-from base import load_template, get_pagination
+from base import load_template, get_pagination, get_breadcrumb
 from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -126,7 +126,8 @@ class ManDirectoryParser(object):
             fp = cp['full-path'] = item  # Full Path
 
             cp['name'], cp['section'] = basename.rsplit('.', 1)
-            cp['page-url'] = self.get_section_url(sd) + basename + ".html"
+            cp['page-url'] = self.get_section_url(
+                sd) + basename + ".html"  # DEBUG
 
             first_pass = True
             try:
@@ -134,7 +135,8 @@ class ManDirectoryParser(object):
                     if first_pass:
                         logging.debug("Processing man page %s ..." % (fp, ))
                         mp = cp['instance'] = ManPage(
-                            fp, base_url=base_manpage_url)
+                            fp, base_url=base_manpage_url,
+                            package=package)
                         first_pass = False
                     else:
                         red_section, red_page = mp.redirect
@@ -149,7 +151,8 @@ class ManDirectoryParser(object):
                         mp = cp['instance'] = ManPage(
                             red,
                             base_url=base_manpage_url,
-                            redirected_from=fp)
+                            redirected_from=fp,
+                            package=package)
 
                     try:
                         mp.parse()
@@ -302,9 +305,10 @@ class ManDirectoryParser(object):
                     continue
 
                 numeric_section, section = section, "man%s" % (section, )
+                base_dir = "/man-pages/%s/" % section
 
                 package_list = [
-                    item_tpl.substitute(link=pages[page]['page-url'],
+                    item_tpl.substitute(link=base_dir + page + ".html",
                                         name=page,
                                         description=pages[page]['subtitle'])
                     for page in pages_in_section
@@ -331,12 +335,17 @@ class ManDirectoryParser(object):
                 contents="\n".join(package_index)) + get_pagination(prev_page,
                                                                     next_page)
 
+            breadcrumb = [
+                ("/packages/", "Packages"),
+                ("/packages/%s/" % package, package),
+            ]
+
             out = load_template('base').safe_substitute(
                 title="Man Pages in %s" % package,
                 canonical="",
                 header=load_template('header-package').substitute(
                     title=package),
-                breadcrumb="",
+                breadcrumb=get_breadcrumb(breadcrumb),
                 content=contents,
                 metadescription="Man Pages in %s" % package, )
 
@@ -348,45 +357,49 @@ class ManDirectoryParser(object):
 
             packages_to_index.append(package)
 
-        if packages_to_index:
-            sm_item_tpl = load_template('sitemap-url-nolastmod')
-            package_list_item_tpl = load_template('package-list-item')
+        if not packages_to_index:
+            return
 
-            sm_urls = []
-            package_list_items = []
-            for package in packages_to_index:
-                sm_urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
-                    base_packages_url, package)))
-                package_list_items.append(package_list_item_tpl.substitute(
-                    url="%s/" % (package, ),
-                    package=package))
+        sm_item_tpl = load_template('sitemap-url-nolastmod')
+        package_list_item_tpl = load_template('package-list-item')
 
-            # Generate package sitemap
-            sitemap = load_template('sitemap').substitute(
-                urlset="\n".join(sm_urls))
-            sitemap_path = os.path.join(base_packages_dir, "sitemap.xml")
+        sm_urls = []
+        package_list_items = []
+        for package in packages_to_index:
+            sm_urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
+                base_packages_url, package)))
+            package_list_items.append(package_list_item_tpl.substitute(
+                url="%s/" % (package, ),
+                package=package))
 
-            f = open(sitemap_path, 'w')
-            f.write(sitemap)
-            f.close()
+        # Generate package sitemap
+        sitemap = load_template('sitemap').substitute(
+            urlset="\n".join(sm_urls))
+        sitemap_path = os.path.join(base_packages_dir, "sitemap.xml")
 
-            # Generate package index
-            index = load_template('ul').substitute(
-                content="\n".join(package_list_items))
-            index_path = os.path.join(base_packages_dir, "index.html")
+        f = open(sitemap_path, 'w')
+        f.write(sitemap)
+        f.close()
 
-            out = load_template('base').safe_substitute(
-                title="Packages with man pages",
-                canonical="",
-                header=load_template('header-package-index').substitute(
-                    title="Packages with man pages"),
-                breadcrumb="",
-                content=index,
-                metadescription="List of packages with man pages", )
+        # Generate package index
+        breadcrumb = [("/packages/", "Packages"), ]
 
-            f = open(index_path, 'w')
-            f.write(out)
-            f.close()
+        index = load_template('ul').substitute(
+            content="\n".join(package_list_items))
+        index_path = os.path.join(base_packages_dir, "index.html")
+
+        out = load_template('base').safe_substitute(
+            title="Packages with man pages",
+            canonical="",
+            header=load_template('header-package-index').substitute(
+                title="Packages with man pages"),
+            breadcrumb=get_breadcrumb(breadcrumb),
+            content=index,
+            metadescription="List of packages with man pages", )
+
+        f = open(index_path, 'w')
+        f.write(out)
+        f.close()
 
     @classmethod
     def generate_sitemaps_and_indexes(cls, iterator, pages):
@@ -450,6 +463,11 @@ class ManDirectoryParser(object):
             full_section = SECTIONS[directory]
             numeric_section = directory[3:]
 
+            breadcrumb = [
+                ("/man-pages/", "Man Pages"),
+                ("/man-pages/man%s/" % numeric_section, full_section),
+            ]
+
             out = load_template('base').safe_substitute(
                 title="Linux Man Pages - %s" % full_section,
                 canonical="",
@@ -457,10 +475,7 @@ class ManDirectoryParser(object):
                     title=full_section,
                     section=numeric_section,
                     subtitle=""),
-                breadcrumb=load_template('breadcrumb-section').substitute(
-                    section_name=full_section,
-                    base_url=base_manpage_url,
-                    section=numeric_section),
+                breadcrumb=get_breadcrumb(breadcrumb),
                 content=section_content,
                 metadescription=full_section.replace("\"", "\'"), )
 

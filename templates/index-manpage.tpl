@@ -2,7 +2,14 @@
       <h1>Linux Man Pages</h1>
       <p class="lead">The Linux man-pages project documents the Linux kernel and C library interfaces that are employed by user-space programs. With respect to the C library, the primary focus is the GNU C library (glibc), although, where known, documentation of variations on other C libraries available for Linux is also included.</p>
     </div>
-
+<ol class="breadcrumb">
+  <li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemref="breadcrumb_section">
+    <a itemprop="url" href="/"><span itemprop="title">Carta.tech</span></a>
+  </li>
+  <li id="breadcrumb_page" itemscope itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="active">
+    <a itemprop="url" href="/man-pages/"><span itemprop="title">man-pages</span></a>
+  </li>
+</ol>
     <h2>The project provides manual pages in the following sections:</h2>
 
     <div class="row sections">

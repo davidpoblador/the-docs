@@ -27,6 +27,21 @@ def get_pagination(prev_page=None, next_page=None):
             content="\n".join(content))
 
 
+def get_breadcrumb(breadcrumbs):
+    contents = [populate_breadcrumb_item(1, "Carta.tech", "/")]
+    for i, (url, text) in enumerate(breadcrumbs):
+        contents.append(populate_breadcrumb_item(i + 2, text, url))
+
+    container_tpl = load_template('breadcrumb-container')
+    return container_tpl.substitute(items='\n'.join(contents))
+
+
+def populate_breadcrumb_item(order, text, url):
+    return load_template('breadcrumb-item').substitute(url=url,
+                                                       text=text,
+                                                       order=order)
+
+
 class UnexpectedState(Exception):
     pass
 

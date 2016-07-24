@@ -16,7 +16,7 @@ from parsers import MacroParser, BodyMacroParser, TitleMacroParser, HeaderMacroP
 from parsers import ManPageStates
 from parsers import tagify, unescape, toargs, entitize
 
-from base import load_template, get_pagination
+from base import load_template, get_pagination, get_breadcrumb
 from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
 
 LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
@@ -123,7 +123,11 @@ class ManPage(object):
         'man0': "ERROR. Section 0",
     }
 
-    def __init__(self, filename, redirected_from=False, base_url=""):
+    def __init__(self,
+                 filename,
+                 redirected_from=False,
+                 base_url="",
+                 package=None):
 
         # PORTED
         self.in_pre = False
@@ -160,6 +164,8 @@ class ManPage(object):
             self.manpage_name = os.path.basename(redirected_from)
         else:
             self.manpage_name = os.path.basename(filename)
+
+        self.package = package
 
         self.filename = filename
         with open(self.filename) as fp:
@@ -481,13 +487,27 @@ class ManPage(object):
             section_contents += pager_contents
 
         title, section = self.manpage_name.rsplit('.', 1)
+
+        breadcrumb_sections = [
+            ("/man-pages/", "Man Pages"),
+            ("/man-pages/man%s/" % section, self.SECTIONS["man" + section]),
+            ("/man-pages/man%s/%s.html" % (section, self.manpage_name), title),
+        ]
+
+        breadcrumbs = [get_breadcrumb(breadcrumb_sections)]
+
+        if self.package:
+            breadcrumb_packages = [
+                ("/packages/", "Packages"),
+                ("/packages/%s/" % self.package, self.package),
+                ("/man-pages/man%s/%s.html" %
+                 (section, self.manpage_name), title),
+            ]
+
+            breadcrumbs.append(get_breadcrumb(breadcrumb_packages))
+
         return load_template('base').substitute(
-            breadcrumb=load_template('breadcrumb').substitute(
-                section=section,
-                section_name=self.SECTIONS["man" + section],
-                manpage=title,
-                base_url=self.base_url,
-                page=self.manpage_name, ),
+            breadcrumb='\n'.join(breadcrumbs),
             title="%s - %s" % (title,
                                self.subtitle, ),
             metadescription=self.subtitle.capitalize(),
