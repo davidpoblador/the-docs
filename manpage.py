@@ -487,11 +487,15 @@ class ManPage(object):
             section_contents += pager_contents
 
         title, section = self.manpage_name.rsplit('.', 1)
+        subtitle = self.subtitle.capitalize()
+        descriptive_title = "%s: %s" % (title,
+                                        subtitle, )
 
         breadcrumb_sections = [
             ("/man-pages/", "Man Pages"),
             ("/man-pages/man%s/" % section, self.SECTIONS["man" + section]),
-            ("/man-pages/man%s/%s.html" % (section, self.manpage_name), title),
+            ("/man-pages/man%s/%s.html" %
+             (section, self.manpage_name), descriptive_title),
         ]
 
         breadcrumbs = [get_breadcrumb(breadcrumb_sections)]
@@ -500,21 +504,19 @@ class ManPage(object):
             breadcrumb_packages = [
                 ("/packages/", "Packages"),
                 ("/packages/%s/" % self.package, self.package),
-                ("/man-pages/man%s/%s.html" %
-                 (section, self.manpage_name), title),
+                ("/man-pages/man%s/%s.html" % (section, self.manpage_name),
+                 descriptive_title),
             ]
 
             breadcrumbs.append(get_breadcrumb(breadcrumb_packages))
 
         return load_template('base').substitute(
             breadcrumb='\n'.join(breadcrumbs),
-            title="%s - %s" % (title,
-                               self.subtitle, ),
-            metadescription=self.subtitle.capitalize(),
-            header=load_template('header').substitute(
-                section=section,
-                title=title,
-                subtitle=self.subtitle.capitalize(), ),
+            title=descriptive_title,
+            metadescription=subtitle,
+            header=load_template('header').substitute(section=section,
+                                                      title=title,
+                                                      subtitle=subtitle, ),
             content=section_contents, )
 
 
