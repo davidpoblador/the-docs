@@ -54,13 +54,8 @@ class ManDirectoryParser(object):
         self.source_dir = source_dir
 
         self.missing_parsers = Counter()
-        self.number_missing_parsers = 10
-
         self.missing_links = Counter()
-        self.number_missing_links = 10
-
         self.section_counters = Counter()
-        self.number_section_counters = 10
 
     def get_dir_pages(self):
         mandirpages = defaultdict(set)
@@ -576,13 +571,16 @@ if __name__ == '__main__':
     parser.add_argument("--log-level", help="choose log level")
     parser.add_argument("--missing-links",
                         help="choose the amount of broken links to display",
-                        type=int)
+                        type=int,
+                        default=10)
     parser.add_argument("--missing-parsers",
                         help="choose the amount of missing parsers to display",
-                        type=int)
+                        type=int,
+                        default=10)
     parser.add_argument("--section-counters",
                         help="choose the amount of section titles to display",
-                        type=int)
+                        type=int,
+                        default=10)
     args = parser.parse_args()
 
     if args.log_level:
@@ -591,14 +589,9 @@ if __name__ == '__main__':
 
     parser = ManDirectoryParser(source_dir=args.source_dir)
 
-    if args.missing_links:
-        parser.number_missing_links = args.missing_links
-
-    if args.section_counters:
-        parser.number_section_counters = args.missing_links
-
-    if args.missing_parsers:
-        parser.number_missing_parsers = args.missing_parsers
+    parser.number_missing_links = args.missing_links
+    parser.number_section_counters = args.section_counters
+    parser.number_missing_parsers = args.missing_parsers
 
     parser.parse_directory()
 
