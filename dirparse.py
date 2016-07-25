@@ -109,9 +109,9 @@ class ManDirectoryParser(object):
 
         # Parse pages
         p = self.pages
-        for item in list(glob.iglob("%s/*/man?/*.?" % self.source_dir)):
+        for full_path in list(glob.iglob("%s/*/man?/*.?" % self.source_dir)):
             #print "DEBUG", item
-            page_directory, basename = os.path.split(item)
+            page_directory, basename = os.path.split(full_path)
             redirection_base_dir, section_directory = os.path.split(
                 page_directory)
             package_name = os.path.basename(redirection_base_dir)
@@ -123,7 +123,7 @@ class ManDirectoryParser(object):
             sd = cp['section-dir'] = section_directory  # Section Directory
             package = cp['package'] = package_name  # Package
             rd = cp['red-dir'] = redirection_base_dir  # Redirection base dir
-            fp = cp['full-path'] = item  # Full Path
+            cp['full-path'] = full_path  # Full Path
 
             cp['name'], cp['section'] = basename.rsplit('.', 1)
             cp['page-url'] = self.get_section_url(
@@ -133,8 +133,8 @@ class ManDirectoryParser(object):
             try:
                 while (first_pass or mp.redirect):
                     if first_pass:
-                        logging.debug("Processing man page %s ..." % (fp, ))
-                        mp = cp['instance'] = ManPage(fp, package=package)
+                        logging.debug("Processing man page %s ..." % (full_path, ))
+                        mp = cp['instance'] = ManPage(full_path, package=package)
                         first_pass = False
                     else:
                         red_section, red_page = mp.redirect
@@ -145,9 +145,9 @@ class ManDirectoryParser(object):
 
                         logging.debug(
                             " * Page %s has a redirection to %s. Processing..."
-                            % (fp, red))
+                            % (full_path, red))
                         mp = cp['instance'] = ManPage(red,
-                                                      redirected_from=fp,
+                                                      redirected_from=full_path,
                                                       package=package)
 
                     try:
@@ -161,13 +161,13 @@ class ManDirectoryParser(object):
             except MissingParser as e:
                 macro = str(e).split(" ", 2)[1]
                 logging.warning(" * Missing Parser (%s): %s" % (macro,
-                                                                fp, ))
+                                                                full_path, ))
                 self.missing_parsers[macro] += 1
                 cp['errors'] = True
                 cp['missing-parser'] = True
                 continue
             except NotSupportedFormat:
-                logging.warning(" * Not supported format: %s" % (fp, ))
+                logging.warning(" * Not supported format: %s" % (full_path, ))
                 cp['errors'] = True
                 continue
             except IOError:
@@ -176,7 +176,7 @@ class ManDirectoryParser(object):
                     self.missing_links[red_page] += 1
                 continue
             except:
-                logging.error(" * Unknown error: %s" % (fp, ))
+                logging.error(" * Unknown error: %s" % (full_path, ))
                 cp['errors'] = True
                 raise
 
