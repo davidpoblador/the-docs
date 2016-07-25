@@ -273,6 +273,8 @@ class TitleMacroParser(MacroParser):
                 except:
                     raise NotSupportedFormat
 
+        self.manpage.subtitle = self.manpage.subtitle.capitalize()
+
 
 class HeaderMacroParser(MacroParser):
     def __bool__(self):

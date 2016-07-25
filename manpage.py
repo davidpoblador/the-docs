@@ -165,6 +165,9 @@ class ManPage(object):
         else:
             self.manpage_name = os.path.basename(filename)
 
+        self.name, self.section = self.manpage_name.rsplit('.', 1)  # Fixme
+        self.section_description = self.SECTIONS["man" + self.section]
+
         self.package = package
 
         self.filename = filename
@@ -469,33 +472,38 @@ class ManPage(object):
         else:
             return text
 
-    def html(self, pages_to_link=set()):
+    def get_section_contents(self, pages_to_link):
+        see_also_section = None
+
         section_tpl = load_template('section')
         contents = []
-
         for title, content in self.sections:
+            if not see_also_section and title == 'SEE ALSO':
+                see_also_section = content
+                continue
+
             self.section_counters.add(title)
             contents.append(section_tpl.substitute(title=title,
                                                    content=''.join(content), ))
 
+        if see_also_section:
+            contents.append(section_tpl.substitute(
+                title="RELATED TO %s&hellip;" % self.name,
+                content=''.join(see_also_section)))
+
         section_contents = self.linkify(''.join(contents), pages_to_link)
         self.unique_hash = hashlib.md5(section_contents).hexdigest()
 
-        pager_contents = get_pagination(self.previous_page, self.next_page)
+        return section_contents
 
-        if pager_contents:
-            section_contents += pager_contents
-
-        title, section = self.manpage_name.rsplit('.', 1)
-        subtitle = self.subtitle.capitalize()
-        descriptive_title = "%s: %s" % (title,
-                                        subtitle, )
-
+    def get_breadcrumbs(self):
         breadcrumb_sections = [
             ("/man-pages/", "Man Pages"),
-            ("/man-pages/man%s/" % section, self.SECTIONS["man" + section]),
-            ("/man-pages/man%s/%s.html" %
-             (section, self.manpage_name), descriptive_title),
+            ("/man-pages/man%s/" % self.section, self.section_description),
+            ("/man-pages/man%s/%s.%s.html" % (self.section,
+                                              self.name,
+                                              self.section, ),
+             self.descriptive_title),
         ]
 
         breadcrumbs = [get_breadcrumb(breadcrumb_sections)]
@@ -504,19 +512,33 @@ class ManPage(object):
             breadcrumb_packages = [
                 ("/packages/", "Packages"),
                 ("/packages/%s/" % self.package, self.package),
-                ("/man-pages/man%s/%s.html" % (section, self.manpage_name),
-                 descriptive_title),
+                ("/man-pages/man%s/%s.html" %
+                 (self.section, self.manpage_name), self.descriptive_title),
             ]
 
             breadcrumbs.append(get_breadcrumb(breadcrumb_packages))
 
+        return '\n'.join(breadcrumbs)
+
+    def html(self, pages_to_link=set()):
+        section_contents = self.get_section_contents(pages_to_link)
+
+        pager_contents = get_pagination(self.previous_page, self.next_page)
+        if pager_contents:
+            section_contents = "\n".join([section_contents, pager_contents])
+
+        self.descriptive_title = "%s: %s" % (self.name,
+                                        self.subtitle, )
+
+        header = load_template('header').substitute(section=self.section,
+                                                    title=self.name,
+                                                    subtitle=self.subtitle, )
+
         return load_template('base').substitute(
-            breadcrumb='\n'.join(breadcrumbs),
-            title=descriptive_title,
-            metadescription=subtitle,
-            header=load_template('header').substitute(section=section,
-                                                      title=title,
-                                                      subtitle=subtitle, ),
+            breadcrumb=self.get_breadcrumbs(),
+            title=self.descriptive_title,
+            metadescription=self.subtitle,
+            header=header,
             content=section_contents, )
 
 
