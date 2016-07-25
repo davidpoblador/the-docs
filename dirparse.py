@@ -145,7 +145,7 @@ class ManDirectoryParser(object):
 
                     try:
                         mp.parse()
-                        subtitle = cp['subtitle'] = mp.subtitle
+                        cp['subtitle'] = mp.subtitle
                     except NotSupportedFormat:
                         raise NotSupportedFormat
                     except RedirectedPage:
