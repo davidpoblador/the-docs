@@ -134,9 +134,7 @@ class ManDirectoryParser(object):
                 while (first_pass or mp.redirect):
                     if first_pass:
                         logging.debug("Processing man page %s ..." % (fp, ))
-                        mp = cp['instance'] = ManPage(
-                            fp, base_url=base_manpage_url,
-                            package=package)
+                        mp = cp['instance'] = ManPage(fp, package=package)
                         first_pass = False
                     else:
                         red_section, red_page = mp.redirect
@@ -148,11 +146,9 @@ class ManDirectoryParser(object):
                         logging.debug(
                             " * Page %s has a redirection to %s. Processing..."
                             % (fp, red))
-                        mp = cp['instance'] = ManPage(
-                            red,
-                            base_url=base_manpage_url,
-                            redirected_from=fp,
-                            package=package)
+                        mp = cp['instance'] = ManPage(red,
+                                                      redirected_from=fp,
+                                                      package=package)
 
                     try:
                         mp.parse()

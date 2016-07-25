@@ -528,7 +528,7 @@ class ManPage(object):
             section_contents = "\n".join([section_contents, pager_contents])
 
         self.descriptive_title = "%s: %s" % (self.name,
-                                        self.subtitle, )
+                                             self.subtitle, )
 
         header = load_template('header').substitute(section=self.section,
                                                     title=self.name,
