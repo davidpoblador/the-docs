@@ -111,44 +111,42 @@ class ManDirectoryParser(object):
         p = self.pages
         for full_path in list(glob.iglob("%s/*/man?/*.?" % self.source_dir)):
             #print "DEBUG", item
-            page_directory, basename = os.path.split(full_path)
-            redirection_base_dir, section_directory = os.path.split(
-                page_directory)
-            package_name = os.path.basename(redirection_base_dir)
+            tmp_dir, basename = os.path.split(full_path)
 
             if basename in broken_files:
                 continue
 
             cp = p[basename] = dict()  # Current page
-            sd = cp['section-dir'] = section_directory  # Section Directory
-            package = cp['package'] = package_name  # Package
-            rd = cp['red-dir'] = redirection_base_dir  # Redirection base dir
-            cp['full-path'] = full_path  # Full Path
 
-            cp['name'], cp['section'] = basename.rsplit('.', 1)
-            cp['page-url'] = self.get_section_url(
-                sd) + basename + ".html"  # DEBUG
+            redirection_base_dir, cp['section-dir'] = os.path.split(tmp_dir)
 
             first_pass = True
             try:
                 while (first_pass or mp.redirect):
                     if first_pass:
-                        logging.debug("Processing man page %s ..." % (full_path, ))
-                        mp = cp['instance'] = ManPage(full_path, package=package)
+                        logging.debug("Processing man page %s ..." %
+                                      (full_path, ))
+                        mp = cp['instance'] = ManPage(full_path)
                         first_pass = False
                     else:
                         red_section, red_page = mp.redirect
                         if not red_section:
-                            red_section = sd
+                            red_section = cp['section-dir']
 
-                        red = os.path.join(rd, red_section, red_page)
+                        red = os.path.join(redirection_base_dir, red_section,
+                                           red_page)
 
                         logging.debug(
                             " * Page %s has a redirection to %s. Processing..."
                             % (full_path, red))
-                        mp = cp['instance'] = ManPage(red,
-                                                      redirected_from=full_path,
-                                                      package=package)
+                        mp = cp['instance'] = ManPage(
+                            red,
+                            redirected_from=full_path, )
+
+                    cp['package'] = mp.package
+                    cp['full-path'] = mp.full_path
+                    cp['name'] = mp.name
+                    cp['section'] = mp.section
 
                     try:
                         mp.parse()
@@ -409,7 +407,7 @@ class ManDirectoryParser(object):
             section_item_tpl = load_template('section-index-item')
             sm_item_tpl = load_template('sitemap-url')
 
-            section_items, sitemap_items = ("", "")
+            section_items = sitemap_items = ""
             for page in sorted(page_files):
                 d = pages[page]
                 lastmod = d['last-modified']
@@ -429,7 +427,9 @@ class ManDirectoryParser(object):
                         description=d['subtitle'],
                         package=d['package'], )
 
-                sitemap_items += sm_item_tpl.substitute(url=d['page-url'],
+                page_url = cls.get_section_url("man%s" % (d['section'],
+                                                          )) + page + ".html"
+                sitemap_items += sm_item_tpl.substitute(url=page_url,
                                                         lastmod=lastmod)
 
                 if not last_update:

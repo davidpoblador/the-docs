@@ -125,9 +125,28 @@ class ManPage(object):
 
     def __init__(self,
                  filename,
-                 redirected_from=False,
-                 base_url="",
-                 package=None):
+                 redirected_from=False, ):
+
+        self.full_path = filename
+
+        try:
+            self.package = os.path.basename(os.path.dirname(os.path.dirname(
+                self.full_path)))
+        except:
+            self.package = None
+
+        if redirected_from:
+            self.name, section = os.path.splitext(os.path.basename(
+                redirected_from))
+        else:
+            self.name, section = os.path.splitext(os.path.basename(
+                self.full_path))
+
+        self.section = section[1:]
+        self.section_description = self.SECTIONS["man" + self.section]
+
+        with open(filename) as fp:
+            self.lines = Lines([line.rstrip() for line in fp])
 
         # PORTED
         self.in_pre = False
@@ -153,26 +172,11 @@ class ManPage(object):
 
         self.next_page = None
         self.previous_page = None
-        self.base_url = base_url
 
         self.broken_links = set()
         self.section_counters = set()
 
         self.unique_hash = ""
-
-        if redirected_from:
-            self.manpage_name = os.path.basename(redirected_from)
-        else:
-            self.manpage_name = os.path.basename(filename)
-
-        self.name, self.section = self.manpage_name.rsplit('.', 1)  # Fixme
-        self.section_description = self.SECTIONS["man" + self.section]
-
-        self.package = package
-
-        self.filename = filename
-        with open(self.filename) as fp:
-            self.lines = Lines([line.rstrip() for line in fp])
 
         self.set_state(ManPageStates.HEADER)
 
@@ -512,8 +516,9 @@ class ManPage(object):
             breadcrumb_packages = [
                 ("/packages/", "Packages"),
                 ("/packages/%s/" % self.package, self.package),
-                ("/man-pages/man%s/%s.html" %
-                 (self.section, self.manpage_name), self.descriptive_title),
+                ("/man-pages/man%s/%s.%s.html" %
+                 (self.section, self.name, self.section),
+                 self.descriptive_title),
             ]
 
             breadcrumbs.append(get_breadcrumb(breadcrumb_packages))
@@ -580,7 +585,7 @@ if __name__ == '__main__':
     try:
         manpage.parse()
     except RedirectedPage:
-        print "Page %s contains a redirection to %s" % (manpage.filename,
+        print "Page %s contains a redirection to %s" % (manpage.full_path,
                                                         manpage.redirect[1])
     else:
         print(manpage.html())

@@ -312,7 +312,7 @@ class HeaderMacroParser(MacroParser):
 
         raise RedirectedPage(
             "Page %s redirects to %s" %
-            (self.manpage.filename, "/".join(self.manpage.redirect)))
+            (self.manpage.full_path, "/".join(self.manpage.redirect)))
 
     def process(self):
         if self.macro in self.valid_macros:
