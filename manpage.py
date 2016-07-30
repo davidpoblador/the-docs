@@ -25,15 +25,17 @@ LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
 
 
 class ManPageLine(LineItems):
+
     def line(self):
         return ".%s %s" % (self.macro,
-                           self.data, )
+                           self.data,)
 
     def contains(self, piece):
         return (piece in self.line())
 
 
 class Lines(object):
+
     def __init__(self, iterator):
         self._current = 0
         self._data = []
@@ -238,7 +240,7 @@ class ManPage(object):
             if '/' not in self._redirect:
                 # Relative
                 return "%s/%s" % (self.full_section,
-                                  self._redirect, )
+                                  self._redirect,)
             else:
                 return self._redirect
         except:
@@ -254,7 +256,7 @@ class ManPage(object):
 
     def save_state(self):
         self.state.append((self.in_dl,
-                           self.in_li, ))
+                           self.in_li,))
         self.depth += 1
 
         self.in_dl = False
@@ -288,14 +290,14 @@ class ManPage(object):
     def add_url(self, data):
         if re.match("[^@]+@[^@]+\.[^@]+", data):
             self.add_content("<a href=\"mailto:%s\">%s</a>" % (data,
-                                                               data, ))
+                                                               data,))
         else:
             self.add_content("<a href=\"%s\">%s</a>" % (data,
-                                                        data, ))
+                                                        data,))
 
     def add_mailto(self, data):
         self.add_content("<a href=\"mailto:%s\">%s</a>" % (data,
-                                                           data, ))
+                                                           data,))
 
     def add_content(self, data):
         if not self.sections:
@@ -462,19 +464,20 @@ class ManPage(object):
         self.current_buffer = []
 
     def linkify(self, text, pages_to_link=set()):
+
         def repl(m):
             manpage = m.groupdict()['page']
             section = m.groupdict()['section']
             page = '.'.join([manpage, section])
 
             out = "<strong>%s</strong>(%s)" % (manpage,
-                                               section, )
+                                               section,)
 
             if page in pages_to_link:
                 out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
                                                                   manpage,
                                                                   section,
-                                                                  out, )
+                                                                  out,)
             else:
                 self.broken_links.add(page)
 
@@ -494,7 +497,7 @@ class ManPage(object):
         for title, content in self.sections:
             self.section_counters.add(title)
             contents.append(section_tpl.substitute(title=title,
-                                                   content=''.join(content), ))
+                                                   content=''.join(content),))
 
         return self.linkify(''.join(contents), pages_to_link)
 
@@ -510,18 +513,18 @@ class ManPage(object):
             title=self.descriptive_title,
             metadescription=self.subtitle,
             header=self.page_header,
-            content=section_contents + self.pager_contents, )
+            content=section_contents + self.pager_contents,)
 
 
 def stylize(style, text):
     style_trans = {'I': 'em',
-                   'B': 'strong', }
+                   'B': 'strong',}
     if style == 'R':
         return text
     else:
         return "<%s>%s</%s>" % (style_trans[style],
                                 text,
-                                style_trans[style], )
+                                style_trans[style],)
 
 
 def stylize_odd_even(style, args):

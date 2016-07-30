@@ -2,7 +2,7 @@ from string import Template
 
 
 def load_template(template):
-    fp = open("templates/%s.tpl" % (template, ))
+    fp = open("templates/%s.tpl" % (template,))
     out = Template(''.join(fp.readlines()))
     fp.close()
     return out

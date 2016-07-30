@@ -8,6 +8,7 @@ current_module = sys.modules[__name__]
 
 
 class Section(object):
+
     def __init__(self, name):
         self.name = name
         self.contents = []
@@ -71,12 +72,12 @@ class Parser(object):
         self.mp = manpage
         self.c = self.initial_c = counter
         self.c_delta = None
-        logging.info("Instantiating %s" % (self.__class__.__name__, ))
+        logging.info("Instantiating %s" % (self.__class__.__name__,))
         self.contents = []
 
     def parse(self):
         if type(self) == Parser:
-            logging.info("Starting parsing of %s" % (self.mp.filename, ))
+            logging.info("Starting parsing of %s" % (self.mp.filename,))
 
         while self.c_delta is None:
             # Increment line
@@ -87,8 +88,8 @@ class Parser(object):
 
             l = self.lines[self.c]
 
-            logging.debug("LINE [%s] (%s): %s", self.__class__.__name__,
-                          self.c, l)
+            logging.debug("LINE [%s] (%s): %s", self.__class__.__name__, self.c,
+                          l)
 
             # Remove comments
             l = l.split("\\\"", 1)[0]
@@ -122,7 +123,7 @@ class Parser(object):
             #logging.info("Request macro: %s data: %s", macro, args)
 
         if self.c_delta is not None:
-            logging.info("Ending parsing in %s" % (self.__class__.__name__, ))
+            logging.info("Ending parsing in %s" % (self.__class__.__name__,))
             c = (self.c - self.initial_c) + self.c_delta  # Return new c delta
             return (c, self.contents)
         else:  # Probably this can happen in the SectionParser
@@ -198,6 +199,7 @@ class SectionParser(Parser):
 
 
 class SubSectionParser(SectionParser):
+
     def __init__(self, *args, **kwargs):
         super(SectionParser, self).__init__(
             **kwargs)  # Calling parent of SectionParser
@@ -210,6 +212,7 @@ class SubSectionParser(SectionParser):
 
 
 class TPSectionParser(SectionParser):
+
     def __init__(self, *args, **kwargs):
         super(SectionParser, self).__init__(
             **kwargs)  # Calling parent of SectionParser
@@ -228,6 +231,7 @@ class TPSectionParser(SectionParser):
 
 
 class RSSectionParser(SectionParser):
+
     def __init__(self, *args, **kwargs):
         super(SectionParser, self).__init__(
             **kwargs)  # Calling parent of SectionParser
@@ -243,6 +247,7 @@ class MissingParser(Exception):
 
 # FIXME: Make it fast
 def toargs(data):
+
     def tokenize():
         lexer = shlex.shlex(data, posix=True)
         lexer.commenters = ''

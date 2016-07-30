@@ -105,7 +105,7 @@ class Parser(object):
             else:
                 # Only data
                 add_to_buffer = data
-                args = (data, )
+                args = (data,)
                 self.cl = (i, macro, args, add_to_buffer)
 
             if add_to_buffer:
@@ -229,6 +229,7 @@ class MissingParser(Exception):
 
 
 class Section(object):
+
     def __init__(self, name):
         self.name = name
         self.content = []
@@ -238,16 +239,18 @@ class Section(object):
 
     def __repr__(self):
         return "SECTION: %s: %s" % (self.name,
-                                    self.content, )
+                                    self.content,)
 
 
 class Subsection(Section):
+
     def __repr__(self):
         return "SUBSECTION: %s: %s" % (self.name,
-                                       self.content, )
+                                       self.content,)
 
 
 class DefinitionList(object):
+
     def __init__(self):
         self.content = []
 
@@ -265,6 +268,7 @@ class DefinitionList(object):
 
 
 class RSSection(object):
+
     def __init__(self):
         self.content = []
 
@@ -274,6 +278,7 @@ class RSSection(object):
 
 # FIXME: Make it fast
 def toargs(data):
+
     def tokenize():
         lexer = shlex.shlex(data, posix=True)
         lexer.commenters = ''
