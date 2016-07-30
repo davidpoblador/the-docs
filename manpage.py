@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
+import pickle
 import hashlib
 import logging
 
@@ -120,35 +122,38 @@ class ManPage(object):
         'man6': "Games",
         'man7': "Miscellaneous",
         'man8': "System administration commands",
-        'man0': "ERROR. Section 0",
     }
 
-    def __init__(self,
-                 filename,
-                 redirected_from=False, ):
-
-        self.full_path = filename
-
+    @property
+    def package(self):
         try:
-            self.package = os.path.basename(os.path.dirname(os.path.dirname(
+            return os.path.basename(os.path.dirname(os.path.dirname(
                 self.full_path)))
         except:
-            self.package = None
+            return None
 
-        if redirected_from:
-            self.name, section = os.path.splitext(os.path.basename(
-                redirected_from))
-        else:
-            self.name, section = os.path.splitext(os.path.basename(
-                self.full_path))
+    @property
+    def basename(self):
+        return os.path.basename(self.full_path)
 
+    @property
+    def full_section(self):
+        return "man%s" % self.section
+
+    def __init__(self, filename):
+        self.full_path = filename
+        self.name, section = os.path.splitext(self.basename)
         self.section = section[1:]
-        self.section_description = self.SECTIONS["man" + self.section]
+        self.section_description = self.SECTIONS[self.full_section]
 
+        self.load_lines(filename)
+        self.initialize_state()
+
+    def load_lines(self, filename):
         with open(filename) as fp:
             self.lines = Lines([line.rstrip() for line in fp])
 
-        # PORTED
+    def initialize_state(self):
         self.in_pre = False
         self.in_dl = False
         self.in_li = False
@@ -176,24 +181,30 @@ class ManPage(object):
         self.broken_links = set()
         self.section_counters = set()
 
-        self.unique_hash = ""
-
         self.set_state(ManPageStates.HEADER)
 
     def parse(self):
-        while True:
-            try:
-                line = self.lines.get()
-                #print "DEBUG", (line.macro, line.data, line.comment, self.parsing_state)
-            except IndexError:
-                break
+        try:
+            while True:
+                try:
+                    line = self.lines.get()
+                    #print "DEBUG", (line.macro, line.data, line.comment, self.parsing_state)
+                except IndexError:
+                    break
 
-            if self.spaced_lines_buffer:
-                self.process_spaced_lines(line.data)
+                if self.spaced_lines_buffer:
+                    self.process_spaced_lines(line.data)
 
-            self.state_parser()(line, self).process()
-
-        self.flush_current_section()
+                self.state_parser()(line, self).process()
+        except RedirectedPage:
+            self.load_lines(os.path.join(
+                os.path.dirname(os.path.dirname(self.full_path)),
+                self.redirect))
+            self.initialize_state()
+            del (self._redirect)
+            self.parse()
+        else:
+            self.flush_current_section()
 
     def state_parser(self):
         return ManPageStates.parser[self.parsing_state]
@@ -224,9 +235,15 @@ class ManPage(object):
     @property
     def redirect(self):
         try:
-            return self._redirect
+            if '/' not in self._redirect:
+                # Relative
+                return "%s/%s" % (self.full_section,
+                                  self._redirect, )
+            else:
+                return self._redirect
         except:
-            return False
+            # Impossible redirect
+            raise
 
     def add_spacer(self):
         if self.in_pre:
@@ -417,14 +434,6 @@ class ManPage(object):
         elif style in self.compound_styles:
             return stylize_odd_even(style, toargs(data))
 
-    def set_header(self, data):
-        headers = toargs(data)
-
-        self.header = {
-            "title": headers[0],
-            "section": headers[1],
-        }
-
     def add_section(self, data):
         data = ' '.join(toargs(data))
         self.flush_containers()
@@ -476,75 +485,32 @@ class ManPage(object):
         else:
             return text
 
-    def get_section_contents(self, pages_to_link):
-        see_also_section = None
+    def get_sections(self):
+        return [(title, ''.join(content)) for title, content in self.sections]
 
+    def get_section_contents(self, pages_to_link):
         section_tpl = load_template('section')
         contents = []
         for title, content in self.sections:
-            if not see_also_section and title == 'SEE ALSO':
-                see_also_section = content
-                continue
-
             self.section_counters.add(title)
             contents.append(section_tpl.substitute(title=title,
                                                    content=''.join(content), ))
 
-        if see_also_section:
-            contents.append(section_tpl.substitute(
-                title="RELATED TO %s&hellip;" % self.name,
-                content=''.join(see_also_section)))
+        return self.linkify(''.join(contents), pages_to_link)
 
-        section_contents = self.linkify(''.join(contents), pages_to_link)
-        self.unique_hash = hashlib.md5(section_contents).hexdigest()
-
-        return section_contents
-
-    def get_breadcrumbs(self):
-        breadcrumb_sections = [
-            ("/man-pages/", "Man Pages"),
-            ("/man-pages/man%s/" % self.section, self.section_description),
-            ("/man-pages/man%s/%s.%s.html" % (self.section,
-                                              self.name,
-                                              self.section, ),
-             self.descriptive_title),
-        ]
-
-        breadcrumbs = [get_breadcrumb(breadcrumb_sections)]
-
-        if self.package:
-            breadcrumb_packages = [
-                ("/packages/", "Packages"),
-                ("/packages/%s/" % self.package, self.package),
-                ("/man-pages/man%s/%s.%s.html" %
-                 (self.section, self.name, self.section),
-                 self.descriptive_title),
-            ]
-
-            breadcrumbs.append(get_breadcrumb(breadcrumb_packages))
-
-        return '\n'.join(breadcrumbs)
+    @property
+    def unique_hash(self):
+        return hashlib.md5(pickle.dumps(self.sections)).hexdigest()
 
     def html(self, pages_to_link=set()):
         section_contents = self.get_section_contents(pages_to_link)
 
-        pager_contents = get_pagination(self.previous_page, self.next_page)
-        if pager_contents:
-            section_contents = "\n".join([section_contents, pager_contents])
-
-        self.descriptive_title = "%s: %s" % (self.name,
-                                             self.subtitle, )
-
-        header = load_template('header').substitute(section=self.section,
-                                                    title=self.name,
-                                                    subtitle=self.subtitle, )
-
         return load_template('base').substitute(
-            breadcrumb=self.get_breadcrumbs(),
+            breadcrumb=self.breadcrumbs,
             title=self.descriptive_title,
             metadescription=self.subtitle,
-            header=header,
-            content=section_contents, )
+            header=self.page_header,
+            content=section_contents + self.pager_contents, )
 
 
 def stylize(style, text):

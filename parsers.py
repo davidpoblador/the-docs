@@ -288,15 +288,16 @@ class HeaderMacroParser(MacroParser):
     valid_macros = ("TH", "so", "Dd")
 
     def p_TH(self):
-        try:
-            headers = toargs(self.data)
+        # FIXME: Decide what we want to do with manpage.header
+        #try:
+        #    headers = toargs(self.data)
 
-            self.manpage.header = {
-                "title": headers[0],
-                "section": headers[1],
-            }
-        except:
-            raise NotSupportedFormat
+        #    self.manpage.header = {
+        #        "title": headers[0],
+        #        "section": headers[1],
+        #    }
+        #except:
+        #    raise NotSupportedFormat
 
         self.state(ManPageStates.TITLE)
 
@@ -307,12 +308,10 @@ class HeaderMacroParser(MacroParser):
         else:
             base_dir, page = chunks
 
-        self.manpage._redirect = (base_dir,
-                                  page, )
+        self.manpage._redirect = self.data
 
-        raise RedirectedPage(
-            "Page %s redirects to %s" %
-            (self.manpage.full_path, "/".join(self.manpage.redirect)))
+        raise RedirectedPage("Page %s redirects to %s" %
+                             (self.manpage.full_path, self.data))
 
     def process(self):
         if self.macro in self.valid_macros:

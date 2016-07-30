@@ -1,33 +1,27 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
 import glob
+import shutil
 import marshal
 import logging
+import sqlite3
 import datetime
 
+from cached_property import cached_property
 from collections import defaultdict, Counter
 
-from manpage import ManPage
+from manpage import ManPage, linkifier
 
 from base import load_template, get_pagination, get_breadcrumb
 from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
 
-package_directory = os.path.dirname(os.path.abspath(__file__))
+pjoin = os.path.join
+dname = os.path.dirname
+bname = os.path.basename
 
-root_html = os.path.join(package_directory, "public_html")
-base_manpage_src = "man-pages"
-base_packages_src = "packages"
-base_url = "https://www.carta.tech/"
-
-base_manpage_dir = os.path.join(root_html, base_manpage_src)
-base_packages_dir = os.path.join(root_html, base_packages_src)
-
-base_manpage_url = base_url + base_manpage_src
-base_packages_url = base_url + base_packages_src
-
-# To skip
-broken_files = set()
+package_directory = dname(os.path.abspath(__file__))
 
 # FIXME: Horrible hack
 SECTIONS = {
@@ -39,8 +33,153 @@ SECTIONS = {
     'man6': "Games",
     'man7': "Miscellaneous",
     'man8': "System administration commands",
-    'man0': "ERROR. Section 0",
 }
+
+
+class ManPageHTML(object):
+    """docstring for Manpage"""
+
+    def __init__(self, database_connection, available_pages, subtitles,
+                 package, name, section, prev_page, next_page):
+        self.conn = database_connection
+        self.available_pages = available_pages
+        self.subtitles = subtitles
+        self.name = name
+        self.section = section
+        self.package = package
+        self.prev_page = prev_page
+        self.next_page = next_page
+
+    @property
+    def page_id(self):
+        return (self.package, self.name, self.section)
+
+    @cached_property
+    def subtitle(self):
+        return self.subtitles[(self.package, self.name, self.section)]
+
+    @cached_property
+    def sections(self):
+        query = """SELECT title,
+                          content
+                   FROM manpage_sections
+                   WHERE package = ?
+                     AND name = ?
+                     AND section = ?
+                   ORDER BY position ASC"""
+
+        return [(title, content)
+                for title, content in self.conn.execute(query, self.page_id)]
+
+    @cached_property
+    def section_contents(self):
+        section_tpl = load_template('section')
+
+        see_also = None
+
+        contents = []
+        for title, content in self.sections:
+            if title == "SEE ALSO":
+                new_title = "RELATED TO %s&hellip;" % self.name
+                see_also = section_tpl.substitute(title=new_title,
+                                                  content=content)
+            else:
+                contents.append(section_tpl.substitute(title=title,
+                                                       content=content))
+
+        else:
+            if see_also:
+                contents.append(see_also + '\n')
+
+        return ''.join(contents)
+
+    @cached_property
+    def linkified_contents(self):
+        def repl(m):
+            manpage = m.groupdict()['page']
+            section = m.groupdict()['section']
+            page = '.'.join([manpage, section])
+
+            out = "<strong>%s</strong>(%s)" % (manpage,
+                                               section, )
+
+            if page in self.available_pages:
+                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
+                                                                  manpage,
+                                                                  section,
+                                                                  out, )
+            else:
+                # FIXME: Figure out what to do with missing links
+                # self.broken_links.add(page)
+                pass
+
+            return out
+
+        if self.available_pages:
+            return linkifier.sub(repl, self.section_contents)
+        else:
+            return self.section_contents
+
+    @property
+    def breadcrumbs(self):
+        breadcrumb_sections = [
+            ("/man-pages/", "Man Pages"),
+            ("/man-pages/man%s/" % self.section, self.section_description),
+            ("/man-pages/man%s/%s.%s.html" % (self.section,
+                                              self.name,
+                                              self.section, ),
+             self.descriptive_title),
+        ]
+
+        breadcrumbs = [get_breadcrumb(breadcrumb_sections)]
+
+        if self.package:
+            breadcrumb_packages = [
+                ("/packages/", "Packages"),
+                ("/packages/%s/" % self.package, self.package),
+                ("/man-pages/man%s/%s.%s.html" %
+                 (self.section, self.name, self.section),
+                 self.descriptive_title),
+            ]
+
+            breadcrumbs.append(get_breadcrumb(breadcrumb_packages))
+
+        return '\n'.join(breadcrumbs)
+
+    @cached_property
+    def descriptive_title(self):
+        return "%s: %s" % (self.name,
+                           self.subtitle, )
+
+    @property
+    def page_header(self):
+        return load_template('header').substitute(section=self.section,
+                                                  title=self.name,
+                                                  subtitle=self.subtitle, )
+
+    @cached_property
+    def full_section(self):
+        return "man%s" % self.section
+
+    @cached_property
+    def section_description(self):
+        return SECTIONS[self.full_section]
+
+    @cached_property
+    def pager_contents(self):
+        pager = get_pagination(self.prev_page, self.next_page)
+        if not pager:
+            return ""
+        else:
+            return pager
+
+    def get(self):
+        return load_template('base').substitute(
+            breadcrumb=self.breadcrumbs,
+            title=self.descriptive_title,
+            metadescription=self.subtitle,
+            header=self.page_header,
+            content=self.linkified_contents + self.pager_contents, )
 
 
 class ManDirectoryParser(object):
@@ -48,35 +187,18 @@ class ManDirectoryParser(object):
 
     now = datetime.datetime.today().strftime('%Y-%m-%d')
 
-    def __init__(self, source_dir):
-        self.pages = dict()
+    def __init__(self, database):
+        self.conn = sqlite3.connect(
+            pjoin(package_directory, database),
+            isolation_level=None)
+        self.conn.text_factory = str
+        self.cursor = self.conn.cursor()
 
-        self.source_dir = source_dir
+        self.pages = dict()
 
         self.missing_parsers = Counter()
         self.missing_links = Counter()
         self.section_counters = Counter()
-
-    def get_dir_pages(self):
-        mandirpages = defaultdict(set)
-        for page, v in self.pages.iteritems():
-            if 'errors' not in v and 'missing-parser' not in v:
-                mandirpages[v['section-dir']].add(page)
-
-        return mandirpages
-
-    def get_package_pages(self):
-        packagepages = defaultdict(set)
-        for page, v in self.pages.iteritems():
-            if 'errors' not in v and 'missing-parser' not in v:
-                packagepages[v['package']].add(page)
-
-        return packagepages
-
-    def get_pages(self):
-        for page, v in self.pages.iteritems():
-            if 'errors' not in v and 'missing-parser' not in v:
-                yield v['instance'], v['final-page'], v
 
     def get_pages_without_errors(self):
         manpages = set()
@@ -99,230 +221,288 @@ class ManDirectoryParser(object):
 
         return pages_with_missing_parsers
 
-    def parse_directory(self):
-        self.clean_directory()
+    def parse_directory(self, source_dir):
+        self.conn.execute("DELETE FROM manpages")
+        self.conn.execute("DELETE FROM manpage_sections")
 
-        # Parse pages
-        p = self.pages
-        for full_path in list(glob.iglob("%s/*/man?/*.?" % self.source_dir)):
-            #print "DEBUG", item
-            tmp_dir, basename = os.path.split(full_path)
-
-            if basename in broken_files:
-                continue
-
-            cp = p[basename] = dict()  # Current page
-
-            redirection_base_dir, cp['section-dir'] = os.path.split(tmp_dir)
-
-            first_pass = True
+        for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
+            logging.debug("Processing man page %s ..." % page_file)
+            manpage = ManPage(page_file)
             try:
-                while (first_pass or mp.redirect):
-                    if first_pass:
-                        logging.debug("Processing man page %s ..." %
-                                      (full_path, ))
-                        mp = cp['instance'] = ManPage(full_path)
-                        first_pass = False
-                    else:
-                        red_section, red_page = mp.redirect
-                        if not red_section:
-                            red_section = cp['section-dir']
-
-                        red = os.path.join(redirection_base_dir, red_section,
-                                           red_page)
-
-                        logging.debug(
-                            " * Page %s has a redirection to %s. Processing..."
-                            % (full_path, red))
-                        mp = cp['instance'] = ManPage(
-                            red,
-                            redirected_from=full_path, )
-
-                    cp['package'] = mp.package
-                    cp['full-path'] = mp.full_path
-                    cp['name'] = mp.name
-                    cp['section'] = mp.section
-
-                    try:
-                        mp.parse()
-                        cp['subtitle'] = mp.subtitle
-                    except NotSupportedFormat:
-                        raise NotSupportedFormat
-                    except RedirectedPage:
-                        continue
-
+                manpage.parse()
             except MissingParser as e:
                 macro = str(e).split(" ", 2)[1]
                 logging.warning(" * Missing Parser (%s): %s" % (macro,
-                                                                full_path, ))
+                                                                page_file, ))
                 self.missing_parsers[macro] += 1
-                cp['errors'] = True
-                cp['missing-parser'] = True
                 continue
             except NotSupportedFormat:
-                logging.warning(" * Not supported format: %s" % (full_path, ))
-                cp['errors'] = True
+                logging.warning(" * Not supported format: %s" % page_file)
                 continue
             except IOError:
-                cp['errors'] = True
-                if mp.redirect:
-                    self.missing_links[red_page] += 1
+                logging.warning(" * IOError: %s" % page_file)
                 continue
             except:
-                logging.error(" * Unknown error: %s" % (full_path, ))
-                cp['errors'] = True
                 raise
 
-        self.set_previous_next_links(self.get_dir_pages().iteritems(), p)
-        self.write_pages()
-        sm_urls = self.generate_sitemaps_and_indexes(
-            iterator=self.get_dir_pages().iteritems(),
-            pages=p)
+            self.conn.execute(
+                "INSERT INTO manpages (package, name, section, subtitle) VALUES (?, ?, ?, ?)",
+                (manpage.package, manpage.name, manpage.section,
+                 manpage.subtitle))
 
-        self.generate_package_indexes(source_dir=self.source_dir,
-                                      package_items=self.get_package_pages(),
-                                      pages=p)
+            for i, (title, contents) in enumerate(manpage.get_sections()):
+                self.conn.execute(
+                    "INSERT INTO manpage_sections (package, name, section, position, title, content) VALUES (?, ?, ?, ?, ?, ?)",
+                    (manpage.package, manpage.name, manpage.section, i, title,
+                     contents))
 
-        self.generate_sitemap_indexes(sm_urls=sm_urls)
-        self.generate_manpage_index()
-        self.generate_base_index()
+    def empty_output_directories(self):
+        shutil.rmtree(self.manpages_dir, ignore_errors=True)
+        shutil.rmtree(self.packages_dir, ignore_errors=True)
 
-        self.fix_missing_links()
+    def create_output_directories(self):
+        # Create man page directories
+        map(ManDirectoryParser.makedirs,
+            [pjoin(self.manpages_dir, directory) for directory in SECTIONS])
 
-    @classmethod
-    def clean_directory(cls):
-        import shutil
-        shutil.rmtree(base_manpage_dir, ignore_errors=True)
-        shutil.rmtree(base_packages_dir, ignore_errors=True)
+    @staticmethod
+    def makedirs(directory):
+        try:
+            os.makedirs(directory)
+        except OSError:
+            pass
 
-    @classmethod
-    def generate_manpage_index(cls):
-        # Generate man-pages index
-        base_tpl = load_template('base')
-        index_tpl = load_template('index-manpage')
+    def get_pagination_link(self, package, name, section, aliases=False):
+        basefile = "%s.%s.html" % (name, section)
+        if aliases:
+            basefile = "%s-%s" % (package, basefile)
 
-        index = base_tpl.safe_substitute(
-            # FIXME: Naming templates should be better
-            metadescription="Linux Man Pages",
-            title="Linux Man Pages",
-            canonical="",
-            header="",
-            breadcrumb="",
-            content=index_tpl.substitute(), )
+        link_text = "%s.%s: %s" % (name, section,
+                                   self.subtitles[(package, name, section)])
 
-        f = open(os.path.join(base_manpage_dir, "index.html"), 'w')
-        f.write(index)
+        return (basefile, link_text)
+
+    def create_manpages(self):
+        query = """SELECT name,
+                          section,
+                          count(package) as amount,
+                          group_concat(package) as packages
+                   FROM manpages
+                   GROUP by name, section
+                   ORDER by section ASC, name ASC"""
+
+        pages = []
+        current_section = None
+        for name, section, amount, packages in self.conn.execute(query):
+            first_page_in_section = (section != current_section)
+            if first_page_in_section:
+                current_section = section
+                prev_page = None
+
+            parent_dir = "man%s" % section
+
+            page_dict = {
+                "name": name,
+                "section": section,
+                "parent_dir": parent_dir,
+            }
+
+            if amount > 1:
+                # Aliases needed
+                packages = packages.split(',')
+                for package in packages:
+                    package_dict = page_dict.copy()
+                    package_dict['package'] = package
+                    package_dict['prefix'] = package
+
+                    current_page = self.get_pagination_link(package,
+                                                            name,
+                                                            section,
+                                                            aliases=True)
+
+                    if prev_page:
+                        package_dict['prev_page'] = prev_page
+                        pages[-1]['next_page'] = current_page
+
+                    prev_page = current_page
+
+                    pages.append(package_dict)
+
+                # FIXME Create aliases page
+                self.write_aliases_page(name, section, parent_dir, packages)
+
+            else:
+                page_dict['package'] = packages
+
+                current_page = self.get_pagination_link(packages, name,
+                                                        section)
+
+                if prev_page:
+                    page_dict['prev_page'] = prev_page
+                    pages[-1]['next_page'] = current_page
+
+                prev_page = current_page
+
+                pages.append(page_dict)
+
+        return map(lambda page: self.write_page(**page), pages)
+
+    def write_page(self,
+                   package,
+                   name,
+                   section,
+                   parent_dir,
+                   prefix=None,
+                   prev_page=None,
+                   next_page=None):
+        filename = "%s.%s.html" % (name, section)
+
+        if prefix:
+            filename = "%s-%s" % (prefix, filename)
+
+        full_path = pjoin(self.manpages_dir, parent_dir, filename)
+
+        mp = ManPageHTML(self.conn, self.available_pages, self.subtitles,
+                         package, name, section, prev_page, next_page)
+
+        logging.debug("Writing %s" % full_path)
+        f = open(full_path, 'w')
+        f.write(mp.get())
         f.close()
 
-    @classmethod
-    def generate_base_index(cls):
-        # Generate base index
-        base_tpl = load_template('base')
-        index_tpl = load_template('index-contents')
+        return ("man%s" % section, filename)
 
-        index = base_tpl.safe_substitute(
-            metadescription="Carta.tech: The home for open documentation",
-            title="Carta.tech: The home for open documentation",
-            canonical="",
-            header="",
-            breadcrumb="",
-            content=index_tpl.substitute(), )
+    def write_aliases_page(self, name, section, parent_dir, packages):
+        filename = "%s.%s.html" % (name, section)
+        full_path = pjoin(self.manpages_dir, parent_dir, filename)
 
-        f = open(os.path.join(root_html, "index.html"), 'w')
-        f.write(index)
+        f = open(full_path, 'w')
+        f.write(' ')
         f.close()
 
-    @classmethod
-    def generate_sitemap_indexes(cls, sm_urls):
-        # Generate sitemap indexes
+        return full_path
+
+    @cached_property
+    def available_pages(self):
+        query = "SELECT DISTINCT name, section FROM manpages"
+        return set(["%s.%s" % (name, section)
+                    for name, section in self.conn.execute(query)])
+
+    @cached_property
+    def subtitles(self):
+        query = "SELECT package, name, section, subtitle FROM manpages"
+        return {
+            (package, name, section): subtitle
+            for package, name, section, subtitle in self.conn.execute(query)
+        }
+
+    def generate_manpage_sitemaps(self, manpage_list):
+        pages_in_section = defaultdict(set)
+        for section, page in manpage_list:
+            pages_in_section[section].add(page)
+
+        sm_item_tpl = load_template('sitemap-url-nolastmod')
+
+        sitemap_urls = []
+        for section in SECTIONS:
+            urls = [sm_item_tpl.substitute(url="%s/%s/%s" %
+                                           (self.manpages_url, section, page))
+                    for page in pages_in_section[section]]
+            urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
+                self.manpages_url,
+                section, )))
+            sitemap = load_template('sitemap').substitute(
+                urlset="\n".join(urls))
+            rel_sitemap_path = pjoin(section, "sitemap.xml")
+
+            f = open(pjoin(self.manpages_dir, rel_sitemap_path), 'w')
+            f.write(sitemap)
+            f.close()
+
+            sitemap_urls.append("%s/%s" %
+                                (self.manpages_url, rel_sitemap_path))
+
+        return sitemap_urls
+
+    def generate_manpage_sitemap_index(self, urls):
         sitemap_index_url_tpl = load_template('sitemap-index-url')
-        sitemap_index_content = ""
-        for sitemap_url in sm_urls:
-            sitemap_index_content += sitemap_index_url_tpl.substitute(
-                url=sitemap_url)
+        urls = [sitemap_index_url_tpl.substitute(url=url) for url in urls]
+        content = load_template('sitemap-index').substitute(
+            sitemaps=''.join(urls))
 
-        sitemap_index_tpl = load_template('sitemap-index')
-        sitemap_index_content = sitemap_index_tpl.substitute(
-            sitemaps=sitemap_index_content)
-
-        f = open(os.path.join(base_manpage_dir, "sitemap.xml"), 'w')
-        f.write(sitemap_index_content)
+        f = open(pjoin(self.manpages_dir, "sitemap.xml"), 'w')
+        f.write(content)
         f.close()
 
-    @classmethod
-    def get_section_url(cls, section):
-        return base_manpage_url + "/" + section + "/"
+    def generate_package_indexes(self):
+        item_tpl = load_template('package-index-item')
+        package_index_tpl = load_template('package-index')
+        package_index_section_tpl = load_template('package-index-section')
+        package_index_contents_tpl = load_template('package-index-contents')
+        package_list_item_tpl = load_template('package-list-item')
+        sm_item_tpl = load_template('sitemap-url-nolastmod')
 
-    @classmethod
-    def generate_package_indexes(cls, source_dir, package_items, pages):
-        packages = set()
-        for package in os.listdir(source_dir):
-            if os.path.isdir(os.path.join(source_dir,
-                                          package)) and package != "man-pages":
-                packages.add(package)
+        query = """SELECT name,
+                          section,
+                          count(package) as amount,
+                          group_concat(package) as packages
+                   FROM manpages
+                   GROUP by name, section
+                   ORDER by package ASC, section ASC, name ASC"""
 
-        empty_packages = set()
-        for package in packages:
-            if not package_items[package]:
-                empty_packages.add(package)
+        package_container = defaultdict(lambda: defaultdict(list))
 
-        packages_to_index = []
-        packages = sorted(packages.difference(empty_packages))
-        for i, package in enumerate(packages):
-            package_directory = os.path.join(base_packages_dir, package)
-            try:
-                os.makedirs(package_directory)
-            except OSError:
-                pass
+        for name, section, amount, packages in self.conn.execute(query):
+            if amount > 1:
+                for package in packages.split(','):
+                    subtitle = self.subtitles[(package, name, section)]
+                    package_container[package][section].append(
+                        ("%s.%s" % (name, section), subtitle, True))
 
-            pages_in_package = package_items[package]
-            section_pages = defaultdict(set)
-            for page in pages_in_package:
-                section_pages[pages[page]['section']].add(page)
+            else:
+                subtitle = self.subtitles[(packages, name, section)]
+                package_container[packages][section].append(
+                    ("%s.%s" % (name, section), subtitle, False))
 
-            item_tpl = load_template('package-index-item')
-            package_index_tpl = load_template('package-index')
-            package_index_section_tpl = load_template('package-index-section')
-            package_index_contents_tpl = load_template(
-                'package-index-contents')
+        package_list_items = []
+        sitemap_urls = []
+        for package, sections in package_container.items():
+            package_directory = pjoin(self.packages_dir, package)
+            self.makedirs(package_directory)
 
             package_index = []
-            for section in sorted(section_pages):
-                pages_in_section = section_pages[section]
+            for section, pages in sections.items():
+                full_section = "man%s" % (section, )
+                section_description = SECTIONS[full_section]
+                section_directory = pjoin(package_directory, full_section)
+                section_relative_url = pjoin(self.manpages_dir_name,
+                                             full_section)
+                section_url = self.manpages_url + "/" + full_section + "/"
 
-                if not pages_in_section:
-                    continue
+                self.makedirs(section_directory)
+                items = []
+                for name, subtitle, aliased in pages:
+                    filename = "%s.html" % (name, )
+                    if aliased:
+                        filename = "%s-%s" % (package,
+                                              filename, )
 
-                numeric_section, section = section, "man%s" % (section, )
-                base_dir = "/man-pages/%s/" % section
+                    relative_url = "/" + pjoin(section_relative_url, filename)
 
-                package_list = [
-                    item_tpl.substitute(link=base_dir + page + ".html",
-                                        name=page,
-                                        description=pages[page]['subtitle'])
-                    for page in pages_in_section
-                ]
+                    items.append(item_tpl.substitute(name=name,
+                                                     description=subtitle,
+                                                     link=relative_url))
 
-                amount_of_pages_in_section = len(pages_in_section)
                 package_index.append(package_index_section_tpl.substitute(
-                    amount=amount_of_pages_in_section,
-                    numeric_section=numeric_section,
-                    section=SECTIONS[section],
-                    section_url=cls.get_section_url(section),
+                    amount=len(pages),
+                    numeric_section=section,
+                    section=section_description,
+                    section_url=section_url,
                     content=package_index_tpl.substitute(items='\n'.join(
-                        package_list))))
-
-            prev_page = next_page = None
-
-            if i > 0:
-                prev_page = ("../%s/" % (packages[i - 1], ), packages[i - 1])
-
-            if i < len(packages) - 1:
-                next_page = ("../%s/" % (packages[i + 1], ), packages[i + 1])
+                        items))))
 
             contents = package_index_contents_tpl.substitute(
-                contents="\n".join(package_index)) + get_pagination(prev_page,
-                                                                    next_page)
+                contents="\n".join(package_index))
 
             breadcrumb = [
                 ("/packages/", "Packages"),
@@ -338,36 +518,20 @@ class ManDirectoryParser(object):
                 content=contents,
                 metadescription="Man Pages in %s" % package, )
 
-            package_index_file = os.path.join(package_directory, "index.html")
-
-            f = open(package_index_file, 'w')
+            f = open(pjoin(package_directory, "index.html"), 'w')
             f.write(out)
             f.close()
 
-            packages_to_index.append(package)
-
-        if not packages_to_index:
-            return
-
-        sm_item_tpl = load_template('sitemap-url-nolastmod')
-        package_list_item_tpl = load_template('package-list-item')
-
-        sm_urls = []
-        package_list_items = []
-        for package in packages_to_index:
-            sm_urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
-                base_packages_url, package)))
             package_list_items.append(package_list_item_tpl.substitute(
                 url="%s/" % (package, ),
                 package=package))
 
-        # Generate package sitemap
-        sitemap = load_template('sitemap').substitute(
-            urlset="\n".join(sm_urls))
-        sitemap_path = os.path.join(base_packages_dir, "sitemap.xml")
+            sitemap_urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
+                self.packages_url, package)))
 
-        f = open(sitemap_path, 'w')
-        f.write(sitemap)
+        f = open(pjoin(self.packages_dir, "sitemap.xml"), 'w')
+        f.write(load_template('sitemap').substitute(urlset="\n".join(
+            sitemap_urls)))
         f.close()
 
         # Generate package index
@@ -375,7 +539,7 @@ class ManDirectoryParser(object):
 
         index = load_template('ul').substitute(
             content="\n".join(package_list_items))
-        index_path = os.path.join(base_packages_dir, "index.html")
+        index_path = pjoin(self.packages_dir, "index.html")
 
         out = load_template('base').safe_substitute(
             title="Packages with man pages",
@@ -390,174 +554,234 @@ class ManDirectoryParser(object):
         f.write(out)
         f.close()
 
-    @classmethod
-    def generate_sitemaps_and_indexes(cls, iterator, pages):
-        # Generate directory Indexes & Sitemaps
-        sm_urls = []
-        last_update = None
-        for directory, page_files in iterator:
-            logging.debug(" * Generating indexes and sitemaps for %s" %
-                          directory)
+    def generate_manpage_indexes(self):
+        query = """SELECT name,
+                          section,
+                          count(package) as amount,
+                          group_concat(package) as packages
+                   FROM manpages
+                   GROUP by name, section
+                   ORDER by section ASC, name ASC"""
 
-            section_item_tpl = load_template('section-index-item')
-            sm_item_tpl = load_template('sitemap-url')
+        section_item_tpl = load_template('section-index-item')
+        section_item_manpage_tpl = load_template('section-index-item-manpage')
+        items = defaultdict(list)
+        for name, section, amount, packages in self.conn.execute(query):
+            page = "%s.%s" % (name, section)
+            if amount > 1:
+                for package in packages.split(','):
+                    subtitle = self.subtitles[(package, name, section)]
 
-            section_items = sitemap_items = ""
-            for page in sorted(page_files):
-                d = pages[page]
-                lastmod = d['last-modified']
-                if d['package'] == "man-pages":
-                    section_items += load_template(
-                        'section-index-item-manpage').substitute(
+                    if package == "man-pages":
+                        items[section].append(
+                            section_item_manpage_tpl.substitute(
+                                link=page,
+                                name=name,
+                                section=section,
+                                description=subtitle,
+                                package=package))
+                    else:
+                        items[section].append(section_item_tpl.substitute(
                             link=page,
-                            name=d['name'],
-                            section=d['section'],
-                            description=d['subtitle'],
-                            package=d['package'], )
-                else:
-                    section_items += section_item_tpl.substitute(
-                        link=page,
-                        name=d['name'],
-                        section=d['section'],
-                        description=d['subtitle'],
-                        package=d['package'], )
+                            name=name,
+                            section=section,
+                            description=subtitle,
+                            package=package))
 
-                page_url = cls.get_section_url("man%s" % (d['section'],
-                                                          )) + page + ".html"
-                sitemap_items += sm_item_tpl.substitute(url=page_url,
-                                                        lastmod=lastmod)
-
-                if not last_update:
-                    last_update = lastmod
-                else:
-                    last_update = max(lastmod, last_update)
             else:
-                if not last_update:
-                    last_update = cls.now
+                subtitle = self.subtitles[(packages, name, section)]
 
-                sitemap_items += sm_item_tpl.substitute(
-                    url=cls.get_section_url(directory),
-                    lastmod=last_update)
+                if packages == "man-pages":
+                    items[section].append(section_item_manpage_tpl.substitute(
+                        link=page,
+                        name=name,
+                        section=section,
+                        description=subtitle,
+                        package=packages))
+                else:
+                    items[section].append(section_item_tpl.substitute(
+                        link=page,
+                        name=name,
+                        section=section,
+                        description=subtitle,
+                        package=packages))
 
+        for section in items:
             section_content = load_template('section-index').substitute(
-                items=section_items)
-            sitemap = load_template('sitemap').substitute(urlset=sitemap_items)
+                items=''.join(items[section]))
 
-            sitemap_path = os.path.join(base_manpage_dir, directory,
-                                        "sitemap.xml")
-            f = open(sitemap_path, 'w')
-            f.write(sitemap)
-            f.close()
-
-            sm_urls.append(cls.get_section_url(directory) + "sitemap.xml")
-
-            full_section = SECTIONS[directory]
-            numeric_section = directory[3:]
+            section_description = SECTIONS["man%s" % section]
 
             breadcrumb = [
                 ("/man-pages/", "Man Pages"),
-                ("/man-pages/man%s/" % numeric_section, full_section),
+                ("/man-pages/man%s/" % section, section_description),
             ]
 
             out = load_template('base').safe_substitute(
-                title="Linux Man Pages - %s" % full_section,
+                title="Linux Man Pages - %s" % section_description,
                 canonical="",
                 header=load_template('header').safe_substitute(
-                    title=full_section,
-                    section=numeric_section,
+                    title=section_description,
+                    section=section,
                     subtitle=""),
                 breadcrumb=get_breadcrumb(breadcrumb),
                 content=section_content,
-                metadescription=full_section.replace("\"", "\'"), )
+                metadescription=section_description.replace("\"", "\'"), )
 
             f = open(
-                os.path.join(base_manpage_dir, directory, 'index.html'), 'w')
+                pjoin(self.manpages_dir, "man%s" % section, 'index.html'), 'w')
             f.write(out)
             f.close()
 
-        return sm_urls
+    def generate_manpage_index(self):
+        # Generate man-pages index
+        base_tpl = load_template('base')
+        index_tpl = load_template('index-manpage')
 
-    def write_pages(self):
-        # Write pages
-        try:
-            page_hashes_file = open('page_hashes.dat', 'rb')
-            page_hashes = marshal.load(page_hashes_file)
-            page_hashes_file.close()
-        except:
-            page_hashes = dict()
+        index = base_tpl.safe_substitute(metadescription="Linux Man Pages",
+                                         title="Linux Man Pages",
+                                         canonical="",
+                                         header="",
+                                         breadcrumb="",
+                                         content=index_tpl.substitute(), )
 
-        found_pages = self.get_pages_without_errors()
-        for mp, final_page, instance in self.get_pages():
-            out = mp.html(pages_to_link=found_pages)
-            self.missing_links.update(mp.broken_links)
-            self.section_counters.update(mp.section_counters)
-            if (final_page in page_hashes
-                ) and mp.unique_hash == page_hashes[final_page][0]:
-                # Has not changed
-                pass
-            else:
-                # Has changed
-                page_hashes[final_page] = (mp.unique_hash, self.now)
+        f = open(pjoin(self.manpages_dir, "index.html"), 'w')
+        f.write(index)
+        f.close()
 
-            file = open(final_page, "w")
-            file.write(out)
-            file.close()
+    def generate_base_index(self):
+        # Generate base index
+        base_tpl = load_template('base')
+        index_tpl = load_template('index-contents')
 
-            instance['last-modified'] = page_hashes[final_page][1]
+        index = base_tpl.safe_substitute(
+            metadescription="Carta.tech: The home for open documentation",
+            title="Carta.tech: The home for open documentation",
+            canonical="",
+            header="",
+            breadcrumb="",
+            content=index_tpl.substitute(), )
 
-        page_hashes_file = open('page_hashes.dat', 'wb')
-        marshal.dump(page_hashes, page_hashes_file)
-        page_hashes_file.close()
+        f = open(pjoin(self.root_html, "index.html"), 'w')
+        f.write(index)
+        f.close()
 
-    @classmethod
-    def set_previous_next_links(cls, iterator, pages):
-        # Calculate previous-next links
-        for directory, page_files in iterator:
-            man_directory = os.path.join(base_manpage_dir, directory)
-            try:
-                os.makedirs(man_directory)
-            except OSError:
-                pass
+    def generate_output(self, output_dir, base_url):
+        self.root_html = output_dir
 
-            previous = None
-            for page in sorted(page_files):
-                d = pages[page]
-                d['final-page'] = os.path.join(man_directory, page) + ".html"
-                logging.debug(" * Writing page: %s" % page)
-                if previous:
-                    d['instance'].set_previous(previous[1])
-                    next_page = ("%s.html" % (page, ),
-                                 "%s: %s" % (page,
-                                             d['subtitle'], ))
-                    pages[previous[0]]['instance'].set_next(next_page)
+        self.manpages_dir_name = "man-pages"
+        self.packages_dir_name = "packages"
 
-                previous = (page, ("%s.html" % (page, ),
-                                   "%s: %s" % (page,
-                                               d['subtitle'], )))
+        self.manpages_dir = pjoin(output_dir, self.manpages_dir_name)
+        self.packages_dir = pjoin(output_dir, self.packages_dir_name)
+        self.manpages_url = base_url + "man-pages"
+        self.packages_url = base_url + "packages"
 
-    def fix_missing_links(self):
-        for page in self.get_pages_with_errors():
-            if page in self.missing_links:
-                del self.missing_links[page]
+        # Delete output directories
+        self.empty_output_directories()
 
-        try:
-            ignore_page_file = open('ignore_page_file.dat', 'rb')
-            pages_to_ignore = marshal.load(ignore_page_file)
-            ignore_page_file.close()
-            for page in pages_to_ignore:
-                if page in self.missing_links:
-                    del self.missing_links[page]
-        except IOError:
-            pass
+        # Create placeholder directories
+        self.create_output_directories()
 
-    def get_missing_links(self):
-        return self.missing_links.most_common(self.number_missing_links)
+        # Create Manpages
+        sitemap_manpages = self.create_manpages()
 
-    def get_section_counters(self):
-        return self.section_counters.most_common(self.number_section_counters)
+        # Generate sitemaps and indexes for manpages
+        sitemap_manpage_urls = self.generate_manpage_sitemaps(sitemap_manpages)
+        self.generate_manpage_sitemap_index(sitemap_manpage_urls)
+        self.generate_manpage_indexes()
+        self.generate_manpage_index()
 
-    def get_missing_parsers(self):
-        return self.missing_parsers.most_common(self.number_missing_parsers)
+        # Generate root index.html
+        self.generate_base_index()
+
+        # Generate package indexes
+        self.generate_package_indexes()
+
+        return
+
+        #self.write_pages()
+        #self.generate_sitemap_indexes(sm_urls=sm_urls)
+        #self.fix_missing_links()
+
+    @staticmethod
+    def generate_sitemap_indexes(sm_urls):
+        # Generate sitemap indexes
+        sitemap_index_url_tpl = load_template('sitemap-index-url')
+        sitemap_index_content = ""
+        for sitemap_url in sm_urls:
+            sitemap_index_content += sitemap_index_url_tpl.substitute(
+                url=sitemap_url)
+
+        sitemap_index_tpl = load_template('sitemap-index')
+        sitemap_index_content = sitemap_index_tpl.substitute(
+            sitemaps=sitemap_index_content)
+
+        f = open(pjoin(base_manpage_dir, "sitemap.xml"), 'w')
+        f.write(sitemap_index_content)
+        f.close()
+
+#   def fix_missing_links(self):
+#       for page in self.get_pages_with_errors():
+#           if page in self.missing_links:
+#               del self.missing_links[page]
+
+#       try:
+#           ignore_page_file = open('ignore_page_file.dat', 'rb')
+#           pages_to_ignore = marshal.load(ignore_page_file)
+#           ignore_page_file.close()
+#           for page in pages_to_ignore:
+#               if page in self.missing_links:
+#                   del self.missing_links[page]
+#       except IOError:
+#           pass
+
+#   def get_missing_links(self):
+#       return self.missing_links.most_common(self.number_missing_links)
+
+#   def get_section_counters(self):
+#       return self.section_counters.most_common(self.number_section_counters)
+
+#   def get_missing_parsers(self):
+#       return self.missing_parsers.most_common(self.number_missing_parsers)
+
+
+def dirparse(args):
+    parser = ManDirectoryParser(database=args.database)
+    parser.parse_directory(source_dir=args.source_dir)
+
+
+def generate(args):
+    parser = ManDirectoryParser(database=args.database)
+    parser.generate_output(output_dir=args.output_dir, base_url=args.base_url)
+
+
+def stats(args):
+    parser = ManDirectoryParser(database=args.database)
+    # FIXME
+    #parser.add_argument("--missing-links",
+    #                    help="choose the amount of broken links to display",
+    #                    type=int,
+    #                    default=10)
+    #parser.add_argument("--missing-parsers",
+    #                    help="choose the amount of missing parsers to display",
+    #                    type=int,
+    #                    default=10)
+    #parser.add_argument("--section-counters",
+    #                    help="choose the amount of section titles to display",
+    #                    type=int,
+    #                    default=10)
+
+    #parser.number_missing_links = args.missing_links
+    #parser.number_section_counters = args.section_counters
+    #parser.number_missing_parsers = args.missing_parsers
+    #
+
+    #print "Missing Links: %s" % parser.get_missing_links()
+    #print "Missing Parsers: %s" % parser.get_missing_parsers()
+    #print "Pages With Missing Parsers", parser.get_pages_with_missing_parsers()
+    #print "Section Counter", parser.get_section_counters()
+    pass
 
 
 if __name__ == '__main__':
@@ -565,40 +789,53 @@ if __name__ == '__main__':
     import argparse
     start_time = time.time()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("source_dir",
-                        help="the directory you want to use as source")
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--log-level", help="choose log level")
-    parser.add_argument("--missing-links",
-                        help="choose the amount of broken links to display",
-                        type=int,
-                        default=10)
-    parser.add_argument("--missing-parsers",
-                        help="choose the amount of missing parsers to display",
-                        type=int,
-                        default=10)
-    parser.add_argument("--section-counters",
-                        help="choose the amount of section titles to display",
-                        type=int,
-                        default=10)
+    parser.add_argument("--database",
+                        help="the database you want to use",
+                        default="manpages.db")
+    subparsers = parser.add_subparsers()
+
+    # dirparse option
+    parser_dirparse = subparsers.add_parser(
+        'dirparse',
+        help='Parses directory into a database',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_dirparse.add_argument(
+        "source_dir",
+        help="the directory you want to use as source")
+    parser_dirparse.set_defaults(func=dirparse)
+
+    # generate option
+    parser_generate = subparsers.add_parser(
+        'generate',
+        help='Generates pages from database',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_generate.add_argument("--base-url",
+                                 help="Base URL",
+                                 default="https://www.carta.tech/")
+
+    parser_generate.add_argument(
+        "output_dir",
+        help="the directory you want to use as a destination")
+    parser_generate.set_defaults(func=generate)
+
+    # statistics
+    parser_stats = subparsers.add_parser(
+        'stats',
+        help='Get statistics about the current parsing state',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_stats.set_defaults(func=stats)
+
+    # Parse arguments
     args = parser.parse_args()
 
     if args.log_level:
         log_level = getattr(logging, args.log_level.upper())
         logging.basicConfig(level=log_level)
 
-    parser = ManDirectoryParser(source_dir=args.source_dir)
-
-    parser.number_missing_links = args.missing_links
-    parser.number_section_counters = args.section_counters
-    parser.number_missing_parsers = args.missing_parsers
-
-    parser.parse_directory()
-
-    print "Missing Links: %s" % parser.get_missing_links()
-    print "Missing Parsers: %s" % parser.get_missing_parsers()
-    print "Pages With Missing Parsers", parser.get_pages_with_missing_parsers()
-    print "Section Counter", parser.get_section_counters()
+    args.func(args)
 
     elapsed = time.time() - start_time
     logging.info("--- Total time: %s seconds ---" % (elapsed, ))
