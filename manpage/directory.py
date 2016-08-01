@@ -304,7 +304,7 @@ class ManDirectoryParser(object):
             self.makedirs(package_directory)
 
             package_index = []
-            for section, pages in sections.items():
+            for section, pages in sorted(sections.items()):
                 full_section = "man%s" % (section,)
                 section_description = SECTIONS[full_section]
                 section_directory = pjoin(package_directory, full_section)
