@@ -33,7 +33,7 @@ It is recommended to use [virtualenv](https://virtualenv.pypa.io/en/stable/) or 
 Another step should be getting the sources for the man pages. For this task to be easier, the `fetch-man-pages.sh` script is provided:
 
     cd utils
-    ./fetch-man-pages.sh
+    ./fetch-manpages-from-packages.py
     
 ### Create your local virtual machine
 
@@ -51,4 +51,5 @@ When you finish working with the-docs, you can stop it:
 
 Now, let's generate documents for the man pages:
 
-    ./dirparse.py src/man-pages
+    ./main.py dirparse src
+    ./main.py generate public_html

@@ -206,6 +206,9 @@ class ManDirectoryParser(object):
         f.write(mp.get())
         f.close()
 
+        self.missing_links.update(mp.broken_links)
+        self.section_counters.update(mp.section_titles)
+
         return ("man%s" % section, filename)
 
     def write_aliases_page(self, name, section, parent_dir, packages):
@@ -538,7 +541,6 @@ class ManDirectoryParser(object):
 
         #self.write_pages()
         #self.generate_sitemap_indexes(sm_urls=sm_urls)
-        #self.fix_missing_links()
 
     @staticmethod
     def generate_sitemap_indexes(sm_urls):
@@ -556,27 +558,3 @@ class ManDirectoryParser(object):
         f = open(pjoin(base_manpage_dir, "sitemap.xml"), 'w')
         f.write(sitemap_index_content)
         f.close()
-
-#   def fix_missing_links(self):
-#       for page in self.get_pages_with_errors():
-#           if page in self.missing_links:
-#               del self.missing_links[page]
-
-#       try:
-#           ignore_page_file = open('ignore_page_file.dat', 'rb')
-#           pages_to_ignore = marshal.load(ignore_page_file)
-#           ignore_page_file.close()
-#           for page in pages_to_ignore:
-#               if page in self.missing_links:
-#                   del self.missing_links[page]
-#       except IOError:
-#           pass
-
-#   def get_missing_links(self):
-#       return self.missing_links.most_common(self.number_missing_links)
-
-#   def get_section_counters(self):
-#       return self.section_counters.most_common(self.number_section_counters)
-
-#   def get_missing_parsers(self):
-#       return self.missing_parsers.most_common(self.number_missing_parsers)

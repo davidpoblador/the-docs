@@ -1,41 +1,99 @@
 #!/usr/bin/env python
 
 import logging
-from utils.fetcher import DebianManpageFetcher
-import marshal
-from dirparse import ManDirectoryParser
-
-manpage_source = "src"
+from manpage.directory import ManDirectoryParser
 
 
-def main():
-    parser = ManDirectoryParser(manpage_source)
-    parser.parse_directory()
+def dirparse(args):
+    parser = ManDirectoryParser(database=args.database)
+    parser.parse_directory(source_dir=args.source_dir)
 
-    try:
-        ignore_page_file = open('ignore_page_file.dat', 'rb')
-        pages_to_ignore = marshal.load(ignore_page_file)
-        ignore_page_file.close()
-    except IOError:
-        pages_to_ignore = set()
+    mps = args.missing_parsers
 
-    packages_to_ignore = set()
-    for page, _ in parser.get_missing_links():
-        fetcher = DebianManpageFetcher(page,
-                                       packages_to_ignore=packages_to_ignore)
-        if fetcher.fetch():
-            for section, package in fetcher.packages:
-                packages_to_ignore.add(package)
+    if mps:
+        print "Top %s missing parsers: %s" % (
+            mps, parser.missing_parsers.most_common(mps))
 
-        # Temporary hack to mitigate the problem with case insensitive filesystems
-        # Should only ocurr on error fetching
-        pages_to_ignore.add(page)
 
-    ignore_page_file = open('ignore_page_file.dat', 'wb')
-    marshal.dump(pages_to_ignore, ignore_page_file)
-    ignore_page_file.close()
+def generate(args):
+    parser = ManDirectoryParser(database=args.database)
+    parser.generate_output(output_dir=args.output_dir, base_url=args.base_url)
+
+    scs = args.section_counters
+    if scs:
+        print "Top %s section names: %s" % (
+            scs, parser.section_counters.most_common(scs))
+
+    mls = args.missing_links
+    if mls:
+        print "Top %s missing links: %s" % (
+            mls, parser.missing_links.most_common(mls))
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    main()
+    import time
+    import argparse
+    start_time = time.time()
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--log-level", help="choose log level")
+    parser.add_argument("--database",
+                        help="the database you want to use",
+                        default="manpages.db")
+    subparsers = parser.add_subparsers()
+
+    # dirparse option
+    parser_dirparse = subparsers.add_parser(
+        'dirparse',
+        help='Parses directory into a database',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_dirparse.add_argument(
+        "source_dir",
+        help="the directory you want to use as source")
+
+    parser_dirparse.add_argument(
+        "--missing-parsers",
+        help="choose the amount of missing parsers to display",
+        type=int,
+        default=0)
+
+    parser_dirparse.set_defaults(func=dirparse)
+
+    # generate option
+    parser_generate = subparsers.add_parser(
+        'generate',
+        help='Generates pages from database',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_generate.add_argument("--base-url",
+                                 help="Base URL",
+                                 default="https://www.carta.tech/")
+
+    parser_generate.add_argument(
+        "output_dir",
+        help="the directory you want to use as a destination")
+
+    parser_generate.add_argument(
+        "--missing-links",
+        help="choose the amount of broken links to display",
+        type=int,
+        default=0)
+    parser_generate.add_argument(
+        "--section-counters",
+        help="choose the amount of section titles to display",
+        type=int,
+        default=0)
+
+    parser_generate.set_defaults(func=generate)
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    if args.log_level:
+        log_level = getattr(logging, args.log_level.upper())
+        logging.basicConfig(level=log_level)
+
+    args.func(args)
+
+    elapsed = time.time() - start_time
+    logging.info("--- Total time: %s seconds ---" % (elapsed, ))

@@ -100,6 +100,8 @@ class ManPageHTMLDB(ManPageHTML):
         self.prev_page = prev_page
         self.next_page = next_page
 
+        self._broken_links = set()
+
     @cached_property
     def subtitle(self):
         return self.subtitles[(self.package, self.name, self.section)]
@@ -159,6 +161,14 @@ class ManPageHTMLDB(ManPageHTML):
         return [(title, content)
                 for title, content in self.conn.execute(query, self.page_id)]
 
+    @property
+    def section_titles(self):
+        return [title for title, _ in self.sections]
+
+    @property
+    def broken_links(self):
+        return self._broken_links
+
     @cached_property
     def linkified_contents(self):
         def repl(m):
@@ -175,9 +185,7 @@ class ManPageHTMLDB(ManPageHTML):
                                                                   section,
                                                                   out, )
             else:
-                # FIXME: Figure out what to do with missing links
-                # self.broken_links.add(page)
-                pass
+                self._broken_links.add(page)
 
             return out
 
