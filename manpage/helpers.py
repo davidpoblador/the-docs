@@ -1,5 +1,10 @@
+import os.path
 from string import Template
 
+try:
+    import re2 as re
+except ImportError:
+    import re
 
 def load_template(template):
     fp = open("templates/%s.tpl" % (template,))
@@ -56,3 +61,22 @@ class NotSupportedFormat(Exception):
 
 class RedirectedPage(Exception):
     pass
+
+
+pjoin = os.path.join
+dname = os.path.dirname
+bname = os.path.basename
+
+linkifier = re.compile(
+    r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
+
+SECTIONS = {
+    'man1': "Executable programs or shell commands",
+    'man2': "System calls",
+    'man3': "Library calls",
+    'man4': "Special files",
+    'man5': "File formats and conventions",
+    'man6': "Games",
+    'man7': "Miscellaneous",
+    'man8': "System administration commands",
+}

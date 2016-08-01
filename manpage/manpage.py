@@ -2,135 +2,26 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pickle
-import hashlib
 import logging
 
-from repoze.lru import lru_cache
-from collections import namedtuple
-
-try:
-    import re2 as re
-except ImportError:
-    import re
-
-from parsers import MacroParser, BodyMacroParser, TitleMacroParser, HeaderMacroParser
 from parsers import ManPageStates
-from parsers import tagify, unescape, toargs, entitize
+from parsers import tagify, unescape, toargs
 
-from base import load_template, get_pagination, get_breadcrumb
-from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
+from helpers import load_template
+from helpers import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
+from helpers import SECTIONS
+from helpers import bname, dname
 
-LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
-
-
-class ManPageLine(LineItems):
-
-    def line(self):
-        return ".%s %s" % (self.macro,
-                           self.data,)
-
-    def contains(self, piece):
-        return (piece in self.line())
-
-
-class Lines(object):
-
-    def __init__(self, iterator):
-        self._current = 0
-        self._data = []
-
-        extra = []
-        for line in iterator:
-            if line and len(line) > 2:
-                if line[-1] == "\\" and line[
-                        -2] != "\\":  # FIXME: Possibly rsplit might work better
-                    extra.append(line[:-1])
-                    continue
-                elif line[-2:] == "\\c":
-                    extra.append(line[:-2])
-                    continue
-
-            if extra:
-                extra.append(line)
-                line = ' '.join(extra)
-                extra = []
-
-            if line.startswith(".") and len(line) > 1 and line != "..":
-                if len(line) > 2 and line[1:3] == "\\\"":
-                    # Comment
-                    comment = True
-                    macro = None
-                    data = line[3:]
-                else:
-                    comment = False
-                    if "\\\"" in line:
-                        line = line.split("\\\"", 1)[0]
-
-                    chunks = line.split(None, 1)
-                    if len(chunks) == 2:
-                        macro, data = chunks
-                    else:
-                        macro, data = chunks[0], None
-
-                    macro = macro[1:]
-            else:
-                comment = False
-                macro = None
-                if "\\\"" in line and "\\\\\"" not in line:
-                    data = line.split("\\\"", 1)[0]
-                    if not data:
-                        continue
-                else:
-                    data = line
-
-            if data:
-                data = entitize(data)
-
-            self._data.append(ManPageLine(macro, data, comment))
-
-    def get(self):
-        current = self._data[self._current]
-        self.fwd()
-        return current
-
-    def curr(self):
-        return self._data[self._current]
-
-    def prev(self):
-        return self._data[self._current - 1]
-
-    def next(self):
-        return self._data[self._current + 1]
-
-    def fwd(self):
-        self._current += 1
-
-    def rwd(self):
-        self._current -= 1
-
+from lines import Lines
 
 class ManPage(object):
     single_styles = {'B', 'I'}
     compound_styles = {'IR', 'RI', 'BR', 'RB', 'BI', 'IB'}
 
-    # FIXME: Horrible hack
-    SECTIONS = {
-        'man1': "Executable programs or shell commands",
-        'man2': "System calls",
-        'man3': "Library calls",
-        'man4': "Special files",
-        'man5': "File formats and conventions",
-        'man6': "Games",
-        'man7': "Miscellaneous",
-        'man8': "System administration commands",
-    }
-
     @property
     def package(self):
         try:
-            return os.path.basename(os.path.dirname(os.path.dirname(
-                self.full_path)))
+            return bname(dname(dname(self.full_path)))
         except:
             return None
 
@@ -146,7 +37,7 @@ class ManPage(object):
         self.full_path = filename
         self.name, section = os.path.splitext(self.basename)
         self.section = section[1:]
-        self.section_description = self.SECTIONS[self.full_section]
+        self.section_description = SECTIONS[self.full_section]
 
         self.load_lines(filename)
         self.initialize_state()
@@ -463,31 +354,6 @@ class ManPage(object):
 
         self.current_buffer = []
 
-    def linkify(self, text, pages_to_link=set()):
-
-        def repl(m):
-            manpage = m.groupdict()['page']
-            section = m.groupdict()['section']
-            page = '.'.join([manpage, section])
-
-            out = "<strong>%s</strong>(%s)" % (manpage,
-                                               section,)
-
-            if page in pages_to_link:
-                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
-                                                                  manpage,
-                                                                  section,
-                                                                  out,)
-            else:
-                self.broken_links.add(page)
-
-            return out
-
-        if pages_to_link:
-            return linkifier.sub(repl, text)
-        else:
-            return text
-
     def get_sections(self):
         return [(title, ''.join(content)) for title, content in self.sections]
 
@@ -500,10 +366,6 @@ class ManPage(object):
                                                    content=''.join(content),))
 
         return self.linkify(''.join(contents), pages_to_link)
-
-    @property
-    def unique_hash(self):
-        return hashlib.md5(pickle.dumps(self.sections)).hexdigest()
 
     def html(self, pages_to_link=set()):
         section_contents = self.get_section_contents(pages_to_link)
@@ -535,10 +397,6 @@ def stylize_odd_even(style, args):
         c = c + 1
 
     return buff
-
-
-linkifier = re.compile(
-    r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
 
 if __name__ == '__main__':
     import argparse

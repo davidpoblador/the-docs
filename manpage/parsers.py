@@ -8,9 +8,7 @@ try:
 except ImportError:
     import re
 
-from base import load_template, get_pagination
-from base import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
-
+from helpers import MissingParser, NotSupportedFormat, RedirectedPage
 
 class MacroParser(object):
     # FIXME
@@ -416,7 +414,6 @@ def unescape(t):
 
     return t
 
-
 def tagify(t):
     # Fixme (when we have time dir_colors.5 shows why this needs fixing)
     t = re.sub(r'\\fI(.*?)\\f[PR]', r'<em>\1</em>', t)
@@ -427,11 +424,6 @@ def tagify(t):
     t = t.replace("\\fI", "")
     t = t.replace("\\fR", "")
     t = t.replace("\\fP", "")
-
-    # t = re.sub(
-    # r'\\f\(CW(.*?)\\fP',
-    # r'<strong>\1</strong>',
-    # t)
 
     t = t.replace('*NEWLINE*', "\n")
 
