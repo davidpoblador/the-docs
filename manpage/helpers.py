@@ -1,5 +1,7 @@
 import os.path
+import shlex
 from string import Template
+from repoze.lru import lru_cache
 
 try:
     import re2 as re
@@ -80,3 +82,103 @@ SECTIONS = {
     'man7': "Miscellaneous",
     'man8': "System administration commands",
 }
+
+# Helper functions
+def entitize(line):
+    return line.replace("<", "&lt;").replace(">", "&gt;")
+
+
+@lru_cache(maxsize=100000)
+def toargs(data):
+
+    def tokenize():
+        lexer = shlex.shlex(data, posix=True)
+        lexer.commenters = ''
+        lexer.quotes = "\""
+        lexer.whitespace_split = True
+        return list(lexer)
+
+    try:
+        args = tokenize()
+    except:
+        data += "\""
+        try:
+            args = tokenize()
+        except:
+            raise
+
+    return args
+
+
+def unescape(t):
+    if not t:
+        return t
+
+    if "\\" not in t:
+        return t
+
+    t = t.replace("\\*(dg", "(!)")
+
+    t = t.replace("\{", "{")
+
+    t = t.replace("\-", "-")
+    t = t.replace("\ ", "&nbsp;")
+    t = t.replace("\\0", "&nbsp;")
+
+    t = t.replace("\%", "")
+    t = t.replace("\:", "")
+
+    t = t.replace("\\(bu", "&bull;")
+
+    t = t.replace("\`", "&#96;")  # Backtick
+
+    t = t.replace("\&", "")
+
+    t = t.replace("\\\\", "&#92;")
+
+    t = t.replace("\[char46]", "&#46;")
+
+    t = t.replace("\\(co", "&copy;")
+
+    t = t.replace("\\(em", "&ndash;")
+    t = t.replace("\\(en", "&ndash;")
+
+    t = t.replace("\\(dq", "&quot;")
+    t = t.replace("\\(aq", "&apos;")
+    t = t.replace("\\*(Aq", "&apos;")
+
+    t = t.replace("\\(+-", "&plusmn;")
+
+    t = t.replace("\\(:A", "&Auml;")
+
+    t = t.replace("\\('a", "&aacute;")
+    t = t.replace("\\(`a", "&agrave;")
+    t = t.replace("\\(:a", "&auml;")
+    t = t.replace("\\(^a", "&acirc;")
+
+    t = t.replace("\\(12", "&frac12;")
+    t = t.replace("\\.", ".")
+    t = t.replace("\\(mc", "&micro;")
+
+    t = t.replace("\\*(lq", "&ldquo;").replace("\\(lq", "&ldquo;")
+    t = t.replace("\\*(rq", "&rdquo;").replace("\\(rq", "&rdquo;")
+
+    t = t.replace("\\e", "&#92;")
+    t = tagify(t)
+
+    return t
+
+def tagify(t):
+    # Fixme (when we have time dir_colors.5 shows why this needs fixing)
+    t = re.sub(r'\\fI(.*?)\\f[PR]', r'<em>\1</em>', t)
+
+    t = re.sub(r'\\fB(.*?)\\f[PR]', r'<strong>\1</strong>', t)
+
+    t = t.replace("\\fB", "")
+    t = t.replace("\\fI", "")
+    t = t.replace("\\fR", "")
+    t = t.replace("\\fP", "")
+
+    t = t.replace('*NEWLINE*', "\n")
+
+    return t

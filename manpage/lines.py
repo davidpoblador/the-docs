@@ -1,5 +1,5 @@
 from collections import namedtuple
-from parsers import entitize
+from helpers import entitize
 
 LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
 

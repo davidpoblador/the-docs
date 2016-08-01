@@ -5,14 +5,19 @@ import os
 import logging
 
 from parsers import ManPageStates
-from parsers import tagify, unescape, toargs
 
+from helpers import tagify, unescape, toargs
 from helpers import load_template
 from helpers import MissingParser, NotSupportedFormat, RedirectedPage, UnexpectedState
 from helpers import SECTIONS
 from helpers import bname, dname
 
 from lines import Lines
+
+try:
+    import re2 as re
+except ImportError:
+    import re
 
 class ManPage(object):
     single_styles = {'B', 'I'}
