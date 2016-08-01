@@ -67,7 +67,7 @@ class MacroParser(object):
         self.skip_until({'..'})
 
     def p_if(self):
-        if "{" in self.data:
+        if self.data and "{" in self.data:
             self.skip_until_contains('}')
 
     p_ie = p_if
