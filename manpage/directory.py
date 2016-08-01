@@ -12,7 +12,7 @@ from helpers import MissingParser, NotSupportedFormat
 from helpers import SECTIONS
 from helpers import load_template, get_breadcrumb
 
-from html import ManPageHTML
+from html import ManPageHTMLDB
 
 package_directory = dname(os.path.abspath(__file__))
 
@@ -196,7 +196,7 @@ class ManDirectoryParser(object):
 
         full_path = pjoin(self.manpages_dir, parent_dir, filename)
 
-        mp = ManPageHTML(self.conn, self.available_pages, self.subtitles,
+        mp = ManPageHTMLDB(self.conn, self.available_pages, self.subtitles,
                          package, name, section, prev_page, next_page)
 
         logging.debug("Writing %s" % full_path)

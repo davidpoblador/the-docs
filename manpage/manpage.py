@@ -12,6 +12,8 @@ from helpers import MissingParser, NotSupportedFormat, RedirectedPage, Unexpecte
 from helpers import SECTIONS
 from helpers import bname, dname
 
+from html import ManPageHTML
+
 from lines import Lines
 
 try:
@@ -362,27 +364,10 @@ class ManPage(object):
     def get_sections(self):
         return [(title, ''.join(content)) for title, content in self.sections]
 
-    def get_section_contents(self, pages_to_link):
-        section_tpl = load_template('section')
-        contents = []
-        for title, content in self.sections:
-            self.section_counters.add(title)
-            contents.append(section_tpl.substitute(title=title,
-                                                   content=''.join(content),))
+    def html(self):
 
-        return self.linkify(''.join(contents), pages_to_link)
-
-    def html(self, pages_to_link=set()):
-        section_contents = self.get_section_contents(pages_to_link)
-
-        return load_template('base').substitute(
-            breadcrumb=self.breadcrumbs,
-            title=self.descriptive_title,
-            metadescription=self.subtitle,
-            header=self.page_header,
-            content=section_contents + self.pager_contents,)
-
-
+        return ManPageHTML(name =self.name, section = self.section, subtitle = self.subtitle, sections = self.get_sections()).get()
+        
 def stylize(style, text):
     style_trans = {'I': 'em',
                    'B': 'strong',}

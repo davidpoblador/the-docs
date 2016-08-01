@@ -2,40 +2,23 @@ from cached_property import cached_property
 from helpers import load_template, get_breadcrumb, linkifier, get_pagination
 from helpers import SECTIONS
 
+
 class ManPageHTML(object):
     """docstring for Manpage"""
 
-    def __init__(self, database_connection, available_pages, subtitles, package,
-                 name, section, prev_page, next_page):
-        self.conn = database_connection
-        self.available_pages = available_pages
-        self.subtitles = subtitles
+    def __init__(self, name, section, subtitle, sections):
         self.name = name
         self.section = section
-        self.package = package
-        self.prev_page = prev_page
-        self.next_page = next_page
+        self._subtitle = subtitle
+        self._sections = sections
 
     @property
-    def page_id(self):
-        return (self.package, self.name, self.section)
-
-    @cached_property
     def subtitle(self):
-        return self.subtitles[(self.package, self.name, self.section)]
+        return self._subtitle
 
-    @cached_property
+    @property
     def sections(self):
-        query = """SELECT title,
-                          content
-                   FROM manpage_sections
-                   WHERE package = ?
-                     AND name = ?
-                     AND section = ?
-                   ORDER BY position ASC"""
-
-        return [(title, content)
-                for title, content in self.conn.execute(query, self.page_id)]
+        return self._sections
 
     @cached_property
     def section_contents(self):
@@ -59,33 +42,83 @@ class ManPageHTML(object):
 
         return ''.join(contents)
 
+    @property
+    def breadcrumbs(self):
+        breadcrumb_sections = [
+            ("/man-pages/", "Man Pages"),
+            ("/man-pages/man%s/" % self.section, self.section_description),
+            ("/man-pages/man%s/%s.%s.html" % (self.section,
+                                              self.name,
+                                              self.section,),
+             self.descriptive_title),
+        ]
+
+        breadcrumbs = [get_breadcrumb(breadcrumb_sections)]
+
+        return '\n'.join(breadcrumbs)
+
     @cached_property
-    def linkified_contents(self):
+    def descriptive_title(self):
+        return "%s: %s" % (self.name,
+                           self.subtitle,)
 
-        def repl(m):
-            manpage = m.groupdict()['page']
-            section = m.groupdict()['section']
-            page = '.'.join([manpage, section])
+    @property
+    def page_header(self):
+        return load_template('header').substitute(section=self.section,
+                                                  title=self.name,
+                                                  subtitle=self.subtitle,)
 
-            out = "<strong>%s</strong>(%s)" % (manpage,
-                                               section,)
+    @cached_property
+    def full_section(self):
+        return "man%s" % self.section
 
-            if page in self.available_pages:
-                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
-                                                                  manpage,
-                                                                  section,
-                                                                  out,)
-            else:
-                # FIXME: Figure out what to do with missing links
-                # self.broken_links.add(page)
-                pass
+    @cached_property
+    def section_description(self):
+        return SECTIONS[self.full_section]
 
-            return out
+    @property
+    def contents(self):
+        return self.section_contents
 
-        if self.available_pages:
-            return linkifier.sub(repl, self.section_contents)
+    def get(self):
+        return load_template('base').substitute(
+            breadcrumb=self.breadcrumbs,
+            title=self.descriptive_title,
+            metadescription=self.subtitle,
+            header=self.page_header,
+            content=self.contents,)
+
+class ManPageHTMLDB(ManPageHTML):
+    def __init__(self, database_connection, available_pages, subtitles, package,
+                 name, section, prev_page, next_page):
+        self.conn = database_connection
+        self.available_pages = available_pages
+        self.subtitles = subtitles
+        self.name = name
+        self.section = section
+        self.package = package
+        self.prev_page = prev_page
+        self.next_page = next_page
+
+    @cached_property
+    def subtitle(self):
+        return self.subtitles[(self.package, self.name, self.section)]
+
+    @property
+    def page_id(self):
+        return (self.package, self.name, self.section)
+
+    @cached_property
+    def pager_contents(self):
+        pager = get_pagination(self.prev_page, self.next_page)
+        if not pager:
+            return ""
         else:
-            return self.section_contents
+            return pager
+
+    @property
+    def contents(self):
+        return self.linkified_contents + self.pager_contents
 
     @property
     def breadcrumbs(self):
@@ -114,36 +147,43 @@ class ManPageHTML(object):
         return '\n'.join(breadcrumbs)
 
     @cached_property
-    def descriptive_title(self):
-        return "%s: %s" % (self.name,
-                           self.subtitle,)
+    def sections(self):
+        query = """SELECT title,
+                          content
+                   FROM manpage_sections
+                   WHERE package = ?
+                     AND name = ?
+                     AND section = ?
+                   ORDER BY position ASC"""
 
-    @property
-    def page_header(self):
-        return load_template('header').substitute(section=self.section,
-                                                  title=self.name,
-                                                  subtitle=self.subtitle,)
-
-    @cached_property
-    def full_section(self):
-        return "man%s" % self.section
+        return [(title, content)
+                for title, content in self.conn.execute(query, self.page_id)]
 
     @cached_property
-    def section_description(self):
-        return SECTIONS[self.full_section]
+    def linkified_contents(self):
+        def repl(m):
+            manpage = m.groupdict()['page']
+            section = m.groupdict()['section']
+            page = '.'.join([manpage, section])
 
-    @cached_property
-    def pager_contents(self):
-        pager = get_pagination(self.prev_page, self.next_page)
-        if not pager:
-            return ""
+            out = "<strong>%s</strong>(%s)" % (manpage,
+                                               section,)
+
+            if page in self.available_pages:
+                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
+                                                                  manpage,
+                                                                  section,
+                                                                  out,)
+            else:
+                # FIXME: Figure out what to do with missing links
+                # self.broken_links.add(page)
+                pass
+
+            return out
+
+        if self.available_pages:
+            return linkifier.sub(repl, self.section_contents)
         else:
-            return pager
+            return self.section_contents
 
-    def get(self):
-        return load_template('base').substitute(
-            breadcrumb=self.breadcrumbs,
-            title=self.descriptive_title,
-            metadescription=self.subtitle,
-            header=self.page_header,
-            content=self.linkified_contents + self.pager_contents,)
+
