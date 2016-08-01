@@ -16,6 +16,7 @@ from html import ManPageHTMLDB
 
 package_directory = dname(os.path.abspath(__file__))
 
+
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
 
@@ -67,7 +68,7 @@ class ManDirectoryParser(object):
             except MissingParser as e:
                 macro = str(e).split(" ", 2)[1]
                 logging.warning(" * Missing Parser (%s): %s" % (macro,
-                                                                page_file,))
+                                                                page_file, ))
                 self.missing_parsers[macro] += 1
                 continue
             except NotSupportedFormat:
@@ -169,7 +170,8 @@ class ManDirectoryParser(object):
             else:
                 page_dict['package'] = packages
 
-                current_page = self.get_pagination_link(packages, name, section)
+                current_page = self.get_pagination_link(packages, name,
+                                                        section)
 
                 if prev_page:
                     page_dict['prev_page'] = prev_page
@@ -197,7 +199,7 @@ class ManDirectoryParser(object):
         full_path = pjoin(self.manpages_dir, parent_dir, filename)
 
         mp = ManPageHTMLDB(self.conn, self.available_pages, self.subtitles,
-                         package, name, section, prev_page, next_page)
+                           package, name, section, prev_page, next_page)
 
         logging.debug("Writing %s" % full_path)
         f = open(full_path, 'w')
@@ -244,7 +246,7 @@ class ManDirectoryParser(object):
                     for page in pages_in_section[section]]
             urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
                 self.manpages_url,
-                section,)))
+                section, )))
             sitemap = load_template('sitemap').substitute(
                 urlset="\n".join(urls))
             rel_sitemap_path = pjoin(section, "sitemap.xml")
@@ -253,7 +255,8 @@ class ManDirectoryParser(object):
             f.write(sitemap)
             f.close()
 
-            sitemap_urls.append("%s/%s" % (self.manpages_url, rel_sitemap_path))
+            sitemap_urls.append("%s/%s" %
+                                (self.manpages_url, rel_sitemap_path))
 
         return sitemap_urls
 
@@ -305,7 +308,7 @@ class ManDirectoryParser(object):
 
             package_index = []
             for section, pages in sorted(sections.items()):
-                full_section = "man%s" % (section,)
+                full_section = "man%s" % (section, )
                 section_description = SECTIONS[full_section]
                 section_directory = pjoin(package_directory, full_section)
                 section_relative_url = pjoin(self.manpages_dir_name,
@@ -315,10 +318,10 @@ class ManDirectoryParser(object):
                 self.makedirs(section_directory)
                 items = []
                 for name, subtitle, aliased in pages:
-                    filename = "%s.html" % (name,)
+                    filename = "%s.html" % (name, )
                     if aliased:
                         filename = "%s-%s" % (package,
-                                              filename,)
+                                              filename, )
 
                     relative_url = "/" + pjoin(section_relative_url, filename)
 
@@ -349,14 +352,15 @@ class ManDirectoryParser(object):
                     title=package),
                 breadcrumb=get_breadcrumb(breadcrumb),
                 content=contents,
-                metadescription="Man Pages in %s" % package,)
+                metadescription="Man Pages in %s" % package, )
 
             f = open(pjoin(package_directory, "index.html"), 'w')
             f.write(out)
             f.close()
 
             package_list_items.append(package_list_item_tpl.substitute(
-                url="%s/" % (package,), package=package))
+                url="%s/" % (package, ),
+                package=package))
 
             sitemap_urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
                 self.packages_url, package)))
@@ -367,7 +371,7 @@ class ManDirectoryParser(object):
         f.close()
 
         # Generate package index
-        breadcrumb = [("/packages/", "Packages"),]
+        breadcrumb = [("/packages/", "Packages"), ]
 
         index = load_template('ul').substitute(
             content="\n".join(package_list_items))
@@ -380,7 +384,7 @@ class ManDirectoryParser(object):
                 title="Packages with man pages"),
             breadcrumb=get_breadcrumb(breadcrumb),
             content=index,
-            metadescription="List of packages with man pages",)
+            metadescription="List of packages with man pages", )
 
         f = open(index_path, 'w')
         f.write(out)
@@ -458,7 +462,7 @@ class ManDirectoryParser(object):
                     subtitle=""),
                 breadcrumb=get_breadcrumb(breadcrumb),
                 content=section_content,
-                metadescription=section_description.replace("\"", "\'"),)
+                metadescription=section_description.replace("\"", "\'"), )
 
             f = open(
                 pjoin(self.manpages_dir, "man%s" % section, 'index.html'), 'w')
@@ -475,7 +479,7 @@ class ManDirectoryParser(object):
                                          canonical="",
                                          header="",
                                          breadcrumb="",
-                                         content=index_tpl.substitute(),)
+                                         content=index_tpl.substitute(), )
 
         f = open(pjoin(self.manpages_dir, "index.html"), 'w')
         f.write(index)
@@ -492,7 +496,7 @@ class ManDirectoryParser(object):
             canonical="",
             header="",
             breadcrumb="",
-            content=index_tpl.substitute(),)
+            content=index_tpl.substitute(), )
 
         f = open(pjoin(self.root_html, "index.html"), 'w')
         f.write(index)

@@ -21,6 +21,7 @@ try:
 except ImportError:
     import re
 
+
 class ManPage(object):
     single_styles = {'B', 'I'}
     compound_styles = {'IR', 'RI', 'BR', 'RB', 'BI', 'IB'}
@@ -138,7 +139,7 @@ class ManPage(object):
             if '/' not in self._redirect:
                 # Relative
                 return "%s/%s" % (self.full_section,
-                                  self._redirect,)
+                                  self._redirect, )
             else:
                 return self._redirect
         except:
@@ -154,7 +155,7 @@ class ManPage(object):
 
     def save_state(self):
         self.state.append((self.in_dl,
-                           self.in_li,))
+                           self.in_li, ))
         self.depth += 1
 
         self.in_dl = False
@@ -188,14 +189,14 @@ class ManPage(object):
     def add_url(self, data):
         if re.match("[^@]+@[^@]+\.[^@]+", data):
             self.add_content("<a href=\"mailto:%s\">%s</a>" % (data,
-                                                               data,))
+                                                               data, ))
         else:
             self.add_content("<a href=\"%s\">%s</a>" % (data,
-                                                        data,))
+                                                        data, ))
 
     def add_mailto(self, data):
         self.add_content("<a href=\"mailto:%s\">%s</a>" % (data,
-                                                           data,))
+                                                           data, ))
 
     def add_content(self, data):
         if not self.sections:
@@ -365,18 +366,21 @@ class ManPage(object):
         return [(title, ''.join(content)) for title, content in self.sections]
 
     def html(self):
+        return ManPageHTML(name=self.name,
+                           section=self.section,
+                           subtitle=self.subtitle,
+                           sections=self.get_sections()).get()
 
-        return ManPageHTML(name =self.name, section = self.section, subtitle = self.subtitle, sections = self.get_sections()).get()
-        
+
 def stylize(style, text):
     style_trans = {'I': 'em',
-                   'B': 'strong',}
+                   'B': 'strong', }
     if style == 'R':
         return text
     else:
         return "<%s>%s</%s>" % (style_trans[style],
                                 text,
-                                style_trans[style],)
+                                style_trans[style], )
 
 
 def stylize_odd_even(style, args):
@@ -387,6 +391,7 @@ def stylize_odd_even(style, args):
         c = c + 1
 
     return buff
+
 
 if __name__ == '__main__':
     import argparse

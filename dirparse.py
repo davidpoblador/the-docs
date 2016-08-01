@@ -5,6 +5,7 @@ import logging
 
 from manpage.directory import ManDirectoryParser
 
+
 def dirparse(args):
     parser = ManDirectoryParser(database=args.database)
     parser.parse_directory(source_dir=args.source_dir)
@@ -61,8 +62,9 @@ if __name__ == '__main__':
         'dirparse',
         help='Parses directory into a database',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser_dirparse.add_argument("source_dir",
-                                 help="the directory you want to use as source")
+    parser_dirparse.add_argument(
+        "source_dir",
+        help="the directory you want to use as source")
     parser_dirparse.set_defaults(func=dirparse)
 
     # generate option
@@ -96,4 +98,4 @@ if __name__ == '__main__':
     args.func(args)
 
     elapsed = time.time() - start_time
-    logging.info("--- Total time: %s seconds ---" % (elapsed,))
+    logging.info("--- Total time: %s seconds ---" % (elapsed, ))

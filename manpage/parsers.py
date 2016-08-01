@@ -3,6 +3,7 @@ import itertools
 from helpers import MissingParser, NotSupportedFormat, RedirectedPage
 from helpers import toargs, unescape
 
+
 class MacroParser(object):
     # FIXME
     # Revisit ME
@@ -94,11 +95,10 @@ class MacroParser(object):
 
     def missing_parser(self):
         raise MissingParser("MACRO %s : %s" % (self.macro,
-                                               self.data,))
+                                               self.data, ))
 
 
 class BodyMacroParser(MacroParser):
-
     def __bool__(self):
         return not bool(self.comment)
 
@@ -222,7 +222,6 @@ class BodyMacroParser(MacroParser):
 
 
 class TitleMacroParser(MacroParser):
-
     def __bool__(self):
         return bool(not self.comment)
 
@@ -270,7 +269,6 @@ class TitleMacroParser(MacroParser):
 
 
 class HeaderMacroParser(MacroParser):
-
     def __bool__(self):
         if self.comment or not self.macro:
             return False

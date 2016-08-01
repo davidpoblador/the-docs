@@ -8,8 +8,9 @@ try:
 except ImportError:
     import re
 
+
 def load_template(template):
-    fp = open("templates/%s.tpl" % (template,))
+    fp = open("templates/%s.tpl" % (template, ))
     out = Template(''.join(fp.readlines()))
     fp.close()
     return out
@@ -83,6 +84,7 @@ SECTIONS = {
     'man8': "System administration commands",
 }
 
+
 # Helper functions
 def entitize(line):
     return line.replace("<", "&lt;").replace(">", "&gt;")
@@ -90,7 +92,6 @@ def entitize(line):
 
 @lru_cache(maxsize=100000)
 def toargs(data):
-
     def tokenize():
         lexer = shlex.shlex(data, posix=True)
         lexer.commenters = ''
@@ -167,6 +168,7 @@ def unescape(t):
     t = tagify(t)
 
     return t
+
 
 def tagify(t):
     # Fixme (when we have time dir_colors.5 shows why this needs fixing)

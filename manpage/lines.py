@@ -3,18 +3,17 @@ from helpers import entitize
 
 LineItems = namedtuple("LineItems", ['macro', 'data', 'comment'])
 
-class ManPageLine(LineItems):
 
+class ManPageLine(LineItems):
     def line(self):
         return ".%s %s" % (self.macro,
-                           self.data,)
+                           self.data, )
 
     def contains(self, piece):
         return (piece in self.line())
 
 
 class Lines(object):
-
     def __init__(self, iterator):
         self._current = 0
         self._data = []

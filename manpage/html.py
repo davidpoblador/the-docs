@@ -49,7 +49,7 @@ class ManPageHTML(object):
             ("/man-pages/man%s/" % self.section, self.section_description),
             ("/man-pages/man%s/%s.%s.html" % (self.section,
                                               self.name,
-                                              self.section,),
+                                              self.section, ),
              self.descriptive_title),
         ]
 
@@ -60,13 +60,13 @@ class ManPageHTML(object):
     @cached_property
     def descriptive_title(self):
         return "%s: %s" % (self.name,
-                           self.subtitle,)
+                           self.subtitle, )
 
     @property
     def page_header(self):
         return load_template('header').substitute(section=self.section,
                                                   title=self.name,
-                                                  subtitle=self.subtitle,)
+                                                  subtitle=self.subtitle, )
 
     @cached_property
     def full_section(self):
@@ -81,16 +81,16 @@ class ManPageHTML(object):
         return self.section_contents
 
     def get(self):
-        return load_template('base').substitute(
-            breadcrumb=self.breadcrumbs,
-            title=self.descriptive_title,
-            metadescription=self.subtitle,
-            header=self.page_header,
-            content=self.contents,)
+        return load_template('base').substitute(breadcrumb=self.breadcrumbs,
+                                                title=self.descriptive_title,
+                                                metadescription=self.subtitle,
+                                                header=self.page_header,
+                                                content=self.contents, )
+
 
 class ManPageHTMLDB(ManPageHTML):
-    def __init__(self, database_connection, available_pages, subtitles, package,
-                 name, section, prev_page, next_page):
+    def __init__(self, database_connection, available_pages, subtitles,
+                 package, name, section, prev_page, next_page):
         self.conn = database_connection
         self.available_pages = available_pages
         self.subtitles = subtitles
@@ -127,7 +127,7 @@ class ManPageHTMLDB(ManPageHTML):
             ("/man-pages/man%s/" % self.section, self.section_description),
             ("/man-pages/man%s/%s.%s.html" % (self.section,
                                               self.name,
-                                              self.section,),
+                                              self.section, ),
              self.descriptive_title),
         ]
 
@@ -167,13 +167,13 @@ class ManPageHTMLDB(ManPageHTML):
             page = '.'.join([manpage, section])
 
             out = "<strong>%s</strong>(%s)" % (manpage,
-                                               section,)
+                                               section, )
 
             if page in self.available_pages:
                 out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
                                                                   manpage,
                                                                   section,
-                                                                  out,)
+                                                                  out, )
             else:
                 # FIXME: Figure out what to do with missing links
                 # self.broken_links.add(page)
@@ -185,5 +185,3 @@ class ManPageHTMLDB(ManPageHTML):
             return linkifier.sub(repl, self.section_contents)
         else:
             return self.section_contents
-
-
