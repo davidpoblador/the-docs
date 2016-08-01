@@ -38,9 +38,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--log-level", help="choose log level")
-    parser.add_argument("--database",
-                        help="the database you want to use",
-                        default="manpages.db")
+    parser.add_argument(
+        "--database",
+        help="the database you want to use",
+        default="manpages.db")
     subparsers = parser.add_subparsers()
 
     # dirparse option
@@ -49,8 +50,7 @@ if __name__ == '__main__':
         help='Parses directory into a database',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser_dirparse.add_argument(
-        "source_dir",
-        help="the directory you want to use as source")
+        "source_dir", help="the directory you want to use as source")
 
     parser_dirparse.add_argument(
         "--missing-parsers",
@@ -65,13 +65,11 @@ if __name__ == '__main__':
         'generate',
         help='Generates pages from database',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser_generate.add_argument("--base-url",
-                                 help="Base URL",
-                                 default="https://www.carta.tech/")
+    parser_generate.add_argument(
+        "--base-url", help="Base URL", default="https://www.carta.tech/")
 
     parser_generate.add_argument(
-        "output_dir",
-        help="the directory you want to use as a destination")
+        "output_dir", help="the directory you want to use as a destination")
 
     parser_generate.add_argument(
         "--missing-links",

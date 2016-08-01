@@ -19,7 +19,7 @@ repo_base_url = "http://ftp.se.debian.org/debian/"
 class DebianManpageFetcher(object):
     """docstring for DebianManpageFetcher"""
 
-    def __init__(self, manpage, packages_to_ignore = set()):
+    def __init__(self, manpage, packages_to_ignore=set()):
         self.missing_manpage = manpage
         self.packages_to_ignore = packages_to_ignore
 
@@ -36,16 +36,12 @@ class DebianManpageFetcher(object):
                         for package in packages:
                             self.packages.append(package.split('/'))
 
-                        logging.info(
-                            "Found missing page %s in packages %s",
-                            self.missing_manpage,
-                            self.packages)
+                        logging.info("Found missing page %s in packages %s",
+                                     self.missing_manpage, self.packages)
                         break
             else:
-                logging.info(
-                    "Not Found missing page %s",
-                    self.missing_manpage,
-                )
+                logging.info("Not Found missing page %s",
+                             self.missing_manpage, )
                 return False
 
         for section, package in self.packages:
@@ -53,8 +49,7 @@ class DebianManpageFetcher(object):
             if package in self.packages_to_ignore:
                 logging.info(
                     "Ignoring page %s, it was already fetched (package %s)",
-                    self.missing_manpage, package
-                )
+                    self.missing_manpage, package)
             else:
                 self.fetch_manpages(section, package)
 
@@ -75,7 +70,8 @@ class DebianManpageFetcher(object):
 
         logging.info("Fetching package %s", filename)
 
-        r = requests.get("%s%s" % (repo_base_url, filename,))
+        r = requests.get("%s%s" % (repo_base_url,
+                                   filename, ))
         _, tmpfile = mkstemp()
 
         fp = open(tmpfile, 'w')
@@ -100,8 +96,9 @@ class DebianManpageFetcher(object):
                         compressed = True
                         basename = basename.rsplit('.', 1)[0]
 
-                    final_page_directory = os.path.join(output_dir, namespace, mandir)
-    
+                    final_page_directory = os.path.join(output_dir, namespace,
+                                                        mandir)
+
                     try:
                         os.makedirs(final_page_directory)
                     except OSError:
@@ -118,6 +115,7 @@ class DebianManpageFetcher(object):
                     fp.write(file_contents.read())
                     fp.close()
 
+
 if __name__ == '__main__':
     import time
     import argparse
@@ -125,8 +123,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "missing_manpage",
-        help="the manpage you are looking for")
+        "missing_manpage", help="the manpage you are looking for")
     parser.add_argument("--log-level", help="choose log level")
     args = parser.parse_args()
 

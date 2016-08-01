@@ -195,8 +195,8 @@ class BodyMacroParser(MacroParser):
 
     def p_style(self):
         if self.data:
-            self.manpage.add_content(self.manpage.add_style(self.macro,
-                                                            self.data))
+            self.manpage.add_content(
+                self.manpage.add_style(self.macro, self.data))
 
     # Simple styles
     p_I = p_style

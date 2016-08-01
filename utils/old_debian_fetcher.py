@@ -21,8 +21,8 @@ def main():
 
     packages_to_ignore = set()
     for page, _ in parser.get_missing_links():
-        fetcher = DebianManpageFetcher(page,
-                                       packages_to_ignore=packages_to_ignore)
+        fetcher = DebianManpageFetcher(
+            page, packages_to_ignore=packages_to_ignore)
         if fetcher.fetch():
             for section, package in fetcher.packages:
                 packages_to_ignore.add(package)

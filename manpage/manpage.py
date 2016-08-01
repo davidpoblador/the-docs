@@ -97,9 +97,10 @@ class ManPage(object):
 
                 self.state_parser()(line, self).process()
         except RedirectedPage:
-            self.load_lines(os.path.join(
-                os.path.dirname(os.path.dirname(self.full_path)),
-                self.redirect))
+            self.load_lines(
+                os.path.join(
+                    os.path.dirname(os.path.dirname(self.full_path)),
+                    self.redirect))
             self.initialize_state()
             del (self._redirect)
             self.parse()
@@ -366,10 +367,11 @@ class ManPage(object):
         return [(title, ''.join(content)) for title, content in self.sections]
 
     def html(self):
-        return ManPageHTML(name=self.name,
-                           section=self.section,
-                           subtitle=self.subtitle,
-                           sections=self.get_sections()).get()
+        return ManPageHTML(
+            name=self.name,
+            section=self.section,
+            subtitle=self.subtitle,
+            sections=self.get_sections()).get()
 
 
 def stylize(style, text):

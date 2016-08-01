@@ -15,7 +15,8 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 output_dir = pjoin(package_directory, "..", "sources")
 dest_dir = pjoin(package_directory, "..", "src")
 config_file = pjoin(package_directory, "packages.cfg")
-numbers = map(str, range(1,10))
+numbers = map(str, range(1, 10))
+
 
 def main():
     config = ConfigParser.ConfigParser()
@@ -37,7 +38,8 @@ def main():
                 continue
 
         manpages = defaultdict(set)
-        for (dirpath, dirnames, filenames) in os.walk(package_dir, topdown = True):
+        for (dirpath, dirnames, filenames) in os.walk(
+                package_dir, topdown=True):
             basename = os.path.basename(dirpath)
             if '.git' in dirnames:
                 dirnames.remove('.git')
@@ -51,7 +53,8 @@ def main():
                     section = ext[0]
                     if section in numbers:
                         file = pjoin(dirpath, filename)
-                        file_type = magic.Magic(keep_going = True).from_file(file)
+                        file_type = magic.Magic(
+                            keep_going=True).from_file(file)
                         if "troff" in file_type:
                             if re.search("/[a-z]{2}_[A-Z]{2}/", file):
                                 if not "/en_US/" in file:

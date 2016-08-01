@@ -24,8 +24,7 @@ class ManDirectoryParser(object):
 
     def __init__(self, database):
         self.conn = sqlite3.connect(
-            pjoin(package_directory, "..", database),
-            isolation_level=None)
+            pjoin(package_directory, "..", database), isolation_level=None)
         self.conn.text_factory = str
         self.cursor = self.conn.cursor()
 
@@ -151,10 +150,8 @@ class ManDirectoryParser(object):
                     package_dict['package'] = package
                     package_dict['prefix'] = package
 
-                    current_page = self.get_pagination_link(package,
-                                                            name,
-                                                            section,
-                                                            aliases=True)
+                    current_page = self.get_pagination_link(
+                        package, name, section, aliases=True)
 
                     if prev_page:
                         package_dict['prev_page'] = prev_page
@@ -247,9 +244,9 @@ class ManDirectoryParser(object):
             urls = [sm_item_tpl.substitute(url="%s/%s/%s" %
                                            (self.manpages_url, section, page))
                     for page in pages_in_section[section]]
-            urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
-                self.manpages_url,
-                section, )))
+            urls.append(
+                sm_item_tpl.substitute(url="%s/%s/" % (self.manpages_url,
+                                                       section, )))
             sitemap = load_template('sitemap').substitute(
                 urlset="\n".join(urls))
             rel_sitemap_path = pjoin(section, "sitemap.xml")
@@ -328,17 +325,19 @@ class ManDirectoryParser(object):
 
                     relative_url = "/" + pjoin(section_relative_url, filename)
 
-                    items.append(item_tpl.substitute(name=name,
-                                                     description=subtitle,
-                                                     link=relative_url))
+                    items.append(
+                        item_tpl.substitute(
+                            name=name, description=subtitle,
+                            link=relative_url))
 
-                package_index.append(package_index_section_tpl.substitute(
-                    amount=len(pages),
-                    numeric_section=section,
-                    section=section_description,
-                    section_url=section_url,
-                    content=package_index_tpl.substitute(items='\n'.join(
-                        items))))
+                package_index.append(
+                    package_index_section_tpl.substitute(
+                        amount=len(pages),
+                        numeric_section=section,
+                        section=section_description,
+                        section_url=section_url,
+                        content=package_index_tpl.substitute(items='\n'.join(
+                            items))))
 
             contents = package_index_contents_tpl.substitute(
                 contents="\n".join(package_index))
@@ -361,16 +360,18 @@ class ManDirectoryParser(object):
             f.write(out)
             f.close()
 
-            package_list_items.append(package_list_item_tpl.substitute(
-                url="%s/" % (package, ),
-                package=package))
+            package_list_items.append(
+                package_list_item_tpl.substitute(
+                    url="%s/" % (package, ), package=package))
 
-            sitemap_urls.append(sm_item_tpl.substitute(url="%s/%s/" % (
-                self.packages_url, package)))
+            sitemap_urls.append(
+                sm_item_tpl.substitute(url="%s/%s/" % (self.packages_url,
+                                                       package)))
 
         f = open(pjoin(self.packages_dir, "sitemap.xml"), 'w')
-        f.write(load_template('sitemap').substitute(urlset="\n".join(
-            sitemap_urls)))
+        f.write(
+            load_template('sitemap').substitute(urlset="\n".join(
+                sitemap_urls)))
         f.close()
 
         # Generate package index
@@ -420,30 +421,33 @@ class ManDirectoryParser(object):
                                 description=subtitle,
                                 package=package))
                     else:
-                        items[section].append(section_item_tpl.substitute(
-                            link=page,
-                            name=name,
-                            section=section,
-                            description=subtitle,
-                            package=package))
+                        items[section].append(
+                            section_item_tpl.substitute(
+                                link=page,
+                                name=name,
+                                section=section,
+                                description=subtitle,
+                                package=package))
 
             else:
                 subtitle = self.subtitles[(packages, name, section)]
 
                 if packages == "man-pages":
-                    items[section].append(section_item_manpage_tpl.substitute(
-                        link=page,
-                        name=name,
-                        section=section,
-                        description=subtitle,
-                        package=packages))
+                    items[section].append(
+                        section_item_manpage_tpl.substitute(
+                            link=page,
+                            name=name,
+                            section=section,
+                            description=subtitle,
+                            package=packages))
                 else:
-                    items[section].append(section_item_tpl.substitute(
-                        link=page,
-                        name=name,
-                        section=section,
-                        description=subtitle,
-                        package=packages))
+                    items[section].append(
+                        section_item_tpl.substitute(
+                            link=page,
+                            name=name,
+                            section=section,
+                            description=subtitle,
+                            package=packages))
 
         for section in items:
             section_content = load_template('section-index').substitute(
@@ -460,9 +464,7 @@ class ManDirectoryParser(object):
                 title="Linux Man Pages - %s" % section_description,
                 canonical="",
                 header=load_template('header').safe_substitute(
-                    title=section_description,
-                    section=section,
-                    subtitle=""),
+                    title=section_description, section=section, subtitle=""),
                 breadcrumb=get_breadcrumb(breadcrumb),
                 content=section_content,
                 metadescription=section_description.replace("\"", "\'"), )
@@ -477,12 +479,13 @@ class ManDirectoryParser(object):
         base_tpl = load_template('base')
         index_tpl = load_template('index-manpage')
 
-        index = base_tpl.safe_substitute(metadescription="Linux Man Pages",
-                                         title="Linux Man Pages",
-                                         canonical="",
-                                         header="",
-                                         breadcrumb="",
-                                         content=index_tpl.substitute(), )
+        index = base_tpl.safe_substitute(
+            metadescription="Linux Man Pages",
+            title="Linux Man Pages",
+            canonical="",
+            header="",
+            breadcrumb="",
+            content=index_tpl.substitute(), )
 
         f = open(pjoin(self.manpages_dir, "index.html"), 'w')
         f.write(index)

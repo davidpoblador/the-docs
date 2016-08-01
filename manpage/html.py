@@ -30,11 +30,12 @@ class ManPageHTML(object):
         for title, content in self.sections:
             if title == "SEE ALSO":
                 new_title = "RELATED TO %s&hellip;" % self.name
-                see_also = section_tpl.substitute(title=new_title,
-                                                  content=content)
+                see_also = section_tpl.substitute(
+                    title=new_title, content=content)
             else:
-                contents.append(section_tpl.substitute(title=title,
-                                                       content=content))
+                contents.append(
+                    section_tpl.substitute(
+                        title=title, content=content))
 
         else:
             if see_also:
@@ -64,9 +65,10 @@ class ManPageHTML(object):
 
     @property
     def page_header(self):
-        return load_template('header').substitute(section=self.section,
-                                                  title=self.name,
-                                                  subtitle=self.subtitle, )
+        return load_template('header').substitute(
+            section=self.section,
+            title=self.name,
+            subtitle=self.subtitle, )
 
     @cached_property
     def full_section(self):
@@ -81,11 +83,12 @@ class ManPageHTML(object):
         return self.section_contents
 
     def get(self):
-        return load_template('base').substitute(breadcrumb=self.breadcrumbs,
-                                                title=self.descriptive_title,
-                                                metadescription=self.subtitle,
-                                                header=self.page_header,
-                                                content=self.contents, )
+        return load_template('base').substitute(
+            breadcrumb=self.breadcrumbs,
+            title=self.descriptive_title,
+            metadescription=self.subtitle,
+            header=self.page_header,
+            content=self.contents, )
 
 
 class ManPageHTMLDB(ManPageHTML):
