@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import re
 import git
 import magic
 import shutil
@@ -52,6 +53,9 @@ def main():
                         file = pjoin(dirpath, filename)
                         file_type = magic.Magic(keep_going = True).from_file(file)
                         if "troff" in file_type:
+                            if re.search("/[a-z]{2}_[A-Z]{2}/", file):
+                                if not "/en_US/" in file:
+                                    continue
                             non_numeric_section = "man%s" % (section, )
                             manpages[non_numeric_section].add(file)
 
