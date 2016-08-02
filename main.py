@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
 
+import time
 import logging
+import argcomplete, argparse
+
 from manpage.directory import ManDirectoryParser
 
 
@@ -31,8 +35,6 @@ def generate(args):
 
 
 if __name__ == '__main__':
-    import time
-    import argparse
     start_time = time.time()
 
     parser = argparse.ArgumentParser(
@@ -83,6 +85,9 @@ if __name__ == '__main__':
         default=0)
 
     parser_generate.set_defaults(func=generate)
+
+    # Set bash autocompletion
+    argcomplete.autocomplete(parser)
 
     # Parse arguments
     args = parser.parse_args()
