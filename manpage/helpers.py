@@ -58,7 +58,7 @@ def tokenize(t):
                     arg += char
                     continue
         else:
-            if state == "inarg":
+            if state in {"inarg", "inarg_quote"}:
                 if arg:
                     tokens.append(arg)
                     arg = ""
