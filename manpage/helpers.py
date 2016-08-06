@@ -2,11 +2,82 @@ import os.path
 import shlex
 from string import Template
 from repoze.lru import lru_cache
+import collections
+from itertools import islice
 
 try:
     import re2 as re
 except ImportError:
     import re
+
+def tokenize(t):
+    # FiXME "\ " is going to break everything
+    # https://www.gnu.org/software/groff/manual/html_node/Request-and-Macro-Arguments.html
+    if not t:
+        tokens = []
+    elif ' ' not in t and '"' not in t:
+        tokens = [t]
+    elif '"' not in t and "\\ " not in t:
+        tokens = t.split(None)
+    else:
+        #print "(%s)" % (t,)
+
+        state = "start"
+        arg = ""
+        tokens = []
+        for char in t:
+            if state == "start":
+                if char == " ":
+                    continue
+                elif char == "\"":
+                    state = "inarg_quote"
+                    continue
+                else:
+                    state = "inarg"
+                    arg += char
+                    continue
+
+            if state == "inarg_quote":
+                if char == "\"":
+                    state = "start"
+                    tokens.append(arg)
+                    arg = ""
+                    continue
+                else:
+                    arg += char
+                    continue
+
+            if state == "inarg":
+                if char == " ":
+                    tokens.append(arg)
+                    arg = ""
+                    state = "start"
+                    continue
+                else:
+                    arg += char
+                    continue
+        else:
+            if state == "inarg":
+                if arg:
+                    tokens.append(arg)
+                    arg = ""
+                    state = "start"
+            elif state == "start":
+                pass
+            else:
+                raise Exception("Args should be empty %s" % state)
+
+    return tokens
+
+def consume(iterator, n):
+    "Advance the iterator n-steps ahead. If n is none, consume entirely."
+    # Use functions that consume iterators at C speed.
+    if n is None:
+        # feed the entire iterator into a zero-length deque
+        collections.deque(iterator, maxlen=0)
+    else:
+        # advance to the empty slice starting at position n
+        next(islice(iterator, n, n), None)
 
 
 def load_template(template):

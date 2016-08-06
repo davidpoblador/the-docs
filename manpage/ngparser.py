@@ -6,23 +6,12 @@ import logging
 import argparse
 import os.path
 
-import collections
-from itertools import islice
-from manpage.helpers import load_template, unescape, get_breadcrumb, entitize
-from manpage.helpers import SECTIONS
-from cached_property import cached_property
+from helpers import unescape, entitize
+from helpers import consume, tokenize
 from string import Template
 
-
-def consume(iterator, n):
-    "Advance the iterator n-steps ahead. If n is none, consume entirely."
-    # Use functions that consume iterators at C speed.
-    if n is None:
-        # feed the entire iterator into a zero-length deque
-        collections.deque(iterator, maxlen=0)
-    else:
-        # advance to the empty slice starting at position n
-        next(islice(iterator, n, n), None)
+from manpage import Manpage, Section, SubSection, BulletedList, DefinitionList
+from manpage import Container, IndentedBlock, PreformattedBlock
 
 
 class Line(object):
@@ -65,278 +54,10 @@ class Macro(object):
         "R": Template("${content}"),
     }
 
-
-def tokenize(t):
-    # FiXME "\ " is going to break everything
-    # https://www.gnu.org/software/groff/manual/html_node/Request-and-Macro-Arguments.html
-    if not t:
-        tokens = []
-    elif ' ' not in t and '"' not in t:
-        tokens = [t]
-    elif '"' not in t and "\\ " not in t:
-        tokens = t.split(None)
-    else:
-        #print "(%s)" % (t,)
-
-        state = "start"
-        arg = ""
-        tokens = []
-        for char in t:
-            if state == "start":
-                if char == " ":
-                    continue
-                elif char == "\"":
-                    state = "inarg_quote"
-                    continue
-                else:
-                    state = "inarg"
-                    arg += char
-                    continue
-
-            if state == "inarg_quote":
-                if char == "\"":
-                    state = "start"
-                    tokens.append(arg)
-                    arg = ""
-                    continue
-                else:
-                    arg += char
-                    continue
-
-            if state == "inarg":
-                if char == " ":
-                    tokens.append(arg)
-                    arg = ""
-                    state = "start"
-                    continue
-                else:
-                    arg += char
-                    continue
-        else:
-            if state == "inarg":
-                if arg:
-                    tokens.append(arg)
-                    arg = ""
-                    state = "start"
-            elif state == "start":
-                pass
-            else:
-                raise Exception("Args should be empty %s" % state)
-
-    return tokens
-
-
-class BaseContainer(object):
-    def __init__(self):
-        self.contents = []
-
-    def __bool__(self):
-        return bool(self.contents)
-
-    def append(self, object):
-        self.contents.append(object)
-
-    def prepend(self, object):
-        self.contents.insert(0, object)
-
-    def html(self):
-        p_tpl = load_template('p')
-        out = []
-        strings = []
-        for item in self.contents:
-            if isinstance(item, str):
-                if not item:
-                    if not strings:
-                        pass
-                    else:
-                        out.append(p_tpl.substitute(content=' '.join(strings)))
-                        strings = []
-                else:
-                    strings.append(item)
-            else:
-                if strings:
-                    out.append(p_tpl.substitute(content=' '.join(strings)))
-                    strings = []
-
-                out.append(item.html())
-        else:
-            if strings:
-                out.append(p_tpl.substitute(content=' '.join(strings)))
-                strings = []
-
-        return ''.join(out)
-
-
-class Container(BaseContainer):
-    pass
-
-
-class Section(BaseContainer):
-    """docstring for Section"""
-    tpl = load_template('section')
-
-    def __init__(self):
-        super(Section, self).__init__()
-        self.title = None
-
-    def html(self):
-        out = super(Section, self).html()
-
-        return self.tpl.substitute(title=self.title, content=out)
-
-
-class Manpage(BaseContainer):
-    """docstring for Manpage"""
-
-    def __init__(self, name, section):
-        super(Manpage, self).__init__()
-        self.name = name
-        self.section = section
-
-        self.title = None
-
-    @cached_property
-    def descriptive_title(self):
-        return "%s: %s" % (self.name,
-                           self.title,)
-
-    @property
-    def page_header(self):
-        return load_template('header').substitute(
-            section=self.section,
-            title=self.name,
-            subtitle=self.title,)
-
-    def pre_process(self):
-        self.contents = filter(self.process_sections, self.contents)
-
-    def process_sections(self, section):
-        if section.title == 'NAME':
-            content = section.contents[0]
-            chunks = content.split('-', 1)
-            self.title = chunks[-1].strip().capitalize()
-            return False
-        elif section.title == 'SEE ALSO':
-            section.title = "RELATED TO %s&hellip;" % self.name
-
-        return True
-
-    @cached_property
-    def section_description(self):
-        return SECTIONS[self.full_section]
-
-    @cached_property
-    def full_section(self):
-        return "man%s" % self.section
-
-    @property
-    def breadcrumbs(self):
-        breadcrumb_sections = [
-            ("/man-pages/", "Man Pages"),
-            ("/man-pages/man%s/" % self.section, self.section_description),
-            ("/man-pages/man%s/%s.%s.html" % (self.section,
-                                              self.name,
-                                              self.section,),
-             self.descriptive_title),
-        ]
-
-        breadcrumbs = [get_breadcrumb(breadcrumb_sections)]
-
-        return '\n'.join(breadcrumbs)
-
-    def html(self):
-        content = super(Manpage, self).html()
-
-        return load_template('base').substitute(
-            breadcrumb=self.breadcrumbs,
-            title=self.descriptive_title,
-            metadescription=self.title,
-            header=self.page_header,
-            content=content,)
-
-        pass
-
-
-class IndentedBlock(BaseContainer):
-    pass
-
-
-class PreformattedBlock(BaseContainer):
-
-    def html(self):
-        out = [item for item in self.contents]
-        return load_template('pre').substitute(content='\n'.join(out))
-
-
-class SubSection(Section):
-    tpl = load_template('subsection')
-
-
-class DefinitionList(BaseContainer):
-
-    def append(self, object):
-        if self.contents[-1][0] is None:
-            self.contents[-1][0] = object
-        else:
-            self.contents[-1][1].append(object)
-
-    def html(self):
-        dtdd_tpl = load_template('dtdd')
-        dl_tpl = load_template('dl')
-
-        out = [dtdd_tpl.substitute(
-            bullet=bullet, content=items.html())
-               for bullet, items in self.contents]
-        return dl_tpl.substitute(content=''.join(out))
-
-    def add_bullet(self):
-        self.contents.append([None, Container()])
-
-
-class BulletedList(BaseContainer):
-
-    def append(self, object):
-        self.contents[-1][1].append(object)
-
-    def add_bullet(self, args):
-        if not args or not args[0]:
-            bullet = ''
-        elif args[0] == "\\(bu":
-            bullet = '*'
-        else:
-            bullet = args[0]
-
-        self.contents.append([bullet, Container()])
-
-    def html(self):
-        bullets = set([bullet for bullet, _ in self.contents])
-        n_bullets = len(bullets)
-
-        if not n_bullets:
-            return ""
-        elif n_bullets == 1 and len(list(bullets)[0]) < 2:
-            ul_tpl = load_template('ul')
-            li_tpl = load_template('li')
-
-            out = [li_tpl.substitute(content=items.html()) for _, items in self.contents]
-
-            return ul_tpl.substitute(content=''.join(out))
-            # UL
-        else:
-            dtdd_tpl = load_template('dtdd')
-            dl_tpl = load_template('dl')
-
-            out = []
-            for bullet, items in self.contents:
-                out.append(dtdd_tpl.substitute(bullet=bullet, content=items.html()))
-
-            return dl_tpl.substitute(content=''.join(out))
-
-
 # FIXME Write custom Exception
 def unexpected_macro(parser, macro, args):
     exception = "Missing Macro (%s) in parser (%s)" % (macro,
-                                                       parser,)
+                                                       parser, )
     raise Exception(exception)
 
 
@@ -348,7 +69,8 @@ def stylize(macro, args):
         for i, chunk in enumerate(args):
             style = Macro.style_tpl[macro[i % 2]]
             out.append(' '.join([style.substitute(content=subchunk)
-                                 for subchunk in chunk.replace('\t',' ').split(' ')]))
+                                 for subchunk in chunk.replace(
+                                     '\t', ' ').split(' ')]))
 
         return ''.join(out)
     else:
@@ -368,6 +90,11 @@ class ManpageParser(object):
         self.lines = []
 
         self.readfile()
+
+    @property
+    def path(self):
+        """ self.path property """
+        return self._path
 
     def readfile(self):
         with open(self.path) as fp:
@@ -546,11 +273,6 @@ class ManpageParser(object):
                 return content
 
             return None, content
-
-    @property
-    def path(self):
-        """ self.path property """
-        return self._path
 
 def main():
     """Main"""
