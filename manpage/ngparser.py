@@ -38,6 +38,8 @@ class Macro(object):
         # Man7 specific
         "UC",
         "PD",
+        # Font. FIXME
+        "ft",
     }
 
     vertical_spacing = {
@@ -142,7 +144,7 @@ class ManpageParser(object):
         content = None
         iter = enumerate(self.lines[start:])
         for i, (macro, args) in iter:
-            #print "LINE (CP: %s): (%s: %s) [%s]" % (parser, macro, args, repr(content))
+            logging.debug("LINE (CP: %s): (%s: %s) [%s]",parser, macro, args, repr(content))
             #print ">> %s" % (content,)
 
             if parser == "ROOT":
@@ -184,6 +186,9 @@ class ManpageParser(object):
                             return i - 1, content
                     elif macro == 'SH':
                         return i - 1, content
+                    elif macro in {'RE'}:
+                        # This is to fix a bug in proc.5 FIXME
+                        continue
                 elif parser == 'RS-RE':
                     if content is None:
                         content = IndentedBlock()
@@ -192,12 +197,20 @@ class ManpageParser(object):
                         return i, content
                     elif macro in {'SH', 'SS'}:
                         return i - 1, content
+                    elif macro in {'fi'}:
+                        # This is to fix a bug in proc.5 FIXME
+                        return i - 1, content
                 elif parser == 'PRE':
                     if content is None:
                         content = PreformattedBlock()
                         continue
                     if macro == 'fi':
                         return i, content
+                    elif macro in {'RS'}:
+                        # This is to fix a bug in proc.5 FIXME
+                        continue
+                    elif macro:
+                        raise UnexpectedMacro(parser, macro, args)
                 elif parser == 'TP':
                     if content is None:
                         content = DefinitionList()
@@ -207,7 +220,7 @@ class ManpageParser(object):
                         continue
                     elif macro in {'SH', 'SS', 'RE'}:
                         return i - 1, content
-                    elif macro in {'IP', 'RS'}:
+                    elif macro in {'IP', 'RS', 'nf'}:
                         pass
                     elif macro:
                         raise UnexpectedMacro(parser, macro, args)
@@ -218,13 +231,13 @@ class ManpageParser(object):
                     if macro == 'IP':
                         content.add_bullet(args)
                         continue
-                    elif macro in {'SH', 'SS'}:
+                    elif macro in {'SH', 'SS', 'RE'}:
                         return i - 1, content
                     elif macro in Macro.new_paragraph:
                         return i - 1, content
                     elif macro == 'TP':
                         return i - 1, content
-                    elif macro == 'RS':
+                    elif macro in {'RS', 'nf'}:
                         pass
                     elif macro:
                         raise UnexpectedMacro(parser, macro, args)
