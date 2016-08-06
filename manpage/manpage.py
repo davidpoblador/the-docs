@@ -2,6 +2,11 @@ from helpers import load_template, get_breadcrumb
 from cached_property import cached_property
 from helpers import SECTIONS
 
+try:
+    import re2 as re
+except ImportError:
+    import re
+
 class BaseContainer(object):
     def __init__(self):
         self.contents = []
@@ -46,6 +51,52 @@ class BaseContainer(object):
 class Container(BaseContainer):
     pass
 
+class Table(BaseContainer):
+    def html(self):
+        # FIXME: At some point we need to rewrite this. screen.1 contains
+        # some problems
+        state = 0
+        cells = []
+        splitter = '\t'
+        for line in self.contents:
+            row = line.split(splitter)
+            if state == 0 and row[-1].endswith('.'):
+                columns = len(row[0].split())
+                state = 2
+            elif state == 0 and 'tab(' in row[0]:
+                splitter = re.sub(r'^.*tab\((.+)\);', r'\1', row[0])
+            elif state == 2:
+                if len(row) == 1 and row[0] == '_':
+                    pass
+                else:
+                    if 'T{' not in line and 'T}' not in line:
+                        while len(row) < columns:
+                            row.append('')
+                    cells.extend(row)
+        try:
+            while True:
+                s, e = cells.index('T{'), cells.index('T}')
+                cells[s:e + 1] = [' '.join(cells[s + 1:e])]
+        except:
+            pass
+
+        out = ""
+        first = True
+        while cells:
+            out += "\n<tr>"
+            for cell in cells[0:columns]:
+                cell = cell.replace("\\0", "")
+                if first:
+                    out += "\n<th>%s</th>" % cell
+                else:
+                    out += "\n<td>%s</td>" % cell
+            del cells[0:columns]
+            first = False
+            out += "</tr>\n"
+        out = "<table class=\"table table-striped\">%s</table>" % out
+
+        return out
+        
 class Section(BaseContainer):
     """docstring for Section"""
     tpl = load_template('section')
@@ -163,7 +214,6 @@ class DefinitionList(BaseContainer):
 
     def add_bullet(self):
         self.contents.append([None, Container()])
-
 
 class BulletedList(BaseContainer):
     def append(self, object):

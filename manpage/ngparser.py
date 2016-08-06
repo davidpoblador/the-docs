@@ -11,7 +11,7 @@ from helpers import consume, tokenize
 from string import Template
 
 from manpage import Manpage, Section, SubSection, BulletedList, DefinitionList
-from manpage import Container, IndentedBlock, PreformattedBlock
+from manpage import Container, IndentedBlock, PreformattedBlock, Table
 
 
 class Line(object):
@@ -20,7 +20,6 @@ class Line(object):
     ec = '\\'
 
     comment = ec + '"'
-
 
 class Macro(object):
     single_style = {'B', 'I'}
@@ -54,12 +53,10 @@ class Macro(object):
         "R": Template("${content}"),
     }
 
-# FIXME Write custom Exception
-def unexpected_macro(parser, macro, args):
-    exception = "Missing Macro (%s) in parser (%s)" % (macro,
-                                                       parser, )
-    raise Exception(exception)
-
+class UnexpectedMacro(Exception):
+    def __init__(self, parser, macro, args):
+        message = "Missing Macro (%s) in parser (%s)" % (macro, parser, )
+        super(UnexpectedMacro, self).__init__(message)
 
 def stylize(macro, args):
     if macro in Macro.single_style:
@@ -74,8 +71,7 @@ def stylize(macro, args):
 
         return ''.join(out)
     else:
-        unexpected_macro("STYLE", macro, args)
-
+        raise UnexpectedMacro("STYLE", macro, args)
 
 class ManpageParser(object):
     """Man Page Parser Class"""
@@ -157,7 +153,7 @@ class ManpageParser(object):
                     consume(iter, inc)
                     continue
                 elif macro:
-                    unexpected_macro(parser, macro, args)
+                    raise UnexpectedMacro(parser, macro, args)
                 elif not macro:
                     continue
             else:
@@ -209,7 +205,7 @@ class ManpageParser(object):
                     elif macro in {'IP', 'RS'}:
                         pass
                     elif macro:
-                        unexpected_macro(parser, macro, args)
+                        raise UnexpectedMacro(parser, macro, args)
                 elif parser == 'IP':
                     if content is None:
                         content = BulletedList()
@@ -226,11 +222,11 @@ class ManpageParser(object):
                     elif macro == 'RS':
                         pass
                     elif macro:
-                        unexpected_macro(parser, macro, args)
+                        raise UnexpectedMacro(parser, macro, args)
                 elif parser == 'TABLE':
                     if content is None:
                         # FIXME We need a proper parser for tables
-                        content = Container()
+                        content = Table()
                         continue
 
                     if macro == 'TE':
@@ -265,8 +261,7 @@ class ManpageParser(object):
                     content.append(ip_content)
                     consume(iter, inc)
                 else:
-                    unexpected_macro(parser, macro, args)
-
+                    raise UnexpectedMacro(parser, macro, args)
         else:
             if parser == 'ROOT':
                 content.pre_process()
