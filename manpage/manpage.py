@@ -187,7 +187,7 @@ class ManPage(object):
             self.restore_state()
 
     def add_url(self, data):
-        if re.match("[^@]+@[^@]+\.[^@]+", data):
+        if re.match(r"[^@]+@[^@]+\.[^@]+", data):
             self.add_content("<a href=\"mailto:%s\">%s</a>" % (data,
                                                                data, ))
         else:

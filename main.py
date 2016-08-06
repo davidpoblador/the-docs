@@ -3,7 +3,8 @@
 
 import time
 import logging
-import argcomplete, argparse
+import argparse
+import argcomplete
 
 from manpage.directory import ManDirectoryParser
 
