@@ -10,6 +10,7 @@ try:
 except ImportError:
     import re
 
+
 def tokenize(t):
     # FiXME "\ " is going to break everything
     # https://www.gnu.org/software/groff/manual/html_node/Request-and-Macro-Arguments.html
@@ -68,6 +69,7 @@ def tokenize(t):
                 raise Exception("Args should be empty %s" % state)
 
     return tokens
+
 
 def consume(iterator, n):
     "Advance the iterator n-steps ahead. If n is none, consume entirely."

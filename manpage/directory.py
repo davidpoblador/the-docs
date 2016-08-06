@@ -16,6 +16,7 @@ from html import ManPageHTMLDB
 
 package_directory = dname(os.path.abspath(__file__))
 
+
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
 

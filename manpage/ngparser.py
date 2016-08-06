@@ -21,6 +21,7 @@ class Line(object):
 
     comment = ec + '"'
 
+
 class Macro(object):
     single_style = {'B', 'I'}
     compound_style = {'BI', 'BR', 'IR', 'RI', 'RB'}
@@ -53,10 +54,13 @@ class Macro(object):
         "R": Template("${content}"),
     }
 
+
 class UnexpectedMacro(Exception):
     def __init__(self, parser, macro, args):
-        message = "Missing Macro (%s) in parser (%s)" % (macro, parser, )
+        message = "Missing Macro (%s) in parser (%s)" % (macro,
+                                                         parser, )
         super(UnexpectedMacro, self).__init__(message)
+
 
 def stylize(macro, args):
     if macro in Macro.single_style:
@@ -72,6 +76,7 @@ def stylize(macro, args):
         return ''.join(out)
     else:
         raise UnexpectedMacro("STYLE", macro, args)
+
 
 class ManpageParser(object):
     """Man Page Parser Class"""
@@ -268,6 +273,7 @@ class ManpageParser(object):
                 return content
 
             return None, content
+
 
 def main():
     """Main"""

@@ -7,6 +7,7 @@ try:
 except ImportError:
     import re
 
+
 class BaseContainer(object):
     def __init__(self):
         self.contents = []
@@ -50,6 +51,7 @@ class BaseContainer(object):
 
 class Container(BaseContainer):
     pass
+
 
 class Table(BaseContainer):
     def html(self):
@@ -96,7 +98,8 @@ class Table(BaseContainer):
         out = "<table class=\"table table-striped\">%s</table>" % out
 
         return out
-        
+
+
 class Section(BaseContainer):
     """docstring for Section"""
     tpl = load_template('section')
@@ -109,6 +112,7 @@ class Section(BaseContainer):
         out = super(Section, self).html()
 
         return self.tpl.substitute(title=self.title, content=out)
+
 
 class Manpage(BaseContainer):
     """docstring for Manpage"""
@@ -214,6 +218,7 @@ class DefinitionList(BaseContainer):
 
     def add_bullet(self):
         self.contents.append([None, Container()])
+
 
 class BulletedList(BaseContainer):
     def append(self, object):
