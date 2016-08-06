@@ -6,7 +6,7 @@ import datetime
 from cached_property import cached_property
 from collections import Counter, defaultdict
 
-from manpage import ManPage
+from legacymanpage import ManPage
 from helpers import pjoin, dname
 from helpers import MissingParser, NotSupportedFormat
 from helpers import SECTIONS
@@ -15,7 +15,6 @@ from helpers import load_template, get_breadcrumb
 from html import ManPageHTMLDB
 
 package_directory = dname(os.path.abspath(__file__))
-
 
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
