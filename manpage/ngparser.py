@@ -26,33 +26,54 @@ class Line(object):
 
     comment = ec + '"'
 
+class CustomMacros(object):
+    def __init__(self):
+        self.macros = dict()
+        self.current_macro = None
+        pass
+
+    def add_line(self, line):
+        self.macros[self.current_macro].append(line)
+
+    def add_macro(self, macro):
+        self.macros[macro] = []
+        self.current_macro = macro
+        
 
 class Macro(object):
-    single_style = {'B', 'I', 'SM'}
+    single_style = {'B', 'I', 'SM', 'R'}
     compound_style = {'BI', 'BR', 'IR', 'RI', 'RB', 'IB', 'SB'}
 
     styles = single_style | compound_style
 
+    conditional = {'if', 'ie', 'el'}
+
     ignore = {
         # Tabulation crap
-        "ta",
+        "ta", "DT",
         # Page break stuff
-        "ne", "pc", 
+        "ne", "pc", "bp",
         # Temporary
         "in",
         # Man7 specific
         "UC",
         "PD",
         # Font. FIXME
-        "ft", "fam",
+        "ft", "fam", "ul", "ps", "ns", "bd",
         # Margin adjustment
-        "ad", 
+        "ad", "ll",
         # Others,
-        "nh", "hy", "IX",
+        "nh", "hy", "IX", "ev", "nr",
         # Probably FIX (paragraph)
-        "HP", "ti", "rs", "na",
+        "HP", "ti", "rs", "na", "ce", "Op", "Vb", "Ve",
         # Fix IF
-        "if", "ie", "el", "de"
+        "ds", "tr",
+        # Author...
+        "BY",
+        # Crap
+        "\{{{}}}", "it", "zZ", "zY", "rm", "Sp",
+        # grep.in.i has lots of weird things
+        "MTO", "URL",
     }
 
     vertical_spacing = {
@@ -72,6 +93,9 @@ class Macro(object):
     }
 
 
+class RedirectedPage2(Exception):
+    pass
+
 class UnexpectedMacro(Exception):
     def __init__(self, parser, macro, args, file = ""):
         message = "Missing Macro (%s) in parser (%s) in file (%s)" % (macro,
@@ -83,6 +107,31 @@ class NotSupportedFormat2(Exception):
         message = "Not Supported Format in file (%s)" % (file, )
 
         super(NotSupportedFormat2, self).__init__(message)
+
+class FileMacroIterator(object):
+    def __init__(self, fp):
+        self.lines = fp.readlines()
+        self.current = 0
+        self.high = len(self.lines)
+        self.buffered_lines = []
+
+    def __iter__(self):
+        return self
+
+    def __next__(self): # Compatibility with python 3
+        return self.next()
+
+    def next(self):
+        if self.buffered_lines:
+            return self.buffered_lines.pop(0)
+        elif self.current == self.high:
+            raise StopIteration
+        else:
+            self.current += 1
+            return self.lines[self.current - 1]
+
+    def add_lines(self, lines):
+        self.buffered_lines = lines
 
 class ManpageParser(object):
     """Man Page Parser Class"""
@@ -96,6 +145,7 @@ class ManpageParser(object):
         self._path = path
         self.lines = []
         self.parser = None
+        self.custom_macros = CustomMacros()
 
         self.readfile()
 
@@ -130,14 +180,34 @@ class ManpageParser(object):
 
     def readfile(self):
         with open(self.path) as fp:
-            for line in fp:
+            extra = []
+            iterator = FileMacroIterator(fp)
+            for line in iterator:
                 line = line.rstrip()
+
+                if line and len(line) > 2:
+                    if line[-1] == "\\":
+                        if line[-2] != "\\" and line[-2] != "{":
+                            extra.append(line[:-1])
+                            continue
+                    elif line[-2:] == "\\c":
+                        extra.append(line[:-2])
+                        continue
+
+                if extra:
+                    extra.append(line)
+                    line = ' '.join(extra)
+                    extra = []
+
+                # Fix exception in tc-flower.8
+                if line == '.splitfont':
+                    line = 'splitfont'
 
                 if Line.comment in line:
                     # Line has comment
                     line = line.split(Line.comment, 1)[0]
 
-                if line == Line.cc or line == Line.c2:
+                if line == Line.cc or line == Line.c2 or line == '\'.':
                     # Empty line (cc or c2)
                     continue
 
@@ -147,23 +217,83 @@ class ManpageParser(object):
                     continue
 
                 if line[0] in {Line.cc, Line.c2}:
-                    chunks = line[1:].split(None, 1)
+                    chunks = line[1:].lstrip().split(None, 1)
 
                     if not chunks:
                         # Very special case lvm2create_initrd.8
                         continue
 
                     macro = chunks[0]
+
+                    if macro == '"':
+                        # Bug in run.1
+                        continue
+
+                    if macro == 'b':
+                        # Bug in devlink-sb.8
+                        macro = 'B'
+
+                    if macro in self.custom_macros.macros:
+                        iterator.add_lines(self.custom_macros.macros[macro])
+                        continue
+
                     if len(chunks) == 2:
                         rest = chunks[1]
                     else:
                         rest = ""
+
+                    if macro == 'so':
+                        raise RedirectedPage2("Page %s redirects to %s" % (self.path, rest))
+
+                    if line.startswith(".el\\{\\"):
+                        # There is a lot of crap in pages (isag.1, for instance)
+                        macro = "el"
+                        rest = "\\{\\" + rest
+
+                    if macro in Macro.conditional:
+                        # FIXME: This needs reworking
+                        braces = 0
+
+                        if "\\{" in rest:
+                            braces += 1
+
+                        while braces:
+                            macro_line = next(iterator)
+                            if "\\{" in macro_line:
+                                braces += 1
+
+                            if "\\}" in macro_line:
+                                braces -= 1
+
+                            if not braces:
+                                break
+
+                        continue
 
                     if self.parser is None:
                         if macro == "TH":
                             self.parser = ManpageParser.process_man7
                         elif macro == "Dd":
                             self.parser = False
+
+                    if macro == 'ig':
+                        while True:
+                            macro_line = next(iterator)
+                            if macro_line.rstrip() == "..":
+                                break
+
+                        continue
+
+                    if macro in {'de', 'de1'}:
+                        self.custom_macros.add_macro(rest.strip())
+                        while True:
+                            macro_line = next(iterator)
+                            if macro_line.rstrip() == "..":
+                                break
+                            else:
+                                self.custom_macros.add_line(macro_line)
+
+                        continue
 
                     if macro in Macro.ignore:
                         continue
@@ -222,6 +352,9 @@ class ManpageParser(object):
                 if macro in Macro.styles:
                     args = self.stylize(macro, args)
                     macro = ''
+                elif macro in {'CW'}:
+                    macro = ''
+                    args = ' '.join(args)
 
                 if parser == 'SECTION':
                     if macro == 'SH':
@@ -277,6 +410,8 @@ class ManpageParser(object):
 
                     if macro == 'EE':
                         return i, content
+                    elif macro in {'nf', 'fi'}:
+                        continue
                     elif macro:
                         raise UnexpectedMacro(parser, macro, args, self.path)
                 elif parser == 'PRE':
@@ -309,6 +444,8 @@ class ManpageParser(object):
                         return i - 1, content
                     elif macro in {'IP', 'RS', 'nf', 'TS', 'UR', 'EX'}:
                         pass
+                    elif macro in {'fi'}:
+                        continue
                     elif macro in Macro.new_paragraph:
                         return i - 1, content
                     elif macro:
@@ -337,6 +474,9 @@ class ManpageParser(object):
 
                     if macro == 'TE':
                         return i, content
+                    elif macro in {'nf', 'fi', 'IP'}:
+                        # Errors, errors...
+                        continue
                 elif parser == 'MAILTO':
                     # FIXME: Missing processor
                     if content is None:

@@ -15,7 +15,7 @@ from helpers import load_template, get_breadcrumb
 from html import ManPageHTMLDB
 
 from ngparser import ManpageParser
-from ngparser import NotSupportedFormat2, UnexpectedMacro
+from ngparser import NotSupportedFormat2, UnexpectedMacro, RedirectedPage2
 
 package_directory = dname(os.path.abspath(__file__))
 
@@ -62,12 +62,15 @@ class ManDirectoryParser(object):
         self.conn.execute("DELETE FROM manpage_sections")
 
         for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
-            logging.info("Processing man page %s ...", page_file)
+            logging.debug("Processing man page %s ...", page_file)
             try:
                 parser = ManpageParser(page_file)
                 parsed = parser.process()
             except NotSupportedFormat2:
                 logging.info("Skipping %s, not supported format...", page_file)
+                continue
+            except RedirectedPage2:
+                logging.info("Page %s, has a redirection...", page_file)                
                 continue
             except UnexpectedMacro as e:
                 macro = str(e).split('(',1)[1].split(')', 1)[0]
@@ -81,7 +84,7 @@ class ManDirectoryParser(object):
 
 
 
-            logging.info("Man page %s processed correctly...", page_file)
+            logging.debug("Man page %s processed correctly...", page_file)
 
         #for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
         #    logging.debug("Processing man page %s ..." % page_file)
