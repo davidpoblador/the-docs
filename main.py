@@ -19,6 +19,15 @@ def dirparse(args):
         print "Top %s missing parsers: %s" % (
             mps, parser.missing_parsers.most_common(mps))
 
+def dirparse2(args):
+    parser = ManDirectoryParser(database=args.database)
+    parser.parse_directory2(source_dir=args.source_dir)
+
+    #mps = args.missing_parsers
+    #
+    #if mps:
+    #    print "Top %s missing parsers: %s" % (
+    #        mps, parser.missing_parsers.most_common(mps))
 
 def generate(args):
     parser = ManDirectoryParser(database=args.database)
@@ -62,6 +71,22 @@ if __name__ == '__main__':
         default=0)
 
     parser_dirparse.set_defaults(func=dirparse)
+
+    # dirparse option
+    parser_dirparse2 = subparsers.add_parser(
+        'dirparse2',
+        help='Parses directory into a database',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_dirparse2.add_argument(
+        "source_dir", help="the directory you want to use as source")
+
+    #parser_dirparse.add_argument(
+    #    "--missing-parsers",
+    #    help="choose the amount of missing parsers to display",
+    #    type=int,
+    #    default=0)
+
+    parser_dirparse2.set_defaults(func=dirparse2)
 
     # generate option
     parser_generate = subparsers.add_parser(

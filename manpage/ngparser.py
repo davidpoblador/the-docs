@@ -12,7 +12,12 @@ from string import Template
 
 from manpage import Manpage, Section, SubSection, BulletedList, DefinitionList
 from manpage import Container, IndentedBlock, PreformattedBlock, Table
+from manpage import Url, Mailto
 
+try:
+    import re2 as re
+except ImportError:
+    import re
 
 class Line(object):
     cc = '.'
@@ -24,7 +29,7 @@ class Line(object):
 
 class Macro(object):
     single_style = {'B', 'I'}
-    compound_style = {'BI', 'BR', 'IR', 'RI', 'RB'}
+    compound_style = {'BI', 'BR', 'IR', 'RI', 'RB', 'IB'}
 
     styles = single_style | compound_style
 
@@ -39,7 +44,13 @@ class Macro(object):
         "UC",
         "PD",
         # Font. FIXME
-        "ft",
+        "ft", "fam", "SM",
+        # Margin adjustment
+        "ad", 
+        # Others,
+        "nh", "hy", "IX",
+        # Probably FIX (paragraph)
+        "HP", "ti", "rs",
     }
 
     vertical_spacing = {
@@ -58,27 +69,16 @@ class Macro(object):
 
 
 class UnexpectedMacro(Exception):
-    def __init__(self, parser, macro, args):
-        message = "Missing Macro (%s) in parser (%s)" % (macro,
-                                                         parser, )
+    def __init__(self, parser, macro, args, file = ""):
+        message = "Missing Macro (%s) in parser (%s) in file (%s)" % (macro,
+                                                         parser, file, )
         super(UnexpectedMacro, self).__init__(message)
 
+class NotSupportedFormat2(Exception):
+    def __init__(self, file):
+        message = "Not Supported Format in file (%s)" % (file, )
 
-def stylize(macro, args):
-    if macro in Macro.single_style:
-        return Macro.style_tpl[macro].substitute(content=' '.join(args))
-    elif macro in Macro.compound_style:
-        out = []
-        for i, chunk in enumerate(args):
-            style = Macro.style_tpl[macro[i % 2]]
-            out.append(' '.join([style.substitute(content=subchunk)
-                                 for subchunk in chunk.replace(
-                                     '\t', ' ').split(' ')]))
-
-        return ''.join(out)
-    else:
-        raise UnexpectedMacro("STYLE", macro, args)
-
+        super(NotSupportedFormat2, self).__init__(message)
 
 class ManpageParser(object):
     """Man Page Parser Class"""
@@ -91,8 +91,33 @@ class ManpageParser(object):
         self.numeric_section = ext[1:]
         self._path = path
         self.lines = []
+        self.parser = None
 
         self.readfile()
+
+    def stylize(self, macro, args):
+        if macro in Macro.single_style:
+            return Macro.style_tpl[macro].substitute(content=' '.join(args))
+        elif macro in Macro.compound_style:
+            out = []
+            for i, chunk in enumerate(args):
+                style = Macro.style_tpl[macro[i % 2]]
+                out.append(' '.join([style.substitute(content=subchunk)
+                                     for subchunk in chunk.replace(
+                                         '\t', ' ').split(' ')]))
+
+            return ''.join(out)
+        else:
+            raise UnexpectedMacro("STYLE", macro, args, self.path)
+
+    def url(self, data):
+        if re.match(r"[^@]+@[^@]+\.[^@]+", data):
+            return "<a href=\"mailto:%s\">%s</a>" % (data, data, )
+        else:
+            return "<a href=\"%s\">%s</a>" % (data, data, )
+
+    def mailto(self, data):
+        return "<a href=\"mailto:%s\">%s</a>" % (data, data, )
 
     @property
     def path(self):
@@ -119,11 +144,22 @@ class ManpageParser(object):
 
                 if line[0] in {Line.cc, Line.c2}:
                     chunks = line[1:].split(None, 1)
+
+                    if not chunks:
+                        # Very special case lvm2create_initrd.8
+                        continue
+
                     macro = chunks[0]
                     if len(chunks) == 2:
                         rest = chunks[1]
                     else:
                         rest = ""
+
+                    if self.parser is None:
+                        if macro == "TH":
+                            self.parser = ManpageParser.process_man7
+                        elif macro == "Dd":
+                            self.parser = False
 
                     if macro in Macro.ignore:
                         continue
@@ -140,7 +176,16 @@ class ManpageParser(object):
                 else:
                     self.lines.append(('', entitize(line)))
 
-    def process(self, start=0, parser="ROOT"):
+
+    def process(self, *args, **kwargs):
+        if self.parser is None:
+            raise NotSupportedFormat2(self.path)
+        elif not callable(self.parser):
+            raise NotSupportedFormat2(self.path)
+
+        return self.parser(self, *args, **kwargs)
+
+    def process_man7(self, start=0, parser="ROOT"):
         content = None
         iter = enumerate(self.lines[start:])
         for i, (macro, args) in iter:
@@ -160,12 +205,12 @@ class ManpageParser(object):
                     consume(iter, inc)
                     continue
                 elif macro:
-                    raise UnexpectedMacro(parser, macro, args)
+                    raise UnexpectedMacro(parser, macro, args, self.path)
                 elif not macro:
                     continue
             else:
                 if macro in Macro.styles:
-                    args = stylize(macro, args)
+                    args = self.stylize(macro, args)
                     macro = ''
 
                 if parser == 'SECTION':
@@ -176,6 +221,9 @@ class ManpageParser(object):
                             continue
                         else:
                             return i - 1, content
+                    elif macro in {'RE', 'fi'}:
+                        # Plenty of pages with bugs
+                        continue
                 elif parser == 'SUBSECTION':
                     if macro == 'SS':
                         if content is None:
@@ -193,6 +241,7 @@ class ManpageParser(object):
                     if content is None:
                         content = IndentedBlock()
                         continue
+
                     if macro == 'RE':
                         return i, content
                     elif macro in {'SH', 'SS'}:
@@ -200,17 +249,31 @@ class ManpageParser(object):
                     elif macro in {'fi'}:
                         # This is to fix a bug in proc.5 FIXME
                         return i - 1, content
+                elif parser == 'EXAMPLE':
+                    if content is None:
+                        content = PreformattedBlock()
+                        continue
+
+                    if macro == 'EE':
+                        return i, content
+                    elif macro:
+                        raise UnexpectedMacro(parser, macro, args, self.path)
                 elif parser == 'PRE':
                     if content is None:
                         content = PreformattedBlock()
                         continue
+
                     if macro == 'fi':
                         return i, content
-                    elif macro in {'RS'}:
+                    elif macro in {'SH', 'SS', 'RE'}:
+                        return i - 1, content
+                    elif macro in Macro.new_paragraph:
+                        pass
+                    elif macro in {'RS', 'TP', 'IP'}:
                         # This is to fix a bug in proc.5 FIXME
                         continue
                     elif macro:
-                        raise UnexpectedMacro(parser, macro, args)
+                        raise UnexpectedMacro(parser, macro, args, self.path)
                 elif parser == 'TP':
                     if content is None:
                         content = DefinitionList()
@@ -218,12 +281,17 @@ class ManpageParser(object):
                     if macro == 'TP':
                         content.add_bullet()
                         continue
+                    elif macro == 'TQ':
+                        content.expect_bullet()
+                        continue
                     elif macro in {'SH', 'SS', 'RE'}:
                         return i - 1, content
-                    elif macro in {'IP', 'RS', 'nf'}:
+                    elif macro in {'IP', 'RS', 'nf', 'TS'}:
                         pass
+                    elif macro in Macro.new_paragraph:
+                        return i - 1, content
                     elif macro:
-                        raise UnexpectedMacro(parser, macro, args)
+                        raise UnexpectedMacro(parser, macro, args, self.path)
                 elif parser == 'IP':
                     if content is None:
                         content = BulletedList()
@@ -237,17 +305,32 @@ class ManpageParser(object):
                         return i - 1, content
                     elif macro == 'TP':
                         return i - 1, content
-                    elif macro in {'RS', 'nf'}:
+                    elif macro in {'RS', 'nf', 'TS'}:
                         pass
                     elif macro:
-                        raise UnexpectedMacro(parser, macro, args)
+                        raise UnexpectedMacro(parser, macro, args, self.path)
                 elif parser == 'TABLE':
                     if content is None:
-                        # FIXME We need a proper parser for tables
                         content = Table()
                         continue
 
                     if macro == 'TE':
+                        return i, content
+                elif parser == 'MAILTO':
+                    # FIXME: Missing processor
+                    if content is None:
+                        content = Mailto()
+                        continue
+
+                    if macro == 'ME':
+                        return i, content
+                elif parser == 'URL':
+                    # FIXME: Missing processor
+                    if content is None:
+                        content = Url()
+                        continue
+
+                    if macro == 'UE':
                         return i, content
 
                 if not macro:
@@ -266,6 +349,10 @@ class ManpageParser(object):
                     inc, nf_content = self.process(start + i, 'PRE')
                     content.append(nf_content)
                     consume(iter, inc)
+                elif macro == 'EX':
+                    inc, ex_content = self.process(start + i, 'EXAMPLE')
+                    content.append(ex_content)
+                    consume(iter, inc)
                 elif macro == 'TS':
                     inc, table_content = self.process(start + i, 'TABLE')
                     content.append(table_content)
@@ -278,15 +365,22 @@ class ManpageParser(object):
                     inc, ip_content = self.process(start + i, 'IP')
                     content.append(ip_content)
                     consume(iter, inc)
+                elif macro == 'MT':
+                    inc, mt_content = self.process(start + i, 'MAILTO')
+                    content.append(mt_content)
+                    consume(iter, inc)
+                elif macro == 'UR':
+                    inc, ur_content = self.process(start + i, 'URL')
+                    content.append(ur_content)
+                    consume(iter, inc)
                 else:
-                    raise UnexpectedMacro(parser, macro, args)
+                    raise UnexpectedMacro(parser, macro, args, self.path)
         else:
             if parser == 'ROOT':
                 content.pre_process()
                 return content
 
             return None, content
-
 
 def main():
     """Main"""

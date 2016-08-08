@@ -14,8 +14,10 @@ from helpers import load_template, get_breadcrumb
 
 from html import ManPageHTMLDB
 
-package_directory = dname(os.path.abspath(__file__))
+from ngparser import ManpageParser
+from ngparser import NotSupportedFormat2, UnexpectedMacro
 
+package_directory = dname(os.path.abspath(__file__))
 
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
@@ -54,6 +56,56 @@ class ManDirectoryParser(object):
                 pages_with_missing_parsers.append(page)
 
         return pages_with_missing_parsers
+
+    def parse_directory2(self, source_dir):
+        self.conn.execute("DELETE FROM manpages")
+        self.conn.execute("DELETE FROM manpage_sections")
+
+        for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
+            logging.info("Processing man page %s ...", page_file)
+            try:
+                parser = ManpageParser(page_file)
+                parsed = parser.process()
+            except NotSupportedFormat2:
+                logging.info("Skipping %s, not supported format...", page_file)
+                continue
+            except UnexpectedMacro as e:
+                macro = str(e).split('(',1)[1].split(')', 1)[0]
+                logging.info("Skipping %s, missing macro (%s)", page_file, macro)
+                continue
+
+            logging.info("Man page %s processed correctly...", page_file)
+
+        #for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
+        #    logging.debug("Processing man page %s ..." % page_file)
+        #    manpage = ManPage(page_file)
+        #    try:
+        #        manpage.parse()
+        #    except MissingParser as e:
+        #        macro = str(e).split(" ", 2)[1]
+        #        logging.warning(" * Missing Parser (%s): %s" % (macro,
+        #                                                        page_file, ))
+        #        self.missing_parsers[macro] += 1
+        #        continue
+        #    except NotSupportedFormat:
+        #        logging.warning(" * Not supported format: %s" % page_file)
+        #        continue
+        #    except IOError:
+        #        logging.warning(" * IOError: %s" % page_file)
+        #        continue
+        #    except:
+        #        raise
+#
+        #    self.conn.execute(
+        #        "INSERT INTO manpages (package, name, section, subtitle) VALUES (?, ?, ?, ?)",
+        #        (manpage.package, manpage.name, manpage.section,
+        #         manpage.subtitle))
+#
+        #    for i, (title, contents) in enumerate(manpage.get_sections()):
+        #        self.conn.execute(
+        #            "INSERT INTO manpage_sections (package, name, section, position, title, content) VALUES (?, ?, ?, ?, ?, ?)",
+        #            (manpage.package, manpage.name, manpage.section, i, title,
+        #             contents))
 
     def parse_directory(self, source_dir):
         self.conn.execute("DELETE FROM manpages")

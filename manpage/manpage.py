@@ -200,9 +200,14 @@ class SubSection(Section):
 
 
 class DefinitionList(BaseContainer):
+    def __init__(self):
+        super(DefinitionList, self).__init__()
+        self.next_is_bullet = False
+
     def append(self, object):
-        if self.contents[-1][0] is None:
-            self.contents[-1][0] = object
+        if self.next_is_bullet:
+            self.contents[-1][0].append(object)
+            self.next_is_bullet = False
         else:
             self.contents[-1][1].append(object)
 
@@ -211,13 +216,22 @@ class DefinitionList(BaseContainer):
         dl_tpl = load_template('dl')
 
         out = [dtdd_tpl.substitute(
-            bullet=bullet, content=items.html())
-               for bullet, items in self.contents]
+            bullet=bullets.html(), content=items.html())
+               for bullets, items in self.contents]
         return dl_tpl.substitute(content=''.join(out))
 
     def add_bullet(self):
-        self.contents.append([None, Container()])
+        self.contents.append([Container(), Container()])
+        self.expect_bullet()
 
+    def expect_bullet(self):
+        self.next_is_bullet = True
+
+class Mailto(BaseContainer):
+    pass
+
+class Url(BaseContainer):
+    pass
 
 class BulletedList(BaseContainer):
     def append(self, object):
