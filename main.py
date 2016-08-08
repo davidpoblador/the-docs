@@ -19,15 +19,17 @@ def dirparse(args):
         print "Top %s missing parsers: %s" % (
             mps, parser.missing_parsers.most_common(mps))
 
+
 def dirparse2(args):
     parser = ManDirectoryParser(database=args.database)
     parser.parse_directory2(source_dir=args.source_dir)
 
-    #mps = args.missing_parsers
-    #
-    #if mps:
-    #    print "Top %s missing parsers: %s" % (
-    #        mps, parser.missing_parsers.most_common(mps))
+    mps = args.missing_parsers
+
+    if mps:
+        print "Top %s missing parsers: %s" % (
+            mps, parser.missing_parsers.most_common(mps))
+
 
 def generate(args):
     parser = ManDirectoryParser(database=args.database)
@@ -63,7 +65,6 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser_dirparse.add_argument(
         "source_dir", help="the directory you want to use as source")
-
     parser_dirparse.add_argument(
         "--missing-parsers",
         help="choose the amount of missing parsers to display",
@@ -79,12 +80,11 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser_dirparse2.add_argument(
         "source_dir", help="the directory you want to use as source")
-
-    #parser_dirparse.add_argument(
-    #    "--missing-parsers",
-    #    help="choose the amount of missing parsers to display",
-    #    type=int,
-    #    default=0)
+    parser_dirparse2.add_argument(
+        "--missing-parsers",
+        help="choose the amount of missing parsers to display",
+        type=int,
+        default=0)
 
     parser_dirparse2.set_defaults(func=dirparse2)
 
@@ -95,10 +95,8 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser_generate.add_argument(
         "--base-url", help="Base URL", default="https://www.carta.tech/")
-
     parser_generate.add_argument(
         "output_dir", help="the directory you want to use as a destination")
-
     parser_generate.add_argument(
         "--missing-links",
         help="choose the amount of broken links to display",

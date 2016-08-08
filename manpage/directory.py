@@ -7,7 +7,7 @@ from cached_property import cached_property
 from collections import Counter, defaultdict
 
 from legacymanpage import ManPage
-from helpers import pjoin, dname
+from helpers import pjoin, dname, bname
 from helpers import MissingParser, NotSupportedFormat
 from helpers import SECTIONS
 from helpers import load_template, get_breadcrumb
@@ -18,6 +18,30 @@ from ngparser import ManpageParser
 from ngparser import NotSupportedFormat2, UnexpectedMacro, RedirectedPage2
 
 package_directory = dname(os.path.abspath(__file__))
+
+
+class DirectoryIterator(object):
+    def __init__(self, iterator):
+        self.items = [(file, None) for file in iterator]
+        self.current = 0
+        self.high = len(self.items)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):  # Compatibility with python 3
+        return self.next()
+
+    def next(self):
+        if self.current == self.high:
+            raise StopIteration
+        else:
+            self.current += 1
+            return self.items[self.current - 1]
+
+    def add_item(self, file, redirection):
+        self.items.insert(self.current, [file, redirection])
+
 
 class ManDirectoryParser(object):
     """docstring for ManDirectoryParser"""
@@ -61,28 +85,65 @@ class ManDirectoryParser(object):
         self.conn.execute("DELETE FROM manpages")
         self.conn.execute("DELETE FROM manpage_sections")
 
-        for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
+        iterator = DirectoryIterator(glob.iglob("%s/*/man?/*.?" % source_dir))
+
+        for page_file, redirected_from in iterator:
+            package = bname(dname(dname(page_file)))
+
             logging.debug("Processing man page %s ...", page_file)
             try:
-                parser = ManpageParser(page_file)
-                parsed = parser.process()
+                parser = ManpageParser(
+                    page_file,
+                    redirected_from=redirected_from,
+                    package=package)
+                manpage = parser.process()
             except NotSupportedFormat2:
                 logging.info("Skipping %s, not supported format...", page_file)
                 continue
-            except RedirectedPage2:
-                logging.info("Page %s, has a redirection...", page_file)                
+            except RedirectedPage2 as e:
+                redirect_to = e.redirect
+                logging.info("Page %s, has a redirection to %s...", page_file,
+                             redirect_to)
+
+                parent_dirs = redirect_to.count('/')
+                base_dir = dname(page_file)
+                while parent_dirs:
+                    base_dir = dname(base_dir)
+                    parent_dirs -= 1
+
+                redirection_full_path = pjoin(base_dir, redirect_to)
+
+                if not redirected_from:
+                    original_file = page_file
+                else:
+                    original_file = redirected_from
+
+                iterator.add_item(redirection_full_path, original_file)
                 continue
+            except IOError:
+                logging.info("Skipping %s, file (%s) does not exist",
+                             redirected_from, page_file)
             except UnexpectedMacro as e:
-                macro = str(e).split('(',1)[1].split(')', 1)[0]
-                logging.info("Skipping %s, missing macro (%s)", page_file, macro)
+                macro = str(e).split('(', 1)[1].split(')', 1)[0]
+                logging.info("Skipping %s, missing macro (%s)", page_file,
+                             macro)
+                self.missing_parsers[macro] += 1
                 continue
 
-            name = "public_html/man-pages/man%s/%s.%s.html" % (parsed.section, parsed.name, parsed.section, )
-            fp = open(name, 'w')
-            fp.write(parsed.html())
-            fp.close()
+            #name = "public_html/man-pages/man%s/%s.%s.html" % (parsed.section, parsed.name, parsed.section, )
+            #fp = open(name, 'w')
+            #fp.write(parsed.html())
+            #fp.close()
 
+            if not redirected_from:
+                name, section = manpage.name, manpage.section
+            else:
+                name, ext = os.path.splitext(bname(redirected_from))
+                section = ext[1:]
 
+            self.conn.execute(
+                "INSERT INTO manpages (package, name, section, subtitle) VALUES (?, ?, ?, ?)",
+                (package, name, section, manpage.title))
 
             logging.debug("Man page %s processed correctly...", page_file)
 
@@ -91,12 +152,6 @@ class ManDirectoryParser(object):
         #    manpage = ManPage(page_file)
         #    try:
         #        manpage.parse()
-        #    except MissingParser as e:
-        #        macro = str(e).split(" ", 2)[1]
-        #        logging.warning(" * Missing Parser (%s): %s" % (macro,
-        #                                                        page_file, ))
-        #        self.missing_parsers[macro] += 1
-        #        continue
         #    except NotSupportedFormat:
         #        logging.warning(" * Not supported format: %s" % page_file)
         #        continue
@@ -105,12 +160,12 @@ class ManDirectoryParser(object):
         #        continue
         #    except:
         #        raise
-#
+        #
         #    self.conn.execute(
         #        "INSERT INTO manpages (package, name, section, subtitle) VALUES (?, ?, ?, ?)",
         #        (manpage.package, manpage.name, manpage.section,
         #         manpage.subtitle))
-#
+        #
         #    for i, (title, contents) in enumerate(manpage.get_sections()):
         #        self.conn.execute(
         #            "INSERT INTO manpage_sections (package, name, section, position, title, content) VALUES (?, ?, ?, ?, ?, ?)",

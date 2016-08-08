@@ -19,12 +19,14 @@ try:
 except ImportError:
     import re
 
+
 class Line(object):
     cc = '.'
     c2 = '\''
     ec = '\\'
 
     comment = ec + '"'
+
 
 class CustomMacros(object):
     def __init__(self):
@@ -38,7 +40,7 @@ class CustomMacros(object):
     def add_macro(self, macro):
         self.macros[macro] = []
         self.current_macro = macro
-        
+
 
 class Macro(object):
     single_style = {'B', 'I', 'SM', 'R'}
@@ -50,30 +52,57 @@ class Macro(object):
 
     ignore = {
         # Tabulation crap
-        "ta", "DT",
+        "ta",
+        "DT",
         # Page break stuff
-        "ne", "pc", "bp",
+        "ne",
+        "pc",
+        "bp",
         # Temporary
         "in",
         # Man7 specific
         "UC",
         "PD",
         # Font. FIXME
-        "ft", "fam", "ul", "ps", "ns", "bd",
+        "ft",
+        "fam",
+        "ul",
+        "ps",
+        "ns",
+        "bd",
         # Margin adjustment
-        "ad", "ll",
+        "ad",
+        "ll",
         # Others,
-        "nh", "hy", "IX", "ev", "nr",
+        "nh",
+        "hy",
+        "IX",
+        "ev",
+        "nr",
         # Probably FIX (paragraph)
-        "HP", "ti", "rs", "na", "ce", "Op", "Vb", "Ve",
+        "HP",
+        "ti",
+        "rs",
+        "na",
+        "ce",
+        "Op",
+        "Vb",
+        "Ve",
         # Fix IF
-        "ds", "tr",
+        "ds",
+        "tr",
         # Author...
         "BY",
         # Crap
-        "\{{{}}}", "it", "zZ", "zY", "rm", "Sp",
+        "\{{{}}}",
+        "it",
+        "zZ",
+        "zY",
+        "rm",
+        "Sp",
         # grep.in.i has lots of weird things
-        "MTO", "URL",
+        "MTO",
+        "URL",
     }
 
     vertical_spacing = {
@@ -94,19 +123,28 @@ class Macro(object):
 
 
 class RedirectedPage2(Exception):
-    pass
+    def __init__(self, page, redirect):
+        message = "Page %s redirects to %s" % (page,
+                                               redirect, )
+        self.redirect = redirect
+
+        super(RedirectedPage2, self).__init__(message)
+
 
 class UnexpectedMacro(Exception):
-    def __init__(self, parser, macro, args, file = ""):
+    def __init__(self, parser, macro, args, file=""):
         message = "Missing Macro (%s) in parser (%s) in file (%s)" % (macro,
-                                                         parser, file, )
+                                                                      parser,
+                                                                      file, )
         super(UnexpectedMacro, self).__init__(message)
+
 
 class NotSupportedFormat2(Exception):
     def __init__(self, file):
         message = "Not Supported Format in file (%s)" % (file, )
 
         super(NotSupportedFormat2, self).__init__(message)
+
 
 class FileMacroIterator(object):
     def __init__(self, fp):
@@ -118,7 +156,7 @@ class FileMacroIterator(object):
     def __iter__(self):
         return self
 
-    def __next__(self): # Compatibility with python 3
+    def __next__(self):  # Compatibility with python 3
         return self.next()
 
     def next(self):
@@ -133,10 +171,11 @@ class FileMacroIterator(object):
     def add_lines(self, lines):
         self.buffered_lines = lines
 
+
 class ManpageParser(object):
     """Man Page Parser Class"""
 
-    def __init__(self, path):
+    def __init__(self, path, redirected_from=None, package=None):
         basename = os.path.basename(path)
 
         self.name, ext = os.path.splitext(basename)
@@ -146,6 +185,8 @@ class ManpageParser(object):
         self.lines = []
         self.parser = None
         self.custom_macros = CustomMacros()
+        self.redirected_from = redirected_from
+        self.package = package
 
         self.readfile()
 
@@ -166,12 +207,15 @@ class ManpageParser(object):
 
     def url(self, data):
         if re.match(r"[^@]+@[^@]+\.[^@]+", data):
-            return "<a href=\"mailto:%s\">%s</a>" % (data, data, )
+            return "<a href=\"mailto:%s\">%s</a>" % (data,
+                                                     data, )
         else:
-            return "<a href=\"%s\">%s</a>" % (data, data, )
+            return "<a href=\"%s\">%s</a>" % (data,
+                                              data, )
 
     def mailto(self, data):
-        return "<a href=\"mailto:%s\">%s</a>" % (data, data, )
+        return "<a href=\"mailto:%s\">%s</a>" % (data,
+                                                 data, )
 
     @property
     def path(self):
@@ -243,7 +287,7 @@ class ManpageParser(object):
                         rest = ""
 
                     if macro == 'so':
-                        raise RedirectedPage2("Page %s redirects to %s" % (self.path, rest))
+                        raise RedirectedPage2(self.path, rest)
 
                     if line.startswith(".el\\{\\"):
                         # There is a lot of crap in pages (isag.1, for instance)
@@ -310,7 +354,6 @@ class ManpageParser(object):
                 else:
                     self.lines.append(('', entitize(line)))
 
-
     def process(self, *args, **kwargs):
         if self.parser is None:
             raise NotSupportedFormat2(self.path)
@@ -323,13 +366,16 @@ class ManpageParser(object):
         content = None
         iter = enumerate(self.lines[start:])
         for i, (macro, args) in iter:
-            logging.debug("LINE (CP: %s): (%s: %s) [%s]",parser, macro, args, repr(content))
+            logging.debug("LINE (CP: %s): (%s: %s) [%s]", parser, macro, args,
+                          repr(content))
             #print ">> %s" % (content,)
 
             if parser == "ROOT":
                 if not content:
                     content = Manpage(
-                        name=self.name, section=self.numeric_section)
+                        name=self.name,
+                        section=self.numeric_section,
+                        redirected_from=self.redirected_from)
 
                 # ROOT
                 if macro == 'TH':
@@ -340,7 +386,8 @@ class ManpageParser(object):
                     consume(iter, inc)
                     continue
                 elif macro == 'SS':
-                    inc, section_content = self.process(start + i, 'SS-SECTION')
+                    inc, section_content = self.process(start + i,
+                                                        'SS-SECTION')
                     content.append(section_content)
                     consume(iter, inc)
                     continue
@@ -542,6 +589,7 @@ class ManpageParser(object):
                 return content
 
             return None, content
+
 
 def main():
     """Main"""

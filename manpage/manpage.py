@@ -52,6 +52,7 @@ class BaseContainer(object):
 class Container(BaseContainer):
     pass
 
+
 class Table(BaseContainer):
     def html(self):
         # FIXME: At some point we need to rewrite this. screen.1 contains
@@ -116,12 +117,14 @@ class Section(BaseContainer):
 class Manpage(BaseContainer):
     """docstring for Manpage"""
 
-    def __init__(self, name, section):
+    def __init__(self, name, section, redirected_from=None, package=None):
         super(Manpage, self).__init__()
         self.name = name
         self.section = section
 
         self.title = None
+        self.redirected_from = redirected_from
+        self.package = package
 
     @cached_property
     def descriptive_title(self):
@@ -140,9 +143,17 @@ class Manpage(BaseContainer):
 
     def process_sections(self, section):
         if section.title == 'NAME':
-            content = section.contents[0]
-            chunks = content.split('-', 1)
-            self.title = chunks[-1].strip().capitalize()
+            content = ' '.join(section.contents)
+            chunks = content.split(' - ', 1)
+
+            if len(chunks) == 1:
+                chunks = content.split(' -- ', 1)
+
+            if len(chunks) == 1:
+                self.title = content.strip().capitalize()
+            else:
+                self.title = chunks[-1].strip().capitalize()
+
             return False
         elif section.title == 'SEE ALSO':
             section.title = "RELATED TO %s&hellip;" % self.name
@@ -169,6 +180,17 @@ class Manpage(BaseContainer):
         ]
 
         breadcrumbs = [get_breadcrumb(breadcrumb_sections)]
+
+        if self.package:
+            breadcrumb_packages = [
+                ("/packages/", "Packages"),
+                ("/packages/%s/" % self.package, self.package),
+                ("/man-pages/man%s/%s.%s.html" %
+                 (self.section, self.name, self.section),
+                 self.descriptive_title),
+            ]
+
+            breadcrumbs.append(get_breadcrumb(breadcrumb_packages))
 
         return '\n'.join(breadcrumbs)
 
@@ -227,11 +249,14 @@ class DefinitionList(BaseContainer):
     def expect_bullet(self):
         self.next_is_bullet = True
 
+
 class Mailto(BaseContainer):
     pass
 
+
 class Url(BaseContainer):
     pass
+
 
 class BulletedList(BaseContainer):
     def append(self, object):
