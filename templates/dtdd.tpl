@@ -1,2 +1,6 @@
-<dt>${bullet}</dt>
-<dd>${content}</dd>
+  <dt>
+    ${bullet}
+  </dt>
+  <dd>
+    ${content}
+  </dd>

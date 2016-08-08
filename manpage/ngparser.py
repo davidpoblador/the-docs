@@ -28,8 +28,8 @@ class Line(object):
 
 
 class Macro(object):
-    single_style = {'B', 'I'}
-    compound_style = {'BI', 'BR', 'IR', 'RI', 'RB', 'IB'}
+    single_style = {'B', 'I', 'SM'}
+    compound_style = {'BI', 'BR', 'IR', 'RI', 'RB', 'IB', 'SB'}
 
     styles = single_style | compound_style
 
@@ -37,20 +37,22 @@ class Macro(object):
         # Tabulation crap
         "ta",
         # Page break stuff
-        "ne",
+        "ne", "pc", 
         # Temporary
         "in",
         # Man7 specific
         "UC",
         "PD",
         # Font. FIXME
-        "ft", "fam", "SM",
+        "ft", "fam",
         # Margin adjustment
         "ad", 
         # Others,
         "nh", "hy", "IX",
         # Probably FIX (paragraph)
-        "HP", "ti", "rs",
+        "HP", "ti", "rs", "na",
+        # Fix IF
+        "if", "ie", "el", "de"
     }
 
     vertical_spacing = {
@@ -62,6 +64,8 @@ class Macro(object):
     new_paragraph = {'PP', 'P', 'LP'}
 
     style_tpl = {
+        "SM": Template("<small>${content}</small>"),
+        "S": Template("<small>${content}</small>"),
         "I": Template("<em>${content}</em>"),
         "B": Template("<strong>${content}</strong>"),
         "R": Template("${content}"),
@@ -196,11 +200,17 @@ class ManpageParser(object):
                 if not content:
                     content = Manpage(
                         name=self.name, section=self.numeric_section)
+
                 # ROOT
                 if macro == 'TH':
                     continue  # FIXME
                 elif macro == 'SH':
                     inc, section_content = self.process(start + i, 'SECTION')
+                    content.append(section_content)
+                    consume(iter, inc)
+                    continue
+                elif macro == 'SS':
+                    inc, section_content = self.process(start + i, 'SS-SECTION')
                     content.append(section_content)
                     consume(iter, inc)
                     continue
@@ -215,6 +225,17 @@ class ManpageParser(object):
 
                 if parser == 'SECTION':
                     if macro == 'SH':
+                        if content is None:
+                            content = Section()
+                            content.title = ' '.join(args)
+                            continue
+                        else:
+                            return i - 1, content
+                    elif macro in {'RE', 'fi'}:
+                        # Plenty of pages with bugs
+                        continue
+                if parser == 'SS-SECTION':
+                    if macro == 'SS':
                         if content is None:
                             content = Section()
                             content.title = ' '.join(args)
@@ -269,8 +290,8 @@ class ManpageParser(object):
                         return i - 1, content
                     elif macro in Macro.new_paragraph:
                         pass
-                    elif macro in {'RS', 'TP', 'IP'}:
-                        # This is to fix a bug in proc.5 FIXME
+                    elif macro in {'RS', 'TP', 'IP', 'nf'}:
+                        # This is to fix a bug in proc.5 and many others
                         continue
                     elif macro:
                         raise UnexpectedMacro(parser, macro, args, self.path)
@@ -286,7 +307,7 @@ class ManpageParser(object):
                         continue
                     elif macro in {'SH', 'SS', 'RE'}:
                         return i - 1, content
-                    elif macro in {'IP', 'RS', 'nf', 'TS'}:
+                    elif macro in {'IP', 'RS', 'nf', 'TS', 'UR', 'EX'}:
                         pass
                     elif macro in Macro.new_paragraph:
                         return i - 1, content
@@ -305,7 +326,7 @@ class ManpageParser(object):
                         return i - 1, content
                     elif macro == 'TP':
                         return i - 1, content
-                    elif macro in {'RS', 'nf', 'TS'}:
+                    elif macro in {'RS', 'nf', 'TS', 'UR'}:
                         pass
                     elif macro:
                         raise UnexpectedMacro(parser, macro, args, self.path)

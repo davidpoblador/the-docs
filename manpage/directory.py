@@ -74,6 +74,13 @@ class ManDirectoryParser(object):
                 logging.info("Skipping %s, missing macro (%s)", page_file, macro)
                 continue
 
+            name = "public_html/man-pages/man%s/%s.%s.html" % (parsed.section, parsed.name, parsed.section, )
+            fp = open(name, 'w')
+            fp.write(parsed.html())
+            fp.close()
+
+
+
             logging.info("Man page %s processed correctly...", page_file)
 
         #for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
