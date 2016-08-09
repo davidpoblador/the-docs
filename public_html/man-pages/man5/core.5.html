@@ -90,7 +90,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The default action of certain signals is to cause a process to terminate and produce a <em>core</em> <em>dump</em> <em>file</em>, a disk file containing an image of the process's memory at the time of termination. This image can be used in a debugger (e.g., <strong>gdb</strong>(1)) to inspect the state of the program at the time that it terminated. A list of the signals which cause a process to dump core can be found in <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p><p>A process can set its soft <strong>RLIMIT_CORE</strong> resource limit to place an upper limit on the size of the core dump file that will be produced if it receives a "core dump" signal; see <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a> for details.</p><p>There are various circumstances in which a core dump file is not produced:</p><ul>
+<p>The default action of certain signals is to cause a process to terminate and produce a <em>core dump file</em>, a disk file containing an image of the process's memory at the time of termination. This image can be used in a debugger (e.g., <strong>gdb</strong>(1)) to inspect the state of the program at the time that it terminated. A list of the signals which cause a process to dump core can be found in <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p><p>A process can set its soft <strong>RLIMIT_CORE</strong> resource limit to place an upper limit on the size of the core dump file that will be produced if it receives a "core dump" signal; see <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a> for details.</p><p>There are various circumstances in which a core dump file is not produced:</p><ul>
 <li><p>The process does not have permission to write the core file. (By default, the core file is called <em>core</em> or <em>core.pid</em>, where <em>pid</em> is the ID of the process that dumped core, and is created in the current working directory. See below for details on naming.) Writing the core file will fail if the directory in which it is to be created is nonwritable, or if a file with the same name exists and is not writable or is not a regular file (e.g., it is a directory or a symbolic link).</p></li><li><p>A (writable, regular) file with the same name as would be used for the core dump already exists, but there is more than one hard link to that file.</p></li><li><p>The filesystem where the core dump file would be created is full; or has run out of inodes; or is mounted read-only; or the user has reached their quota for the filesystem.</p></li><li><p>The directory in which the core dump file is to be created does not exist.</p></li><li><p>The <strong>RLIMIT_CORE</strong> (core file size) or <strong>RLIMIT_FSIZE</strong> (file size) resource limits for the process are set to zero; see <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a> and the documentation of the shell's <em>ulimit</em> command (<em>limit</em> in <strong>csh</strong>(1)).</p></li><li><p>The binary being executed by the process does not have read permission enabled.</p></li><li><p>The process is executing a set-user-ID (set-group-ID) program that is owned by a user (group) other than the real user (group) ID of the process, or the process is executing a program that has file capabilities (see <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>). (However, see the description of the <a href="../man2/prctl.2.html"><strong>prctl</strong>(2)</a> <strong>PR_SET_DUMPABLE</strong> operation, and the description of the <em>/proc/sys/fs/suid_dumpable</em> file in <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>.)</p></li><li><p>(Since Linux 3.7) The kernel was configured without the <strong>CONFIG_COREDUMP</strong> option.</p></li>
 </ul><p>In addition, a core dump may exclude part of the address space of the process if the <a href="../man2/madvise.2.html"><strong>madvise</strong>(2)</a> <strong>MADV_DONTDUMP</strong> flag was employed.</p><h3>Naming of core dump files</h3>
 <p>By default, a core dump file is named <em>core</em>, but the <em>/proc/sys/kernel/core_pattern</em> file (since Linux 2.6 and 2.4.21) can be set to define a template that is used to name core dump files. The template can contain % specifiers which are substituted by the following values when a core file is created:</p>
@@ -249,8 +249,8 @@
 </dl>
 <p>By default, the following bits are set: 0, 1, 4 (if the <strong>CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS</strong> kernel configuration option is enabled), and 5. This default can be modified at boot time using the <em>coredump_filter</em> boot option.</p><p>The value of this file is displayed in hexadecimal. (The default value is thus displayed as 33.)</p><p>Memory-mapped I/O pages such as frame buffer are never dumped, and virtual DSO pages are always dumped, regardless of the <em>coredump_filter</em> value.</p><p>A child process created via <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> inherits its parent's <em>coredump_filter</em> value; the <em>coredump_filter</em> value is preserved across an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p><p>It can be useful to set <em>coredump_filter</em> in the parent shell before running a program, for example:</p>
 <pre>
-$<strong></strong> <strong>echo</strong> <strong>0x7</strong> <strong>></strong> <strong>/proc/self/coredump_filter</strong>
-$<strong></strong> <strong>./some_program</strong>
+$<strong> echo 0x7 > /proc/self/coredump_filter</strong>
+$<strong> ./some_program</strong>
 </pre>
 <p>This file is provided only if the kernel was built with the <strong>CONFIG_ELF_CORE</strong> configuration option.</p>
 
@@ -269,16 +269,16 @@ $<strong></strong> <strong>./some_program</strong>
         <div class="sectioncontent">
 <p>The program below can be used to demonstrate the use of the pipe syntax in the <em>/proc/sys/kernel/core_pattern</em> file. The following shell session demonstrates the use of this program (compiled to create an executable named <em>core_pattern_pipe_test</em>):</p>
 <pre>
-$<strong></strong> <strong>cc</strong> <strong>-o</strong> <strong>core_pattern_pipe_test</strong> <strong>core_pattern_pipe_test.c</strong>
-$<strong></strong> <strong>su</strong>
+$<strong> cc -o core_pattern_pipe_test core_pattern_pipe_test.c</strong>
+$<strong> su</strong>
 Password:
-#<strong></strong> <strong>echo</strong> <strong>&quot;|$PWD/core_pattern_pipe_test</strong> <strong>%p</strong> <strong></strong> <strong>UID=%u</strong> <strong>GID=%g</strong> <strong>sig=%s&quot;</strong> <strong>></strong> <strong>&#92;</strong>
+#<strong> echo &quot;|$PWD/core_pattern_pipe_test %p  UID=%u GID=%g sig=%s&quot; > &#92;</strong>
 <strong>    /proc/sys/kernel/core_pattern</strong>
-#<strong></strong> <strong>exit</strong>
-$<strong></strong> <strong>sleep</strong> <strong>100</strong>
+#<strong> exit</strong>
+$<strong> sleep 100</strong>
 <strong>^&#92;</strong>                     # type control-backslash
 Quit (core dumped)
-$<strong></strong> <strong>cat</strong> <strong>core.info</strong>
+$<strong> cat core.info</strong>
 argc=5
 argc[0]=&lt;/home/mtk/core_pattern_pipe_test&gt;
 argc[1]=&lt;20575&gt;

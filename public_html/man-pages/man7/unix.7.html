@@ -90,7 +90,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-<p><strong>#include <sys/socket.h></strong></p><p><strong>#include <sys/un.h></strong></p><p><em>unix_socket</em><strong></strong> <strong>=</strong> <strong>socket(AF_UNIX,</strong> <strong>type,</strong> <strong>0);</strong></p><p><em>error</em><strong></strong> <strong>=</strong> <strong>socketpair(AF_UNIX,</strong> <strong>type,</strong> <strong>0,</strong> <strong>int</strong> <strong>*</strong><em>sv</em><strong>);</strong></p>
+<p><strong>#include <sys/socket.h></strong></p><p><strong>#include <sys/un.h></strong></p><p><em>unix_socket</em><strong> = socket(AF_UNIX, type, 0);</strong></p><p><em>error</em><strong> = socketpair(AF_UNIX, type, 0, int *</strong><em>sv</em><strong>);</strong></p>
         </div>
       </section>
 
@@ -134,7 +134,7 @@ struct sockaddr_un {
     *
   </dt>
   <dd>
-    <p><em>abstract</em>: an abstract socket address is distinguished (from a pathname socket) by the fact that <em>sun_path[0]</em> is a null byte (&apos;nbsp;&apos;). The socket's address in this namespace is given by the additional bytes in <em>sun_path</em> that are covered by the specified length of the address structure. (Null bytes in the name have no special significance.) The name has no connection with filesystem pathnames. When the address of an abstract socket is returned, the returned <em>addrlen</em> is greater than <em>sizeof(sa_family_t)</em> (i.e., greater than 2), and the name of the socket is contained in the first <em>(addrlen</em> <em>-</em> <em>sizeof(sa_family_t))</em> bytes of <em>sun_path</em>.</p>
+    <p><em>abstract</em>: an abstract socket address is distinguished (from a pathname socket) by the fact that <em>sun_path[0]</em> is a null byte (&apos;nbsp;&apos;). The socket's address in this namespace is given by the additional bytes in <em>sun_path</em> that are covered by the specified length of the address structure. (Null bytes in the name have no special significance.) The name has no connection with filesystem pathnames. When the address of an abstract socket is returned, the returned <em>addrlen</em> is greater than <em>sizeof(sa_family_t)</em> (i.e., greater than 2), and the name of the socket is contained in the first <em>(addrlen - sizeof(sa_family_t))</em> bytes of <em>sun_path</em>.</p>
   </dd>
 
 </dl>
@@ -168,7 +168,7 @@ struct sockaddr_un {
     
   </dt>
   <dd>
-    <p>or, more simply, <em>addrlen</em> can be specified as <em>sizeof(struct</em> <em>sockaddr_un)</em>.</p>
+    <p>or, more simply, <em>addrlen</em> can be specified as <em>sizeof(struct sockaddr_un)</em>.</p>
   </dd>
 
 </dl>
@@ -222,8 +222,8 @@ struct ucred {
 <h3>Ioctls</h3>
 <p>The following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> calls return information in <em>value</em>. The correct syntax is:</p>
 <pre>
-<strong>int</strong><em></em> <em>value</em><strong>;</strong>
-<em>error</em><strong></strong> <strong>=</strong> <strong>ioctl(</strong><em>unix_socket</em><strong>,</strong> <strong></strong><em>ioctl_type</em><strong>,</strong> <strong>&</strong><em>value</em><strong>);</strong>
+<strong>int</strong><em> value</em><strong>;</strong>
+<em>error</em><strong> = ioctl(</strong><em>unix_socket</em><strong>, </strong><em>ioctl_type</em><strong>, &</strong><em>value</em><strong>);</strong>
 </pre>
 <p><em>ioctl_type</em> can be:</p>
 <dl class='dl-vertical'>
@@ -309,7 +309,7 @@ struct ucred {
     <p><strong>EPERM</strong></p>
   </dt>
   <dd>
-    <p>The sender passed invalid credentials in the <em>struct</em> <em>ucred</em>.</p>
+    <p>The sender passed invalid credentials in the <em>struct ucred</em>.</p>
   </dd>
   <dt>
     <p><strong>EPIPE</strong></p>
@@ -358,11 +358,11 @@ struct ucred {
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>When binding a socket to an address, Linux is one of the implementations that appends a null terminator if none is supplied in <em>sun_path</em>. In most cases this is unproblematic: when the socket address is retrieved, it will be one byte longer than that supplied when the socket was bound. However, there is one case where confusing behavior can result: if 108 non-null bytes are supplied when a socket is bound, then the addition of the null terminator takes the length of the pathname beyond <em>sizeof(sun_path)</em>. Consequently, when retrieving the socket address (for example, via <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>), if the input <em>addrlen</em> argument for the retrieving call is specified as <em>sizeof(struct</em> <em>sockaddr_un)</em>, then the returned address structure <em>won't</em> have a null terminator in <em>sun_path</em>.</p><p>In addition, some implementations don't require a null terminator when binding a socket (the <em>addrlen</em> argument is used to determine the length of <em>sun_path</em>) and when the socket address is retrieved on these implementations, there is no null terminator in <em>sun_path</em>.</p><p>Applications that retrieve socket addresses can (portably) code to handle the possibility that there is no null terminator in <em>sun_path</em> by respecting the fact that the number of valid bytes in the pathname is:</p>
+<p>When binding a socket to an address, Linux is one of the implementations that appends a null terminator if none is supplied in <em>sun_path</em>. In most cases this is unproblematic: when the socket address is retrieved, it will be one byte longer than that supplied when the socket was bound. However, there is one case where confusing behavior can result: if 108 non-null bytes are supplied when a socket is bound, then the addition of the null terminator takes the length of the pathname beyond <em>sizeof(sun_path)</em>. Consequently, when retrieving the socket address (for example, via <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>), if the input <em>addrlen</em> argument for the retrieving call is specified as <em>sizeof(struct sockaddr_un)</em>, then the returned address structure <em>won't</em> have a null terminator in <em>sun_path</em>.</p><p>In addition, some implementations don't require a null terminator when binding a socket (the <em>addrlen</em> argument is used to determine the length of <em>sun_path</em>) and when the socket address is retrieved on these implementations, there is no null terminator in <em>sun_path</em>.</p><p>Applications that retrieve socket addresses can (portably) code to handle the possibility that there is no null terminator in <em>sun_path</em> by respecting the fact that the number of valid bytes in the pathname is:</p>
 <pre>
     strnlen(addr.sun_path, addrlen \- offsetof(sockaddr_un, sun_path))
 </pre>
-<p>Alternatively, an application can retrieve the socket address by allocating a buffer of size <em>sizeof(struct sockaddr_un)+1</em> that is zeroed out before the retrieval. The retrieving call can specify <em>addrlen</em> as <em>sizeof(struct</em> <em>sockaddr_un)</em>, and the extra zero byte ensures that there will be a null terminator for the string returned in <em>sun_path</em>:</p>
+<p>Alternatively, an application can retrieve the socket address by allocating a buffer of size <em>sizeof(struct sockaddr_un)+1</em> that is zeroed out before the retrieval. The retrieving call can specify <em>addrlen</em> as <em>sizeof(struct sockaddr_un)</em>, and the extra zero byte ensures that there will be a null terminator for the string returned in <em>sun_path</em>:</p>
 <pre>
 void *addrp;
 
@@ -377,7 +377,7 @@ if (getsockname(sfd, (struct sockaddr *) addrp, &addrlen)) == -1)
 
 printf("sun_path = %s&#92;n", ((struct sockaddr_un *) addrp)-&gt;sun_path);
 </pre>
-<p>This sort of messiness can be avoided if it is guaranteed that the applications that <em>create</em> pathname sockets follow the rules outlined above under <em>Pathname</em> <em>sockets</em>.</p>
+<p>This sort of messiness can be avoided if it is guaranteed that the applications that <em>create</em> pathname sockets follow the rules outlined above under <em>Pathname sockets</em>.</p>
         </div>
       </section>
 

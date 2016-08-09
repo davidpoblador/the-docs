@@ -43,7 +43,7 @@ class CustomMacros(object):
 
 
 class Macro(object):
-    single_style = {'B', 'I', 'SM', 'R'}
+    single_style = {'B', 'I', 'SM'}
     compound_style = {'BI', 'BR', 'IR', 'RI', 'RB', 'IB', 'SB'}
 
     styles = single_style | compound_style
@@ -188,16 +188,97 @@ class ManpageParser(object):
 
         self.readfile()
 
+    def process_fonts(self, content, current_tag = None):
+        #print content, current_tag
+
+        if current_tag == 'R':
+            current_tag = None
+
+        translate_font = {
+        '1': 'R',
+        '2': 'I',
+        '3': 'B',
+        }
+
+        style_map = {
+        'B' : "strong",
+        'I' : "em",
+        'SM' : "small",
+        'S' : "small",
+        }
+
+        previous_tag = None
+        if not current_tag:
+            out = ""
+        elif current_tag in style_map:
+            out = "<%s>" % style_map[current_tag]
+        else:
+            print current_tag
+            raise
+
+        state = "start"
+        for c in content:
+            if state == "start":
+                if c != '\\':
+                    out += c
+                elif c == '\\':
+                    state = "slash"
+            elif state == "slash":
+                if c == 'f':
+                    state = "fontslash"
+                else:
+                    state = "start"
+                    out += '\\' + c
+            elif state == "fontslash":
+                if c in translate_font:
+                    c = translate_font[c]
+                if c in style_map:
+                    if current_tag:
+                        out += "</%s>" % style_map[current_tag]
+
+                    previous_tag, current_tag = current_tag, c
+                    out += "<%s>" % style_map[c]
+                    state = "start"
+                elif c in {'P'}:
+                    if current_tag:
+                        out += "</%s>" % style_map[current_tag]
+                    previous_tag, current_tag = current_tag, previous_tag
+
+                    if current_tag:
+                        out += "<%s>" % style_map[current_tag]
+
+                    state = "start"
+                elif c in {'R'}:
+                    if current_tag:
+                        out += "</%s>" % style_map[current_tag]
+                    previous_tag, current_tag = current_tag, None
+                    state = "start"
+                else:
+                    raise
+        else:
+            if current_tag:
+                out += "</%s>" % style_map[current_tag]
+
+        return out
+
     def stylize(self, macro, args):
         if macro in Macro.single_style:
-            return Macro.style_tpl[macro].substitute(content=' '.join(args))
+            content = ' '.join(args)
+
+            try:
+                return self.process_fonts(content, macro)
+            except:
+                raise Exception(self.path)
+
         elif macro in Macro.compound_style:
             out = []
             for i, chunk in enumerate(args):
-                style = Macro.style_tpl[macro[i % 2]]
-                out.append(' '.join([style.substitute(content=subchunk)
-                                     for subchunk in chunk.replace(
-                                         '\t', ' ').split(' ')]))
+                style = macro[i % 2]
+                try:
+                    out.append(self.process_fonts(chunk, style))
+                except:
+                    print self.path
+                    raise
 
             return ''.join(out)
         else:
@@ -396,7 +477,7 @@ class ManpageParser(object):
                 if macro in Macro.styles:
                     args = self.stylize(macro, args)
                     macro = ''
-                elif macro in {'CW'}:
+                elif macro in {'CW', 'R'}:
                     macro = ''
                     args = ' '.join(args)
 
@@ -613,6 +694,7 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--log-level", help="choose log level")
+    parser.add_argument("--out-file", help="where to write")
     parser.add_argument("manpage", help="the manpage you want to process")
 
     args = parser.parse_args()
@@ -624,9 +706,12 @@ def main():
     manpage = ManpageParser(args.manpage)
     parsed = manpage.process()
 
-    fp = open("public_html/out.html", 'w')
-    fp.write(parsed.html())
-    fp.close()
+    if args.out_file:
+        fp = open(args.out_file, 'w')
+        fp.write(parsed.html())
+        fp.close()
+    else:
+        print parsed.html()
 
     elapsed = time.time() - start_time
     logging.info("--- Total time: %s seconds ---", elapsed)

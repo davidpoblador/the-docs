@@ -97,15 +97,15 @@
 <strong>#define _GNU_SOURCE</strong>
 <strong>#include <sched.h></strong>
 
-<strong>int</strong> <strong>clone(int</strong> <strong>(*</strong><em>fn</em><strong>)(void</strong> <strong>*),</strong> <strong>void</strong> <strong>*</strong><em>child_stack</em><strong>,</strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>int</strong> <strong></strong><em>flags</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>arg</em><strong>,</strong> <strong>...</strong> <strong></strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>/*</strong> <strong>pid_t</strong> <strong>*</strong><em>ptid</em><strong>,</strong> <strong>struct</strong> <strong>user_desc</strong> <strong>*</strong><em>tls</em><strong>,</strong> <strong>pid_t</strong> <strong>*</strong><em>ctid</em><strong></strong> <strong>*/</strong> <strong>);</strong>
+<strong>int clone(int (*</strong><em>fn</em><strong>)(void *), void *</strong><em>child_stack</em><strong>,</strong>
+<strong>          int </strong><em>flags</em><strong>, void *</strong><em>arg</em><strong>, ... </strong>
+<strong>          /* pid_t *</strong><em>ptid</em><strong>, struct user_desc *</strong><em>tls</em><strong>, pid_t *</strong><em>ctid</em><strong> */ );</strong>
 
 /* Prototype for the raw system call */
 
-<strong>long</strong> <strong>clone(unsigned</strong> <strong>long</strong> <strong></strong><em>flags</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>child_stack</em><strong>,</strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>void</strong> <strong>*</strong><em>ptid</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>ctid</em><strong>,</strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>struct</strong> <strong>pt_regs</strong> <strong>*</strong><em>regs</em><strong>);</strong>
+<strong>long clone(unsigned long </strong><em>flags</em><strong>, void *</strong><em>child_stack</em><strong>,</strong>
+<strong>          void *</strong><em>ptid</em><strong>, void *</strong><em>ctid</em><strong>,</strong>
+<strong>          struct pt_regs *</strong><em>regs</em><strong>);</strong>
 </pre>
 
         </div>
@@ -266,9 +266,9 @@
 <p>The raw <strong>clone</strong>() system call corresponds more closely to <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> in that execution in the child continues from the point of the call. As such, the <em>fn</em> and <em>arg</em> arguments of the <strong>clone</strong>() wrapper function are omitted. Furthermore, the argument order changes. The raw system call interface on x86 and many other architectures is roughly:</p>
 <pre>
 
-<strong>long</strong> <strong>clone(unsigned</strong> <strong>long</strong> <strong></strong><em>flags</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>child_stack</em><strong>,</strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>void</strong> <strong>*</strong><em>ptid</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>ctid</em><strong>,</strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>struct</strong> <strong>pt_regs</strong> <strong>*</strong><em>regs</em><strong>);</strong>
+<strong>long clone(unsigned long </strong><em>flags</em><strong>, void *</strong><em>child_stack</em><strong>,</strong>
+<strong>           void *</strong><em>ptid</em><strong>, void *</strong><em>ctid</em><strong>,</strong>
+<strong>           struct pt_regs *</strong><em>regs</em><strong>);</strong>
 
 </pre>
 <p>Another difference for the raw system call is that the <em>child_stack</em> argument may be zero, in which case copy-on-write semantics ensure that the child gets separate copies of stack pages when either process modifies the stack. In this case, for correct operation, the <strong>CLONE_VM</strong> option should not be specified.</p><p>For some architectures, the order of the arguments for the system call differs from that shown above. On the score, microblaze, ARM, ARM 64, PA-RISC, arc, Power PC, xtensa, and MIPS architectures, the order of the fourth and fifth arguments is reversed. On the cris and s390 architectures, the order of the first and second arguments is reversed.</p>
@@ -278,10 +278,10 @@
 <p>On ia64, a different interface is used:</p>
 <pre>
 
-<strong>int</strong> <strong>__clone2(int</strong> <strong>(*</strong><em>fn</em><strong>)(void</strong> <strong>*),</strong> <strong></strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>void</strong> <strong>*</strong><em>child_stack_base</em><strong>,</strong> <strong>size_t</strong> <strong></strong><em>stack_size</em><strong>,</strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>int</strong> <strong></strong><em>flags</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>arg</em><strong>,</strong> <strong>...</strong> <strong></strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>/*</strong> <strong>pid_t</strong> <strong>*</strong><em>ptid</em><strong>,</strong> <strong>struct</strong> <strong>user_desc</strong> <strong>*</strong><em>tls</em><strong>,</strong> <strong>pid_t</strong> <strong>*</strong><em>ctid</em><strong></strong> <strong>*/</strong> <strong>);</strong>
+<strong>int __clone2(int (*</strong><em>fn</em><strong>)(void *), </strong>
+<strong>             void *</strong><em>child_stack_base</em><strong>, size_t </strong><em>stack_size</em><strong>,</strong>
+<strong>             int </strong><em>flags</em><strong>, void *</strong><em>arg</em><strong>, ... </strong>
+<strong>          /* pid_t *</strong><em>ptid</em><strong>, struct user_desc *</strong><em>tls</em><strong>, pid_t *</strong><em>ctid</em><strong> */ );</strong>
 </pre>
 <p>The prototype shown above is for the glibc wrapper function; the raw system call interface has no <em>fn</em> or <em>arg</em> argument, and changes the order of the arguments so that <em>flags</em> is the first argument, and <em>tls</em> is the last argument.</p><p><strong>__clone2</strong>() operates in the same way as <strong>clone</strong>(), except that <em>child_stack_base</em> points to the lowest address of the child's stack area, and <em>stack_size</em> specifies the size of the stack pointed to by <em>child_stack_base</em>.</p>
 <h3>Linux 2.4 and earlier</h3>
@@ -445,7 +445,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>In the kernel 2.4.x series, <strong>CLONE_THREAD</strong> generally does not make the parent of the new thread the same as the parent of the calling process. However, for kernel versions 2.4.7 to 2.4.18 the <strong>CLONE_THREAD</strong> flag implied the <strong>CLONE_PARENT</strong> flag (as in kernel 2.6).</p><p>For a while there was <strong>CLONE_DETACHED</strong> (introduced in 2.5.32): parent wants no child-exit signal. In 2.6.2 the need to give this together with <strong>CLONE_THREAD</strong> disappeared. This flag is still defined, but has no effect.</p><p>On i386, <strong>clone</strong>() should not be called through vsyscall, but directly through <em>int</em> <em>$0x80</em>.</p>
+<p>In the kernel 2.4.x series, <strong>CLONE_THREAD</strong> generally does not make the parent of the new thread the same as the parent of the calling process. However, for kernel versions 2.4.7 to 2.4.18 the <strong>CLONE_THREAD</strong> flag implied the <strong>CLONE_PARENT</strong> flag (as in kernel 2.6).</p><p>For a while there was <strong>CLONE_DETACHED</strong> (introduced in 2.5.32): parent wants no child-exit signal. In 2.6.2 the need to give this together with <strong>CLONE_THREAD</strong> disappeared. This flag is still defined, but has no effect.</p><p>On i386, <strong>clone</strong>() should not be called through vsyscall, but directly through <em>int $0x80</em>.</p>
         </div>
       </section>
 

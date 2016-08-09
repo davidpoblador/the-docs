@@ -634,17 +634,17 @@ echo 19 &gt; cpuset.mems
 <p>For example, the following sequence of commands will set up a cpuset named "Charlie", containing just CPUs 2 and 3, and memory node 1, and then attach the current shell to that cpuset.</p>
 <pre>
 
-$<strong></strong> <strong>mkdir</strong> <strong>/dev/cpuset</strong>
-$<strong></strong> <strong>mount</strong> <strong>-t</strong> <strong>cpuset</strong> <strong>cpuset</strong> <strong>/dev/cpuset</strong>
-$<strong></strong> <strong>cd</strong> <strong>/dev/cpuset</strong>
-$<strong></strong> <strong>mkdir</strong> <strong>Charlie</strong>
-$<strong></strong> <strong>cd</strong> <strong>Charlie</strong>
-$<strong></strong> <strong>/bin/echo</strong> <strong>2-3</strong> <strong>></strong> <strong>cpuset.cpus</strong>
-$<strong></strong> <strong>/bin/echo</strong> <strong>1</strong> <strong>></strong> <strong>cpuset.mems</strong>
-$<strong></strong> <strong>/bin/echo</strong> <strong>$$</strong> <strong>></strong> <strong>tasks</strong>
+$<strong> mkdir /dev/cpuset</strong>
+$<strong> mount -t cpuset cpuset /dev/cpuset</strong>
+$<strong> cd /dev/cpuset</strong>
+$<strong> mkdir Charlie</strong>
+$<strong> cd Charlie</strong>
+$<strong> /bin/echo 2-3 > cpuset.cpus</strong>
+$<strong> /bin/echo 1 > cpuset.mems</strong>
+$<strong> /bin/echo $$ > tasks</strong>
 # The current shell is now running in cpuset Charlie
 # The next line should display '/Charlie'
-$<strong></strong> <strong>cat</strong> <strong>/proc/self/cpuset</strong>
+$<strong> cat /proc/self/cpuset</strong>
 </pre>
 
 <h3>Migrating a job to different memory nodes.</h3>
@@ -685,22 +685,22 @@ $<strong></strong> <strong>cat</strong> <strong>/proc/self/cpuset</strong>
 <p>The following sequence of commands accomplishes this.</p>
 <pre>
 
-$<strong></strong> <strong>cd</strong> <strong>/dev/cpuset</strong>
-$<strong></strong> <strong>mkdir</strong> <strong>beta</strong>
-$<strong></strong> <strong>cd</strong> <strong>beta</strong>
-$<strong></strong> <strong>/bin/echo</strong> <strong>16-19</strong> <strong>></strong> <strong>cpuset.cpus</strong>
-$<strong></strong> <strong>/bin/echo</strong> <strong>8-9</strong> <strong>></strong> <strong>cpuset.mems</strong>
-$<strong></strong> <strong>/bin/echo</strong> <strong>1</strong> <strong>></strong> <strong>cpuset.memory_migrate</strong>
-$<strong></strong> <strong>while</strong> <strong>read</strong> <strong>i;</strong> <strong>do</strong> <strong>/bin/echo</strong> <strong>$i;</strong> <strong>done</strong> <strong><</strong> <strong>../alpha/tasks</strong> <strong>></strong> <strong>tasks</strong>
+$<strong> cd /dev/cpuset</strong>
+$<strong> mkdir beta</strong>
+$<strong> cd beta</strong>
+$<strong> /bin/echo 16-19 > cpuset.cpus</strong>
+$<strong> /bin/echo 8-9 > cpuset.mems</strong>
+$<strong> /bin/echo 1 > cpuset.memory_migrate</strong>
+$<strong> while read i; do /bin/echo $i; done < ../alpha/tasks > tasks</strong>
 </pre>
 <p>The above should move any processes in <em>alpha</em> to <em>beta</em>, and any memory held by these processes on memory nodes 2-3 to memory nodes 8-9, respectively.</p><p>Notice that the last step of the above sequence did not do:</p>
 <pre>
 
-$<strong></strong> <strong>cp</strong> <strong>../alpha/tasks</strong> <strong>tasks</strong>
+$<strong> cp ../alpha/tasks tasks</strong>
 </pre>
 <p>The <em>while</em> loop, rather than the seemingly easier use of the <strong>cp</strong>(1) command, was necessary because only one process PID at a time may be written to the <em>tasks</em> file.</p><p>The same effect (writing one PID at a time) as the <em>while</em> loop can be accomplished more efficiently, in fewer keystrokes and in syntax that works on any shell, but alas more obscurely, by using the <strong>-u</strong> (unbuffered) option of <strong>sed</strong>(1):</p>
 <pre>
-$<strong></strong> <strong>sed</strong> <strong>-un</strong> <strong>p</strong> <strong><</strong> <strong>../alpha/tasks</strong> <strong>></strong> <strong>tasks</strong>
+$<strong> sed -un p < ../alpha/tasks > tasks</strong>
 </pre>
 
 

@@ -95,9 +95,9 @@
 <strong>#include <linux/perf_event.h></strong>
 <strong>#include <linux/hw_breakpoint.h></strong>
 
-<strong>int</strong> <strong>perf_event_open(struct</strong> <strong>perf_event_attr</strong> <strong>*</strong><em>attr</em><strong>,</strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>pid_t</strong> <strong></strong><em>pid</em><strong>,</strong> <strong>int</strong> <strong></strong><em>cpu</em><strong>,</strong> <strong>int</strong> <strong></strong><em>group_fd</em><strong>,</strong>
-<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>unsigned</strong> <strong>long</strong> <strong></strong><em>flags</em><strong>);</strong>
+<strong>int perf_event_open(struct perf_event_attr *</strong><em>attr</em><strong>,</strong>
+<strong>                    pid_t </strong><em>pid</em><strong>, int </strong><em>cpu</em><strong>, int </strong><em>group_fd</em><strong>,</strong>
+<strong>                    unsigned long </strong><em>flags</em><strong>);</strong>
 </pre>
 <p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
         </div>
@@ -110,37 +110,37 @@
 <p>The <em>pid</em> and <em>cpu</em> arguments allow specifying which process and CPU to monitor:</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>pid</strong> <strong>==</strong> <strong>0</strong> and <strong>cpu</strong> <strong>==</strong> <strong>-1</strong></p>
+    <p><strong>pid == 0</strong> and <strong>cpu == -1</strong></p>
   </dt>
   <dd>
     <p>This measures the calling process/thread on any CPU.</p>
   </dd>
   <dt>
-    <p><strong>pid</strong> <strong>==</strong> <strong>0</strong> and <strong>cpu</strong> <strong>>=</strong> <strong>0</strong></p>
+    <p><strong>pid == 0</strong> and <strong>cpu >= 0</strong></p>
   </dt>
   <dd>
     <p>This measures the calling process/thread only when running on the specified CPU.</p>
   </dd>
   <dt>
-    <p><strong>pid</strong> <strong>></strong> <strong>0</strong> and <strong>cpu</strong> <strong>==</strong> <strong>-1</strong></p>
+    <p><strong>pid > 0</strong> and <strong>cpu == -1</strong></p>
   </dt>
   <dd>
     <p>This measures the specified process/thread on any CPU.</p>
   </dd>
   <dt>
-    <p><strong>pid</strong> <strong>></strong> <strong>0</strong> and <strong>cpu</strong> <strong>>=</strong> <strong>0</strong></p>
+    <p><strong>pid > 0</strong> and <strong>cpu >= 0</strong></p>
   </dt>
   <dd>
     <p>This measures the specified process/thread only when running on the specified CPU.</p>
   </dd>
   <dt>
-    <p><strong>pid</strong> <strong>==</strong> <strong>-1</strong> and <strong>cpu</strong> <strong>>=</strong> <strong>0</strong></p>
+    <p><strong>pid == -1</strong> and <strong>cpu >= 0</strong></p>
   </dt>
   <dd>
     <p>This measures all processes/threads on the specified CPU. This requires <strong>CAP_SYS_ADMIN</strong> capability or a <em>/proc/sys/kernel/perf_event_paranoid</em> value of less than 1.</p>
   </dd>
   <dt>
-    <p><strong>pid</strong> <strong>==</strong> <strong>-1</strong> and <strong>cpu</strong> <strong>==</strong> <strong>-1</strong></p>
+    <p><strong>pid == -1</strong> and <strong>cpu == -1</strong></p>
   </dt>
   <dd>
     <p>This setting is invalid and will return an error.</p>
@@ -1123,7 +1123,7 @@ struct read_format {
 </dl>
 
 <h3>MMAP layout</h3>
-<p>When using <strong>perf_event_open</strong>() in sampled mode, asynchronous events (like counter overflow or <strong>PROT_EXEC</strong> mmap tracking) are logged into a ring-buffer. This ring-buffer is created and accessed through <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>.</p><p>The mmap size should be 1+2^n pages, where the first page is a metadata page (<em>struct</em> <em>perf_event_mmap_page</em>) that contains various bits of information such as where the ring-buffer head is.</p><p>Before kernel 2.6.39, there is a bug that means you must allocate an mmap ring buffer when sampling even if you do not plan to access it.</p><p>The structure of the first metadata mmap page is as follows:</p>
+<p>When using <strong>perf_event_open</strong>() in sampled mode, asynchronous events (like counter overflow or <strong>PROT_EXEC</strong> mmap tracking) are logged into a ring-buffer. This ring-buffer is created and accessed through <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>.</p><p>The mmap size should be 1+2^n pages, where the first page is a metadata page (<em>struct perf_event_mmap_page</em>) that contains various bits of information such as where the ring-buffer head is.</p><p>Before kernel 2.6.39, there is a bug that means you must allocate an mmap ring buffer when sampling even if you do not plan to access it.</p><p>The structure of the first metadata mmap page is as follows:</p>
 <pre>
 struct perf_event_mmap_page {
     __u32 version;        /* version number of this structure */

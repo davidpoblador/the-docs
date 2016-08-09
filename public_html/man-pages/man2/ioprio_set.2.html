@@ -92,8 +92,8 @@
         <div class="sectioncontent">
 
 <pre>
-<strong>int</strong> <strong>ioprio_get(int</strong> <strong></strong><em>which</em><strong>,</strong> <strong>int</strong> <strong></strong><em>who</em><strong>);</strong>
-<strong>int</strong> <strong>ioprio_set(int</strong> <strong></strong><em>which</em><strong>,</strong> <strong>int</strong> <strong></strong><em>who</em><strong>,</strong> <strong>int</strong> <strong></strong><em>ioprio</em><strong>);</strong>
+<strong>int ioprio_get(int </strong><em>which</em><strong>, int </strong><em>who</em><strong>);</strong>
+<strong>int ioprio_set(int </strong><em>which</em><strong>, int </strong><em>who</em><strong>, int </strong><em>ioprio</em><strong>);</strong>
 </pre>
 <p><em>Note</em>: There are no glibc wrappers for these system calls; see NOTES.</p>
         </div>
@@ -127,7 +127,7 @@
 <p>If <em>which</em> is specified as <strong>IOPRIO_WHO_PGRP</strong> or <strong>IOPRIO_WHO_USER</strong> when calling <strong>ioprio_get</strong>(), and more than one process matches <em>who</em>, then the returned priority will be the highest one found among all of the matching processes. One priority is said to be higher than another one if it belongs to a higher priority class (<strong>IOPRIO_CLASS_RT</strong> is the highest priority class; <strong>IOPRIO_CLASS_IDLE</strong> is the lowest) or if it belongs to the same priority class as the other process but has a higher priority level (a lower priority number means a higher priority level).</p><p>The <em>ioprio</em> argument given to <strong>ioprio_set</strong>() is a bit mask that specifies both the scheduling class and the priority to be assigned to the target process(es). The following macros are used for assembling and dissecting <em>ioprio</em> values:</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>IOPRIO_PRIO_VALUE(</strong><em>class</em><strong>,</strong> <strong></strong><em>data</em><strong>)</strong></p>
+    <p><strong>IOPRIO_PRIO_VALUE(</strong><em>class</em><strong>, </strong><em>data</em><strong>)</strong></p>
   </dt>
   <dd>
     <p>Given a scheduling <em>class</em> and priority (<em>data</em>), this macro combines the two values to produce an <em>ioprio</em> value, which is returned as the result of the macro.</p>
@@ -206,14 +206,14 @@
 <p>Glibc does not provide a wrapper for these system calls; call them using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p><p>Two or more processes or threads can share an I/O context. This will be the case when <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> was called with the <strong>CLONE_IO</strong> flag. However, by default, the distinct threads of a process will <strong>not</strong> share the same I/O context. This means that if you want to change the I/O priority of all threads in a process, you may need to call <strong>ioprio_set</strong>() on each of the threads. The thread ID that you would need for this operation is the one that is returned by <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a> or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>.</p><p>These system calls have an effect only when used in conjunction with an I/O scheduler that supports I/O priorities. As at kernel 2.6.17 the only such scheduler is the Completely Fair Queuing (CFQ) I/O scheduler.</p><p>If no I/O scheduler has been set for a thread, then by default the I/O priority will follow the CPU nice value (<a href="../man2/setpriority.2.html"><strong>setpriority</strong>(2)</a>). In Linux kernels before version 2.6.24, once an I/O priority had been set using <strong>ioprio_set</strong>(), there was no way to reset the I/O scheduling behavior to the default. Since Linux 2.6.24, specifying <em>ioprio</em> as 0 can be used to reset to the default I/O scheduling behavior.</p><h3>Selecting an I/O scheduler</h3>
 <p>I/O schedulers are selected on a per-device basis via the special file <em>/sys/block/<device>/queue/scheduler</em>.</p><p>One can view the current I/O scheduler via the <em>/sys</em> filesystem. For example, the following command displays a list of all schedulers currently loaded in the kernel:</p>
 <pre>
-$<strong></strong> <strong>cat</strong> <strong>/sys/block/sda/queue/scheduler</strong>
+$<strong> cat /sys/block/sda/queue/scheduler</strong>
 noop anticipatory deadline [cfq]
 </pre>
 <p>The scheduler surrounded by brackets is the one actually in use for the device (<em>sda</em> in the example). Setting another scheduler is done by writing the name of the new scheduler to this file. For example, the following command will set the scheduler for the <em>sda</em> device to <em>cfq</em>:</p>
 <pre>
-$<strong></strong> <strong>su</strong>
+$<strong> su</strong>
 Password:
-#<strong></strong> <strong>echo</strong> <strong>cfq</strong> <strong>></strong> <strong>/sys/block/sda/queue/scheduler</strong>
+#<strong> echo cfq > /sys/block/sda/queue/scheduler</strong>
 </pre>
 
 <h3>The Completely Fair Queuing (CFQ) I/O scheduler</h3>
