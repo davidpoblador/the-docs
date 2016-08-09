@@ -94,15 +94,15 @@
 <pre>
 /* According to POSIX.1-2001, POSIX.1-2008 */
 
-<strong>#include <sys/select.h></strong>
+<strong>#include &lt;sys/select.h&gt;</strong>
 
 /* According to earlier standards */
 
-<strong>#include <sys/time.h></strong>
+<strong>#include &lt;sys/time.h&gt;</strong>
 
-<strong>#include <sys/types.h></strong>
+<strong>#include &lt;sys/types.h&gt;</strong>
 
-<strong>#include <unistd.h></strong>
+<strong>#include &lt;unistd.h&gt;</strong>
 
 <strong>int select(int </strong><em>nfds</em><strong>, fd_set *</strong><em>readfds</em><strong>, fd_set *</strong><em>writefds</em><strong>,</strong>
 <strong>           fd_set *</strong><em>exceptfds</em><strong>, struct timeval *</strong><em>timeout</em><strong>);</strong>
@@ -115,7 +115,7 @@
 
 <strong>void FD_ZERO(fd_set *</strong><em>set</em><strong>);</strong>
 
-<strong>#include <sys/select.h></strong>
+<strong>#include &lt;sys/select.h&gt;</strong>
 
 <strong>int pselect(int </strong><em>nfds</em><strong>, fd_set *</strong><em>readfds</em><strong>, fd_set *</strong><em>writefds</em><strong>,</strong>
 <strong>            fd_set *</strong><em>exceptfds</em><strong>, const struct timespec *</strong><em>timeout</em><strong>,</strong>
@@ -167,7 +167,7 @@
     pthread_sigmask(SIG_SETMASK, &origmask, NULL);
 </pre>
 <p>The reason that <strong>pselect</strong>() is needed is that if one wants to wait for either a signal or for a file descriptor to become ready, then an atomic test is needed to prevent race conditions. (Suppose the signal handler sets a global flag and returns. Then a test of this global flag followed by a call of <strong>select</strong>() could hang indefinitely if the signal arrived just after the test but just before the call. By contrast, <strong>pselect</strong>() allows one to first block signals, handle the signals that have come in, then call <strong>pselect</strong>() with the desired <em>sigmask</em>, avoiding the race.)</p><h3>The timeout</h3>
-<p>The time structures involved are defined in <em><sys/time.h></em> and look like</p>
+<p>The time structures involved are defined in <em>&lt;sys/time.h&gt;</em> and look like</p>
 <pre>
 struct timeval {
     long    tv_sec;         /* seconds */
@@ -251,14 +251,14 @@ struct timespec {
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>An <em>fd_set</em> is a fixed size buffer. Executing <strong>FD_CLR</strong>() or <strong>FD_SET</strong>() with a value of <em>fd</em> that is negative or is equal to or larger than <strong>FD_SETSIZE</strong> will result in undefined behavior. Moreover, POSIX requires <em>fd</em> to be a valid file descriptor.</p><p>On some other UNIX systems, <strong>select</strong>() can fail with the error <strong>EAGAIN</strong> if the system fails to allocate kernel-internal resources, rather than <strong>ENOMEM</strong> as Linux does. POSIX specifies this error for <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, but not for <strong>select</strong>(). Portable programs may wish to check for <strong>EAGAIN</strong> and loop, just as with <strong>EINTR</strong>.</p><p>Concerning the types involved, the classical situation is that the two fields of a <em>timeval</em> structure are typed as <em>long</em> (as shown above), and the structure is defined in <em><sys/time.h></em>. The POSIX.1 situation is</p>
+<p>An <em>fd_set</em> is a fixed size buffer. Executing <strong>FD_CLR</strong>() or <strong>FD_SET</strong>() with a value of <em>fd</em> that is negative or is equal to or larger than <strong>FD_SETSIZE</strong> will result in undefined behavior. Moreover, POSIX requires <em>fd</em> to be a valid file descriptor.</p><p>On some other UNIX systems, <strong>select</strong>() can fail with the error <strong>EAGAIN</strong> if the system fails to allocate kernel-internal resources, rather than <strong>ENOMEM</strong> as Linux does. POSIX specifies this error for <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, but not for <strong>select</strong>(). Portable programs may wish to check for <strong>EAGAIN</strong> and loop, just as with <strong>EINTR</strong>.</p><p>Concerning the types involved, the classical situation is that the two fields of a <em>timeval</em> structure are typed as <em>long</em> (as shown above), and the structure is defined in <em>&lt;sys/time.h&gt;</em>. The POSIX.1 situation is</p>
 <pre>
 struct timeval {
     time_t         tv_sec;     /* seconds */
     suseconds_t    tv_usec;    /* microseconds */
 };
 </pre>
-<p>where the structure is defined in <em><sys/select.h></em> and the data types <em>time_t</em> and <em>suseconds_t</em> are defined in <em><sys/types.h></em>.</p><p>Concerning prototypes, the classical situation is that one should include <em><time.h></em> for <strong>select</strong>(). The POSIX.1 situation is that one should include <em><sys/select.h></em> for <strong>select</strong>() and <strong>pselect</strong>().</p><p>Under glibc 2.0, <em><sys/select.h></em> gives the wrong prototype for <strong>pselect</strong>(). Under glibc 2.1 to 2.2.1, it gives <strong>pselect</strong>() when <strong>_GNU_SOURCE</strong> is defined. Since glibc 2.2.2, the requirements are as shown in the SYNOPSIS.</p><h3>Multithreaded applications</h3>
+<p>where the structure is defined in <em>&lt;sys/select.h&gt;</em> and the data types <em>time_t</em> and <em>suseconds_t</em> are defined in <em>&lt;sys/types.h&gt;</em>.</p><p>Concerning prototypes, the classical situation is that one should include <em>&lt;time.h&gt;</em> for <strong>select</strong>(). The POSIX.1 situation is that one should include <em>&lt;sys/select.h&gt;</em> for <strong>select</strong>() and <strong>pselect</strong>().</p><p>Under glibc 2.0, <em>&lt;sys/select.h&gt;</em> gives the wrong prototype for <strong>pselect</strong>(). Under glibc 2.1 to 2.2.1, it gives <strong>pselect</strong>() when <strong>_GNU_SOURCE</strong> is defined. Since glibc 2.2.2, the requirements are as shown in the SYNOPSIS.</p><h3>Multithreaded applications</h3>
 <p>If a file descriptor being monitored by <strong>select</strong>() is closed in another thread, the result is unspecified. On some UNIX systems, <strong>select</strong>() unblocks and returns, with an indication that the file descriptor is ready (a subsequent I/O operation will likely fail with an error, unless another the file descriptor reopened between the time <strong>select</strong>() returned and the I/O operations was performed). On Linux (and some other systems), closing the file descriptor in another thread has no effect on <strong>select</strong>(). In summary, any application that relies on a particular behavior in this scenario must be considered buggy.</p>
 <h3>C library/kernel differences</h3>
 <p>The Linux kernel allows file descriptor sets of arbitrary size, determining the length of the sets to be checked from the value of <em>nfds</em>. However, in the glibc implementation, the <em>fd_set</em> type is fixed in size. See also BUGS.</p><p>The <strong>pselect</strong>() interface described in this page is implemented by glibc. The underlying Linux system call is named <strong>pselect6</strong>(). This system call has somewhat different behavior from the glibc wrapper function.</p><p>The Linux <strong>pselect6</strong>() system call modifies its <em>timeout</em> argument. However, the glibc wrapper function hides this behavior by using a local variable for the timeout argument that is passed to the system call. Thus, the glibc <strong>pselect</strong>() function does not modify its <em>timeout</em> argument; this is the behavior required by POSIX.1-2001.</p><p>The final argument of the <strong>pselect6</strong>() system call is not a <em>sigset_t&nbsp;*</em> pointer, but is instead a structure of the form:</p>

@@ -185,7 +185,7 @@
   </dd>
 
 </dl>
-<p>In addition to the above pseudo-files in each directory below <em>/dev/cpuset</em>, each process has a pseudo-file, <em>/proc/<pid>/cpuset</em>, that displays the path of the process's cpuset directory relative to the root of the cpuset filesystem.</p><p>Also the <em>/proc/<pid>/status</em> file for each process has four added lines, displaying the process's <em>Cpus_allowed</em> (on which CPUs it may be scheduled) and <em>Mems_allowed</em> (on which memory nodes it may obtain memory), in the two formats <strong>Mask Format</strong> and <strong>List Format</strong> (see below) as shown in the following example:</p>
+<p>In addition to the above pseudo-files in each directory below <em>/dev/cpuset</em>, each process has a pseudo-file, <em>/proc/&lt;pid&gt;/cpuset</em>, that displays the path of the process's cpuset directory relative to the root of the cpuset filesystem.</p><p>Also the <em>/proc/&lt;pid&gt;/status</em> file for each process has four added lines, displaying the process's <em>Cpus_allowed</em> (on which CPUs it may be scheduled) and <em>Mems_allowed</em> (on which memory nodes it may obtain memory), in the two formats <strong>Mask Format</strong> and <strong>List Format</strong> (see below) as shown in the following example:</p>
 <pre>
 Cpus_allowed:   ffffffff,ffffffff,ffffffff,ffffffff
 Cpus_allowed_list:     0-127
@@ -282,7 +282,7 @@ rmdir /dev/cpuset/$1
         <h2 class="font-effect-shadow-multiple">FORMATS</h2>
         <div class="sectioncontent">
 <p>The following formats are used to represent sets of CPUs and memory nodes.</p><h3>Mask format</h3>
-<p>The <strong>Mask Format</strong> is used to represent CPU and memory-node bit masks in the <em>/proc/<pid>/status</em> file.</p><p>This format displays each 32-bit word in hexadecimal (using ASCII characters "0" - "9" and "a" - "f"); words are filled with leading zeros, if required. For masks longer than one word, a comma separator is used between words. Words are displayed in big-endian order, which has the most significant bit first. The hex digits within a word are also in big-endian order.</p><p>The number of 32-bit words displayed is the minimum number needed to display all bits of the bit mask, based on the size of the bit mask.</p><p>Examples of the <strong>Mask Format</strong>:</p>
+<p>The <strong>Mask Format</strong> is used to represent CPU and memory-node bit masks in the <em>/proc/&lt;pid&gt;/status</em> file.</p><p>This format displays each 32-bit word in hexadecimal (using ASCII characters "0" - "9" and "a" - "f"); words are filled with leading zeros, if required. For masks longer than one word, a comma separator is used between words. Words are displayed in big-endian order, which has the most significant bit first. The hex digits within a word are also in big-endian order.</p><p>The number of 32-bit words displayed is the minimum number needed to display all bits of the bit mask, based on the size of the bit mask.</p><p>Examples of the <strong>Mask Format</strong>:</p>
 <pre>
 00000001                        # just bit 0 set
 40000000,00000000,00000000      # just bit 94 set
@@ -489,7 +489,7 @@ echo 19 &gt; cpuset.mems
     <p><strong>ENAMETOOLONG</strong></p>
   </dt>
   <dd>
-    <p>Attempted to <a href="../man2/read.2.html"><strong>read</strong>(2)</a> a <em>/proc/<pid>/cpuset</em> file for a cpuset path that is longer than the kernel page size.</p>
+    <p>Attempted to <a href="../man2/read.2.html"><strong>read</strong>(2)</a> a <em>/proc/&lt;pid&gt;/cpuset</em> file for a cpuset path that is longer than the kernel page size.</p>
   </dd>
   <dt>
     <p><strong>ENAMETOOLONG</strong></p>
@@ -635,9 +635,9 @@ $<strong> mount -t cpuset cpuset /dev/cpuset</strong>
 $<strong> cd /dev/cpuset</strong>
 $<strong> mkdir Charlie</strong>
 $<strong> cd Charlie</strong>
-$<strong> /bin/echo 2-3 > cpuset.cpus</strong>
-$<strong> /bin/echo 1 > cpuset.mems</strong>
-$<strong> /bin/echo $$ > tasks</strong>
+$<strong> /bin/echo 2-3 &gt; cpuset.cpus</strong>
+$<strong> /bin/echo 1 &gt; cpuset.mems</strong>
+$<strong> /bin/echo $$ &gt; tasks</strong>
 # The current shell is now running in cpuset Charlie
 # The next line should display '/Charlie'
 $<strong> cat /proc/self/cpuset</strong>
@@ -683,10 +683,10 @@ $<strong> cat /proc/self/cpuset</strong>
 $<strong> cd /dev/cpuset</strong>
 $<strong> mkdir beta</strong>
 $<strong> cd beta</strong>
-$<strong> /bin/echo 16-19 > cpuset.cpus</strong>
-$<strong> /bin/echo 8-9 > cpuset.mems</strong>
-$<strong> /bin/echo 1 > cpuset.memory_migrate</strong>
-$<strong> while read i; do /bin/echo $i; done < ../alpha/tasks > tasks</strong>
+$<strong> /bin/echo 16-19 &gt; cpuset.cpus</strong>
+$<strong> /bin/echo 8-9 &gt; cpuset.mems</strong>
+$<strong> /bin/echo 1 &gt; cpuset.memory_migrate</strong>
+$<strong> while read i; do /bin/echo $i; done &lt; ../alpha/tasks &gt; tasks</strong>
 </pre>
 <p>The above should move any processes in <em>alpha</em> to <em>beta</em>, and any memory held by these processes on memory nodes 2-3 to memory nodes 8-9, respectively.</p><p>Notice that the last step of the above sequence did not do:</p>
 <pre>
@@ -694,7 +694,7 @@ $<strong> cp ../alpha/tasks tasks</strong>
 </pre>
 <p>The <em>while</em> loop, rather than the seemingly easier use of the <strong>cp</strong>(1) command, was necessary because only one process PID at a time may be written to the <em>tasks</em> file.</p><p>The same effect (writing one PID at a time) as the <em>while</em> loop can be accomplished more efficiently, in fewer keystrokes and in syntax that works on any shell, but alas more obscurely, by using the <strong>-u</strong> (unbuffered) option of <strong>sed</strong>(1):</p>
 <pre>
-$<strong> sed -un p < ../alpha/tasks > tasks</strong>
+$<strong> sed -un p &lt; ../alpha/tasks &gt; tasks</strong>
 </pre>
 
 

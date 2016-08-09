@@ -92,7 +92,7 @@
         <div class="sectioncontent">
 
 <pre>
-<strong>#include <sys/uio.h></strong>
+<strong>#include &lt;sys/uio.h&gt;</strong>
 
 <strong>ssize_t readv(int </strong><em>fd</em><strong>, const struct iovec *</strong><em>iov</em><strong>, int </strong><em>iovcnt</em><strong>);</strong>
 
@@ -124,7 +124,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The <strong>readv</strong>() system call reads <em>iovcnt</em> buffers from the file associated with the file descriptor <em>fd</em> into the buffers described by <em>iov</em> ("scatter input").</p><p>The <strong>writev</strong>() system call writes <em>iovcnt</em> buffers of data described by <em>iov</em> to the file associated with the file descriptor <em>fd</em> ("gather output").</p><p>The pointer <em>iov</em> points to an array of <em>iovec</em> structures, defined in <em><sys/uio.h></em> as:</p>
+<p>The <strong>readv</strong>() system call reads <em>iovcnt</em> buffers from the file associated with the file descriptor <em>fd</em> into the buffers described by <em>iov</em> ("scatter input").</p><p>The <strong>writev</strong>() system call writes <em>iovcnt</em> buffers of data described by <em>iov</em> to the file associated with the file descriptor <em>fd</em> ("gather output").</p><p>The pointer <em>iov</em> points to an array of <em>iovec</em> structures, defined in <em>&lt;sys/uio.h&gt;</em> as:</p>
 <pre>
 struct iovec {
     void  *iov_base;    /* Starting address */
@@ -202,7 +202,7 @@ struct iovec {
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>POSIX.1 allows an implementation to place a limit on the number of items that can be passed in <em>iov</em>. An implementation can advertise its limit by defining <strong>IOV_MAX</strong> in <em><limits.h></em> or at run time via the return value from <em>sysconf(_SC_IOV_MAX)</em>. On modern Linux systems, the limit is 1024. Back in Linux 2.0 days, this limit was 16.</p><h3>C library/kernel differences</h3>
+<p>POSIX.1 allows an implementation to place a limit on the number of items that can be passed in <em>iov</em>. An implementation can advertise its limit by defining <strong>IOV_MAX</strong> in <em>&lt;limits.h&gt;</em> or at run time via the return value from <em>sysconf(_SC_IOV_MAX)</em>. On modern Linux systems, the limit is 1024. Back in Linux 2.0 days, this limit was 16.</p><h3>C library/kernel differences</h3>
 <p>The raw <strong>preadv</strong>() and <strong>pwritev</strong>() system calls have call signatures that differ slightly from that of the corresponding GNU C library wrapper functions shown in the SYNOPSIS. The final argument, <em>offset</em>, is unpacked by the wrapper functions into two arguments in the system calls:</p><p><strong>    unsigned long </strong><em>pos_l</em><strong>, unsigned long </strong><em>pos</em></p><p>These arguments contain, respectively, the low order and high order 32 bits of <em>offset</em>.</p>
 <h3>Historical C library/kernel differences</h3>
 <p>To deal with the fact that <strong>IOV_MAX</strong> was so low on early versions of Linux, the glibc wrapper functions for <strong>readv</strong>() and <strong>writev</strong>() did some extra work if they detected that the underlying kernel system call failed because this limit was exceeded. In the case of <strong>readv</strong>(), the wrapper function allocated a temporary buffer large enough for all of the items specified by <em>iov</em>, passed that buffer in a call to <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, copied data from the buffer to the locations specified by the <em>iov_base</em> fields of the elements of <em>iov</em>, and then freed the buffer. The wrapper function for <strong>writev</strong>() performed the analogous task using a temporary buffer and a call to <a href="../man2/write.2.html"><strong>write</strong>(2)</a>.</p><p>The need for this extra effort in the glibc wrapper functions went away with Linux 2.2 and later. However, glibc continued to provide this behavior until version 2.10. Starting with glibc version 2.9, the wrapper functions provide this behavior only if the library detects that the system is running a Linux kernel older than version 2.6.18 (an arbitrarily selected kernel version). And since glibc 2.20 (which requires a minimum Linux kernel version of 2.6.32), the glibc wrapper functions always just directly invoke the system calls.</p><p>It is not advisable to mix calls to <strong>readv</strong>() or <strong>writev</strong>(), which operate on file descriptors, with the functions from the stdio library; the results will be undefined and probably not what you want.</p>

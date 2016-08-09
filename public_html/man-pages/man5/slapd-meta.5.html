@@ -125,7 +125,7 @@ lastmod  off
 <p>Target configuration starts with the "uri" directive. All the configuration directives that are not specific to targets should be defined first for clarity, including those that are common to all backends. They are:</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>conn-ttl <time></strong></p>
+    <p><strong>conn-ttl &lt;time&gt;</strong></p>
   </dt>
   <dd>
     <p>This directive causes a cached connection to be dropped an recreated after a given ttl, regardless of being idle or not.</p>
@@ -137,7 +137,7 @@ lastmod  off
     <p>This directive forces the backend to reject all those operations that must resolve to a single target in case none or multiple targets are selected. They include: add, delete, modify, modrdn; compare is not included, as well as bind since, as they don't alter entries, in case of multiple matches an attempt is made to perform the operation on any candidate target, with the constraint that at most one must succeed. This directive can also be used when processing targets to mark a specific target as default.</p>
   </dd>
   <dt>
-    <p><strong>dncache-ttl {DISABLED|forever|<ttl>}</strong></p>
+    <p><strong>dncache-ttl {DISABLED|forever|&lt;ttl&gt;}</strong></p>
   </dt>
   <dd>
     <p>This directive sets the time-to-live of the DN cache. This caches the target that holds a given DN to speed up target selection in case multiple targets would result from an uncached search; forever means cache never expires; disabled means no DN caching; otherwise a valid ( &gt; 0 ) ttl is required, in the format illustrated for the <strong>idle-timeout</strong> directive.</p>
@@ -149,13 +149,13 @@ lastmod  off
     <p>This directive allows to select the behavior in case an error is returned by one target during a search. The default, <strong>continue</strong>, consists in continuing the operation, trying to return as much data as possible. If the value is set to <strong>stop</strong>, the search is terminated as soon as an error is returned by one target, and the error is immediately propagated to the client. If the value is set to <strong>report</strong>, the search is continuated to the end but, in case at least one target returned an error code, the first non-success error code is returned.</p>
   </dd>
   <dt>
-    <p><strong>norefs <NO|yes></strong></p>
+    <p><strong>norefs &lt;NO|yes&gt;</strong></p>
   </dt>
   <dd>
     <p>If <strong>yes</strong>, do not return search reference responses. By default, they are returned unless request is LDAPv2. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
   </dd>
   <dt>
-    <p><strong>noundeffilter <NO|yes></strong></p>
+    <p><strong>noundeffilter &lt;NO|yes&gt;</strong></p>
   </dt>
   <dd>
     <p>If <strong>yes</strong>, return success instead of searching if a filter is undefined or contains undefined portions. By default, the search is propagated after replacing undefined portions with <strong>(!(objectClass=*))</strong>, which corresponds to the empty result set. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
@@ -173,7 +173,7 @@ lastmod  off
     <p>This directive, when set to <strong>yes</strong>, causes the authentication to the remote servers with the pseudo-root identity (the identity defined in each <strong>idassert-bind</strong> directive) to be deferred until actually needed by subsequent operations. Otherwise, all binds as the rootdn are propagated to the targets.</p>
   </dd>
   <dt>
-    <p><strong>quarantine <interval>,<num>[;<interval>,<num>[...]]</strong></p>
+    <p><strong>quarantine &lt;interval&gt;,&lt;num&gt;[;&lt;interval&gt;,&lt;num&gt;[...]]</strong></p>
   </dt>
   <dd>
     <p>Turns on quarantine of URIs that returned <em>LDAP_UNAVAILABLE</em>, so that an attempt to reconnect only occurs at given intervals instead of any time a client requests an operation. The pattern is: retry only after at least <em>interval</em> seconds elapsed since last attempt, for exactly <em>num</em> times; then use the next pattern. If <em>num</em> for the last pattern is "<strong>+</strong>", it retries forever; otherwise, no more retries occur. This directive must appear before any target specification; it affects all targets with the same pattern.</p>
@@ -214,7 +214,7 @@ lastmod  off
 <p>Target specification starts with a "uri" directive:</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>uri <protocol>://[<host>]/<naming context> [...]</strong></p>
+    <p><strong>uri &lt;protocol&gt;://[&lt;host&gt;]/&lt;naming context&gt; [...]</strong></p>
   </dt>
   <dd>
     <p>The &lt;protocol&gt; part can be anything <strong>ldap_initialize</strong>(3) accepts ({ldap|ldaps|ldapi} and variants); the &lt;host&gt; may be omitted, defaulting to whatever is set in <strong>ldap.conf</strong>(5). The &lt;naming context&gt; part is <em>mandatory</em> for the first URI, but it <em>must be omitted</em> for subsequent ones, if any. The naming context part must be within the naming context defined for the backend, e.g.:</p>
@@ -234,19 +234,19 @@ uri    "ldap://l1.foo.com/<strong>dc=foo,dc=com</strong>" "ldap://l2.foo.com/"
 <p>causes <em>l2.foo.com</em> to be contacted whenever <em>l1.foo.com</em> does not respond. In that case, the URI list is internally rearranged, by moving unavailable URIs to the end, so that further connection attempts occur with respect to the last URI that succeeded.</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>acl-authcDN <administrative DN for access control purposes></strong></p>
+    <p><strong>acl-authcDN &lt;administrative DN for access control purposes&gt;</strong></p>
   </dt>
   <dd>
     <p>DN which is used to query the target server for acl checking, as in the LDAP backend; it is supposed to have read access on the target server to attributes used on the proxy for acl checking. There is no risk of giving away such values; they are only used to check permissions. <strong>The acl-authcDN identity is by no means implicitly used by the proxy</strong> <strong>when the client connects anonymously.</strong></p>
   </dd>
   <dt>
-    <p><strong>acl-passwd <password></strong></p>
+    <p><strong>acl-passwd &lt;password&gt;</strong></p>
   </dt>
   <dd>
     <p>Password used with the <strong></strong> acl-authcDN above.</p>
   </dd>
   <dt>
-    <p><strong>bind-timeout <microseconds></strong></p>
+    <p><strong>bind-timeout &lt;microseconds&gt;</strong></p>
   </dt>
   <dd>
     <p>This directive defines the timeout, in microseconds, used when polling for response after an asynchronous bind connection.  The initial call to <strong>ldap_result</strong>(3) is performed with a trade-off timeout of 100000 us; if that results in a timeout exceeded, subsequent calls use the value provided with <strong>bind-timeout</strong>. The default value is used also for subsequent calls if <strong>bind-timeout</strong> is not specified. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
@@ -258,55 +258,55 @@ uri    "ldap://l1.foo.com/<strong>dc=foo,dc=com</strong>" "ldap://l2.foo.com/"
     <p>enable/disable automatic referral chasing, which is delegated to the underlying libldap, with rebinding eventually performed if the <strong>rebind-as-user</strong> directive is used.  The default is to chase referrals. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
   </dd>
   <dt>
-    <p><strong>client-pr {accept-unsolicited|DISABLE|<size>}</strong></p>
+    <p><strong>client-pr {accept-unsolicited|DISABLE|&lt;size&gt;}</strong></p>
   </dt>
   <dd>
     <p>This feature allows to use RFC 2696 Paged Results control when performing search operations with a specific target, irrespective of the client's request. When set to a numeric value, Paged Results control is always used with <em>size</em> as the page size. When set to <em>accept-unsolicited</em>, unsolicited Paged Results control responses are accepted and honored for compatibility with broken remote DSAs. The client is not exposed to paged results handling between <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a> and the remote servers. By default (disabled), Paged Results control is not used and responses are not accepted. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
   </dd>
   <dt>
-    <p><strong>default-target [<target>]</strong></p>
+    <p><strong>default-target [&lt;target&gt;]</strong></p>
   </dt>
   <dd>
     <p>The "default-target" directive can also be used during target specification. With no arguments it marks the current target as the default. The optional number marks target &lt;target&gt; as the default one, starting from 1. Target &lt;target&gt; must be defined.</p>
   </dd>
   <dt>
-    <p><strong>filter <pattern></strong></p>
+    <p><strong>filter &lt;pattern&gt;</strong></p>
   </dt>
   <dd>
     <p>This directive allows specifying a <strong>regex</strong>(5) pattern to indicate what search filter terms are actually served by a target.</p><p>In a search request, if the search filter matches the <em>pattern</em> the target is considered while fulfilling the request; otherwise the target is ignored. There may be multiple occurrences of the <strong>filter</strong> directive for each target.</p>
   </dd>
   <dt>
-    <p><strong>idassert-authzFrom <authz-regexp></strong></p>
+    <p><strong>idassert-authzFrom &lt;authz-regexp&gt;</strong></p>
   </dt>
   <dd>
-    <p>if defined, selects what <em>local</em> identities are authorized to exploit the identity assertion feature. The string <strong><authz-regexp></strong> follows the rules defined for the <em>authzFrom</em> attribute. See <strong>slapd.conf</strong>(5), section related to <strong>authz-policy</strong>, for details on the syntax of this field.</p><p><strong>idassert-bind</strong> <strong>bindmethod=none|simple|sasl [binddn=<simple DN>] [credentials=<simple password>]</strong> <strong>[saslmech=<SASL mech>] [secprops=<properties>] [realm=<realm>]</strong> <strong>[authcId=<authentication ID>] [authzId=<authorization ID>]</strong> <strong>[authz={native|proxyauthz}] [mode=<mode>] [flags=<flags>]</strong> <strong>[starttls=no|yes|critical]</strong> <strong>[tls_cert=<file>]</strong> <strong>[tls_key=<file>]</strong> <strong>[tls_cacert=<file>]</strong> <strong>[tls_cacertdir=<path>]</strong> <strong>[tls_reqcert=never|allow|try|demand]</strong> <strong>[tls_cipher_suite=<ciphers>]</strong> <strong>[tls_protocol_min=<major>[.<minor>]]</strong> <strong>[tls_crlcheck=none|peer|all]</strong></p><p>Allows to define the parameters of the authentication method that is internally used by the proxy to authorize connections that are authenticated by other databases. The identity defined by this directive, according to the properties associated to the authentication method, is supposed to have auth access on the target server to attributes used on the proxy for authentication and authorization, and to be allowed to authorize the users. This requires to have <strong>proxyAuthz</strong> privileges on a wide set of DNs, e.g. <strong>authzTo=dn.subtree:""</strong>, and the remote server to have <strong>authz-policy</strong> set to <strong>to</strong> or <strong>both</strong>. See <strong>slapd.conf</strong>(5) for details on these statements and for remarks and drawbacks about their usage. The supported bindmethods are</p><p><strong>none|simple|sasl</strong></p><p>where <strong>none</strong> is the default, i.e. no <em>identity assertion</em> is performed.</p><p>The authz parameter is used to instruct the SASL bind to exploit <strong>native</strong> SASL authorization, if available; since connections are cached, this should only be used when authorizing with a fixed identity (e.g. by means of the <strong>authzDN</strong> or <strong>authzID</strong> parameters). Otherwise, the default <strong>proxyauthz</strong> is used, i.e. the proxyAuthz control (Proxied Authorization, RFC 4370) is added to all operations.</p><p>The supported modes are:</p><p><strong>&lt;mode&gt; := {legacy|anonymous|none|self}</strong></p><p>If <strong><mode></strong> is not present, and <strong>authzId</strong> is given, the proxy always authorizes that identity. <strong><authorization ID></strong> can be</p><p><strong>u:&lt;user&gt;</strong></p><p><strong>[dn:]&lt;DN&gt;</strong></p><p>The former is supposed to be expanded by the remote server according to the authz rules; see <strong>slapd.conf</strong>(5) for details. In the latter case, whether or not the <strong>dn:</strong> prefix is present, the string must pass DN validation and normalization.</p><p>The default mode is <strong>legacy</strong>, which implies that the proxy will either perform a simple bind as the <em>authcDN</em> or a SASL bind as the <em>authcID</em> and assert the client's identity when it is not anonymous. Direct binds are always proxied. The other modes imply that the proxy will always either perform a simple bind as the <em>authcDN</em> or a SASL bind as the <em>authcID</em>, unless restricted by <strong>idassert-authzFrom</strong> rules (see below), in which case the operation will fail; eventually, it will assert some other identity according to <strong><mode></strong>. Other identity assertion modes are <strong>anonymous</strong> and <strong>self</strong>, which respectively mean that the <em>empty</em> or the <em>client</em>'s identity will be asserted; <strong>none</strong>, which means that no proxyAuthz control will be used, so the <em>authcDN</em> or the <em>authcID</em> identity will be asserted. For all modes that require the use of the <em>proxyAuthz</em> control, on the remote server the proxy identity must have appropriate <em>authzTo</em> permissions, or the asserted identities must have appropriate <em>authzFrom</em> permissions.  Note, however, that the ID assertion feature is mostly useful when the asserted identities do not exist on the remote server. When <em>bindmethod</em> is <strong>SASL</strong>, the <em>authcDN</em> must be specified in addition to the <em>authcID</em>, although it is not used within the authentication process.</p><p>Flags can be</p><p><strong>override,[non-]prescriptive,proxy-authz-[non-]critical</strong></p><p>When the <strong>override</strong> flag is used, identity assertion takes place even when the database is authorizing for the identity of the client, i.e. after binding with the provided identity, and thus authenticating it, the proxy performs the identity assertion using the configured identity and authentication method.</p><p>When the <strong>prescriptive</strong> flag is used (the default), operations fail with <em>inappropriateAuthentication</em> for those identities whose assertion is not allowed by the <strong>idassert-authzFrom</strong> patterns. If the <strong>non-prescriptive</strong> flag is used, operations are performed anonymously for those identities whose assertion is not allowed by the <strong>idassert-authzFrom</strong> patterns.</p><p>When the <strong>proxy-authz-non-critical</strong> flag is used (the default), the proxyAuthz control is not marked as critical, in violation of RFC 4370.  Use of <strong>proxy-authz-critical</strong> is recommended.</p><p>The TLS settings default to the same as the main slapd TLS settings, except for <strong>tls_reqcert</strong> which defaults to "demand".</p><p>The identity associated to this directive is also used for privileged operations whenever <strong>idassert-bind</strong> is defined and <strong>acl-bind</strong> is not.  See <strong>acl-bind</strong> for details.</p>
+    <p>if defined, selects what <em>local</em> identities are authorized to exploit the identity assertion feature. The string <strong>&lt;authz-regexp&gt;</strong> follows the rules defined for the <em>authzFrom</em> attribute. See <strong>slapd.conf</strong>(5), section related to <strong>authz-policy</strong>, for details on the syntax of this field.</p><p><strong>idassert-bind</strong> <strong>bindmethod=none|simple|sasl [binddn=&lt;simple DN&gt;] [credentials=&lt;simple password&gt;]</strong> <strong>[saslmech=&lt;SASL mech&gt;] [secprops=&lt;properties&gt;] [realm=&lt;realm&gt;]</strong> <strong>[authcId=&lt;authentication ID&gt;] [authzId=&lt;authorization ID&gt;]</strong> <strong>[authz={native|proxyauthz}] [mode=&lt;mode&gt;] [flags=&lt;flags&gt;]</strong> <strong>[starttls=no|yes|critical]</strong> <strong>[tls_cert=&lt;file&gt;]</strong> <strong>[tls_key=&lt;file&gt;]</strong> <strong>[tls_cacert=&lt;file&gt;]</strong> <strong>[tls_cacertdir=&lt;path&gt;]</strong> <strong>[tls_reqcert=never|allow|try|demand]</strong> <strong>[tls_cipher_suite=&lt;ciphers&gt;]</strong> <strong>[tls_protocol_min=&lt;major&gt;[.&lt;minor&gt;]]</strong> <strong>[tls_crlcheck=none|peer|all]</strong></p><p>Allows to define the parameters of the authentication method that is internally used by the proxy to authorize connections that are authenticated by other databases. The identity defined by this directive, according to the properties associated to the authentication method, is supposed to have auth access on the target server to attributes used on the proxy for authentication and authorization, and to be allowed to authorize the users. This requires to have <strong>proxyAuthz</strong> privileges on a wide set of DNs, e.g. <strong>authzTo=dn.subtree:""</strong>, and the remote server to have <strong>authz-policy</strong> set to <strong>to</strong> or <strong>both</strong>. See <strong>slapd.conf</strong>(5) for details on these statements and for remarks and drawbacks about their usage. The supported bindmethods are</p><p><strong>none|simple|sasl</strong></p><p>where <strong>none</strong> is the default, i.e. no <em>identity assertion</em> is performed.</p><p>The authz parameter is used to instruct the SASL bind to exploit <strong>native</strong> SASL authorization, if available; since connections are cached, this should only be used when authorizing with a fixed identity (e.g. by means of the <strong>authzDN</strong> or <strong>authzID</strong> parameters). Otherwise, the default <strong>proxyauthz</strong> is used, i.e. the proxyAuthz control (Proxied Authorization, RFC 4370) is added to all operations.</p><p>The supported modes are:</p><p><strong>&lt;mode&gt; := {legacy|anonymous|none|self}</strong></p><p>If <strong>&lt;mode&gt;</strong> is not present, and <strong>authzId</strong> is given, the proxy always authorizes that identity. <strong>&lt;authorization ID&gt;</strong> can be</p><p><strong>u:&lt;user&gt;</strong></p><p><strong>[dn:]&lt;DN&gt;</strong></p><p>The former is supposed to be expanded by the remote server according to the authz rules; see <strong>slapd.conf</strong>(5) for details. In the latter case, whether or not the <strong>dn:</strong> prefix is present, the string must pass DN validation and normalization.</p><p>The default mode is <strong>legacy</strong>, which implies that the proxy will either perform a simple bind as the <em>authcDN</em> or a SASL bind as the <em>authcID</em> and assert the client's identity when it is not anonymous. Direct binds are always proxied. The other modes imply that the proxy will always either perform a simple bind as the <em>authcDN</em> or a SASL bind as the <em>authcID</em>, unless restricted by <strong>idassert-authzFrom</strong> rules (see below), in which case the operation will fail; eventually, it will assert some other identity according to <strong>&lt;mode&gt;</strong>. Other identity assertion modes are <strong>anonymous</strong> and <strong>self</strong>, which respectively mean that the <em>empty</em> or the <em>client</em>'s identity will be asserted; <strong>none</strong>, which means that no proxyAuthz control will be used, so the <em>authcDN</em> or the <em>authcID</em> identity will be asserted. For all modes that require the use of the <em>proxyAuthz</em> control, on the remote server the proxy identity must have appropriate <em>authzTo</em> permissions, or the asserted identities must have appropriate <em>authzFrom</em> permissions.  Note, however, that the ID assertion feature is mostly useful when the asserted identities do not exist on the remote server. When <em>bindmethod</em> is <strong>SASL</strong>, the <em>authcDN</em> must be specified in addition to the <em>authcID</em>, although it is not used within the authentication process.</p><p>Flags can be</p><p><strong>override,[non-]prescriptive,proxy-authz-[non-]critical</strong></p><p>When the <strong>override</strong> flag is used, identity assertion takes place even when the database is authorizing for the identity of the client, i.e. after binding with the provided identity, and thus authenticating it, the proxy performs the identity assertion using the configured identity and authentication method.</p><p>When the <strong>prescriptive</strong> flag is used (the default), operations fail with <em>inappropriateAuthentication</em> for those identities whose assertion is not allowed by the <strong>idassert-authzFrom</strong> patterns. If the <strong>non-prescriptive</strong> flag is used, operations are performed anonymously for those identities whose assertion is not allowed by the <strong>idassert-authzFrom</strong> patterns.</p><p>When the <strong>proxy-authz-non-critical</strong> flag is used (the default), the proxyAuthz control is not marked as critical, in violation of RFC 4370.  Use of <strong>proxy-authz-critical</strong> is recommended.</p><p>The TLS settings default to the same as the main slapd TLS settings, except for <strong>tls_reqcert</strong> which defaults to "demand".</p><p>The identity associated to this directive is also used for privileged operations whenever <strong>idassert-bind</strong> is defined and <strong>acl-bind</strong> is not.  See <strong>acl-bind</strong> for details.</p>
   </dd>
   <dt>
-    <p><strong>idle-timeout <time></strong></p>
+    <p><strong>idle-timeout &lt;time&gt;</strong></p>
   </dt>
   <dd>
     <p>This directive causes a cached connection to be dropped an recreated after it has been idle for the specified time. The value can be specified as</p><p>[&lt;d&gt;d][&lt;h&gt;h][&lt;m&gt;m][&lt;s&gt;[s]]</p><p>where &lt;d&gt;, &lt;h&gt;, &lt;m&gt; and &lt;s&gt; are respectively treated as days, hours, minutes and seconds. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
   </dd>
   <dt>
-    <p><strong>keepalive <idle>:<probes>:<interval></strong></p>
+    <p><strong>keepalive &lt;idle&gt;:&lt;probes&gt;:&lt;interval&gt;</strong></p>
   </dt>
   <dd>
     <p>The <strong>keepalive</strong> parameter sets the values of <em>idle</em>, <em>probes</em>, and <em>interval</em> used to check whether a socket is alive; <em>idle</em> is the number of seconds a connection needs to remain idle before TCP starts sending keepalive probes; <em>probes</em> is the maximum number of keepalive probes TCP should send before dropping the connection; <em>interval</em> is interval in seconds between individual keepalive probes. Only some systems support the customization of these values; the <strong>keepalive</strong> parameter is ignored otherwise, and system-wide settings are used.</p>
   </dd>
   <dt>
-    <p><strong>map {attribute|objectclass} [<local name>|*] {<foreign name>|*}</strong></p>
+    <p><strong>map {attribute|objectclass} [&lt;local name&gt;|*] {&lt;foreign name&gt;|*}</strong></p>
   </dt>
   <dd>
     <p>This maps object classes and attributes as in the LDAP backend. See <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>.</p>
   </dd>
   <dt>
-    <p><strong>network-timeout <time></strong></p>
+    <p><strong>network-timeout &lt;time&gt;</strong></p>
   </dt>
   <dd>
     <p>Sets the network timeout value after which <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>/<a href="../man2/select.2.html"><strong>select</strong>(2)</a> following a <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> returns in case of no activity. The value is in seconds, and it can be specified as for <strong>idle-timeout</strong>. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
   </dd>
   <dt>
-    <p><strong>nretries {forever|never|<nretries>}</strong></p>
+    <p><strong>nretries {forever|never|&lt;nretries&gt;}</strong></p>
   </dt>
   <dd>
     <p>This directive defines how many times a bind should be retried in case of temporary failure in contacting a target.  If defined before any target specification, it applies to all targets (by default, <strong>3</strong> times); the global value can be overridden by redefinitions inside each target specification.</p>
@@ -318,7 +318,7 @@ uri    "ldap://l1.foo.com/<strong>dc=foo,dc=com</strong>" "ldap://l2.foo.com/"
     <p>The rewrite options are described in the "REWRITING" section.</p>
   </dd>
   <dt>
-    <p><strong>subtree-{exclude|include} <rule></strong></p>
+    <p><strong>subtree-{exclude|include} &lt;rule&gt;</strong></p>
   </dt>
   <dd>
     <p>This directive allows to indicate what subtrees are actually served by a target. The syntax of the supported rules is</p><p><strong>&lt;rule&gt;: [dn[.&lt;style&gt;]:]&lt;pattern&gt;</strong></p><p><strong>&lt;style&gt;: subtree|children|regex</strong></p><p>When <strong>&lt;style&gt;</strong> is either <strong>subtree</strong> or <strong>children</strong> the <strong>&lt;pattern&gt;</strong> is a DN that must be within the naming context served by the target. When <strong>&lt;style&gt;</strong> is <strong>regex</strong> the <strong>&lt;pattern&gt;</strong> is a <strong>regex</strong>(5) pattern. If the <strong>dn.&lt;style&gt;:</strong> prefix is omitted, <strong>dn.subtree:</strong> is implicitly assumed for backward compatibility.</p><p>In the <strong>subtree-exclude</strong> form if the <em>request DN</em> matches at least one rule, the target is not considered while fulfilling the request; otherwise, the target is considered based on the value of the <em>request DN</em>. When the request is a search, also the <em>scope</em> is considered.</p><p>In the <strong>subtree-include</strong> form if the <em>request DN</em> matches at least one rule, the target is considered while fulfilling the request; otherwise the target is ignored.</p>
@@ -339,7 +339,7 @@ uri    "ldap://l1.foo.com/<strong>dc=foo,dc=com</strong>" "ldap://l2.foo.com/"
 <p>There may be multiple occurrences of the <strong>subtree-exclude</strong> or <strong>subtree-include</strong> directive for each of the targets, but they are mutually exclusive.</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>suffixmassage <virtual naming context> <real naming context></strong></p>
+    <p><strong>suffixmassage &lt;virtual naming context&gt; &lt;real naming context&gt;</strong></p>
   </dt>
   <dd>
     <p>All the directives starting with "rewrite" refer to the rewrite engine that has been added to slapd. The "suffixmassage" directive was introduced in the LDAP backend to allow suffix massaging while proxying. It has been obsoleted by the rewriting tools. However, both for backward compatibility and for ease of configuration when simple suffix massage is required, it has been preserved. It wraps the basic rewriting instructions that perform suffix massaging.  See the "REWRITING" section for a detailed list of the rewrite rules it implies.</p>
@@ -351,7 +351,7 @@ uri    "ldap://l1.foo.com/<strong>dc=foo,dc=com</strong>" "ldap://l2.foo.com/"
     <p>enable if the remote server supports absolute filters (see <em>RFC 4526</em> for details). If set to <strong>discover</strong>, support is detected by reading the remote server's root DSE. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
   </dd>
   <dt>
-    <p><strong>timeout [<op>=]<val> [...]</strong></p>
+    <p><strong>timeout [&lt;op&gt;=]&lt;val&gt; [...]</strong></p>
   </dt>
   <dd>
     <p>This directive allows to set per-operation timeouts. Operations can be</p><p><strong>&lt;op&gt; ::= bind, add, delete, modrdn, modify, compare, search</strong></p><p>The overall duration of the <strong>search</strong> operation is controlled either by the <strong>timelimit</strong> parameter or by server-side enforced time limits (see <strong>timelimit</strong> and <strong>limits</strong> in <strong>slapd.conf</strong>(5) for details). This <strong>timeout</strong> parameter controls how long the target can be irresponsive before the operation is aborted. Timeout is meaningless for the remaining operations, <strong>unbind</strong> and <strong>abandon</strong>, which do not imply any response, while it is not yet implemented in currently supported <strong>extended</strong> operations. If no operation is specified, the timeout <strong>val</strong> affects all supported operations. If specified before any target definition, it affects all targets unless overridden by per-target directives.</p><p>Note: if the timeout is exceeded, the operation is cancelled (according to the <strong>cancel</strong> directive); the protocol does not provide any means to rollback operations, so the client will not be notified about the result of the operation, which may eventually succeeded or not. In case the timeout is exceeded during a bind operation, the connection is destroyed, according to RFC4511.</p>
@@ -525,7 +525,7 @@ access to dn="&lt;dn&gt;" attrs=&lt;attr&gt;
 <p>and &lt;substitution&gt; must be a legal substitution pattern, with no limits on the nesting level.</p><p>The operators are:</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>></strong></p>
+    <p><strong>&gt;</strong></p>
   </dt>
   <dd>
     <p>sub context invocation; &lt;name&gt; must be a legal, already defined rewrite context name</p>
@@ -606,13 +606,13 @@ matchedDN            all ops (only if applicable)
     <p>If `on', the requested rewriting is performed; if `off', no rewriting takes place (an easy way to stop rewriting without altering too much the configuration file).</p>
   </dd>
   <dt>
-    <p><strong>rewriteContext <context name> [ alias <aliased context name> ]</strong></p>
+    <p><strong>rewriteContext &lt;context name&gt; [ alias &lt;aliased context name&gt; ]</strong></p>
   </dt>
   <dd>
     <p>&lt;Context name&gt; is the name that identifies the context, i.e. the name used by the application to refer to the set of rules it contains. It is used also to reference sub contexts in string rewriting. A context may alias another one. In this case the alias context contains no rule, and any reference to it will result in accessing the aliased one.</p>
   </dd>
   <dt>
-    <p><strong>rewriteRule <regex match pattern> <substitution pattern> [ <flags> ]</strong></p>
+    <p><strong>rewriteRule &lt;regex match pattern&gt; &lt;substitution pattern&gt; [ &lt;flags&gt; ]</strong></p>
   </dt>
   <dd>
     <p>Determines how a string can be rewritten if a pattern is matched. Examples are reported below.</p>
@@ -629,19 +629,19 @@ matchedDN            all ops (only if applicable)
 
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>rewriteMap <map type> <map name> [ <map attrs> ]</strong></p>
+    <p><strong>rewriteMap &lt;map type&gt; &lt;map name&gt; [ &lt;map attrs&gt; ]</strong></p>
   </dt>
   <dd>
     <p>Allows to define a map that transforms substring rewriting into something else. The map is referenced inside the substitution pattern of a rule.</p>
   </dd>
   <dt>
-    <p><strong>rewriteParam <param name> <param value></strong></p>
+    <p><strong>rewriteParam &lt;param name&gt; &lt;param value&gt;</strong></p>
   </dt>
   <dd>
     <p>Sets a value with global scope, that can be dereferenced by the command `%{$paramName}'.</p>
   </dd>
   <dt>
-    <p><strong>rewriteMaxPasses <number of passes> [<number of passes per rule>]</strong></p>
+    <p><strong>rewriteMaxPasses &lt;number of passes&gt; [&lt;number of passes per rule&gt;]</strong></p>
   </dt>
   <dd>
     <p>Sets the maximum number of total rewriting passes that can be performed in a single rewrite operation (to avoid loops). A safe default is set to 100; note that reaching this limit is still treated as a success; recursive invocation of rules is simply interrupted. The count applies to the rewriting operation as a whole, not to any single rule; an optional per-rule limit can be set. This limit is overridden by setting specific per-rule limits with the `M{n}' flag.</p>
@@ -808,13 +808,13 @@ rewriteRule ".*" "" "#"
 <p>The following statements have been deprecated and should no longer be used.</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>pseudorootdn <substitute DN in case of rootdn bind></strong></p>
+    <p><strong>pseudorootdn &lt;substitute DN in case of rootdn bind&gt;</strong></p>
   </dt>
   <dd>
     <p>Use <strong>idassert-bind</strong> instead.</p>
   </dd>
   <dt>
-    <p><strong>pseudorootpw <substitute password in case of rootdn bind></strong></p>
+    <p><strong>pseudorootpw &lt;substitute password in case of rootdn bind&gt;</strong></p>
   </dt>
   <dd>
     <p>Use <strong>idassert-bind</strong> instead.</p>

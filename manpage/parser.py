@@ -482,7 +482,7 @@ class ManpageParser(object):
                     if macro in Macro.vertical_spacing:
                         self.lines.append(('', ''))
                     else:
-                        self.lines.append((macro, tokenize(rest)))
+                        self.lines.append((macro, tokenize(entitize(rest))))
                 else:
                     self.lines.append(('', entitize(line)))
 
