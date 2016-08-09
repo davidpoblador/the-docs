@@ -110,7 +110,15 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The <strong>recv</strong>(), <strong>recvfrom</strong>(), and <strong>recvmsg</strong>() calls are used to receive messages from a socket. They may be used to receive data on both connectionless and connection-oriented sockets. This page first describes common features of all three system calls, and then describes the differences between the calls.</p><p>The only difference between <strong>recv</strong>() and <a href="../man2/read.2.html"><strong>read</strong>(2)</a> is the presence of <em>flags</em>. With a zero <em>flags</em> argument, <strong>recv</strong>() is generally equivalent to <a href="../man2/read.2.html"><strong>read</strong>(2)</a> (but see NOTES). Also, the following call</p><p>    recv(sockfd, buf, len, flags);</p><p>is equivalent to</p><p>    recvfrom(sockfd, buf, len, flags, NULL, NULL);</p><p>All three calls return the length of the message on successful completion. If a message is too long to fit in the supplied buffer, excess bytes may be discarded depending on the type of socket the message is received from.</p><p>If no messages are available at the socket, the receive calls wait for a message to arrive, unless the socket is nonblocking (see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>), in which case the value -1 is returned and the external variable <em>errno</em> is set to <strong>EAGAIN</strong> or <strong>EWOULDBLOCK</strong>. The receive calls normally return any data available, up to the requested amount, rather than waiting for receipt of the full amount requested.</p><p>An application can use <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, or <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a> to determine when more data arrives on a socket.</p><h3>The flags argument</h3>
+<p>The <strong>recv</strong>(), <strong>recvfrom</strong>(), and <strong>recvmsg</strong>() calls are used to receive messages from a socket. They may be used to receive data on both connectionless and connection-oriented sockets. This page first describes common features of all three system calls, and then describes the differences between the calls.</p><p>The only difference between <strong>recv</strong>() and <a href="../man2/read.2.html"><strong>read</strong>(2)</a> is the presence of <em>flags</em>. With a zero <em>flags</em> argument, <strong>recv</strong>() is generally equivalent to <a href="../man2/read.2.html"><strong>read</strong>(2)</a> (but see NOTES). Also, the following call</p>
+<pre>
+    recv(sockfd, buf, len, flags);
+</pre>
+<p>is equivalent to</p>
+<pre>
+    recvfrom(sockfd, buf, len, flags, NULL, NULL);
+</pre>
+<p>All three calls return the length of the message on successful completion. If a message is too long to fit in the supplied buffer, excess bytes may be discarded depending on the type of socket the message is received from.</p><p>If no messages are available at the socket, the receive calls wait for a message to arrive, unless the socket is nonblocking (see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>), in which case the value -1 is returned and the external variable <em>errno</em> is set to <strong>EAGAIN</strong> or <strong>EWOULDBLOCK</strong>. The receive calls normally return any data available, up to the requested amount, rather than waiting for receipt of the full amount requested.</p><p>An application can use <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, or <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a> to determine when more data arrives on a socket.</p><h3>The flags argument</h3>
 <p>The <em>flags</em> argument is formed by ORing one or more of the following values:</p>
 <dl class='dl-vertical'>
   <dt>
@@ -185,7 +193,11 @@ struct sockaddr *SO_EE_OFFENDER(struct sock_extended_err *);
 <h3>recvfrom()</h3>
 <p><strong>recvfrom</strong>() places the received message into the buffer <em>buf</em>. The caller must specify the size of the buffer in <em>len</em>.</p><p>If <em>src_addr</em> is not NULL, and the underlying protocol provides the source address of the message, that source address is placed in the buffer pointed to by <em>src_addr</em>. In this case, <em>addrlen</em> is a value-result argument. Before the call, it should be initialized to the size of the buffer associated with <em>src_addr</em>. Upon return, <em>addrlen</em> is updated to contain the actual size of the source address. The returned address is truncated if the buffer provided is too small; in this case, <em>addrlen</em> will return a value greater than was supplied to the call.</p><p>If the caller is not interested in the source address, <em>src_addr</em> and <em>addrlen</em> should be specified as NULL.</p>
 <h3>recv()</h3>
-<p>The <strong>recv</strong>() call is normally used only on a <em>connected</em> socket (see <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a>). It is equivalent to the call:</p><p>    recvfrom(fd, buf, len, flags, NULL, 0);</p>
+<p>The <strong>recv</strong>() call is normally used only on a <em>connected</em> socket (see <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a>). It is equivalent to the call:</p>
+<pre>
+    recvfrom(fd, buf, len, flags, NULL, 0);
+</pre>
+
 <h3>recvmsg()</h3>
 <p>The <strong>recvmsg</strong>() call uses a <em>msghdr</em> structure to minimize the number of directly supplied arguments. This structure is defined as follows in <em><sys/socket.h></em>:</p>
 <pre>

@@ -97,7 +97,11 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The <strong>membarrier</strong>() system call helps reducing the overhead of the memory barrier instructions required to order memory accesses on multi-core systems. However, this system call is heavier than a memory barrier, so using it effectively is <em>not</em> as simple as replacing memory barriers with this system call, but requires understanding of the details below.</p><p>Use of memory barriers needs to be done taking into account that a memory barrier always needs to be either matched with its memory barrier counterparts, or that the architecture's memory model doesn't require the matching barriers.</p><p>There are cases where one side of the matching barriers (which we will refer to as "fast side") is executed much more often than the other (which we will refer to as "slow side"). This is a prime target for the use of <strong>membarrier</strong>(). The key idea is to replace, for these matching barriers, the fast-side memory barriers by simple compiler barriers, for example:</p><p>    asm volatile ("" : : : "memory")</p><p>and replace the slow-side memory barriers by calls to <strong>membarrier</strong>().</p><p>This will add overhead to the slow side, and remove overhead from the fast side, thus resulting in an overall performance increase as long as the slow side is infrequent enough that the overhead of the <strong>membarrier</strong>() calls does not outweigh the performance gain on the fast side.</p><p>The <em>cmd</em> argument is one of the following:</p>
+<p>The <strong>membarrier</strong>() system call helps reducing the overhead of the memory barrier instructions required to order memory accesses on multi-core systems. However, this system call is heavier than a memory barrier, so using it effectively is <em>not</em> as simple as replacing memory barriers with this system call, but requires understanding of the details below.</p><p>Use of memory barriers needs to be done taking into account that a memory barrier always needs to be either matched with its memory barrier counterparts, or that the architecture's memory model doesn't require the matching barriers.</p><p>There are cases where one side of the matching barriers (which we will refer to as "fast side") is executed much more often than the other (which we will refer to as "slow side"). This is a prime target for the use of <strong>membarrier</strong>(). The key idea is to replace, for these matching barriers, the fast-side memory barriers by simple compiler barriers, for example:</p>
+<pre>
+    asm volatile ("" : : : "memory")
+</pre>
+<p>and replace the slow-side memory barriers by calls to <strong>membarrier</strong>().</p><p>This will add overhead to the slow side, and remove overhead from the fast side, thus resulting in an overall performance increase as long as the slow side is infrequent enough that the overhead of the <strong>membarrier</strong>() calls does not outweigh the performance gain on the fast side.</p><p>The <em>cmd</em> argument is one of the following:</p>
 <dl class='dl-vertical'>
   <dt>
     <p><strong>MEMBARRIER_CMD_QUERY</strong></p>
@@ -113,7 +117,14 @@
   </dd>
 
 </dl>
-<p>The <em>flags</em> argument is currently unused and must be specified as 0.</p><p>All memory accesses performed in program order from each targeted thread are guaranteed to be ordered with respect to <strong>membarrier</strong>().</p><p>If we use the semantic <em>barrier()</em> to represent a compiler barrier forcing memory accesses to be performed in program order across the barrier, and <em>smp_mb()</em> to represent explicit memory barriers forcing full memory ordering across the barrier, we have the following ordering table for each pairing of <em>barrier()</em>, <strong>membarrier</strong>() and <em>smp_mb()</em>. The pair ordering is detailed as (O: ordered, X: not ordered):</p><p>                       barrier()  smp_mb()  membarrier()        barrier()          X          X          O        smp_mb()           X          O          O        membarrier()       O          O          O</p>
+<p>The <em>flags</em> argument is currently unused and must be specified as 0.</p><p>All memory accesses performed in program order from each targeted thread are guaranteed to be ordered with respect to <strong>membarrier</strong>().</p><p>If we use the semantic <em>barrier()</em> to represent a compiler barrier forcing memory accesses to be performed in program order across the barrier, and <em>smp_mb()</em> to represent explicit memory barriers forcing full memory ordering across the barrier, we have the following ordering table for each pairing of <em>barrier()</em>, <strong>membarrier</strong>() and <em>smp_mb()</em>. The pair ordering is detailed as (O: ordered, X: not ordered):</p>
+<pre>
+                       barrier()  smp_mb()  membarrier()
+       barrier()          X          X          O
+       smp_mb()           X          O          O
+       membarrier()       O          O          O
+</pre>
+
         </div>
       </section>
 

@@ -282,13 +282,25 @@ $<strong></strong> <strong>strings</strong> <strong>/proc/1/environ</strong>
     <p><em>/proc/[pid]/exe</em></p>
   </dt>
   <dd>
-    <p>Under Linux 2.2 and later, this file is a symbolic link containing the actual pathname of the executed command. This symbolic link can be dereferenced normally; attempting to open it will open the executable. You can even type <em>/proc/[pid]/exe</em> to run another copy of the same executable that is being run by process [pid]. If the pathname has been unlinked, the symbolic link will contain the string &apos;(deleted)&apos; appended to the original pathname. In a multithreaded process, the contents of this symbolic link are not available if the main thread has already terminated (typically by calling <a href="../man3/pthread_exit.3.html"><strong>pthread_exit</strong>(3)</a>).</p><p>Permission to dereference or read (<a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a>) this symbolic link is governed by a ptrace access mode <strong>PTRACE_MODE_READ_FSCREDS</strong> check; see <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>.</p><p>Under Linux 2.0 and earlier, <em>/proc/[pid]/exe</em> is a pointer to the binary which was executed, and appears as a symbolic link. A <a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a> call on this file under Linux 2.0 returns a string in the format:</p><p>    [device]:inode</p><p>For example, [0301]:1502 would be inode 1502 on device major 03 (IDE, MFM, etc. drives) minor 01 (first partition on the first drive).</p><p><a href="../man1/find.1.html"><strong>find</strong>(1)</a> with the <em>-inum</em> option can be used to locate the file.</p>
+    <p>Under Linux 2.2 and later, this file is a symbolic link containing the actual pathname of the executed command. This symbolic link can be dereferenced normally; attempting to open it will open the executable. You can even type <em>/proc/[pid]/exe</em> to run another copy of the same executable that is being run by process [pid]. If the pathname has been unlinked, the symbolic link will contain the string &apos;(deleted)&apos; appended to the original pathname. In a multithreaded process, the contents of this symbolic link are not available if the main thread has already terminated (typically by calling <a href="../man3/pthread_exit.3.html"><strong>pthread_exit</strong>(3)</a>).</p><p>Permission to dereference or read (<a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a>) this symbolic link is governed by a ptrace access mode <strong>PTRACE_MODE_READ_FSCREDS</strong> check; see <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>.</p><p>Under Linux 2.0 and earlier, <em>/proc/[pid]/exe</em> is a pointer to the binary which was executed, and appears as a symbolic link. A <a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a> call on this file under Linux 2.0 returns a string in the format:</p>
+<pre>
+    [device]:inode
+</pre>
+<p>For example, [0301]:1502 would be inode 1502 on device major 03 (IDE, MFM, etc. drives) minor 01 (first partition on the first drive).</p><p><a href="../man1/find.1.html"><strong>find</strong>(1)</a> with the <em>-inum</em> option can be used to locate the file.</p>
   </dd>
   <dt>
     <p><em>/proc/[pid]/fd/</em></p>
   </dt>
   <dd>
-    <p>This is a subdirectory containing one entry for each file which the process has open, named by its file descriptor, and which is a symbolic link to the actual file. Thus, 0 is standard input, 1 standard output, 2 standard error, and so on.</p><p>For file descriptors for pipes and sockets, the entries will be symbolic links whose content is the file type with the inode. A <a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a> call on this file returns a string in the format:</p><p>    type:[inode]</p><p>For example, <em>socket:[2248868]</em> will be a socket and its inode is 2248868. For sockets, that inode can be used to find more information in one of the files under <em>/proc/net/</em>.</p><p>For file descriptors that have no corresponding inode (e.g., file descriptors produced by <a href="../man2/epoll_create.2.html"><strong>epoll_create</strong>(2)</a>, <a href="../man2/eventfd.2.html"><strong>eventfd</strong>(2)</a>, <a href="../man2/inotify_init.2.html"><strong>inotify_init</strong>(2)</a>, <a href="../man2/signalfd.2.html"><strong>signalfd</strong>(2)</a>, and <strong>timerfd</strong>(2)), the entry will be a symbolic link with contents of the form</p><p>    anon_inode:&lt;file-type&gt;</p><p>In some cases, the <em>file-type</em> is surrounded by square brackets.</p><p>For example, an epoll file descriptor will have a symbolic link whose content is the string <em>anon_inode:[eventpoll]</em>.</p><p>In a multithreaded process, the contents of this directory are not available if the main thread has already terminated (typically by calling <a href="../man3/pthread_exit.3.html"><strong>pthread_exit</strong>(3)</a>).</p><p>Programs that will take a filename as a command-line argument, but will not take input from standard input if no argument is supplied, or that write to a file named as a command-line argument, but will not send their output to standard output if no argument is supplied, can nevertheless be made to use standard input or standard out using <em>/proc/[pid]/fd</em>. For example, assuming that <em>-i</em> is the flag designating an input file and <em>-o</em> is the flag designating an output file:</p>
+    <p>This is a subdirectory containing one entry for each file which the process has open, named by its file descriptor, and which is a symbolic link to the actual file. Thus, 0 is standard input, 1 standard output, 2 standard error, and so on.</p><p>For file descriptors for pipes and sockets, the entries will be symbolic links whose content is the file type with the inode. A <a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a> call on this file returns a string in the format:</p>
+<pre>
+    type:[inode]
+</pre>
+<p>For example, <em>socket:[2248868]</em> will be a socket and its inode is 2248868. For sockets, that inode can be used to find more information in one of the files under <em>/proc/net/</em>.</p><p>For file descriptors that have no corresponding inode (e.g., file descriptors produced by <a href="../man2/epoll_create.2.html"><strong>epoll_create</strong>(2)</a>, <a href="../man2/eventfd.2.html"><strong>eventfd</strong>(2)</a>, <a href="../man2/inotify_init.2.html"><strong>inotify_init</strong>(2)</a>, <a href="../man2/signalfd.2.html"><strong>signalfd</strong>(2)</a>, and <strong>timerfd</strong>(2)), the entry will be a symbolic link with contents of the form</p>
+<pre>
+    anon_inode:&lt;file-type&gt;
+</pre>
+<p>In some cases, the <em>file-type</em> is surrounded by square brackets.</p><p>For example, an epoll file descriptor will have a symbolic link whose content is the string <em>anon_inode:[eventpoll]</em>.</p><p>In a multithreaded process, the contents of this directory are not available if the main thread has already terminated (typically by calling <a href="../man3/pthread_exit.3.html"><strong>pthread_exit</strong>(3)</a>).</p><p>Programs that will take a filename as a command-line argument, but will not take input from standard input if no argument is supplied, or that write to a file named as a command-line argument, but will not send their output to standard output if no argument is supplied, can nevertheless be made to use standard input or standard out using <em>/proc/[pid]/fd</em>. For example, assuming that <em>-i</em> is the flag designating an input file and <em>-o</em> is the flag designating an output file:</p>
 <pre>
 
 $<strong></strong> <strong>foobar</strong> <strong>-i</strong> <strong>/proc/self/fd/0</strong> <strong>-o</strong> <strong>/proc/self/fd/1</strong> <strong>...</strong>
@@ -885,7 +897,38 @@ MMUPageSize:           4 kB
 Locked:                0 kB
 
 </pre>
-<p>The first of these lines shows the same information as is displayed for the mapping in <em>/proc/[pid]/maps</em>. The remaining lines show the size of the mapping, the amount of the mapping that is currently resident in RAM ("Rss"), the process' proportional share of this mapping ("Pss"), the number of clean and dirty shared pages in the mapping, and the number of clean and dirty private pages in the mapping. "Referenced" indicates the amount of memory currently marked as referenced or accessed. "Anonymous" shows the amount of memory that does not belong to any file. "Swap" shows how much would-be-anonymous memory is also used, but out on swap.</p><p>The "KernelPageSize" entry is the page size used by the kernel to back a VMA. This matches the size used by the MMU in the majority of cases. However, one counter-example occurs on PPC64 kernels whereby a kernel using 64K as a base page size may still use 4K pages for the MMU on older processors. To distinguish, this patch reports "MMUPageSize" as the page size used by the MMU.</p><p>The "Locked" indicates whether the mapping is locked in memory or not.</p><p>"VmFlags" field represents the kernel flags associated with the particular virtual memory area in two letter encoded manner. The codes are the following:</p><p>    rd  - readable     wr  - writable     ex  - executable     sh  - shared     mr  - may read     mw  - may write     me  - may execute     ms  - may share     gd  - stack segment grows down     pf  - pure PFN range     dw  - disabled write to the mapped file     lo  - pages are locked in memory     io  - memory mapped I/O area     sr  - sequential read advise provided     rr  - random read advise provided     dc  - do not copy area on fork     de  - do not expand area on remapping     ac  - area is accountable     nr  - swap space is not reserved for the area     ht  - area uses huge tlb pages     nl  - non-linear mapping     ar  - architecture specific flag     dd  - do not include area into core dump     sd  - soft-dirty flag     mm  - mixed map area     hg  - huge page advise flag     nh  - no-huge page advise flag     mg  - mergeable advise flag</p><p>The <em>/proc/[pid]/smaps</em> file is present only if the <strong>CONFIG_PROC_PAGE_MONITOR</strong> kernel configuration option is enabled.</p>
+<p>The first of these lines shows the same information as is displayed for the mapping in <em>/proc/[pid]/maps</em>. The remaining lines show the size of the mapping, the amount of the mapping that is currently resident in RAM ("Rss"), the process' proportional share of this mapping ("Pss"), the number of clean and dirty shared pages in the mapping, and the number of clean and dirty private pages in the mapping. "Referenced" indicates the amount of memory currently marked as referenced or accessed. "Anonymous" shows the amount of memory that does not belong to any file. "Swap" shows how much would-be-anonymous memory is also used, but out on swap.</p><p>The "KernelPageSize" entry is the page size used by the kernel to back a VMA. This matches the size used by the MMU in the majority of cases. However, one counter-example occurs on PPC64 kernels whereby a kernel using 64K as a base page size may still use 4K pages for the MMU on older processors. To distinguish, this patch reports "MMUPageSize" as the page size used by the MMU.</p><p>The "Locked" indicates whether the mapping is locked in memory or not.</p><p>"VmFlags" field represents the kernel flags associated with the particular virtual memory area in two letter encoded manner. The codes are the following:</p>
+<pre>
+    rd  - readable
+    wr  - writable
+    ex  - executable
+    sh  - shared
+    mr  - may read
+    mw  - may write
+    me  - may execute
+    ms  - may share
+    gd  - stack segment grows down
+    pf  - pure PFN range
+    dw  - disabled write to the mapped file
+    lo  - pages are locked in memory
+    io  - memory mapped I/O area
+    sr  - sequential read advise provided
+    rr  - random read advise provided
+    dc  - do not copy area on fork
+    de  - do not expand area on remapping
+    ac  - area is accountable
+    nr  - swap space is not reserved for the area
+    ht  - area uses huge tlb pages
+    nl  - non-linear mapping
+    ar  - architecture specific flag
+    dd  - do not include area into core dump
+    sd  - soft-dirty flag
+    mm  - mixed map area
+    hg  - huge page advise flag
+    nh  - no-huge page advise flag
+    mg  - mergeable advise flag
+</pre>
+<p>The <em>/proc/[pid]/smaps</em> file is present only if the <strong>CONFIG_PROC_PAGE_MONITOR</strong> kernel configuration option is enabled.</p>
   </dd>
   <dt>
     <p><em>/proc/[pid]/stack</em> (since Linux 2.6.29)</p>
@@ -1460,7 +1503,11 @@ ClockID: 1
     <p><em>/proc/buddyinfo</em></p>
   </dt>
   <dd>
-    <p>This file contains information which is used for diagnosing memory fragmentation issues. Each line starts with the identification of the node and the name of the zone which together identify a memory region This is then followed by the count of available chunks of a certain order in which these zones are split. The size in bytes of a certain order is given by the formula:</p><p>    (2^order)&nbsp;*&nbsp;PAGE_SIZE</p><p>The binary buddy allocator algorithm inside the kernel will split one chunk into two chunks of a smaller order (thus with half the size) or combine two contiguous chunks into one larger chunk of a higher order (thus with double the size) to satisfy allocation requests and to counter memory fragmentation. The order matches the column number, when starting to count at zero.</p><p>For example on a x86_64 system:</p>
+    <p>This file contains information which is used for diagnosing memory fragmentation issues. Each line starts with the identification of the node and the name of the zone which together identify a memory region This is then followed by the count of available chunks of a certain order in which these zones are split. The size in bytes of a certain order is given by the formula:</p>
+<pre>
+    (2^order)\ *\ PAGE_SIZE
+</pre>
+<p>The binary buddy allocator algorithm inside the kernel will split one chunk into two chunks of a smaller order (thus with half the size) or combine two contiguous chunks into one larger chunk of a higher order (thus with double the size) to satisfy allocation requests and to counter memory fragmentation. The order matches the column number, when starting to count at zero.</p><p>For example on a x86_64 system:</p>
 <pre>
 Node 0, zone     DMA     1    1    1    0    2    1    1    0    1    1    3
 Node 0, zone   DMA32    65   47    4   81   52   28   13   10    5    1  404
@@ -1650,7 +1697,33 @@ smart_values       in hexadecimal
     <p><em>/proc/kpageflags</em> (since Linux 2.6.25)</p>
   </dt>
   <dd>
-    <p>This file contains 64-bit masks corresponding to each physical page frame; it is indexed by page frame number (see the discussion of <em>/proc/[pid]/pagemap</em>). The bits are as follows:</p><p>     0 - KPF_LOCKED      1 - KPF_ERROR      2 - KPF_REFERENCED      3 - KPF_UPTODATE      4 - KPF_DIRTY      5 - KPF_LRU      6 - KPF_ACTIVE      7 - KPF_SLAB      8 - KPF_WRITEBACK      9 - KPF_RECLAIM     10 - KPF_BUDDY     11 - KPF_MMAP           (since Linux 2.6.31)     12 - KPF_ANON           (since Linux 2.6.31)     13 - KPF_SWAPCACHE      (since Linux 2.6.31)     14 - KPF_SWAPBACKED     (since Linux 2.6.31)     15 - KPF_COMPOUND_HEAD  (since Linux 2.6.31)     16 - KPF_COMPOUND_TAIL  (since Linux 2.6.31)     16 - KPF_HUGE           (since Linux 2.6.31)     18 - KPF_UNEVICTABLE    (since Linux 2.6.31)     19 - KPF_HWPOISON       (since Linux 2.6.31)     20 - KPF_NOPAGE         (since Linux 2.6.31)     21 - KPF_KSM            (since Linux 2.6.32)     22 - KPF_THP            (since Linux 3.4)</p><p>For further details on the meanings of these bits, see the kernel source file <em>Documentation/vm/pagemap.txt</em>. Before kernel 2.6.29, <strong>KPF_WRITEBACK</strong>, <strong>KPF_RECLAIM</strong>, <strong>KPF_BUDDY</strong>, and <strong>KPF_LOCKED</strong> did not report correctly.</p><ul>
+    <p>This file contains 64-bit masks corresponding to each physical page frame; it is indexed by page frame number (see the discussion of <em>/proc/[pid]/pagemap</em>). The bits are as follows:</p>
+<pre>
+     0 - KPF_LOCKED
+     1 - KPF_ERROR
+     2 - KPF_REFERENCED
+     3 - KPF_UPTODATE
+     4 - KPF_DIRTY
+     5 - KPF_LRU
+     6 - KPF_ACTIVE
+     7 - KPF_SLAB
+     8 - KPF_WRITEBACK
+     9 - KPF_RECLAIM
+    10 - KPF_BUDDY
+    11 - KPF_MMAP           (since Linux 2.6.31)
+    12 - KPF_ANON           (since Linux 2.6.31)
+    13 - KPF_SWAPCACHE      (since Linux 2.6.31)
+    14 - KPF_SWAPBACKED     (since Linux 2.6.31)
+    15 - KPF_COMPOUND_HEAD  (since Linux 2.6.31)
+    16 - KPF_COMPOUND_TAIL  (since Linux 2.6.31)
+    16 - KPF_HUGE           (since Linux 2.6.31)
+    18 - KPF_UNEVICTABLE    (since Linux 2.6.31)
+    19 - KPF_HWPOISON       (since Linux 2.6.31)
+    20 - KPF_NOPAGE         (since Linux 2.6.31)
+    21 - KPF_KSM            (since Linux 2.6.32)
+    22 - KPF_THP            (since Linux 3.4)
+</pre>
+<p>For further details on the meanings of these bits, see the kernel source file <em>Documentation/vm/pagemap.txt</em>. Before kernel 2.6.29, <strong>KPF_WRITEBACK</strong>, <strong>KPF_RECLAIM</strong>, <strong>KPF_BUDDY</strong>, and <strong>KPF_LOCKED</strong> did not report correctly.</p><ul>
 <li><p>The <em>/proc/kpageflags</em> file is present only if the <strong>CONFIG_PROC_PAGE_MONITOR</strong> kernel configuration option is enabled.</p></li>
 </ul>
   </dd>
@@ -3110,7 +3183,11 @@ num-pages-per-slab
     <p><em>/proc/sys/kernel/version</em></p>
   </dt>
   <dd>
-    <p>This file contains a string such as:</p><p>    #5 Wed Feb 25 21:49:24 MET 1998</p><p>The "#5" means that this is the fifth kernel built from this source base and the date following it indicates the time the kernel was built.</p>
+    <p>This file contains a string such as:</p>
+<pre>
+    #5 Wed Feb 25 21:49:24 MET 1998
+</pre>
+<p>The "#5" means that this is the fifth kernel built from this source base and the date following it indicates the time the kernel was built.</p>
   </dd>
   <dt>
     <p><em>/proc/sys/kernel/threads-max</em> (since Linux 2.3.11)</p>
@@ -3178,7 +3255,19 @@ num-pages-per-slab
     <p><em>/proc/sys/vm/drop_caches</em> (since Linux 2.6.16)</p>
   </dt>
   <dd>
-    <p>Writing to this file causes the kernel to drop clean caches, dentries, and inodes from memory, causing that memory to become free. This can be useful for memory management testing and performing reproducible filesystem benchmarks. Because writing to this file causes the benefits of caching to be lost, it can degrade overall system performance.</p><p>To free pagecache, use:</p><p>    echo 1 &gt; /proc/sys/vm/drop_caches</p><p>To free dentries and inodes, use:</p><p>    echo 2 &gt; /proc/sys/vm/drop_caches</p><p>To free pagecache, dentries and inodes, use:</p><p>    echo 3 &gt; /proc/sys/vm/drop_caches</p><p>Because writing to this file is a nondestructive operation and dirty objects are not freeable, the user should run <strong>sync</strong>(1) first.</p>
+    <p>Writing to this file causes the kernel to drop clean caches, dentries, and inodes from memory, causing that memory to become free. This can be useful for memory management testing and performing reproducible filesystem benchmarks. Because writing to this file causes the benefits of caching to be lost, it can degrade overall system performance.</p><p>To free pagecache, use:</p>
+<pre>
+    echo 1 &gt; /proc/sys/vm/drop_caches
+</pre>
+<p>To free dentries and inodes, use:</p>
+<pre>
+    echo 2 &gt; /proc/sys/vm/drop_caches
+</pre>
+<p>To free pagecache, dentries and inodes, use:</p>
+<pre>
+    echo 3 &gt; /proc/sys/vm/drop_caches
+</pre>
+<p>Because writing to this file is a nondestructive operation and dirty objects are not freeable, the user should run <strong>sync</strong>(1) first.</p>
   </dd>
   <dt>
     <p><em>/proc/sys/vm/legacy_va_layout</em> (since Linux 2.6.9)</p>
@@ -3259,9 +3348,18 @@ num-pages-per-slab
     <p>This file contains the kernel virtual memory accounting mode. Values are:</p><ul>
 <li><p>0: heuristic overcommit (this is the default)</p><p>1: always overcommit, never check</p><p>2: always check, never overcommit</p></li>
 </ul><ul>
-<li><p>In mode 0, calls of <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> with <strong>MAP_NORESERVE</strong> are not checked, and the default check is very weak, leading to the risk of getting a process "OOM-killed". Under Linux 2.4, any nonzero value implies mode 1.</p><p>In mode 2 (available since Linux 2.6), the total virtual address space that can be allocated (<em>CommitLimit</em> in <em>/proc/meminfo</em>) is calculated as</p><p>    CommitLimit = (total_RAM - total_huge_TLB) *                   overcommit_ratio / 100 + total_swap</p><p>where:</p><ul>
+<li><p>In mode 0, calls of <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> with <strong>MAP_NORESERVE</strong> are not checked, and the default check is very weak, leading to the risk of getting a process "OOM-killed". Under Linux 2.4, any nonzero value implies mode 1.</p><p>In mode 2 (available since Linux 2.6), the total virtual address space that can be allocated (<em>CommitLimit</em> in <em>/proc/meminfo</em>) is calculated as</p>
+<pre>
+    CommitLimit = (total_RAM - total_huge_TLB) *
+                  overcommit_ratio / 100 + total_swap
+</pre>
+<p>where:</p><ul>
 <li><p><em>total_RAM</em> is the total amount of RAM on the system;</p></li><li><p><em>total_huge_TLB</em> is the amount of memory set aside for huge pages;</p></li><li><p><em>overcommit_ratio</em> is the value in <em>/proc/sys/vm/overcommit_ratio</em>; and</p></li><li><p><em>total_swap</em> is the amount of swap space.</p></li>
-</ul></li><li><p>For example, on a system with 16GB of physical RAM, 16GB of swap, no space dedicated to huge pages, and an <em>overcommit_ratio</em> of 50, this formula yields a <em>CommitLimit</em> of 24GB.</p><p>Since Linux 3.14, if the value in <em>/proc/sys/vm/overcommit_kbytes</em> is nonzero, then <em>CommitLimit</em> is instead calculated as:</p><p>    CommitLimit = overcommit_kbytes + total_swap</p></li>
+</ul></li><li><p>For example, on a system with 16GB of physical RAM, 16GB of swap, no space dedicated to huge pages, and an <em>overcommit_ratio</em> of 50, this formula yields a <em>CommitLimit</em> of 24GB.</p><p>Since Linux 3.14, if the value in <em>/proc/sys/vm/overcommit_kbytes</em> is nonzero, then <em>CommitLimit</em> is instead calculated as:</p>
+<pre>
+    CommitLimit = overcommit_kbytes + total_swap
+</pre>
+</li>
 </ul>
   </dd>
   <dt>
@@ -3310,7 +3408,19 @@ num-pages-per-slab
     <p><em>/proc/timer_stats</em> (since Linux 2.6.21)</p>
   </dt>
   <dd>
-    <p>This is a debugging facility to make timer (ab)use in a Linux system visible to kernel and user-space developers. It can be used by kernel and user-space developers to verify that their code does not make undue use of timers. The goal is to avoid unnecessary wakeups, thereby optimizing power consumption.</p><p>If enabled in the kernel (<strong>CONFIG_TIMER_STATS</strong>), but not used, it has almost zero runtime overhead and a relatively small data-structure overhead. Even if collection is enabled at runtime, overhead is low: all the locking is per-CPU and lookup is hashed.</p><p>The <em>/proc/timer_stats</em> file is used both to control sampling facility and to read out the sampled information.</p><p>The timer_stats functionality is inactive on bootup. A sampling period can be started using the following command:</p><p>    # echo 1 &gt; /proc/timer_stats</p><p>The following command stops a sampling period:</p><p>    # echo 0 &gt; /proc/timer_stats</p><p>The statistics can be retrieved by:</p><p>    $ cat /proc/timer_stats</p><p>While sampling is enabled, each readout from <em>/proc/timer_stats</em> will see newly updated statistics. Once sampling is disabled, the sampled information is kept until a new sample period is started. This allows multiple readouts.</p><p>Sample output from <em>/proc/timer_stats</em>:</p>
+    <p>This is a debugging facility to make timer (ab)use in a Linux system visible to kernel and user-space developers. It can be used by kernel and user-space developers to verify that their code does not make undue use of timers. The goal is to avoid unnecessary wakeups, thereby optimizing power consumption.</p><p>If enabled in the kernel (<strong>CONFIG_TIMER_STATS</strong>), but not used, it has almost zero runtime overhead and a relatively small data-structure overhead. Even if collection is enabled at runtime, overhead is low: all the locking is per-CPU and lookup is hashed.</p><p>The <em>/proc/timer_stats</em> file is used both to control sampling facility and to read out the sampled information.</p><p>The timer_stats functionality is inactive on bootup. A sampling period can be started using the following command:</p>
+<pre>
+    # echo 1 &gt; /proc/timer_stats
+</pre>
+<p>The following command stops a sampling period:</p>
+<pre>
+    # echo 0 &gt; /proc/timer_stats
+</pre>
+<p>The statistics can be retrieved by:</p>
+<pre>
+    $ cat /proc/timer_stats
+</pre>
+<p>While sampling is enabled, each readout from <em>/proc/timer_stats</em> will see newly updated statistics. Once sampling is disabled, the sampled information is kept until a new sample period is started. This allows multiple readouts.</p><p>Sample output from <em>/proc/timer_stats</em>:</p>
 <pre>
 $<strong></strong> <strong>cat</strong> <strong>/proc/timer_stats</strong>
 Timer Stats Version: v0.3

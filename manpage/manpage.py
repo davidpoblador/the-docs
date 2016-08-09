@@ -159,7 +159,6 @@ class Manpage(BaseContainer):
             try:
                 content = strip_tags(' '.join(section.contents))
             except:
-                print section.contents 
                 raise
             chunks = content.split(' - ', 1)
 
@@ -253,6 +252,10 @@ class PreformattedBlock(BaseContainer):
         out = [item for item in self.contents]
         return load_template('pre').substitute(content='\n'.join(out))
 
+class SpacedBlock(BaseContainer):
+    def html(self):
+        out = [item for item in self.contents]
+        return load_template('pre').substitute(content='\n'.join(out))
 
 class SubSection(Section):
     tpl = load_template('subsection')

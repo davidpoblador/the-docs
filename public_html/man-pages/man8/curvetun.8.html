@@ -205,7 +205,81 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SETUP HOWTO</h2>
         <div class="sectioncontent">
-<p>If you have not run curvetun before, you need to do an initial setup once.</p><p>First, make sure that the servers and clients clocks are periodically synced, for example, by running an NTP daemon. This is necessary to protect against replay attacks. Also, make sure you have read and write access to /dev/net/tun. You should not run curvetun as root! Then, after you have assured this, the first step is to generate keys and config files. On both the client and server do:</p><p><strong>curvetun -k</strong></p><p>You are asked for a user name. You can use an email address or whatever suits you. Here, we assume you have entered 'mysrv1' on the server and 'myclient1' on the client side.</p><p>Now, all necessary files have been created under ~/.curvetun. Files include \[lq]priv.key\[rq], \[lq]pub.key\[rq], \[lq]username\[rq], \[lq]clients\[rq] and \[lq]servers\[rq].</p><p>\[lq]clients\[rq] and \[lq]servers\[rq] are empty at the beginning and need to be filled. The \[lq]clients\[rq] file is meant for the server, so that it knows what clients are allowed to connect. The \[lq]servers\[rq] file is for the client, where it can select curvetun servers to connect to. Both files are kept very simple, so that a single configuration line per client or server is sufficient.</p><p>The client needs to export its public key data for the server</p><p><strong>curvetun -x</strong></p><p>where it prints a string in the following format:</p><p>  myclient1;11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11   &#92;_______/ &#92;_____________________________________________________________________________________________/    username  32 byte public key for 'myclient1'</p><p>This line is transferred to the server admin (yes, we assume a manual on-site key exchange scenario where, for example, the admin sets up server and clients), where the admin then adds this entry into his ''clients'' file like:</p><p>  server$ echo "myclient1;11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:" &#92;                "11:11:11:11:11:11:11:11:11:11:11:11:11:11:11" &gt;&gt; ~/.curvetun/clients</p><p>The server admin can check if the server has registered it properly as follows:</p><p>  server$ curvetun -C</p><p>which prints all parsed clients from ''~/.curvetun/clients''. This process could easily be automated or scripted with, for example, Perl and LDAP.</p><p>Now, the client ''myclient1'' is known to the server; that completes the server configuration. The next step is to tell the client where it needs to connect to the server.</p><p>We assume in this example that the tunnel server has a public IP address, e.g. 1.2.3.4, runs on port 6666 and uses UDP as a carrier protocol. In case you are behind NAT, you can use curvetun's ''--stun'' option for starting the server, to obtain your mapping. However, in this example we continue with 1.2.3.4 and 6666, UDP.</p><p>First, the server needs to export its key to the client, as follows:</p><p>  server$ curvetun -x</p><p>where it prints a string in the following format:</p><p>  mysrv1;22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22   &#92;____/ &#92;_____________________________________________________________________________________________/  username  32 byte public key for 'mysrv1'            ^-- you need this public key</p><p>Thus, you now have the server IP address, server port, server transport protocol and the server's public key at hand. On the client side it can be put all together in the config as follows:</p><p>  client$ echo "myfirstserver;1.2.3.4;6666;udp;22:22:22:22:22:22:22:22:22:22:" &#92;                "22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:"  &#92;                "22:22" &gt;&gt; ~/.curvetun/servers</p><p>The client can check its config using:</p><p>  client$ curvetun -S</p><p>Then we start the server with:</p><p>  server$ curvetun -s -p 6666 -u   server# ifconfig curves0 up   server# ifconfig curves0 10.0.0.1/24</p><p>Then, we start the client with:</p><p>  client$ curvetun -c=myfirstserver   client# ifconfig curvec0 up   client# ifconfig curvec0 10.0.0.2/24</p><p>Also, client-side information, errors, or warnings will appear in syslog! By now we should be able to ping the server:</p><p>  client$ ping 10.0.0.1</p><p>That's it! Routing example:</p><p>Server side's public IP on eth0 is, for example, 1.2.3.4:</p><p>  server$ ... start curvetun server ...   server# ifconfig curves0 up   server# ifconfig curves0 10.0.0.1/24   server# echo 1 &gt; /proc/sys/net/ipv4/ip_forward   server# iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE   server# iptables -A FORWARD -i eth0 -o curves0 -m state --state RELATED,ESTABLISHED -j ACCEPT   server# iptables -A FORWARD -i curves0 -o eth0 -j ACCEPT</p><p>Client side's IP on eth0 is, for example, 5.6.7.8:</p><p>  client$ ... start curvetun client ...   client# ... lookup your default gateway (e.g. via route, here: 5.6.7.9) ...   client# ifconfig curvec0 up   client# ifconfig curvec0 10.0.0.2/24   client# route add -net 1.2.3.0 netmask 255.255.255.0 gw 5.6.7.9 dev eth0   client# route add default gw 10.0.0.1   client# route del default gw 5.6.7.9</p><p>That should be it, happy browsing and emailing via curvetun tunnels!</p>
+<p>If you have not run curvetun before, you need to do an initial setup once.</p><p>First, make sure that the servers and clients clocks are periodically synced, for example, by running an NTP daemon. This is necessary to protect against replay attacks. Also, make sure you have read and write access to /dev/net/tun. You should not run curvetun as root! Then, after you have assured this, the first step is to generate keys and config files. On both the client and server do:</p><p><strong>curvetun -k</strong></p><p>You are asked for a user name. You can use an email address or whatever suits you. Here, we assume you have entered 'mysrv1' on the server and 'myclient1' on the client side.</p><p>Now, all necessary files have been created under ~/.curvetun. Files include \[lq]priv.key\[rq], \[lq]pub.key\[rq], \[lq]username\[rq], \[lq]clients\[rq] and \[lq]servers\[rq].</p><p>\[lq]clients\[rq] and \[lq]servers\[rq] are empty at the beginning and need to be filled. The \[lq]clients\[rq] file is meant for the server, so that it knows what clients are allowed to connect. The \[lq]servers\[rq] file is for the client, where it can select curvetun servers to connect to. Both files are kept very simple, so that a single configuration line per client or server is sufficient.</p><p>The client needs to export its public key data for the server</p><p><strong>curvetun -x</strong></p><p>where it prints a string in the following format:</p>
+<pre>
+  myclient1;11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11
+  \\_______/ \\_____________________________________________________________________________________________/
+   username  32 byte public key for 'myclient1'
+</pre>
+<p>This line is transferred to the server admin (yes, we assume a manual on-site key exchange scenario where, for example, the admin sets up server and clients), where the admin then adds this entry into his ''clients'' file like:</p>
+<pre>
+  server$ echo "myclient1;11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:" \\
+               "11:11:11:11:11:11:11:11:11:11:11:11:11:11:11" &gt;&gt; ~/.curvetun/clients
+</pre>
+<p>The server admin can check if the server has registered it properly as follows:</p>
+<pre>
+  server$ curvetun \-C
+</pre>
+<p>which prints all parsed clients from ''~/.curvetun/clients''. This process could easily be automated or scripted with, for example, Perl and LDAP.</p><p>Now, the client ''myclient1'' is known to the server; that completes the server configuration. The next step is to tell the client where it needs to connect to the server.</p><p>We assume in this example that the tunnel server has a public IP address, e.g. 1.2.3.4, runs on port 6666 and uses UDP as a carrier protocol. In case you are behind NAT, you can use curvetun's ''--stun'' option for starting the server, to obtain your mapping. However, in this example we continue with 1.2.3.4 and 6666, UDP.</p><p>First, the server needs to export its key to the client, as follows:</p>
+<pre>
+  server$ curvetun \-x
+</pre>
+<p>where it prints a string in the following format:</p>
+<pre>
+  mysrv1;22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22
+  \\____/ \\_____________________________________________________________________________________________/
+</pre>
+<p> username  32 byte public key for 'mysrv1'</p>
+<pre>
+           ^-- you need this public key
+</pre>
+<p>Thus, you now have the server IP address, server port, server transport protocol and the server's public key at hand. On the client side it can be put all together in the config as follows:</p>
+<pre>
+  client$ echo "myfirstserver;1.2.3.4;6666;udp;22:22:22:22:22:22:22:22:22:22:" \\
+               "22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:22:"  \\
+               "22:22" &gt;&gt; ~/.curvetun/servers
+</pre>
+<p>The client can check its config using:</p>
+<pre>
+  client$ curvetun \-S
+</pre>
+<p>Then we start the server with:</p>
+<pre>
+  server$ curvetun \-s \-p 6666 \-u
+  server# ifconfig curves0 up
+  server# ifconfig curves0 10.0.0.1/24
+</pre>
+<p>Then, we start the client with:</p>
+<pre>
+  client$ curvetun \-c=myfirstserver
+  client# ifconfig curvec0 up
+  client# ifconfig curvec0 10.0.0.2/24
+</pre>
+<p>Also, client-side information, errors, or warnings will appear in syslog! By now we should be able to ping the server:</p>
+<pre>
+  client$ ping 10.0.0.1
+</pre>
+<p>That's it! Routing example:</p><p>Server side's public IP on eth0 is, for example, 1.2.3.4:</p>
+<pre>
+  server$ ... start curvetun server ...
+  server# ifconfig curves0 up
+  server# ifconfig curves0 10.0.0.1/24
+  server# echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+  server# iptables \-t nat \-A POSTROUTING \-o eth0 \-j MASQUERADE
+  server# iptables \-A FORWARD \-i eth0 \-o curves0 \-m state \-\-state RELATED,ESTABLISHED \-j ACCEPT
+  server# iptables \-A FORWARD \-i curves0 \-o eth0 \-j ACCEPT
+</pre>
+<p>Client side's IP on eth0 is, for example, 5.6.7.8:</p>
+<pre>
+  client$ ... start curvetun client ...
+  client# ... lookup your default gateway (e.g. via route, here: 5.6.7.9) ...
+  client# ifconfig curvec0 up
+  client# ifconfig curvec0 10.0.0.2/24
+  client# route add \-net 1.2.3.0 netmask 255.255.255.0 gw 5.6.7.9 dev eth0
+  client# route add default gw 10.0.0.1
+  client# route del default gw 5.6.7.9
+</pre>
+<p>That should be it, happy browsing and emailing via curvetun tunnels!</p>
         </div>
       </section>
 

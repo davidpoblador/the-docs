@@ -11,8 +11,8 @@ from helpers import consume, tokenize
 from string import Template
 
 from manpage import Manpage, Section, SubSection, BulletedList, DefinitionList
-from manpage import Container, IndentedBlock, PreformattedBlock, Table
-from manpage import Url, Mailto
+from manpage import Container, IndentedBlock, PreformattedBlock, SpacedBlock
+from manpage import Url, Mailto, Table
 
 try:
     import re2 as re
@@ -540,9 +540,24 @@ class ManpageParser(object):
 
                     if macro == 'UE':
                         return i, content
+                elif parser == 'SPACEDBLOCK':
+                    if content is None:
+                        content = SpacedBlock()
+
+                    if not macro and args.startswith('  '):
+                        content.append(args)
+                        continue
+                    else:
+                        return i - 1, content
+
 
                 if not macro:
-                    content.append(unescape(args))
+                    if args.startswith('  ') and parser not in {'PRE', 'EXAMPLE', 'TABLE'}:
+                        inc, spaced_content = self.process(start + i, 'SPACEDBLOCK')
+                        content.append(spaced_content)
+                        consume(iter, inc)
+                    else:
+                        content.append(unescape(args))
                 elif macro in Macro.new_paragraph:
                     content.append('')
                 elif macro == 'RS':

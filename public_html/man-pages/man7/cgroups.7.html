@@ -97,7 +97,11 @@
 <h3>Tasks versus processes</h3>
 <p>In cgroups v1, a distinction is drawn between <em>processes</em> and <em>tasks</em>. In this view, a process can consist of multiple tasks (more commonly called threads, from a user-space perspective). In cgroups v1, it is possible independently manipulate the cgroup memberships of the tasks in a process. Because this ability caused certain problems, the ability to independently manipulate the cgroup memberships of the tasks in a process has been removed in cgroups v2. Cgroups v2 allows manipulation of cgroup membership only for processes (which has the effect of changing the cgroup membership of all tasks in the process).</p>
 <h3>Mounting</h3>
-<p>To be available, a given cgroup subsystem must be compiled into the kernel. Since they are exposed through a virtual filesystem, subsystems must be mounted before they can be controlled. The usual place for this is under <em>/sys/fs/cgroup</em>. If all the desired subsystems can be comounted, then one can do so with the following command:</p><p>    mount -t cgroup -o all cgroup /sys/fs/cgroup</p><p>(One can achieve the same result by omitting <em>-o</em> <em>all</em>, since it is the default if subsystems are explicitly specified.)</p><p>If multiple, separately mounted subsystems are desired, then this is usually done in per-subsystem subdirectories. This requires first mounting a tmpfs under <em>/sys/fs/cgroup</em> so that subdirectories can be created. For instance, one could mount <em>cpu</em>, <em>memory</em>, and <em>devices</em> cgroups as follows:</p>
+<p>To be available, a given cgroup subsystem must be compiled into the kernel. Since they are exposed through a virtual filesystem, subsystems must be mounted before they can be controlled. The usual place for this is under <em>/sys/fs/cgroup</em>. If all the desired subsystems can be comounted, then one can do so with the following command:</p>
+<pre>
+    mount \-t cgroup \-o all cgroup /sys/fs/cgroup
+</pre>
+<p>(One can achieve the same result by omitting <em>-o</em> <em>all</em>, since it is the default if subsystems are explicitly specified.)</p><p>If multiple, separately mounted subsystems are desired, then this is usually done in per-subsystem subdirectories. This requires first mounting a tmpfs under <em>/sys/fs/cgroup</em> so that subdirectories can be created. For instance, one could mount <em>cpu</em>, <em>memory</em>, and <em>devices</em> cgroups as follows:</p>
 <pre>
 mount -t tmpfs -o size=100000,mode=755 cgroups /sys/fs/cgroup
 for s in cpu memory devices; do
@@ -109,7 +113,15 @@ done
 <h3>Introspection</h3>
 <p>The list of subsystems compiled into the kernel can be seen in the file <em>/proc/cgroups</em>. The file <em>/proc/pid/cgroup</em> lists the task's current cgroup membership for each mounted hierarchy.</p>
 <h3>Creating cgroups and moving tasks</h3>
-<p>The system begins with a single root cgroup (per hierarchy), '/', which all tasks belong to. A new cgroup is created by creating a directory in the cgroup filesystem:</p><p>    mkdir /sys/fs/cgroup/cpu/cg1</p><p>This creates a new empty cgroup. Tasks may be moved to this cgroup by writing their PIDs into the cgroup's <em>cgroup.procs</em> or <em>tasks</em> (deprecated) file:</p><p>    echo $$ &gt; /sys/fs/cgroup/cpu/cg1/cgroup.procs</p><p>The same file can be read to obtain a list of the processes currently in <em>cg1</em>. By using the <em>cgroup.procs</em> file instead of the <em>tasks</em> file, all tasks in the thread group are moved into the new cgroup at once.</p><p>On <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, the new child is created as a member of the parent's cgroup, leading to implicit grouping of process hierarchies.</p><p>Note: in the upcoming unified hierarchy, a new restriction is imposed such that tasks may exist only in leaf cgroups. For instance, if cgroup <em>/cg1/cg2</em> exists, then a task may exist in <em>/cg1/cg2</em>, but not in <em>/cg1</em>. This is to avoid the current ambiguity in the delegation of resources between tasks in <em>/cg1</em> and its child cgroups. The recommended workaround is to create a subdirectory called <em>leaf</em> for any non-leaf cgroup which should contain tasks, and make sure not to create child cgroups of it. In the above example, tasks which previously would have gone into <em>/cg1</em> would now go into <em>/cg1/leaf</em>. This has the advantage of making explicit the relationship between tasks in <em>/cg1/leaf</em> and <em>/cg1</em>'s other children.</p>
+<p>The system begins with a single root cgroup (per hierarchy), '/', which all tasks belong to. A new cgroup is created by creating a directory in the cgroup filesystem:</p>
+<pre>
+    mkdir /sys/fs/cgroup/cpu/cg1
+</pre>
+<p>This creates a new empty cgroup. Tasks may be moved to this cgroup by writing their PIDs into the cgroup's <em>cgroup.procs</em> or <em>tasks</em> (deprecated) file:</p>
+<pre>
+    echo $$ &gt; /sys/fs/cgroup/cpu/cg1/cgroup.procs
+</pre>
+<p>The same file can be read to obtain a list of the processes currently in <em>cg1</em>. By using the <em>cgroup.procs</em> file instead of the <em>tasks</em> file, all tasks in the thread group are moved into the new cgroup at once.</p><p>On <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, the new child is created as a member of the parent's cgroup, leading to implicit grouping of process hierarchies.</p><p>Note: in the upcoming unified hierarchy, a new restriction is imposed such that tasks may exist only in leaf cgroups. For instance, if cgroup <em>/cg1/cg2</em> exists, then a task may exist in <em>/cg1/cg2</em>, but not in <em>/cg1</em>. This is to avoid the current ambiguity in the delegation of resources between tasks in <em>/cg1</em> and its child cgroups. The recommended workaround is to create a subdirectory called <em>leaf</em> for any non-leaf cgroup which should contain tasks, and make sure not to create child cgroups of it. In the above example, tasks which previously would have gone into <em>/cg1</em> would now go into <em>/cg1/leaf</em>. This has the advantage of making explicit the relationship between tasks in <em>/cg1/leaf</em> and <em>/cg1</em>'s other children.</p>
 <h3>Removing cgroups</h3>
 <p>To remove a cgroup, it must first have no child cgroups and contain no tasks. So long as that is the case, one can simply remove the corresponding directory pathname. Note that files in a cgroup directory cannot and need not be removed.</p><p>A special file in each cgroup hierarchy, <em>release_agent</em>, can be used to register a program to handle cgroups which become newly empty. The program will be called each time a cgroup marked for autoremove becomes empty and childless. The cgroup path will be provided as the first command-line argument. The cgroup must be marked as eligible for autoremove by writing '1' into its <em>notify_on_release</em> file; this value is inherited by newly created child cgroups.</p><p>A new feature in cgroups v2 is the <em>cgroup.populated</em> file. This reads 0 if there are no tasks in the cgroup or its descendants, and 1 otherwise. It can be watched for changes using <a href="../man7/inotify.7.html"><strong>inotify</strong>(7)</a>. This allows user-space applications to efficiently watch cgroups for autoremove conditions.</p>
 <h3>Cgroups version 2</h3>
@@ -299,7 +311,11 @@ pids             2                1                1
     <p><em>/proc/[pid]/cgroup</em> (since Linux 2.6.24)</p>
   </dt>
   <dd>
-    <p>This file describes control groups to which the process with the corresponding PID belongs. The displayed information differs for cgroups version 1 and version 2 hierarchies.</p><p>For each cgroup hierarchy of which the process is a member, there is one entry containing three colon-separated fields of the form:</p><p>     hierarchy-ID:subsystem-list:cgroup-path</p><p>For example:</p>
+    <p>This file describes control groups to which the process with the corresponding PID belongs. The displayed information differs for cgroups version 1 and version 2 hierarchies.</p><p>For each cgroup hierarchy of which the process is a member, there is one entry containing three colon-separated fields of the form:</p>
+<pre>
+     hierarchy-ID:subsystem-list:cgroup-path
+</pre>
+<p>For example:</p>
 <pre>
 
     5:cpuacct,cpu,cpuset:/daemons

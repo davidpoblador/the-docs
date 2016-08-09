@@ -279,7 +279,19 @@
       <section>
         <h2 class="font-effect-shadow-multiple">FILTER CONDITIONS</h2>
         <div class="sectioncontent">
-<p>Rsyslog offers three different types "filter conditions":</p><p>   * "traditional" severity and facility based selectors</p><p>   * property-based filters</p><p>   * expression-based filters</p><h3>Selectors</h3>
+<p>Rsyslog offers three different types "filter conditions":</p>
+<pre>
+   * "traditional" severity and facility based selectors
+</pre>
+
+<pre>
+   * property-based filters
+</pre>
+
+<pre>
+   * expression-based filters
+</pre>
+<h3>Selectors</h3>
 <p><strong>Selectors are the traditional way of filtering syslog messages.</strong> They have been kept in rsyslog with their original syntax, because it is well-known, highly effective and also needed for compatibility with stock syslogd configuration files. If you just need to filter based on priority and facility, you should do this with selector lines. They are not second-class citizens in rsyslog and offer the best performance for this job.</p>
 <h3>Property-Based Filters</h3>
 <p>Property-based filters are unique to rsyslogd. They allow to filter on any property, like HOSTNAME, syslogtag and msg.</p><p>A property-based filter must start with a colon in column 0. This tells rsyslogd that it is the new filter type. The colon must be followed by the property name, a comma, the name of the compare operation to carry out, another comma and then the value to compare against. This value must be quoted. There can be spaces and tabs between the commas. Property names and compare operations are case-sensitive, so "msg" works, while "MSG" is an invalid property name. In brief, the syntax is as follows:</p><p>:property, [!]compare-operation, "value"</p><p>The following compare-operations are currently supported:</p><p><strong>contains</strong></p><p>Checks if the string provided in value is contained in the property</p><p><strong>isequal</strong></p><p>Compares the "value" string provided and the property contents. These two values must be exactly equal to match.</p><p><strong>startswith</strong></p><p>Checks if the value is found exactly at the beginning of the property value</p><p><strong>regex</strong></p><p>Compares the property against the provided regular expression.</p>
@@ -292,7 +304,15 @@
       <section>
         <h2 class="font-effect-shadow-multiple">TEMPLATES</h2>
         <div class="sectioncontent">
-<p>Every output in rsyslog uses templates - this holds true for files, user messages and so on. Templates compatible with the stock syslogd formats are hardcoded into rsyslogd. If no template is specified, we use one of these hardcoded templates. Search for "template_" in syslogd.c and you will find the hardcoded ones.</p><p>A template consists of a template directive, a name, the actual template text and optional options. A sample is:</p><p><strong>$template MyTemplateName,"&#92;&#92;7Text %property% some more text&#92;&#92;n",<options></strong></p><p>The "$template" is the template directive. It tells rsyslog that this line contains a template. The backslash is an escape character. For example, &#92;7 rings the bell (this is an ASCII value), &#92;n is a new line. The set in rsyslog is a bit restricted currently.</p><p>All text in the template is used literally, except for things within percent signs. These are properties and allow you access to the contents of the syslog message. Properties are accessed via the property replacer and it can for example pick a substring or do date-specific formatting. More on this is the PROPERTY REPLACER section of this manpage.</p><p>To escape:</p><p>   % = \</p><p>   nbsp;= &#92;nbsp;--&gt; '&#92;' is used to escape (as in C)</p><p>$template TraditionalFormat,"%timegenerated% %HOSTNAME% %syslogtag%%msg%&#92;n"</p><p>Properties can be accessed by the property replacer (see there for details).</p><p><strong>Please note that templates can also by used to generate selector lines with dynamic file names.</strong> For example, if you would like to split syslog messages from different hosts to different files (one per host), you can define the following template:</p><p><strong>$template DynFile,"/var/log/system-%HOSTNAME%.log"</strong></p><p>This template can then be used when defining an output selector line. It will result in something like "/var/log/system-localhost.log"</p><h3>Template options</h3>
+<p>Every output in rsyslog uses templates - this holds true for files, user messages and so on. Templates compatible with the stock syslogd formats are hardcoded into rsyslogd. If no template is specified, we use one of these hardcoded templates. Search for "template_" in syslogd.c and you will find the hardcoded ones.</p><p>A template consists of a template directive, a name, the actual template text and optional options. A sample is:</p><p><strong>$template MyTemplateName,"&#92;&#92;7Text %property% some more text&#92;&#92;n",<options></strong></p><p>The "$template" is the template directive. It tells rsyslog that this line contains a template. The backslash is an escape character. For example, &#92;7 rings the bell (this is an ASCII value), &#92;n is a new line. The set in rsyslog is a bit restricted currently.</p><p>All text in the template is used literally, except for things within percent signs. These are properties and allow you access to the contents of the syslog message. Properties are accessed via the property replacer and it can for example pick a substring or do date-specific formatting. More on this is the PROPERTY REPLACER section of this manpage.</p><p>To escape:</p>
+<pre>
+   % = \\%
+</pre>
+
+<pre>
+   \\ = \\\\ --&gt; '\\' is used to escape (as in C)
+</pre>
+<p>$template TraditionalFormat,"%timegenerated% %HOSTNAME% %syslogtag%%msg%&#92;n"</p><p>Properties can be accessed by the property replacer (see there for details).</p><p><strong>Please note that templates can also by used to generate selector lines with dynamic file names.</strong> For example, if you would like to split syslog messages from different hosts to different files (one per host), you can define the following template:</p><p><strong>$template DynFile,"/var/log/system-%HOSTNAME%.log"</strong></p><p>This template can then be used when defining an output selector line. It will result in something like "/var/log/system-localhost.log"</p><h3>Template options</h3>
 <p>The &lt;options&gt; part is optional. It carries options influencing the template as whole. See details below. Be sure NOT to mistake template options with property options - the later ones are processed by the property replacer and apply to a SINGLE property, only (and not the whole template).</p><p>Template options are case-insensitive. Currently defined are:</p>
 <dl class='dl-vertical'>
   <dt>

@@ -104,56 +104,259 @@
       <section>
         <h2 class="font-effect-shadow-multiple">MATCHING INTERFACE</h2>
         <div class="sectioncontent">
-<p>The "FullMatch" operation checks that supplied text matches a supplied pattern exactly. If pointer arguments are supplied, it copies matched sub-strings that match sub-patterns into them.</p><p>  Example: successful match      pcrecpp::RE re("h.*o");      re.FullMatch("hello");</p><p>  Example: unsuccessful match (requires full match):      pcrecpp::RE re("e");      !re.FullMatch("hello");</p><p>  Example: creating a temporary RE object:      pcrecpp::RE("h.*o").FullMatch("hello");</p><p>You can pass in a "const char*" or a "string" for "text". The examples below tend to use a const char*. You can, as in the different examples above, store the RE object explicitly in a variable or use a temporary RE object. The examples below use one mode or the other arbitrarily. Either could correctly be used for any of these examples.</p><p>You must supply extra pointer arguments to extract matched subpieces.</p><p>  Example: extracts "ruby" into "s" and 1234 into "i"      int i;      string s;      pcrecpp::RE re("(&#92;&#92;w+):(&#92;&#92;d+)");      re.FullMatch("ruby:1234", &s, &i);</p><p>  Example: does not try to extract any extra sub-patterns      re.FullMatch("ruby:1234", &s);</p><p>  Example: does not try to extract into NULL      re.FullMatch("ruby:1234", NULL, &i);</p><p>  Example: integer overflow causes failure      !re.FullMatch("ruby:1234567891234", NULL, &i);</p><p>  Example: fails because there aren't enough sub-patterns:      !pcrecpp::RE("&#92;&#92;w+:&#92;&#92;d+").FullMatch("ruby:1234", &s);</p><p>  Example: fails because string cannot be stored in integer      !pcrecpp::RE("(.*)").FullMatch("ruby", &i);</p><p>The provided pointer arguments can be pointers to any scalar numeric type, or one of:</p><p>   string        (matched piece is copied to string)    StringPiece   (StringPiece is mutated to point to matched piece)    T             (where "bool T::ParseFrom(const char*, int)" exists)    NULL          (the corresponding matched sub-pattern is not copied)</p><p>The function returns true iff all of the following conditions are satisfied:</p><p>  a. "text" matches "pattern" exactly;</p><p>  b. The number of matched sub-patterns is &gt;= number of supplied      pointers;</p><p>  c. The "i"th argument has a suitable type for holding the      string captured as the "i"th sub-pattern. If you pass in      void * NULL for the "i"th argument, or a non-void * NULL      of the correct type, or pass fewer arguments than the      number of sub-patterns, "i"th captured sub-pattern is      ignored.</p><p>CAVEAT: An optional sub-pattern that does not exist in the matched string is assigned the empty string. Therefore, the following will return false (because the empty string is not a valid number):</p><p>   int number;    pcrecpp::RE::FullMatch("abc", "[a-z]+(&#92;&#92;d+)?", &number);</p><p>The matching interface supports at most 16 arguments per call. If you need more, consider using the more general interface <strong>pcrecpp::RE::DoMatch</strong>. See <strong>pcrecpp.h</strong> for the signature for <strong>DoMatch</strong>.</p><p>NOTE: Do not use <strong>no_arg</strong>, which is used internally to mark the end of a list of optional arguments, as a placeholder for missing arguments, as this can lead to segfaults.</p>
+<p>The "FullMatch" operation checks that supplied text matches a supplied pattern exactly. If pointer arguments are supplied, it copies matched sub-strings that match sub-patterns into them.</p>
+<pre>
+  Example: successful match
+     pcrecpp::RE re("h.*o");
+     re.FullMatch("hello");
+</pre>
+
+<pre>
+  Example: unsuccessful match (requires full match):
+     pcrecpp::RE re("e");
+     !re.FullMatch("hello");
+</pre>
+
+<pre>
+  Example: creating a temporary RE object:
+     pcrecpp::RE("h.*o").FullMatch("hello");
+</pre>
+<p>You can pass in a "const char*" or a "string" for "text". The examples below tend to use a const char*. You can, as in the different examples above, store the RE object explicitly in a variable or use a temporary RE object. The examples below use one mode or the other arbitrarily. Either could correctly be used for any of these examples.</p><p>You must supply extra pointer arguments to extract matched subpieces.</p>
+<pre>
+  Example: extracts "ruby" into "s" and 1234 into "i"
+     int i;
+     string s;
+     pcrecpp::RE re("(\e\ew+):(\e\ed+)");
+     re.FullMatch("ruby:1234", &s, &i);
+</pre>
+
+<pre>
+  Example: does not try to extract any extra sub-patterns
+     re.FullMatch("ruby:1234", &s);
+</pre>
+
+<pre>
+  Example: does not try to extract into NULL
+     re.FullMatch("ruby:1234", NULL, &i);
+</pre>
+
+<pre>
+  Example: integer overflow causes failure
+     !re.FullMatch("ruby:1234567891234", NULL, &i);
+</pre>
+
+<pre>
+  Example: fails because there aren't enough sub-patterns:
+     !pcrecpp::RE("\e\ew+:\e\ed+").FullMatch("ruby:1234", &s);
+</pre>
+
+<pre>
+  Example: fails because string cannot be stored in integer
+     !pcrecpp::RE("(.*)").FullMatch("ruby", &i);
+</pre>
+<p>The provided pointer arguments can be pointers to any scalar numeric type, or one of:</p>
+<pre>
+   string        (matched piece is copied to string)
+   StringPiece   (StringPiece is mutated to point to matched piece)
+   T             (where "bool T::ParseFrom(const char*, int)" exists)
+   NULL          (the corresponding matched sub-pattern is not copied)
+</pre>
+<p>The function returns true iff all of the following conditions are satisfied:</p>
+<pre>
+  a. "text" matches "pattern" exactly;
+</pre>
+
+<pre>
+  b. The number of matched sub-patterns is &gt;= number of supplied
+     pointers;
+</pre>
+
+<pre>
+  c. The "i"th argument has a suitable type for holding the
+     string captured as the "i"th sub-pattern. If you pass in
+     void * NULL for the "i"th argument, or a non-void * NULL
+     of the correct type, or pass fewer arguments than the
+     number of sub-patterns, "i"th captured sub-pattern is
+     ignored.
+</pre>
+<p>CAVEAT: An optional sub-pattern that does not exist in the matched string is assigned the empty string. Therefore, the following will return false (because the empty string is not a valid number):</p>
+<pre>
+   int number;
+   pcrecpp::RE::FullMatch("abc", "[a-z]+(\e\ed+)?", &number);
+</pre>
+<p>The matching interface supports at most 16 arguments per call. If you need more, consider using the more general interface <strong>pcrecpp::RE::DoMatch</strong>. See <strong>pcrecpp.h</strong> for the signature for <strong>DoMatch</strong>.</p><p>NOTE: Do not use <strong>no_arg</strong>, which is used internally to mark the end of a list of optional arguments, as a placeholder for missing arguments, as this can lead to segfaults.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">QUOTING METACHARACTERS</h2>
         <div class="sectioncontent">
-<p>You can use the "QuoteMeta" operation to insert backslashes before all potentially meaningful characters in a string. The returned string, used as a regular expression, will exactly match the original string.</p><p>  Example:      string quoted = RE::QuoteMeta(unquoted);</p><p>Note that it's legal to escape a character even if it has no special meaning in a regular expression -- so this function does that. (This also makes it identical to the perl function of the same name; see "perldoc -f quotemeta".) For example, "1.5-2.0?" becomes "1&#92;.5&#92;-2&#92;.0&#92;?".</p>
+<p>You can use the "QuoteMeta" operation to insert backslashes before all potentially meaningful characters in a string. The returned string, used as a regular expression, will exactly match the original string.</p>
+<pre>
+  Example:
+     string quoted = RE::QuoteMeta(unquoted);
+</pre>
+<p>Note that it's legal to escape a character even if it has no special meaning in a regular expression -- so this function does that. (This also makes it identical to the perl function of the same name; see "perldoc -f quotemeta".) For example, "1.5-2.0?" becomes "1&#92;.5&#92;-2&#92;.0&#92;?".</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PARTIAL MATCHES</h2>
         <div class="sectioncontent">
-<p>You can use the "PartialMatch" operation when you want the pattern to match any substring of the text.</p><p>  Example: simple search for a string:      pcrecpp::RE("ell").PartialMatch("hello");</p><p>  Example: find first number in a string:      int number;      pcrecpp::RE re("(&#92;&#92;d+)");      re.PartialMatch("x*100 + 20", &number);      assert(number == 100);</p>
+<p>You can use the "PartialMatch" operation when you want the pattern to match any substring of the text.</p>
+<pre>
+  Example: simple search for a string:
+     pcrecpp::RE("ell").PartialMatch("hello");
+</pre>
+
+<pre>
+  Example: find first number in a string:
+     int number;
+     pcrecpp::RE re("(\e\ed+)");
+     re.PartialMatch("x*100 + 20", &number);
+     assert(number == 100);
+</pre>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">UTF-8 AND THE MATCHING INTERFACE</h2>
         <div class="sectioncontent">
-<p>By default, pattern and text are plain text, one byte per character. The UTF8 flag, passed to the constructor, causes both pattern and string to be treated as UTF-8 text, still a byte stream but potentially multiple bytes per character. In practice, the text is likelier to be UTF-8 than the pattern, but the match returned may depend on the UTF8 flag, so always use it when matching UTF8 text. For example, "." will match one byte normally but with UTF8 set may match up to three bytes of a multi-byte character.</p><p>  Example:      pcrecpp::RE_Options options;      options.set_utf8();      pcrecpp::RE re(utf8_pattern, options);      re.FullMatch(utf8_string);</p><p>  Example: using the convenience function UTF8():      pcrecpp::RE re(utf8_pattern, pcrecpp::UTF8());      re.FullMatch(utf8_string);</p><p>NOTE: The UTF8 flag is ignored if pcre was not configured with the       --enable-utf8 flag.</p>
+<p>By default, pattern and text are plain text, one byte per character. The UTF8 flag, passed to the constructor, causes both pattern and string to be treated as UTF-8 text, still a byte stream but potentially multiple bytes per character. In practice, the text is likelier to be UTF-8 than the pattern, but the match returned may depend on the UTF8 flag, so always use it when matching UTF8 text. For example, "." will match one byte normally but with UTF8 set may match up to three bytes of a multi-byte character.</p>
+<pre>
+  Example:
+     pcrecpp::RE_Options options;
+     options.set_utf8();
+     pcrecpp::RE re(utf8_pattern, options);
+     re.FullMatch(utf8_string);
+</pre>
+
+<pre>
+  Example: using the convenience function UTF8():
+     pcrecpp::RE re(utf8_pattern, pcrecpp::UTF8());
+     re.FullMatch(utf8_string);
+</pre>
+<p>NOTE: The UTF8 flag is ignored if pcre was not configured with the</p>
+<pre>
+      --enable-utf8 flag.
+</pre>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PASSING MODIFIERS TO THE REGULAR EXPRESSION ENGINE</h2>
         <div class="sectioncontent">
-<p>PCRE defines some modifiers to change the behavior of the regular expression engine. The C++ wrapper defines an auxiliary class, RE_Options, as a vehicle to pass such modifiers to a RE class. Currently, the following modifiers are supported:</p><p>   modifier              description               Perl corresponding</p><p>   PCRE_CASELESS         case insensitive match      /i    PCRE_MULTILINE        multiple lines match        /m    PCRE_DOTALL           dot matches newlines        /s    PCRE_DOLLAR_ENDONLY   $ matches only at end       N/A    PCRE_EXTRA            strict escape parsing       N/A    PCRE_EXTENDED         ignore white spaces         /x    PCRE_UTF8             handles UTF8 chars          built-in    PCRE_UNGREEDY         reverses * and *?           N/A    PCRE_NO_AUTO_CAPTURE  disables capturing parens   N/A (*)</p><p>(*) Both Perl and PCRE allow non capturing parentheses by means of the "?:" modifier within the pattern itself. e.g. (?:ab|cd) does not capture, while (ab|cd) does.</p><p>For a full account on how each modifier works, please check the PCRE API reference page.</p><p>For each modifier, there are two member functions whose name is made out of the modifier in lowercase, without the "PCRE_" prefix. For instance, PCRE_CASELESS is handled by</p><p>  bool caseless()</p><p>which returns true if the modifier is set, and</p><p>  RE_Options & set_caseless(bool)</p><p>which sets or unsets the modifier. Moreover, PCRE_EXTRA_MATCH_LIMIT can be accessed through the <strong>set_match_limit()</strong> and <strong>match_limit()</strong> member functions. Setting <em>match_limit</em> to a non-zero value will limit the execution of pcre to keep it from doing bad things like blowing the stack or taking an eternity to return a result. A value of 5000 is good enough to stop stack blowup in a 2MB thread stack. Setting <em>match_limit</em> to zero disables match limiting. Alternatively, you can call <strong>match_limit_recursion()</strong> which uses PCRE_EXTRA_MATCH_LIMIT_RECURSION to limit how much PCRE recurses. <strong>match_limit()</strong> limits the number of matches PCRE does; <strong>match_limit_recursion()</strong> limits the depth of internal recursion, and therefore the amount of stack that is used.</p><p>Normally, to pass one or more modifiers to a RE class, you declare a <em>RE_Options</em> object, set the appropriate options, and pass this object to a RE constructor. Example:</p><p>   RE_Options opt;    opt.set_caseless(true);    if (RE("HELLO", opt).PartialMatch("hello world")) ...</p><p>RE_options has two constructors. The default constructor takes no arguments and creates a set of flags that are off by default. The optional parameter <em>option_flags</em> is to facilitate transfer of legacy code from C programs. This lets you do</p><p>   RE(pattern,      RE_Options(PCRE_CASELESS|PCRE_MULTILINE)).PartialMatch(str);</p><p>However, new code is better off doing</p><p>   RE(pattern,      RE_Options().set_caseless(true).set_multiline(true))        .PartialMatch(str);</p><p>If you are going to pass one of the most used modifiers, there are some convenience functions that return a RE_Options class with the appropriate modifier already set: <strong>CASELESS()</strong>, <strong>UTF8()</strong>, <strong>MULTILINE()</strong>, <strong>DOTALL</strong>(), and <strong>EXTENDED()</strong>.</p><p>If you need to set several options at once, and you don't want to go through the pains of declaring a RE_Options object and setting several options, there is a parallel method that give you such ability on the fly. You can concatenate several <strong>set_xxxxx()</strong> member functions, since each of them returns a reference to its class object. For example, to pass PCRE_CASELESS, PCRE_EXTENDED, and PCRE_MULTILINE to a RE with one statement, you may write:</p><p>   RE(" ^ xyz &#92;&#92;s+ .* blah$",      RE_Options()        .set_caseless(true)        .set_extended(true)        .set_multiline(true)).PartialMatch(sometext);</p>
+<p>PCRE defines some modifiers to change the behavior of the regular expression engine. The C++ wrapper defines an auxiliary class, RE_Options, as a vehicle to pass such modifiers to a RE class. Currently, the following modifiers are supported:</p>
+<pre>
+   modifier              description               Perl corresponding
+</pre>
+
+<pre>
+   PCRE_CASELESS         case insensitive match      /i
+   PCRE_MULTILINE        multiple lines match        /m
+   PCRE_DOTALL           dot matches newlines        /s
+   PCRE_DOLLAR_ENDONLY   $ matches only at end       N/A
+   PCRE_EXTRA            strict escape parsing       N/A
+   PCRE_EXTENDED         ignore white spaces         /x
+   PCRE_UTF8             handles UTF8 chars          built-in
+   PCRE_UNGREEDY         reverses * and *?           N/A
+   PCRE_NO_AUTO_CAPTURE  disables capturing parens   N/A (*)
+</pre>
+<p>(*) Both Perl and PCRE allow non capturing parentheses by means of the "?:" modifier within the pattern itself. e.g. (?:ab|cd) does not capture, while (ab|cd) does.</p><p>For a full account on how each modifier works, please check the PCRE API reference page.</p><p>For each modifier, there are two member functions whose name is made out of the modifier in lowercase, without the "PCRE_" prefix. For instance, PCRE_CASELESS is handled by</p>
+<pre>
+  bool caseless()
+</pre>
+<p>which returns true if the modifier is set, and</p>
+<pre>
+  RE_Options & set_caseless(bool)
+</pre>
+<p>which sets or unsets the modifier. Moreover, PCRE_EXTRA_MATCH_LIMIT can be accessed through the <strong>set_match_limit()</strong> and <strong>match_limit()</strong> member functions. Setting <em>match_limit</em> to a non-zero value will limit the execution of pcre to keep it from doing bad things like blowing the stack or taking an eternity to return a result. A value of 5000 is good enough to stop stack blowup in a 2MB thread stack. Setting <em>match_limit</em> to zero disables match limiting. Alternatively, you can call <strong>match_limit_recursion()</strong> which uses PCRE_EXTRA_MATCH_LIMIT_RECURSION to limit how much PCRE recurses. <strong>match_limit()</strong> limits the number of matches PCRE does; <strong>match_limit_recursion()</strong> limits the depth of internal recursion, and therefore the amount of stack that is used.</p><p>Normally, to pass one or more modifiers to a RE class, you declare a <em>RE_Options</em> object, set the appropriate options, and pass this object to a RE constructor. Example:</p>
+<pre>
+   RE_Options opt;
+   opt.set_caseless(true);
+   if (RE("HELLO", opt).PartialMatch("hello world")) ...
+</pre>
+<p>RE_options has two constructors. The default constructor takes no arguments and creates a set of flags that are off by default. The optional parameter <em>option_flags</em> is to facilitate transfer of legacy code from C programs. This lets you do</p>
+<pre>
+   RE(pattern,
+     RE_Options(PCRE_CASELESS|PCRE_MULTILINE)).PartialMatch(str);
+</pre>
+<p>However, new code is better off doing</p>
+<pre>
+   RE(pattern,
+     RE_Options().set_caseless(true).set_multiline(true))
+       .PartialMatch(str);
+</pre>
+<p>If you are going to pass one of the most used modifiers, there are some convenience functions that return a RE_Options class with the appropriate modifier already set: <strong>CASELESS()</strong>, <strong>UTF8()</strong>, <strong>MULTILINE()</strong>, <strong>DOTALL</strong>(), and <strong>EXTENDED()</strong>.</p><p>If you need to set several options at once, and you don't want to go through the pains of declaring a RE_Options object and setting several options, there is a parallel method that give you such ability on the fly. You can concatenate several <strong>set_xxxxx()</strong> member functions, since each of them returns a reference to its class object. For example, to pass PCRE_CASELESS, PCRE_EXTENDED, and PCRE_MULTILINE to a RE with one statement, you may write:</p>
+<pre>
+   RE(" ^ xyz \e\es+ .* blah$",
+     RE_Options()
+       .set_caseless(true)
+       .set_extended(true)
+       .set_multiline(true)).PartialMatch(sometext);
+</pre>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">SCANNING TEXT INCREMENTALLY</h2>
         <div class="sectioncontent">
-<p>The "Consume" operation may be useful if you want to repeatedly match regular expressions at the front of a string and skip over them as they match. This requires use of the "StringPiece" type, which represents a sub-range of a real string. Like RE, StringPiece is defined in the pcrecpp namespace.</p><p>  Example: read lines of the form "var = value" from a string.      string contents = ...;                 // Fill string somehow      pcrecpp::StringPiece input(contents);  // Wrap in a StringPiece</p><p>     string var;      int value;      pcrecpp::RE re("(&#92;&#92;w+) = (&#92;&#92;d+)&#92;n");      while (re.Consume(&input, &var, &value)) {        ...;      }</p><p>Each successful call to "Consume" will set "var/value", and also advance "input" so it points past the matched text.</p><p>The "FindAndConsume" operation is similar to "Consume" but does not anchor your match at the beginning of the string. For example, you could extract all words from a string by repeatedly calling</p><p>  pcrecpp::RE("(&#92;&#92;w+)").FindAndConsume(&input, &word)</p>
+<p>The "Consume" operation may be useful if you want to repeatedly match regular expressions at the front of a string and skip over them as they match. This requires use of the "StringPiece" type, which represents a sub-range of a real string. Like RE, StringPiece is defined in the pcrecpp namespace.</p>
+<pre>
+  Example: read lines of the form "var = value" from a string.
+     string contents = ...;                 // Fill string somehow
+     pcrecpp::StringPiece input(contents);  // Wrap in a StringPiece
+</pre>
+
+<pre>
+     string var;
+     int value;
+     pcrecpp::RE re("(\e\ew+) = (\e\ed+)\en");
+     while (re.Consume(&input, &var, &value)) {
+       ...;
+     }
+</pre>
+<p>Each successful call to "Consume" will set "var/value", and also advance "input" so it points past the matched text.</p><p>The "FindAndConsume" operation is similar to "Consume" but does not anchor your match at the beginning of the string. For example, you could extract all words from a string by repeatedly calling</p>
+<pre>
+  pcrecpp::RE("(\e\ew+)").FindAndConsume(&input, &word)
+</pre>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PARSING HEX/OCTAL/C-RADIX NUMBERS</h2>
         <div class="sectioncontent">
-<p>By default, if you pass a pointer to a numeric value, the corresponding text is interpreted as a base-10 number. You can instead wrap the pointer with a call to one of the operators Hex(), Octal(), or CRadix() to interpret the text in another base. The CRadix operator interprets C-style "0" (base-8) and "0x" (base-16) prefixes, but defaults to base-10.</p><p>  Example:     int a, b, c, d;     pcrecpp::RE re("(.*) (.*) (.*) (.*)");     re.FullMatch("100 40 0100 0x40",                  pcrecpp::Octal(&a), pcrecpp::Hex(&b),                  pcrecpp::CRadix(&c), pcrecpp::CRadix(&d));</p><p>will leave 64 in a, b, c, and d.</p>
+<p>By default, if you pass a pointer to a numeric value, the corresponding text is interpreted as a base-10 number. You can instead wrap the pointer with a call to one of the operators Hex(), Octal(), or CRadix() to interpret the text in another base. The CRadix operator interprets C-style "0" (base-8) and "0x" (base-16) prefixes, but defaults to base-10.</p>
+<pre>
+  Example:
+    int a, b, c, d;
+    pcrecpp::RE re("(.*) (.*) (.*) (.*)");
+    re.FullMatch("100 40 0100 0x40",
+                 pcrecpp::Octal(&a), pcrecpp::Hex(&b),
+                 pcrecpp::CRadix(&c), pcrecpp::CRadix(&d));
+</pre>
+<p>will leave 64 in a, b, c, and d.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">REPLACING PARTS OF STRINGS</h2>
         <div class="sectioncontent">
-<p>You can replace the first match of "pattern" in "str" with "rewrite". Within "rewrite", backslash-escaped digits (&#92;1 to &#92;9) can be used to insert text matching corresponding parenthesized group from the pattern. &#92;0 in "rewrite" refers to the entire matching text. For example:</p><p>  string s = "yabba dabba doo";   pcrecpp::RE("b+").Replace("d", &s);</p><p>will leave "s" containing "yada dabba doo". The result is true if the pattern matches and a replacement occurs, false otherwise.</p><p><strong>GlobalReplace</strong> is like <strong>Replace</strong> except that it replaces all occurrences of the pattern in the string with the rewrite. Replacements are not subject to re-matching. For example:</p><p>  string s = "yabba dabba doo";   pcrecpp::RE("b+").GlobalReplace("d", &s);</p><p>will leave "s" containing "yada dada doo". It returns the number of replacements made.</p><p><strong>Extract</strong> is like <strong>Replace</strong>, except that if the pattern matches, "rewrite" is copied into "out" (an additional argument) with substitutions. The non-matching portions of "text" are ignored. Returns true iff a match occurred and the extraction happened successfully;  if no match occurs, the string is left unaffected.</p>
+<p>You can replace the first match of "pattern" in "str" with "rewrite". Within "rewrite", backslash-escaped digits (&#92;1 to &#92;9) can be used to insert text matching corresponding parenthesized group from the pattern. &#92;0 in "rewrite" refers to the entire matching text. For example:</p>
+<pre>
+  string s = "yabba dabba doo";
+  pcrecpp::RE("b+").Replace("d", &s);
+</pre>
+<p>will leave "s" containing "yada dabba doo". The result is true if the pattern matches and a replacement occurs, false otherwise.</p><p><strong>GlobalReplace</strong> is like <strong>Replace</strong> except that it replaces all occurrences of the pattern in the string with the rewrite. Replacements are not subject to re-matching. For example:</p>
+<pre>
+  string s = "yabba dabba doo";
+  pcrecpp::RE("b+").GlobalReplace("d", &s);
+</pre>
+<p>will leave "s" containing "yada dada doo". It returns the number of replacements made.</p><p><strong>Extract</strong> is like <strong>Replace</strong>, except that if the pattern matches, "rewrite" is copied into "out" (an additional argument) with substitutions. The non-matching portions of "text" are ignored. Returns true iff a match occurred and the extraction happened successfully;  if no match occurs, the string is left unaffected.</p>
         </div>
       </section>
 

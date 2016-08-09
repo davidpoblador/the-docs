@@ -241,6 +241,8 @@ class ManDirectoryParser(object):
                    next_page=None):
         filename = "%s.%s.html" % (name, section)
 
+        logging.info("Creating manpage %s.%s", name, section)
+
         if prefix:
             filename = "%s-%s" % (prefix, filename)
 
