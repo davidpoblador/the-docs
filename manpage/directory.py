@@ -13,6 +13,8 @@ from helpers import load_template, get_breadcrumb
 from parser import ManpageParser
 from parser import NotSupportedFormat, UnexpectedMacro, RedirectedPage
 
+from manpage import AvailablePages
+
 package_directory = dname(os.path.abspath(__file__))
 
 class DirectoryIterator(object):
@@ -252,7 +254,7 @@ class ManDirectoryParser(object):
         mp.package = package
         mp.prev_page = prev_page
         mp.next_page = next_page
-        mp.available_pages = self.available_pages
+        AvailablePages.pages = self.available_pages
 
         logging.debug("Writing %s" % full_path)
         f = open(full_path, 'w')

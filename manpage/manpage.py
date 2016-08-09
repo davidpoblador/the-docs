@@ -8,6 +8,42 @@ try:
 except ImportError:
     import re
 
+def linkify(item):
+    if not AvailablePages.pages:
+        return item
+
+    must_appear = {'(', ')'}
+    if not all(x in item for x in must_appear):
+        # Speed optimization
+        return item
+
+    def repl(m):
+        manpage = m.groupdict()['page']
+        section = m.groupdict()['section']
+
+        page = '.'.join([manpage, section]) 
+
+        pretag = m.groupdict()['pretag']
+        posttag = m.groupdict()['posttag']
+
+        if posttag and not pretag:
+            append = posttag
+        else:
+            append = ""
+
+        if page in AvailablePages.pages:
+            out = "<strong>%s</strong>(%s)" % (manpage, section, )
+            out = "<a href=\"../man%s/%s.%s.html\">%s</a>%s" % (section, manpage, section, out, append, )
+        else:
+            out = "<strong>%s</strong>(%s)%s" % (manpage, section, append, )
+            # self._broken_links.add(page) #FIXME
+
+        return out
+
+    return linkifier.sub(repl, item)
+
+class AvailablePages(object):
+    pages = None        
 
 class BaseContainer(object):
     def __init__(self):
@@ -29,23 +65,24 @@ class BaseContainer(object):
         for item in self.contents:
             if isinstance(item, str):
                 if not item:
-                    if not strings:
-                        pass
-                    else:
-                        out.append(p_tpl.substitute(content=' '.join(strings)))
+                    if strings:
+                        content = linkify(' '.join(strings))
                         strings = []
+                        out.append(p_tpl.substitute(content=content))
                 else:
                     strings.append(item)
             else:
                 if strings:
-                    out.append(p_tpl.substitute(content=' '.join(strings)))
+                    content = linkify(' '.join(strings))
                     strings = []
+                    out.append(p_tpl.substitute(content=content))
 
                 out.append(item.html())
         else:
             if strings:
-                out.append(p_tpl.substitute(content=' '.join(strings)))
+                content = linkify(' '.join(strings))
                 strings = []
+                out.append(p_tpl.substitute(content=content))
 
         return ''.join(out)
 
@@ -129,8 +166,6 @@ class Manpage(BaseContainer):
         self.prev_page = None
         self.next_page = None
 
-        self.available_pages = None
-
     @cached_property
     def pager_contents(self):
         pager = get_pagination(self.prev_page, self.next_page)
@@ -209,33 +244,8 @@ class Manpage(BaseContainer):
 
         return '\n'.join(breadcrumbs)
 
-    def linkify(self, contents):
-        def repl(m):
-            manpage = m.groupdict()['page']
-            section = m.groupdict()['section']
-            page = '.'.join([manpage, section])
-
-            out = "<strong>%s</strong>(%s)" % (manpage,
-                                               section, )
-
-            if page in self.available_pages:
-                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
-                                                                  manpage,
-                                                                  section,
-                                                                  out, )
-            else:
-                #self._broken_links.add(page) #FIXME
-                pass
-
-            return out
-
-        if self.available_pages:
-            return linkifier.sub(repl, contents)
-        else:
-            return contents
-
     def html(self):
-        content = self.linkify(super(Manpage, self).html())
+        content = super(Manpage, self).html()
 
         return load_template('base').substitute(
             breadcrumb=self.breadcrumbs,

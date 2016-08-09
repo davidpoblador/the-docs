@@ -143,8 +143,12 @@ pjoin = os.path.join
 dname = os.path.dirname
 bname = os.path.basename
 
+#linkifier = re.compile(
+#    r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
+
 linkifier = re.compile(
-    r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
+    r"(?P<pretag><\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?P<posttag></\w+?>)?[(](?P<section>\d)[)]"
+    )
 
 SECTIONS = {
     'man1': "Executable programs or shell commands",
