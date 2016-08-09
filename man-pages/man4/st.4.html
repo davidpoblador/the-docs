@@ -108,7 +108,6 @@
         <div class="sectioncontent">
 <p>The <strong>st</strong> driver provides the interface to a variety of SCSI tape devices. Currently, the driver takes control of all detected devices of type &ldquo;sequential-access&rdquo;. The <strong>st</strong> driver uses major device number 9.</p><p>Each device uses eight minor device numbers. The lowermost five bits in the minor numbers are assigned sequentially in the order of detection. In the 2.6 kernel, the bits above the eight lowermost bits are concatenated to the five lowermost bits to form the tape number. The minor numbers can be grouped into two sets of four numbers: the principal (auto-rewind) minor device numbers, <em>n</em>, and the &ldquo;no-rewind&rdquo; device numbers, (<em>n</em> + 128). Devices opened using the principal device number will be sent a <strong>REWIND</strong> command when they are closed. Devices opened using the &ldquo;no-rewind&rdquo; device number will not. (Note that using an auto-rewind device for positioning the tape with, for instance, mt does not lead to the desired result: the tape is rewound after the mt command and the next command starts from the beginning of the tape).</p><p>Within each group, four minor numbers are available to define devices with different characteristics (block size, compression, density, etc.) When the system starts up, only the first device is available. The other three are activated when the default characteristics are defined (see below). (By changing compile-time constants, it is possible to change the balance between the maximum number of tape drives and the number of minor numbers for each drive. The default allocation allows control of 32 tape drives. For instance, it is possible to control up to 64 tape drives with two minor numbers for different options.)</p><p>Devices are typically created by:</p>
 <pre>
-
 mknod -m 666 /dev/st0 c 9 0
 mknod -m 666 /dev/st0l c 9 32
 mknod -m 666 /dev/st0m c 9 64
@@ -122,7 +121,7 @@ mknod -m 666 /dev/nst0a c 9 224
 <p>The driver supports operation in both fixed-block mode and variable-block mode (if supported by the drive). In fixed-block mode the drive writes blocks of the specified size and the block size is not dependent on the byte counts of the write system calls. In variable-block mode one tape block is written for each write call and the byte count determines the size of the corresponding tape block. Note that the blocks on the tape don't contain any information about the writing mode: when reading, the only important thing is to use commands that accept the block sizes on the tape.</p><p>In variable-block mode the read byte count does not have to match the tape block size exactly. If the byte count is larger than the next block on tape, the driver returns the data and the function returns the actual block size. If the block size is larger than the byte count, an error is returned.</p><p>In fixed-block mode the read byte counts can be arbitrary if buffering is enabled, or a multiple of the tape block size if buffering is disabled. Kernels before 2.1.121 allow writes with arbitrary byte count if buffering is enabled. In all other cases (kernel before 2.1.121 with buffering disabled or newer kernel) the write byte count must be a multiple of the tape block size.</p><p>In the 2.6 kernel, the driver tries to use direct transfers between the user buffer and the device. If this is not possible, the driver's internal buffer is used. The reasons for not using direct transfers include improper alignment of the user buffer (default is 512 bytes but this can be changed by the HBA driver), one or more pages of the user buffer not reachable by the SCSI adapter, and so on.</p><p>A filemark is automatically written to tape if the last tape operation before close was a write.</p><p>When a filemark is encountered while reading, the following happens. If there are data remaining in the buffer when the filemark is found, the buffered data is returned. The next read returns zero bytes. The following read returns data from the next file. The end of recorded data is signaled by returning zero bytes for two consecutive read calls. The third read returns an error.</p>
 <h3>Ioctls</h3>
 <p>The driver supports three <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> requests. Requests not recognized by the <strong>st</strong> driver are passed to the <strong>SCSI</strong> driver. The definitions below are from <em>/usr/include/linux/mtio.h</em>:</p>
-<h3>MTIOCTOP \(em perform a tape operation</h3>
+<h3>MTIOCTOP &ndash; perform a tape operation</h3>
 <p>This request takes an argument of type <em>(struct mtop&nbsp;*)</em>. Not all drives support all operations. The driver returns an <strong>EIO</strong> error if the drive rejects an operation.</p>
 <pre>
 /* Structure for MTIOCTOP - mag tape op command: */
@@ -418,7 +417,6 @@ struct mtop {
 </dl>
 <p>An example:</p>
 <pre>
-
 struct mtop mt_cmd;
 mt_cmd.mt_op = MTSETDRVBUFFER;
 mt_cmd.mt_count = MT_ST_BOOLEANS |
@@ -431,7 +429,7 @@ ioctl(fd, MTIOCTOP, mt_cmd);
 
 </dl>
 
-<h3>MTIOCGET \(em get status</h3>
+<h3>MTIOCGET &ndash; get status</h3>
 <p>This request takes an argument of type <em>(struct mtget&nbsp;*)</em>.</p>
 <pre>
 /* structure for MTIOCGET - mag tape get status command */
@@ -494,7 +492,7 @@ struct mtget {
 
 </dl>
 
-<h3>MTIOCPOS \(em get tape position</h3>
+<h3>MTIOCPOS &ndash; get tape position</h3>
 <p>This request takes an argument of type <em>(struct mtpos&nbsp;*)</em> and reports the drive's notion of the current tape block number, which is not the same as <em>mt_blkno</em> returned by <strong>MTIOCGET</strong>. This drive must be a SCSI-2 drive that supports the <strong>READ POSITION</strong> command (device-specific address) or a Tandberg-compatible SCSI-1 drive (Tandberg, Archive Viper, Wangtek, ... ).</p>
 <pre>
 /* structure for MTIOCPOS - mag tape get position command */

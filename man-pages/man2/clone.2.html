@@ -265,7 +265,6 @@
 <h3>C library/kernel differences</h3>
 <p>The raw <strong>clone</strong>() system call corresponds more closely to <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> in that execution in the child continues from the point of the call. As such, the <em>fn</em> and <em>arg</em> arguments of the <strong>clone</strong>() wrapper function are omitted. Furthermore, the argument order changes. The raw system call interface on x86 and many other architectures is roughly:</p>
 <pre>
-
 <strong>long clone(unsigned long </strong><em>flags</em><strong>, void *</strong><em>child_stack</em><strong>,</strong>
 <strong>           void *</strong><em>ptid</em><strong>, void *</strong><em>ctid</em><strong>,</strong>
 <strong>           struct pt_regs *</strong><em>regs</em><strong>);</strong>
@@ -277,7 +276,6 @@
 <h3>ia64</h3>
 <p>On ia64, a different interface is used:</p>
 <pre>
-
 <strong>int __clone2(int (*</strong><em>fn</em><strong>)(void *), </strong>
 <strong>             void *</strong><em>child_stack_base</em><strong>, size_t </strong><em>stack_size</em><strong>,</strong>
 <strong>             int </strong><em>flags</em><strong>, void *</strong><em>arg</em><strong>, ... </strong>
@@ -454,7 +452,6 @@
         <div class="sectioncontent">
 <p>Versions of the GNU C library that include the NPTL threading library contain a wrapper function for <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a> that performs caching of PIDs. This caching relies on support in the glibc wrapper for <strong>clone</strong>(), but as currently implemented, the cache may not be up to date in some circumstances. In particular, if a signal is delivered to the child immediately after the <strong>clone</strong>() call, then a call to <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a> in a handler for the signal may return the PID of the calling process ("the parent"), if the clone wrapper has not yet had a chance to update the PID cache in the child. (This discussion ignores the case where the child was created using <strong>CLONE_THREAD</strong>, when <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a> <em>should</em> return the same value in the child and in the process that called <strong>clone</strong>(), since the caller and the child are in the same thread group. The stale-cache problem also does not occur if the <em>flags</em> argument includes <strong>CLONE_VM</strong>.) To get the truth, it may be necessary to use code such as the following:</p>
 <pre>
-
     #include &lt;syscall.h&gt;
 
     pid_t mypid;

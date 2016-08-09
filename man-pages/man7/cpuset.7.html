@@ -206,7 +206,6 @@ Mems_allowed_list:     0-63
 <h3>Notify on release</h3>
 <p>If the <em>notify_on_release</em> flag is enabled (1) in a cpuset, then whenever the last process in the cpuset leaves (exits or attaches to some other cpuset) and the last child cpuset of that cpuset is removed, the kernel will run the command <em>/sbin/cpuset_release_agent</em>, supplying the pathname (relative to the mount point of the cpuset filesystem) of the abandoned cpuset. This enables automatic removal of abandoned cpusets.</p><p>The default value of <em>notify_on_release</em> in the root cpuset at system boot is disabled (0). The default value of other cpusets at creation is the current value of their parent's <em>notify_on_release</em> setting.</p><p>The command <em>/sbin/cpuset_release_agent</em> is invoked, with the name (<em>/dev/cpuset</em> relative path) of the to-be-released cpuset in <em>argv[1]</em>.</p><p>The usual contents of the command <em>/sbin/cpuset_release_agent</em> is simply the shell script:</p>
 <pre>
-
 #!/bin/sh
 rmdir /dev/cpuset/$1
 </pre>
@@ -331,13 +330,11 @@ rmdir /dev/cpuset/$1
 <h3>Using the echo command</h3>
 <p>When using the <strong>echo</strong> command at the shell prompt to change the values of cpuset files, beware that the built-in <strong>echo</strong> command in some shells does not display an error message if the <a href="../man2/write.2.html"><strong>write</strong>(2)</a> system call fails. For example, if the command:</p>
 <pre>
-
 echo 19 &gt; cpuset.mems
 
 </pre>
 <p>failed because memory node 19 was not allowed (perhaps the current system does not have a memory node 19), then the <strong>echo</strong> command might not display any error. It is better to use the <strong>/bin/echo</strong> external command to change cpuset file settings, as this command will display <a href="../man2/write.2.html"><strong>write</strong>(2)</a> errors, as in the example:</p>
 <pre>
-
 /bin/echo 19 &gt; cpuset.mems
 /bin/echo: write error: Invalid argument
 </pre>
@@ -633,7 +630,6 @@ echo 19 &gt; cpuset.mems
 </dl>
 <p>For example, the following sequence of commands will set up a cpuset named "Charlie", containing just CPUs 2 and 3, and memory node 1, and then attach the current shell to that cpuset.</p>
 <pre>
-
 $<strong> mkdir /dev/cpuset</strong>
 $<strong> mount -t cpuset cpuset /dev/cpuset</strong>
 $<strong> cd /dev/cpuset</strong>
@@ -684,7 +680,6 @@ $<strong> cat /proc/self/cpuset</strong>
 </dl>
 <p>The following sequence of commands accomplishes this.</p>
 <pre>
-
 $<strong> cd /dev/cpuset</strong>
 $<strong> mkdir beta</strong>
 $<strong> cd beta</strong>
@@ -695,7 +690,6 @@ $<strong> while read i; do /bin/echo $i; done < ../alpha/tasks > tasks</strong>
 </pre>
 <p>The above should move any processes in <em>alpha</em> to <em>beta</em>, and any memory held by these processes on memory nodes 2-3 to memory nodes 8-9, respectively.</p><p>Notice that the last step of the above sequence did not do:</p>
 <pre>
-
 $<strong> cp ../alpha/tasks tasks</strong>
 </pre>
 <p>The <em>while</em> loop, rather than the seemingly easier use of the <strong>cp</strong>(1) command, was necessary because only one process PID at a time may be written to the <em>tasks</em> file.</p><p>The same effect (writing one PID at a time) as the <em>while</em> loop can be accomplished more efficiently, in fewer keystrokes and in syntax that works on any shell, but alas more obscurely, by using the <strong>-u</strong> (unbuffered) option of <strong>sed</strong>(1):</p>

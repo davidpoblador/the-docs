@@ -138,7 +138,6 @@
 <h3>eBPF TOOLING</h3>
 <p>A full blown example including eBPF agent code can be found inside the iproute2 source package under: <strong>examples/bpf/</strong></p><p>As prerequisites, the kernel needs to have the eBPF system call namely <a href="../man2/bpf.2.html"><strong>bpf</strong>(2)</a></strong> enabled and ships with <strong>cls_bpf</strong> and <strong>act_bpf</strong> kernel modules for the traffic control subsystem. To enable eBPF/eBPF JIT support, depending which of the two the given architecture supports:</p><p><strong>echo 1 > /proc/sys/net/core/bpf_jit_enable</strong></p><p>A given restricted C file can be compiled via LLVM as:</p><p><strong>clang -O2 -emit-llvm -c bpf.c -o - | llc -march=bpf -filetype=obj -o bpf.o</strong></p><p>The compiler invocation might still simplify in future, so for now, it's quite handy to alias this construct in one way or another, for example:</p>
 <pre>
-
 __bcc() {
         clang -O2 -emit-llvm -c $1 -o - | &#92;
         llc -march=bpf -filetype=obj -o "`basename $1 .c`.o"
@@ -148,7 +147,6 @@ alias bcc=__bcc
 </pre>
 <p>A minimal, stand-alone unit, which matches on all traffic with the default classid (return code of -1) looks like:</p>
 <pre>
-
 #include &lt;linux/bpf.h&gt;
 
 #ifndef __section
@@ -164,7 +162,6 @@ char __license[] __section("license") = "GPL";
 </pre>
 <p>More examples can be found further below in subsection <strong>eBPF PROGRAMMING</strong> as focus here will be on tooling.</p><p>There can be various other sections, for example, also for actions. Thus, an object file in eBPF can contain multiple entrance points. Always a specific entrance point, however, must be specified when configuring with tc. A license must be part of the restricted C code and the license string syntax is the same as with Linux kernel modules. The kernel reserves its right that some eBPF helper functions can be restricted to GPL compatible licenses only, and thus may reject a program from loading into the kernel when such a license mismatch occurs.</p><p>The resulting object file from the compilation can be inspected with the usual set of tools that also operate on normal object files, for example <strong>objdump</strong>(1)</strong> for inspecting ELF section headers:</p>
 <pre>
-
 objdump -h bpf.o
 [...]
 3 classifier    000007f8  0000000000000000  0000000000000000  00000040  2**3
@@ -181,7 +178,6 @@ objdump -h bpf.o
 </pre>
 <p>Adding an eBPF classifier from an object file that contains a classifier in the default ELF section is trivial (note that instead of "object-file" also shortcuts such as "obj" can be used):</p><p><strong>bcc bpf.c</strong></p><p><strong>tc filter add dev em1 parent 1: bpf obj bpf.o flowid 1:1</strong></p><p>In case the classifier resides in ELF section "mycls", then that same command needs to be invoked as:</p><p><strong>tc filter add dev em1 parent 1: bpf obj bpf.o sec mycls flowid 1:1</strong></p><p>Dumping the classifier configuration will tell the location of the classifier, in other words that it's from object file "bpf.o" under section "mycls":</p><p><strong>tc filter show dev em1</strong></p><p><strong>filter parent 1: protocol all pref 49152 bpf</strong></p><p><strong>filter parent 1: protocol all pref 49152 bpf handle 0x1 flowid 1:1 bpf.o:[mycls]</strong></p><p>The same program can also be installed on ingress qdisc side as opposed to egress ...</p><p><strong>tc qdisc add dev em1 handle ffff: ingress</strong></p><p><strong>tc filter add dev em1 parent ffff: bpf obj bpf.o sec mycls flowid ffff:1</strong></p><p>... and again dumped from there:</p><p><strong>tc filter show dev em1 parent ffff:</strong></p><p><strong>filter protocol all pref 49152 bpf</strong></p><p><strong>filter protocol all pref 49152 bpf handle 0x1 flowid ffff:1 bpf.o:[mycls]</strong></p><p>Attaching a classifier and action on ingress has the restriction that it doesn't have an actual underlying queueing discipline. What ingress can do is to classify, mangle, redirect or drop packets. When queueing is required on ingress side, then ingress must redirect packets to the <strong>ifb</strong> device, otherwise policing can be used. Moreover, ingress can be used to have an early drop point of unwanted packets before they hit upper layers of the networking stack, perform network accounting with eBPF maps that could be shared with egress, or have an early mangle and/or redirection point to different networking devices.</p><p>Multiple eBPF actions and classifier can be placed into a single object file within various sections. In that case, non-default section names must be provided, which is the case for both actions in this example:</p><p><strong>tc filter add dev em1 parent 1: bpf obj bpf.o flowid 1:1 &#92;</strong></p><p><strong>action bpf obj bpf.o sec action-mark &#92;</strong></p><p><strong>action bpf obj bpf.o sec action-rand ok</strong></p><p>The advantage of this is that the classifier and the two actions can then share eBPF maps with each other, if implemented in the programs.</p><p>In order to access eBPF maps from user space beyond <strong>tc(8)</strong> setup lifetime, the ownership can be transferred to an eBPF agent via Unix domain sockets. There are two possibilities for implementing this:</p><p><strong>1)</strong> implementation of an own eBPF agent that takes care of setting up the Unix domain socket and implementing the protocol that <strong>tc(8)</strong> dictates. A code example of this can be found inside the iproute2 source package under: <strong>examples/bpf/</strong></p><p><strong>2)</strong> use <strong>tc exec</strong> for transferring the eBPF map file descriptors through a Unix domain socket, and spawning an application such as <strong>sh(1)</strong> . This approach's advantage is that tc will place the file descriptors into the environment and thus make them available just like stdin, stdout, stderr file descriptors, meaning, in case user applications run from within this fd-owner shell, they can terminate and restart without losing eBPF maps file descriptors. Example invocation with the previous classifier and action mixture:</p><p><strong>tc exec bpf imp /tmp/bpf</strong></p><p><strong>tc filter add dev em1 parent 1: bpf obj bpf.o exp /tmp/bpf flowid 1:1 &#92;</strong></p><p><strong>action bpf obj bpf.o sec action-mark &#92;</strong></p><p><strong>action bpf obj bpf.o sec action-rand ok</strong></p><p>Assuming that eBPF maps are shared with classifier and actions, it's enough to export them once, for example, from within the classifier or action command. tc will setup all eBPF map file descriptors at the time when the object file is first parsed.</p><p>When a shell has been spawned, the environment will have a couple of eBPF related variables. BPF_NUM_MAPS provides the total number of maps that have been transferred over the Unix domain socket. BPF_MAP&lt;X&gt;'s value is the file descriptor number that can be accessed in eBPF agent applications, in other words, it can directly be used as the file descriptor value for the <a href="../man2/bpf.2.html"><strong>bpf</strong>(2)</a></strong> system call to retrieve or alter eBPF map values. &lt;X&gt; denotes the identifier of the eBPF map. It corresponds to the <strong>id</strong> member of <strong>struct bpf_elf_map</strong>  from the tc eBPF map specification.</p><p>The environment in this example looks as follows:</p>
 <pre>
-
 sh# env | grep BPF
     BPF_NUM_MAPS=3
     BPF_MAP1=6
@@ -198,7 +194,6 @@ sh# my_bpf_agent
 <h3>eBPF PROGRAMMING</h3>
 <p>eBPF classifier and actions are being implemented in restricted C syntax (in future, there could additionally be new language frontends supported).</p><p>The header file <strong>linux/bpf.h</strong> provides eBPF helper functions that can be called from an eBPF program. This man page will only provide two minimal, stand-alone examples, have a look at <strong>examples/bpf</strong> from the iproute2 source package for a fully fledged flow dissector example to better demonstrate some of the possibilities with eBPF.</p><p>Supported 32 bit classifier return codes from the C program and their meanings: <strong>0</strong> , denotes a mismatch</p><p><strong>-1</strong> , denotes the default classid configured from the command line</p><p><strong>else</strong> , everything else will override the default classid to provide a facility for non-linear matching</p><p>Supported 32 bit action return codes from the C program and their meanings ( <strong>linux/pkt_cls.h</strong> ): <strong>TC_ACT_OK (0)</strong> , will terminate the packet processing pipeline and allows the packet to proceed</p><p><strong>TC_ACT_SHOT (2)</strong> , will terminate the packet processing pipeline and drops the packet</p><p><strong>TC_ACT_UNSPEC (-1)</strong> , will use the default action configured from tc (similarly as returning <strong>-1</strong> from a classifier)</p><p><strong>TC_ACT_PIPE (3)</strong> , will iterate to the next action, if available</p><p><strong>TC_ACT_RECLASSIFY (1)</strong> , will terminate the packet processing pipeline and start classification from the beginning</p><p><strong>else</strong> , everything else is an unspecified return code</p><p>Both classifier and action return codes are supported in eBPF and cBPF programs.</p><p>To demonstrate restricted C syntax, a minimal toy classifier example is provided, which assumes that egress packets, for instance originating from a container, have previously been marked in interval [0, 255]. The program keeps statistics on different marks for user space and maps the classid to the root qdisc with the marking itself as the minor handle:</p>
 <pre>
-
 #include &lt;stdint.h&gt;
 #include &lt;asm/types.h&gt;
 
@@ -251,7 +246,6 @@ char __license[] __section("license") = "GPL";
 </pre>
 <p>Another small example is a port redirector which demuxes destination port 80 into the interval [8080, 8087] steered by RSS, that can then be attached to ingress qdisc. The exercise of adding the egress counterpart and IPv6 support is left to the reader:</p>
 <pre>
-
 #include &lt;asm/types.h&gt;
 #include &lt;asm/byteorder.h&gt;
 
@@ -313,7 +307,6 @@ char __license[] __section("license") = "GPL";
 </pre>
 <p>The related helper header file <strong>helpers.h</strong> in both examples was:</p>
 <pre>
-
 /* Misc helper macros. */
 #define __section(x) __attribute__((section(x), used))
 #define offsetof(x, y) __builtin_offsetof(x, y)
@@ -351,7 +344,6 @@ unsigned long long load_half(void *skb, unsigned long long off)
 <h3>cBPF</h3>
 <p>Although we generally recommend switching to implementing <strong>eBPF</strong> classifier and actions, for the sake of completeness, a few words on how to program in cBPF will be lost here.</p><p>Likewise, the <strong>bpf_jit_enable</strong> switch can be enabled as mentioned already. Tooling such as <strong>bpf_jit_disasm</strong> is also independent whether eBPF or cBPF code is being loaded.</p><p>Unlike in eBPF, classifier and action are not implemented in restricted C, but rather in a minimal assembler-like language or with the help of other tooling.</p><p>The raw interface with tc takes opcodes directly. For example, the most minimal classifier matching on every packet resulting in the default classid of 1:1 looks like:</p><p><strong>tc filter add dev em1 parent 1: bpf bytecode '1,6 0 0 4294967295,' flowid 1:1</strong></p><p>The first decimal of the bytecode sequence denotes the number of subsequent 4-tuples of cBPF opcodes. As mentioned, such a 4-tuple consists of <strong>c t f k</strong> decimals, where <strong>c</strong> represents the cBPF opcode, <strong>t</strong> the jump true offset target, <strong>f</strong> the jump false offset target and <strong>k</strong> the immediate constant/literal. Here, this denotes an unconditional return from the program with immediate value of -1.</p><p>Thus, for egress classification, Willem de Bruijn implemented a minimal stand-alone helper tool under the GNU General Public License version 2 for <strong>iptables</strong>(8)</strong> BPF extension, which abuses the <strong>libpcap</strong> internal classic BPF compiler, his code derived here for usage with <strong>tc(8)</strong> :</p>
 <pre>
-
 #include &lt;pcap.h&gt;
 #include &lt;stdio.h&gt;
 
@@ -389,7 +381,6 @@ int main(int argc, char **argv)
 </pre>
 <p>Given this small helper, any <strong>tcpdump</strong>(8)</strong> filter expression can be abused as a classifier where a match will result in the default classid:</p><p><strong>bpftool EN10MB 'tcp[tcpflags] & tcp-syn != 0' > /var/bpf/tcp-syn</strong></p><p><strong>tc filter add dev em1 parent 1: bpf bytecode-file /var/bpf/tcp-syn flowid 1:1</strong></p><p>Basically, such a minimal generator is equivalent to:</p><p><strong>tcpdump -iem1 -ddd 'tcp[tcpflags] & tcp-syn != 0' | tr '&#92;&#92;n' ',' > /var/bpf/tcp-syn</strong></p><p>Since <strong>libpcap</strong> does not support all Linux' specific cBPF extensions in its compiler, the Linux kernel also ships under <strong>tools/net/</strong> a minimal BPF assembler called <strong>bpf_asm</strong> for providing full control. For detailed syntax and semantics on implementing such programs by hand, see references under <strong>FURTHER READING</strong> .</p><p>Trivial toy example in <strong>bpf_asm</strong> for classifying IPv4/TCP packets, saved in a text file called <strong>foobar</strong> :</p>
 <pre>
-
 ldh [12]
 jne #0x800, drop
 ldb [23]
