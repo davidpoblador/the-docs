@@ -1,8 +1,9 @@
-from helpers import load_template, get_breadcrumb, strip_tags, linkifier
+from helpers import load_template, get_breadcrumb, strip_tags, linkifier, unescape
 from helpers import get_pagination, unescape
 from cached_property import cached_property
 from helpers import SECTIONS
 from collections import Counter
+from helpers import Macro
 
 try:
     import re2 as re
@@ -347,7 +348,7 @@ class BulletedList(BaseContainer):
         elif args[0] == "\\(bu":
             bullet = '*'
         else:
-            bullet = args[0]
+            bullet = Macro.process_fonts(unescape(args[0]))
 
         self.contents.append([bullet, Container()])
 

@@ -100,13 +100,13 @@
 <p>The facility provides the concept of a '<strong>key</strong>', where all of the above examples are encapsulated within objects of this type.</p><p>A 'key' contains the following elements:</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBSerial number\fR
+    <strong>Serial number</strong>
   </dt>
   <dd>
     <p>This is a unique integer handle by which a key is referred to in system call arguments.</p>
   </dd>
   <dt>
-    \fBType\fR
+    <strong>Type</strong>
   </dt>
   <dd>
     <p>This defines what sort of data can be held in the key, how the proposed content of the key will be parsed and how the payload will be used.</p>
@@ -118,13 +118,13 @@
     <p>There are a number of general purpose types available, plus some specialist types defined by specific drivers.</p>
   </dd>
   <dt>
-    \fBDescription\fR
+    <strong>Description</strong>
   </dt>
   <dd>
     <p>This is a printable string that is used as the search term for the key (in conjunction with the type) as well as a display name.  The description may be partially matched or exactly matched.</p>
   </dd>
   <dt>
-    \fBPayload\fR
+    <strong>Payload</strong>
   </dt>
   <dd>
     <p>This is the actual content of a key.  This is usually set when a key is created, but it is possible for the kernel to upcall to userspace to finish the instantiation of a key if that key wasn't already known to the kernel when it was requested.</p>
@@ -136,7 +136,7 @@
     <p>A key's payload can be read and updated if the key type supports it and if suitable permission is granted to the caller.</p>
   </dd>
   <dt>
-    \fBAccess rights\fR
+    <strong>Access rights</strong>
   </dt>
   <dd>
     <p>Each key has an owning user ID, an owning group and a security label - much as files do.  They also have a set of permissions, though there are more than for a normal UNIX file, and there is an additional category beyond the usual user, group and other (see below).</p>
@@ -148,13 +148,13 @@
     <p>Note that keys are quota controlled since they represent unswappable kernel memory and the owning user ID specifies whose quota is to be debited.</p>
   </dd>
   <dt>
-    \fBExpiration time\fR
+    <strong>Expiration time</strong>
   </dt>
   <dd>
     <p>Each key can have an expiration time set.  When that time is reached, the key is marked as being expired and accesses to it fail with <em>EKEYEXPIRED</em>.  If not deleted, updated or replaced, after a set amount of time, expired keys are automatically removed along with all links to them and <em>ENOKEY</em> will be reported.</p>
   </dd>
   <dt>
-    \fBReference count\fR
+    <strong>Reference count</strong>
   </dt>
   <dd>
     <p>Each key has a reference count.  Keys are referenced by keyrings, by current active users and by a process's credentials.  When the reference count reaches zero, the key is scheduled for garbage collection.</p>
@@ -171,25 +171,25 @@
 <p>The facility provides several basic types of key:</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBkeyring\fR
+    <strong>keyring</strong>
   </dt>
   <dd>
     <p>Keys of this type are special.  The payload consists of a set of links to other keys, analogous to a directory holding links to files.  The main purpose of a keyring is to prevent other keys from being garbage collected because nothing refers to them.</p>
   </dd>
   <dt>
-    \fBuser\fR
+    <strong>user</strong>
   </dt>
   <dd>
     <p>This is a general purpose key type.  It may be instantiated with an arbitrary blob of data of up to about 32KB.  It is kept entirely within kernel memory. It may be read and updated by userspace.</p>
   </dd>
   <dt>
-    \fBbig_key\fR
+    <strong>big_key</strong>
   </dt>
   <dd>
     <p>This is similar to <strong>user</strong> but it may hold data up to 1MB in size.  The data may be stored in the swap space rather than in kernel memory if the size exceeds the overhead of doing so (a tmpfs file is used - which requires filesystem structures to be allocated in the kernel).</p>
   </dd>
   <dt>
-    \fBlogon\fR
+    <strong>logon</strong>
   </dt>
   <dd>
     <p>This is similar to <strong>user</strong> but the contents may not be read by userspace.</p>
@@ -206,31 +206,31 @@
 <p>As previously mentioned, keyrings are a special type of key that contain links to other keys (which may include other keyrings).  Keys may be linked to by multiple keyrings.  Keyrings may be considered as analogous to UNIX directories where each directory contains a set of hard links to files.</p><p>Several of the syscall functions available may only be applied to keyrings:</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBAdding\fR
+    <strong>Adding</strong>
   </dt>
   <dd>
     <p>A key may be added to a keyring by system calls that create keys.  This prevents the new key from being immediately deleted when the system call driver releases its last reference to the key.</p>
   </dd>
   <dt>
-    \fBLinking\fR
+    <strong>Linking</strong>
   </dt>
   <dd>
     <p>A link may be added to a keyring pointing to a key that is already known, provided this does not create a self-referential cycle.</p>
   </dd>
   <dt>
-    \fBUnlinking\fR
+    <strong>Unlinking</strong>
   </dt>
   <dd>
     <p>A link may be removed from a keyring.  When the last link to a key is removed, that key will be scheduled for deletion by the garbage collector.</p>
   </dd>
   <dt>
-    \fBClearing\fR
+    <strong>Clearing</strong>
   </dt>
   <dd>
     <p>All the links may be removed from a keyring.</p>
   </dd>
   <dt>
-    \fBSearching\fR
+    <strong>Searching</strong>
   </dt>
   <dd>
     <p>A keyring may be considered the root of a tree or subtree in which keyrings form the branches and non-keyrings the leaves.  This tree may be searched for a leaf matching a particular type and description.</p>
@@ -247,7 +247,7 @@
 <p>To prevent a key from being prematurely garbage collected, it must anchored to keep its reference count elevated when it is not in active use by the kernel.</p><p><strong>Keyrings</strong> are used to anchor other keys - each link is a reference on a key - but whilst keyrings are available to link to keys, keyrings themselves are just keys and are also subject to the same anchoring necessity.</p><p>The kernel makes available a number of anchor keyrings.  Note that some of these keyrings will only be created when first accessed.</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBProcess keyrings\fR
+    <strong>Process keyrings</strong>
   </dt>
   <dd>
     <p>Process credentials themselves reference keyrings with specific semantics. These keyrings are pinned as long as the set of credentials exists - which is usually as long as the process does.</p>
@@ -259,13 +259,13 @@
     <p>There are three keyrings with different inheritance/sharing rules:  The <strong>session</strong> keyring (inherited and shared by all child processes), the <strong>process keyring</strong> (shared by all threads in a process) and the <strong>thread keyring</strong> (specific to a particular thread).</p>
   </dd>
   <dt>
-    \fBUser keyrings\fR
+    <strong>User keyrings</strong>
   </dt>
   <dd>
     <p>Each UID known to the kernel has a record that contains two keyrings: The <strong>user keyring</strong> and the <strong>user session keyring</strong>.  These exist for as long as the UID record in the kernel exists.  A link to the user keyring is placed in a new session keyring by <strong>pam_keyinit</strong> when a new login session is initiated.</p>
   </dd>
   <dt>
-    \fBPersistent keyrings\fR
+    <strong>Persistent keyrings</strong>
   </dt>
   <dd>
     <p>There is a <strong>persistent keyring</strong> available to each UID known to the system. It may persist beyond the life of the UID record previously mentioned, but has an expiration time set such that it is automatically cleaned up after a set time.  This, for example, permits cron scripts to use credentials left when the user logs out.</p>
@@ -277,7 +277,7 @@
     <p>Note that the expiration time is reset every time the persistent key is requested.</p>
   </dd>
   <dt>
-    \fBSpecial keyrings\fR
+    <strong>Special keyrings</strong>
   </dt>
   <dd>
     <p>There are special keyrings owned by the kernel that can anchor keys for special purposes.  An example of this is the <strong>system keyring</strong> used for holding encryption keys for module signature verification.</p>
@@ -341,37 +341,37 @@
 <p>Each key has the following security-related attributes:</p><p>- The owning user ID</p><p>- The ID of a group that is permitted to access the key</p><p>- A security label</p><p>- A permissions mask</p><p>The permissions mask is used to govern the following rights:</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBView\fR
+    <strong>View</strong>
   </dt>
   <dd>
     <p>If set, the attributes of a key may be read.  This includes the type, description and access rights (excluding the security label).</p>
   </dd>
   <dt>
-    \fBRead\fR
+    <strong>Read</strong>
   </dt>
   <dd>
     <p>If set, the payload of a key may be read and a list of the serial numbers to which a keyring has links may be read.</p>
   </dd>
   <dt>
-    \fBWrite\fR
+    <strong>Write</strong>
   </dt>
   <dd>
     <p>If set, the payload of a key may be updated, links may be added to or removed from a keyring, a keyring may be cleared completely and a key may be revoked.</p>
   </dd>
   <dt>
-    \fBSearch\fR
+    <strong>Search</strong>
   </dt>
   <dd>
     <p>If set, keyrings and subkeyrings may be searched and keys and keyrings may be found by that search.</p>
   </dd>
   <dt>
-    \fBLink\fR
+    <strong>Link</strong>
   </dt>
   <dd>
     <p>If set, an additional link may be made to a key from a keyring.  The initial link to a key when it is created doesn't require this permit.</p>
   </dd>
   <dt>
-    \fBSetattr\fR
+    <strong>Setattr</strong>
   </dt>
   <dd>
     <p>If set, the ownership details on a key and its security label may be changed, its expiration time may be set and it may be revoked.</p>
@@ -381,19 +381,19 @@
 <p>The permissions mask contains four sets of rights.  The first three sets are mutually exclusive.  One and only one will be in force at any one time.  In order of descending priority:</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBUser\fR
+    <strong>User</strong>
   </dt>
   <dd>
     <p>Used if the key's user ID matches the caller's <strong>fsuid</strong>.</p>
   </dd>
   <dt>
-    \fBGroup\fR
+    <strong>Group</strong>
   </dt>
   <dd>
     <p>Used if the user ID didn't match and the key's group ID matches the caller's <strong>fsgid</strong> or one of the caller's supplementary group list.</p>
   </dd>
   <dt>
-    \fBOther\fR
+    <strong>Other</strong>
   </dt>
   <dd>
     <p>Used if neither the key's user ID nor group ID matched.</p>
@@ -403,7 +403,7 @@
 <p>The fourth set of rights is:</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBPossessor\fR
+    <strong>Possessor</strong>
   </dt>
   <dd>
     <p>Used if a key is determined to be <strong>possessed</strong> by the caller.</p>
@@ -474,31 +474,31 @@
 <p>The facility has a number of users and usages, but is not limited to those that already exist.</p><p>In-kernel users of this facility include:</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBNetwork filesystems - DNS\fR
+    <strong>Network filesystems - DNS</strong>
   </dt>
   <dd>
     <p>The kernel uses the upcall mechanism provided by the keys to upcall to userspace to do DNS lookups and then to cache the results.</p>
   </dd>
   <dt>
-    \fBAF_RXRPC and kAFS - Authentication\fR
+    <strong>AF_RXRPC and kAFS - Authentication</strong>
   </dt>
   <dd>
     <p>The AF_RXRPC network protocol and the in-kernel AFS filesystem store the ticket needed to do secured or encrypted traffic in keys.  These are then looked up by network operations on AF_RXRPC and filesystem operations on kAFS.</p>
   </dd>
   <dt>
-    \fBNFS - User ID mapping\fR
+    <strong>NFS - User ID mapping</strong>
   </dt>
   <dd>
     <p>The NFS filesystem uses keys to store foreign user ID to local user ID mapping.</p>
   </dd>
   <dt>
-    \fBCIFS - Password\fR
+    <strong>CIFS - Password</strong>
   </dt>
   <dd>
     <p>The CIFS filesystem uses keys to store passwords for accessing remote shares.</p>
   </dd>
   <dt>
-    \fBModule verification\fR
+    <strong>Module verification</strong>
   </dt>
   <dd>
     <p>The kernel build process can be made to cryptographically sign modules.  That signature is then checked when a module is loaded.</p>
@@ -508,7 +508,7 @@
 <p>Userspace users of this facility include:</p>
 <dl class='dl-vertical'>
   <dt>
-    \fBKerberos key storage\fR
+    <strong>Kerberos key storage</strong>
   </dt>
   <dd>
     <p>The MIT Kerberos 5 facility (libkrb5) can use keys to store authentication tokens which can be made to be automatically cleaned up a set time after the user last uses them, but until then permits them to hang around after the user has logged out so that cron scripts can use them.</p>
