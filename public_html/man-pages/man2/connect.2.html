@@ -91,12 +91,14 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;sys/types.h&gt;</strong>          /* See NOTES */
+<pre>
+<strong>#include</strong> <strong><sys/types.h></strong>          /* See NOTES */
 
-<strong>#include &lt;sys/socket.h&gt;</strong>
+<strong>#include <sys/socket.h></strong>
 
-<strong>int connect(int </strong><em>sockfd</em><strong>, const struct sockaddr *</strong><em>addr</em><strong>,</strong>
-<strong>            socklen_t </strong><em>addrlen</em><strong>);</strong></pre>
+<strong>int</strong> <strong>connect(int</strong> <strong></strong><em>sockfd</em><strong>,</strong> <strong>const</strong> <strong>struct</strong> <strong>sockaddr</strong> <strong>*</strong><em>addr</em><strong>,</strong>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>socklen_t</strong> <strong></strong><em>addrlen</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -104,21 +106,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The <strong>connect</strong>() system call connects the socket referred to by the file descriptor <em>sockfd</em> to the address specified by <em>addr</em>. The <em>addrlen</em> argument specifies the size of <em>addr</em>. The format of the address in <em>addr</em> is determined by the address space of the socket <em>sockfd</em>; see <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a> for further details.</p>
-<p class='spacer'>
-
-<p>If the socket <em>sockfd</em> is of type <strong>SOCK_DGRAM</strong>, then <em>addr</em> is the address to which datagrams are sent by default, and the only address from which datagrams are received. If the socket is of type <strong>SOCK_STREAM</strong> or <strong>SOCK_SEQPACKET</strong>, this call attempts to make a connection to the socket that is bound to the address specified by <em>addr</em>.</p>
-<p class='spacer'>
-
-<p>Generally, connection-based protocol sockets may successfully <strong>connect</strong>() only once; connectionless protocol sockets may use <strong>connect</strong>() multiple times to change their association. Connectionless sockets may dissolve the association by connecting to an address with the <em>sa_family</em> member of <em>sockaddr</em> set to <strong>AF_UNSPEC</strong> (supported on Linux since kernel 2.2).</p>
+<p>The <strong>connect</strong>() system call connects the socket referred to by the file descriptor <em>sockfd</em> to the address specified by <em>addr</em>. The <em>addrlen</em> argument specifies the size of <em>addr</em>. The format of the address in <em>addr</em> is determined by the address space of the socket <em>sockfd</em>; see <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a> for further details.</p><p>If the socket <em>sockfd</em> is of type <strong>SOCK_DGRAM</strong>, then <em>addr</em> is the address to which datagrams are sent by default, and the only address from which datagrams are received. If the socket is of type <strong>SOCK_STREAM</strong> or <strong>SOCK_SEQPACKET</strong>, this call attempts to make a connection to the socket that is bound to the address specified by <em>addr</em>.</p><p>Generally, connection-based protocol sockets may successfully <strong>connect</strong>() only once; connectionless protocol sockets may use <strong>connect</strong>() multiple times to change their association. Connectionless sockets may dissolve the association by connecting to an address with the <em>sa_family</em> member of <em>sockaddr</em> set to <strong>AF_UNSPEC</strong> (supported on Linux since kernel 2.2).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>If the connection or binding succeeds, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -126,85 +120,119 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>The following are general socket errors only. There may be other domain-specific error codes.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>For UNIX domain sockets, which are identified by pathname: Write permission is denied on the socket file, or search permission is denied for one of the directories in the path prefix. (See also <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
+  </dd>
+  <dt>
+    <p><strong>EACCES</strong>, <strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>The user tried to connect to a broadcast address without having the socket broadcast flag enabled or the connection request failed because of a local firewall rule.</p>
+  </dd>
+  <dt>
+    <p><strong>EADDRINUSE</strong></p>
+  </dt>
+  <dd>
+    <p>Local address is already in use.</p>
+  </dd>
+  <dt>
+    <p><strong>EADDRNOTAVAIL</strong></p>
+  </dt>
+  <dd>
+    <p>(Internet domain sockets) The socket referred to by <em>sockfd</em> had not previously been bound to an address and, upon attempting to bind it to an ephemeral port, it was determined that all port numbers in the ephemeral port range are currently in use. See the discussion of <em>/proc/sys/net/ipv4/ip_local_port_range</em> in <strong>ip</strong>(7).</p>
+  </dd>
+  <dt>
+    <p><strong>EAFNOSUPPORT</strong></p>
+  </dt>
+  <dd>
+    <p>The passed address didn't have the correct address family in its <em>sa_family</em> field.</p>
+  </dd>
+  <dt>
+    <p><strong>EAGAIN</strong></p>
+  </dt>
+  <dd>
+    <p>Insufficient entries in the routing cache.</p>
+  </dd>
+  <dt>
+    <p><strong>EALREADY</strong></p>
+  </dt>
+  <dd>
+    <p>The socket is nonblocking and a previous connection attempt has not yet been completed.</p>
+  </dd>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>sockfd</em> is not a valid open file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>ECONNREFUSED</strong></p>
+  </dt>
+  <dd>
+    <p>No-one listening on the remote address.</p>
+  </dd>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p>The socket structure address is outside the user's address space.</p>
+  </dd>
+  <dt>
+    <p><strong>EINPROGRESS</strong></p>
+  </dt>
+  <dd>
+    <p>The socket is nonblocking and the connection cannot be completed immediately. It is possible to <a href="../man2/select.2.html"><strong>select</strong>(2)</a> or <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> for completion by selecting the socket for writing. After <a href="../man2/select.2.html"><strong>select</strong>(2)</a> indicates writability, use <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> to read the <strong>SO_ERROR</strong> option at level <strong>SOL_SOCKET</strong> to determine whether <strong>connect</strong>() completed successfully (<strong>SO_ERROR</strong> is zero) or unsuccessfully (<strong>SO_ERROR</strong> is one of the usual error codes listed here, explaining the reason for the failure).</p>
+  </dd>
+  <dt>
+    <p><strong>EINTR</strong></p>
+  </dt>
+  <dd>
+    <p>The system call was interrupted by a signal that was caught; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>EISCONN</strong></p>
+  </dt>
+  <dd>
+    <p>The socket is already connected.</p>
+  </dd>
+  <dt>
+    <p><strong>ENETUNREACH</strong></p>
+  </dt>
+  <dd>
+    <p>Network is unreachable.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTSOCK</strong></p>
+  </dt>
+  <dd>
+    <p>The file descriptor <em>sockfd</em> does not refer to a socket.</p>
+  </dd>
+  <dt>
+    <p><strong>EPROTOTYPE</strong></p>
+  </dt>
+  <dd>
+    <p>The socket type does not support the requested communications protocol. This error can occur, for example, on an attempt to connect a UNIX domain datagram socket to a stream socket.</p>
+  </dd>
+  <dt>
+    <p><strong>ETIMEDOUT</strong></p>
+  </dt>
+  <dd>
+    <p>Timeout while attempting connection. The server may be too busy to accept new connections. Note that for IP sockets the timeout may be very long when syncookies are enabled on the server.</p>
+  </dd>
 
-  <p>The following are general socket errors only. There may be other domain-specific error codes.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EACCES</strong></dt>
-    <dd>
-  <p>For UNIX domain sockets, which are identified by pathname: Write permission is denied on the socket file, or search permission is denied for one of the directories in the path prefix. (See also <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
-    </dd>
-    <dt><strong>EACCES</strong>, <strong>EPERM</strong></dt>
-    <dd>
-  <p>The user tried to connect to a broadcast address without having the socket broadcast flag enabled or the connection request failed because of a local firewall rule.</p>
-    </dd>
-    <dt><strong>EADDRINUSE</strong></dt>
-    <dd>
-  <p>Local address is already in use.</p>
-    </dd>
-    <dt><strong>EADDRNOTAVAIL</strong></dt>
-    <dd>
-  <p>(Internet domain sockets) The socket referred to by <em>sockfd</em> had not previously been bound to an address and, upon attempting to bind it to an ephemeral port, it was determined that all port numbers in the ephemeral port range are currently in use. See the discussion of <em>/proc/sys/net/ipv4/ip_local_port_range</em> in <strong>ip</strong>(7).</p>
-    </dd>
-    <dt><strong>EAFNOSUPPORT</strong></dt>
-    <dd>
-  <p>The passed address didn't have the correct address family in its <em>sa_family</em> field.</p>
-    </dd>
-    <dt><strong>EAGAIN</strong></dt>
-    <dd>
-  <p>Insufficient entries in the routing cache.</p>
-    </dd>
-    <dt><strong>EALREADY</strong></dt>
-    <dd>
-  <p>The socket is nonblocking and a previous connection attempt has not yet been completed.</p>
-    </dd>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>sockfd</em> is not a valid open file descriptor.</p>
-    </dd>
-    <dt><strong>ECONNREFUSED</strong></dt>
-    <dd>
-  <p>No-one listening on the remote address.</p>
-    </dd>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p>The socket structure address is outside the user's address space.</p>
-    </dd>
-    <dt><strong>EINPROGRESS</strong></dt>
-    <dd>
-  <p>The socket is nonblocking and the connection cannot be completed immediately. It is possible to <a href="../man2/select.2.html"><strong>select</strong>(2)</a> or <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> for completion by selecting the socket for writing. After <a href="../man2/select.2.html"><strong>select</strong>(2)</a> indicates writability, use <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> to read the <strong>SO_ERROR</strong> option at level <strong>SOL_SOCKET</strong> to determine whether <strong>connect</strong>() completed successfully (<strong>SO_ERROR</strong> is zero) or unsuccessfully (<strong>SO_ERROR</strong> is one of the usual error codes listed here, explaining the reason for the failure).</p>
-    </dd>
-    <dt><strong>EINTR</strong></dt>
-    <dd>
-  <p>The system call was interrupted by a signal that was caught; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
-    </dd>
-    <dt><strong>EISCONN</strong></dt>
-    <dd>
-  <p>The socket is already connected.</p>
-    </dd>
-    <dt><strong>ENETUNREACH</strong></dt>
-    <dd>
-  <p>Network is unreachable.</p>
-    </dd>
-    <dt><strong>ENOTSOCK</strong></dt>
-    <dd>
-  <p>The file descriptor <em>sockfd</em> does not refer to a socket.</p>
-    </dd>
-    <dt><strong>EPROTOTYPE</strong></dt>
-    <dd>
-  <p>The socket type does not support the requested communications protocol. This error can occur, for example, on an attempt to connect a UNIX domain datagram socket to a stream socket.</p>
-    </dd>
-    <dt><strong>ETIMEDOUT</strong></dt>
-    <dd>
-  <p>Timeout while attempting connection. The server may be too busy to accept new connections. Note that for IP sockets the timeout may be very long when syncookies are enabled on the server.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2001, POSIX.1-2008, SVr4, 4.4BSD, (the <strong>connect</strong>() function first appeared in 4.2BSD).</p>
         </div>
       </section>
@@ -212,21 +240,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>POSIX.1 does not require the inclusion of <em>&lt;sys/types.h&gt;</em>, and this header file is not required on Linux. However, some historical (BSD) implementations required this header file, and portable applications are probably wise to include it.</p>
-<p class='spacer'>
-
-<p>The third argument of <strong>connect</strong>() is in reality an <em>int</em> (and this is what 4.x BSD and libc4 and libc5 have). Some POSIX confusion resulted in the present <em>socklen_t</em>, also used by glibc. See also <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>If <strong>connect</strong>() fails, consider the state of the socket as unspecified. Portable applications should close the socket and create a new one for reconnecting.</p>
+<p>POSIX.1 does not require the inclusion of <em><sys/types.h></em>, and this header file is not required on Linux. However, some historical (BSD) implementations required this header file, and portable applications are probably wise to include it.</p><p>The third argument of <strong>connect</strong>() is in reality an <em>int</em> (and this is what 4.x BSD and libc4 and libc5 have). Some POSIX confusion resulted in the present <em>socklen_t</em>, also used by glibc. See also <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>.</p><p>If <strong>connect</strong>() fails, consider the state of the socket as unspecified. Portable applications should close the socket and create a new one for reconnecting.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>An example of the use of <strong>connect</strong>() is shown in <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>.</p>
         </div>
       </section>
@@ -234,11 +254,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO connect&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>, <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a>, <a href="../man2/getsockname.2.html"><strong>getsockname</strong>(2)</a>, <a href="../man2/listen.2.html"><strong>listen</strong>(2)</a>, <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="close.2.html"><span aria-hidden="true">&larr;</span> close.2: Close a file descriptor</a></li>

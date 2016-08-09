@@ -90,96 +90,39 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p><strong>ip</strong> [ <em>OPTIONS</em> ] <strong>tcp_metrics</strong> { <em>COMMAND</em> |  <strong>help</strong> }</p>
-<p class='spacer'>
-
-<p><strong>ip tcp_metrics</strong> { <strong>show</strong> | <strong>flush</strong> } <em>SELECTOR</em></p>
-<p class='spacer'>
-
-<p><strong>ip tcp_metrics delete </strong>[<strong> address </strong>] <em>ADDRESS</em></p>
-<p class='spacer'>
-
-<p><em>SELECTOR</em> :=  [ [ <strong>address</strong> ]  <em>PREFIX</em> ]</p>
-<p class='spacer'>
-
+<p><strong>ip</strong> [ <em>OPTIONS</em> ] <strong>tcp_metrics</strong> { <em>COMMAND</em> |  <strong>help</strong> }</p><p><strong>ip</strong> <strong>tcp_metrics</strong> { <strong>show</strong> | <strong>flush</strong> } <em>SELECTOR</em></p><p><strong>ip</strong> <strong>tcp_metrics</strong> <strong>delete</strong> <strong></strong>[<strong></strong> <strong>address</strong> <strong></strong>] <em>ADDRESS</em></p><p><em>SELECTOR</em> :=  [ [ <strong>address</strong> ]  <em>PREFIX</em> ]</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>ip tcp_metrics</strong> is used to manipulate entries in the kernel that keep TCP information for IPv4 and IPv6 destinations. The entries are created when TCP sockets want to share information for destinations and are stored in a cache keyed by the destination address. The saved information may include values for metrics (initially obtained from routes), recent TSVAL for TIME-WAIT recycling purposes, state for the Fast Open feature, etc. For performance reasons the cache can not grow above configured limit and the older entries are replaced with fresh information, sometimes reclaimed and used for new destinations. The kernel never removes entries, they can be flushed only with this tool.</p><h3>ip tcp_metrics show - show cached entries</h3>
 
-<p><strong>ip tcp_metrics</strong> is used to manipulate entries in the kernel that keep TCP information for IPv4 and IPv6 destinations. The entries are created when TCP sockets want to share information for destinations and are stored in a cache keyed by the destination address. The saved information may include values for metrics (initially obtained from routes), recent TSVAL for TIME-WAIT recycling purposes, state for the Fast Open feature, etc. For performance reasons the cache can not grow above configured limit and the older entries are replaced with fresh information, sometimes reclaimed and used for new destinations. The kernel never removes entries, they can be flushed only with this tool.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>address</strong><em></em> <em>PREFIX</em> <em></em><strong>(default)</strong></p>
+  </dt>
+  <dd>
+    <p>IPv4/IPv6 prefix or address. If no prefix is provided all entries are shown.</p>
+  </dd>
 
-  <h3>ip tcp_metrics show - show cached entries</h3>
-<p class='spacer'>
+</dl>
+<p>The output may contain the following information:</p><p><strong>age</strong><em></em> <em><S.MMM></em><strong>sec</strong> - time after the entry was created, reset or updated with metrics from sockets. The entry is reset and refreshed on use with metrics from route if the metrics are not updated in last hour. Not all cached values reset the age on update.</p><p><strong>cwnd</strong><em></em> <em><N></em> - CWND metric value</p><p><strong>fo_cookie</strong><em></em> <em><HEX-STRING></em> - Cookie value received in SYN-ACK to be used by Fast Open for next SYNs</p><p><strong>fo_mss</strong><em></em> <em><N></em> - MSS value received in SYN-ACK to be used by Fast Open for next SYNs</p><p><strong>fo_syn_drops</strong><em></em> <em><N>/<S.MMM></em><strong>sec</strong> <strong>ago</strong> - Number of drops of initial outgoing Fast Open SYNs with data detected by monitoring the received SYN-ACK after SYN retransmission. The seconds show the time after last SYN drop and together with the drop count can be used to disable Fast Open for some time.</p><p><strong>reordering</strong><em></em> <em><N></em> - Reordering metric value</p><p><strong>rtt</strong><em></em> <em><N></em><strong>us</strong> - RTT metric value</p><p><strong>rttvar</strong><em></em> <em><N></em><strong>us</strong> - RTTVAR metric value</p><p><strong>ssthresh</strong><em></em> <em><SSTHRESH></em> - SSTHRESH metric value</p><p><strong>tw_ts</strong><em></em> <em><TSVAL>/<SEC></em><strong>sec</strong> <strong>ago</strong> - recent TSVAL and the seconds after saving it into TIME-WAIT socket</p>
+<h3>ip tcp_metrics delete - delete single entry</h3>
 
-  <dl class='dl-vertical'>
-    <dt><strong>address</strong><em> PREFIX </em><strong>(default)</strong></dt>
-    <dd>
-  <p>IPv4/IPv6 prefix or address. If no prefix is provided all entries are shown.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>address</strong><em></em> <em>ADDRESS</em> <em></em><strong>(default)</strong></p>
+  </dt>
+  <dd>
+    <p>IPv4/IPv6 address. The address is a required argument.</p>
+  </dd>
 
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
 
-<p>The output may contain the following information:</p>
-<p class='spacer'>
-
-<p><strong>age</strong><em> &lt;S.MMM&gt;</em><strong>sec</strong> - time after the entry was created, reset or updated with metrics from sockets. The entry is reset and refreshed on use with metrics from route if the metrics are not updated in last hour. Not all cached values reset the age on update.</p>
-<p class='spacer'>
-
-<p><strong>cwnd</strong><em> &lt;N&gt;</em> - CWND metric value</p>
-<p class='spacer'>
-
-<p><strong>fo_cookie</strong><em> &lt;HEX-STRING&gt;</em> - Cookie value received in SYN-ACK to be used by Fast Open for next SYNs</p>
-<p class='spacer'>
-
-<p><strong>fo_mss</strong><em> &lt;N&gt;</em> - MSS value received in SYN-ACK to be used by Fast Open for next SYNs</p>
-<p class='spacer'>
-
-<p><strong>fo_syn_drops</strong><em> &lt;N&gt;/&lt;S.MMM&gt;</em><strong>sec ago</strong> - Number of drops of initial outgoing Fast Open SYNs with data detected by monitoring the received SYN-ACK after SYN retransmission. The seconds show the time after last SYN drop and together with the drop count can be used to disable Fast Open for some time.</p>
-<p class='spacer'>
-
-<p><strong>reordering</strong><em> &lt;N&gt;</em> - Reordering metric value</p>
-<p class='spacer'>
-
-<p><strong>rtt</strong><em> &lt;N&gt;</em><strong>us</strong> - RTT metric value</p>
-<p class='spacer'>
-
-<p><strong>rttvar</strong><em> &lt;N&gt;</em><strong>us</strong> - RTTVAR metric value</p>
-<p class='spacer'>
-
-<p><strong>ssthresh</strong><em> &lt;SSTHRESH&gt;</em> - SSTHRESH metric value</p>
-<p class='spacer'>
-
-<p><strong>tw_ts</strong><em> &lt;TSVAL&gt;/&lt;SEC&gt;</em><strong>sec ago</strong> - recent TSVAL and the seconds after saving it into TIME-WAIT socket</p>
-<p class='spacer'>
-
-  <h3>ip tcp_metrics delete - delete single entry</h3>
-<p class='spacer'>
-
-  <dl class='dl-vertical'>
-    <dt><strong>address</strong><em> ADDRESS </em><strong>(default)</strong></dt>
-    <dd>
-  <p>IPv4/IPv6 address. The address is a required argument.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-  <h3>ip tcp_metrics flush - flush entries</h3>
-<p>This command flushes the entries selected by some criteria.</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>This command has the same arguments as <strong>show.</strong></p>
-<p class='spacer'>
+<h3>ip tcp_metrics flush - flush entries</h3>
+<p>This command flushes the entries selected by some criteria.</p><p>This command has the same arguments as <strong>show.</strong></p>
 
         </div>
       </section>
@@ -187,53 +130,23 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>ip tcp_metrics show address 192.168.0.0/24 Shows the entries for destinations from subnet</p>
-<p class='spacer'>
-
-<p>ip tcp_metrics show 192.168.0.0/24 The same but address keyword is optional</p>
-<p class='spacer'>
-
-<p>ip tcp_metrics Show all is the default action</p>
-<p class='spacer'>
-
-<p>ip tcp_metrics delete 192.168.0.1 Removes the entry for 192.168.0.1 from cache.</p>
-<p class='spacer'>
-
-<p>ip tcp_metrics flush 192.168.0.0/24 Removes entries for destinations from subnet</p>
-<p class='spacer'>
-
-<p>ip tcp_metrics flush all Removes all entries from cache</p>
-<p class='spacer'>
-
-<p>ip -6 tcp_metrics flush all Removes all IPv6 entries from cache keeping the IPv4 entries.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p>Original Manpage by Julian Anastasov &lt;ja@ssi.bg&gt;</p>
+<p>ip tcp_metrics show address 192.168.0.0/24</p><p>Shows the entries for destinations from subnet</p><p>ip tcp_metrics show 192.168.0.0/24</p><p>The same but address keyword is optional</p><p>ip tcp_metrics</p><p>Show all is the default action</p><p>ip tcp_metrics delete 192.168.0.1</p><p>Removes the entry for 192.168.0.1 from cache.</p><p>ip tcp_metrics flush 192.168.0.0/24</p><p>Removes entries for destinations from subnet</p><p>ip tcp_metrics flush all</p><p>Removes all entries from cache</p><p>ip -6 tcp_metrics flush all</p><p>Removes all IPv6 entries from cache keeping the IPv4 entries.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO ip-tcp_metrics&hellip;</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
 <p><strong>ip</strong>(8)</p>
-<p class='spacer'>
-
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>Original Manpage by Julian Anastasov &lt;ja@ssi.bg&gt;</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="ip-rule.8.html"><span aria-hidden="true">&larr;</span> ip-rule.8: Routing policy database management</a></li>

@@ -91,12 +91,11 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;lttng/lttng.h&gt;</strong>
+<pre>
+<strong>#include <lttng/lttng.h></strong>
 
-<strong>int lttng_health_check(enum lttng_health_component c);</strong></pre>
-
-<p class='spacer'>
-
+<strong>int</strong> <strong>lttng_health_check(enum</strong> <strong>lttng_health_component</strong> <strong>c);</strong>
+</pre>
 <p>Link with -llttng-ctl.</p>
         </div>
       </section>
@@ -104,80 +103,73 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>lttng_health_check</strong>() is used to check the session daemon health for either a specific component <strong>c</strong> or for all of them. Each component represent a subsystem of the session daemon. Those components are set with health counters that are atomically incremented once reached. An even value indicates progress in the execution of the component. An odd value means that the code has entered a blocking state which is not a <strong>poll</strong>(7) wait period.</p><p>A bad health is defined by a fatal error code path reached or any IPC used in the session daemon that was blocked for more than 20 seconds (default timeout). The condition for this bad health to be detected is that one or many of the counters are odd.</p><p>The health check mechanism of the session daemon can only be reached through the health socket which is a different one from the command and the application socket. An isolated thread serves this socket and only computes the health counters across the code when asked by the lttng control library (using this call). This subsystem is highly unlikely to fail due to its simplicity.</p><p>The <strong>c</strong> argument can be one of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>LTTNG_HEALTH_CMD</strong></p>
+  </dt>
+  <dd>
+    <p>Command subsystem which handles user commands coming from the liblttng-ctl or the <strong>lttng</strong>(1)</strong> command line interface.</p>
+  </dd>
+  <dt>
+    <p><strong>LTTNG_HEALTH_APP_MANAGE</strong></p>
+  </dt>
+  <dd>
+    <p>The session daemon manages application socket in order to route client command and check if they get closed which indicates the application shutdown.</p>
+  </dd>
+  <dt>
+    <p><strong>LTTNG_HEALTH_APP_REG</strong></p>
+  </dt>
+  <dd>
+    <p>The application registration mechanism is an important and vital part of for user space tracing. Upon startup, applications instrumented with <strong>lttng-ust</strong>(3)</strong> try to register to the session daemon through this subsystem.</p>
+  </dd>
+  <dt>
+    <p><strong>LTTNG_HEALTH_KERNEL</strong></p>
+  </dt>
+  <dd>
+    <p>Monitor the Kernel tracer streams and main channel of communication (/proc/lttng). If this component malfunction, the Kernel tracer is not usable anymore by lttng-tools.</p>
+  </dd>
+  <dt>
+    <p><strong>LTTNG_HEALTH_CONSUMER</strong></p>
+  </dt>
+  <dd>
+    <p>The session daemon can spawn up to <strong>three</strong> consumer daemon for kernel, user space 32 and 64 bit. This subsystem monitors the consumer daemon(s). A bad health state means that the consumer(s) are not usable anymore hence likely making tracing not usable.</p>
+  </dd>
+  <dt>
+    <p><strong>LTTNG_HEALTH_ALL</strong></p>
+  </dt>
+  <dd>
+    <p>Check all components. If only one of them is in a bad state, a health check error is returned.</p>
+  </dd>
 
-<p>The <strong>lttng_health_check</strong>() is used to check the session daemon health for either a specific component <strong>c</strong> or for all of them. Each component represent a subsystem of the session daemon. Those components are set with health counters that are atomically incremented once reached. An even value indicates progress in the execution of the component. An odd value means that the code has entered a blocking state which is not a <strong>poll</strong>(7) wait period.</p>
-<p class='spacer'>
+</dl>
 
-<p>A bad health is defined by a fatal error code path reached or any IPC used in the session daemon that was blocked for more than 20 seconds (default timeout). The condition for this bad health to be detected is that one or many of the counters are odd.</p>
-<p class='spacer'>
-
-<p>The health check mechanism of the session daemon can only be reached through the health socket which is a different one from the command and the application socket. An isolated thread serves this socket and only computes the health counters across the code when asked by the lttng control library (using this call). This subsystem is highly unlikely to fail due to its simplicity.</p>
-<p class='spacer'>
-
-  <p>The <strong>c</strong> argument can be one of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>LTTNG_HEALTH_CMD</strong></dt>
-    <dd>
-  <p>Command subsystem which handles user commands coming from the liblttng-ctl or the <strong>lttng</strong>(1)</strong> command line interface.</p>
-    </dd>
-    <dt><strong>LTTNG_HEALTH_APP_MANAGE</strong></dt>
-    <dd>
-  <p>The session daemon manages application socket in order to route client command and check if they get closed which indicates the application shutdown.</p>
-    </dd>
-    <dt><strong>LTTNG_HEALTH_APP_REG</strong></dt>
-    <dd>
-  <p>The application registration mechanism is an important and vital part of for user space tracing. Upon startup, applications instrumented with <strong>lttng-ust</strong>(3)</strong> try to register to the session daemon through this subsystem.</p>
-    </dd>
-    <dt><strong>LTTNG_HEALTH_KERNEL</strong></dt>
-    <dd>
-  <p>Monitor the Kernel tracer streams and main channel of communication (/proc/lttng). If this component malfunction, the Kernel tracer is not usable anymore by lttng-tools.</p>
-    </dd>
-    <dt><strong>LTTNG_HEALTH_CONSUMER</strong></dt>
-    <dd>
-  <p>The session daemon can spawn up to <strong>three</strong> consumer daemon for kernel, user space 32 and 64 bit. This subsystem monitors the consumer daemon(s). A bad health state means that the consumer(s) are not usable anymore hence likely making tracing not usable.</p>
-    </dd>
-    <dt><strong>LTTNG_HEALTH_ALL</strong></dt>
-    <dd>
-  <p>Check all components. If only one of them is in a bad state, a health check error is returned.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>Return 0 if the health is OK, or 1 is it's in a bad state. A return code of -1 indicates that the control library was not able to connect to the session daemon health socket.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">LIMITATIONS</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
 <p>For the LTTNG_HEALTH_CONSUMER, you can not know which consumer daemon has failed but only that either the consumer subsystem has failed or that a lttng-consumerd died.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
-
 <p>lttng-health-check was originally written by David Goulet and is currently maintained by Jérémie Galarneau &lt;jeremie.galarneau@efficios.com&gt;.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="lsetfilecon_raw.3.html"><span aria-hidden="true">&larr;</span> lsetfilecon_raw.3: Set selinux security context of a file .</a></li>
+   <li class="previous"><a href="lsetfilecon_raw.3.html"><span aria-hidden="true">&larr;</span> lsetfilecon_raw.3: Set selinux security context of a file</a></li>
    <li class="next"><a href="lutimes.3.html">lutimes.3: Change file timestamps <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

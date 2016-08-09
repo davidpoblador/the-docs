@@ -91,16 +91,18 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre>#include &lt;asm/dsp56k.h&gt;
+<pre>
+#include &lt;asm/dsp56k.h&gt;
 
-<strong>ssize_t read(int </strong><em>fd</em><strong>, void *</strong><em>data</em><strong>, size_t </strong><em>length</em><strong>);</strong>
-<strong>ssize_t write(int </strong><em>fd</em><strong>, void *</strong><em>data</em><strong>, size_t </strong><em>length</em><strong>);</strong>
+<strong>ssize_t</strong> <strong>read(int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>data</em><strong>,</strong> <strong>size_t</strong> <strong></strong><em>length</em><strong>);</strong>
+<strong>ssize_t</strong> <strong>write(int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>data</em><strong>,</strong> <strong>size_t</strong> <strong></strong><em>length</em><strong>);</strong>
 
-<strong>int ioctl(int </strong><em>fd</em><strong>, DSP56K_UPLOAD, struct dsp56k_upload *</strong><em>program</em><strong>);</strong>
-<strong>int ioctl(int </strong><em>fd</em><strong>, DSP56K_SET_TX_WSIZE, int </strong><em>wsize</em><strong>);</strong>
-<strong>int ioctl(int </strong><em>fd</em><strong>, DSP56K_SET_RX_WSIZE, int </strong><em>wsize</em><strong>);</strong>
-<strong>int ioctl(int </strong><em>fd</em><strong>, DSP56K_HOST_FLAGS, struct dsp56k_host_flags *</strong><em>flags</em><strong>);</strong>
-<strong>int ioctl(int </strong><em>fd</em><strong>, DSP56K_HOST_CMD, int </strong><em>cmd</em><strong>);</strong></pre>
+<strong>int</strong> <strong>ioctl(int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>DSP56K_UPLOAD,</strong> <strong>struct</strong> <strong>dsp56k_upload</strong> <strong>*</strong><em>program</em><strong>);</strong>
+<strong>int</strong> <strong>ioctl(int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>DSP56K_SET_TX_WSIZE,</strong> <strong>int</strong> <strong></strong><em>wsize</em><strong>);</strong>
+<strong>int</strong> <strong>ioctl(int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>DSP56K_SET_RX_WSIZE,</strong> <strong>int</strong> <strong></strong><em>wsize</em><strong>);</strong>
+<strong>int</strong> <strong>ioctl(int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>DSP56K_HOST_FLAGS,</strong> <strong>struct</strong> <strong>dsp56k_host_flags</strong> <strong>*</strong><em>flags</em><strong>);</strong>
+<strong>int</strong> <strong>ioctl(int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>DSP56K_HOST_CMD,</strong> <strong>int</strong> <strong></strong><em>cmd</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -108,7 +110,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFIGURATION</h2>
         <div class="sectioncontent">
-
 <p>The dsp56k device is a character device with major number 55 and minor number 0.</p>
         </div>
       </section>
@@ -116,46 +117,47 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The Motorola DSP56001 is a fully programmable 24-bit digital signal processor found in Atari Falcon030-compatible computers. The <em>dsp56k</em> special file is used to control the DSP56001, and to send and receive data using the bidirectional handshaked host port.</p><p>To send a data stream to the signal processor, use <a href="../man2/write.2.html"><strong>write</strong>(2)</a> to the device, and <a href="../man2/read.2.html"><strong>read</strong>(2)</a> to receive processed data. The data can be sent or received in 8, 16, 24, or 32-bit quantities on the host side, but will always be seen as 24-bit quantities in the DSP56001.</p><p>The following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> calls are used to control the <em>dsp56k</em> device:</p>
+<dl class='dl-vertical'>
+  <dt>
+    \fBDSP56K_UPLOAD\fP
+  </dt>
+  <dd>
+    <p>resets the DSP56001 and uploads a program. The third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument must be a pointer to a <em>struct dsp56k_binary</em> with members <em>bin</em> pointing to a DSP56001 binary program, and <em>len</em> set to the length of the program, counted in 24-bit words.</p>
+  </dd>
+  <dt>
+    \fBDSP56K_SET_TX_WSIZE\fP
+  </dt>
+  <dd>
+    <p>sets the transmit word size. Allowed values are in the range 1 to 4, and is the number of bytes that will be sent at a time to the DSP56001. These data quantities will either be padded with zero bytes, or truncated to fit the native 24-bit data format of the DSP56001.</p>
+  </dd>
+  <dt>
+    \fBDSP56K_SET_RX_WSIZE\fP
+  </dt>
+  <dd>
+    <p>sets the receive word size. Allowed values are in the range 1 to 4, and is the number of bytes that will be received at a time from the DSP56001. These data quantities will either truncated, or padded with a null byte (&apos;nbsp;&apos;) to fit the native 24-bit data format of the DSP56001.</p>
+  </dd>
+  <dt>
+    \fBDSP56K_HOST_FLAGS\fP
+  </dt>
+  <dd>
+    <p>read and write the host flags. The host flags are four general-purpose bits that can be read by both the hosting computer and the DSP56001. Bits 0 and 1 can be written by the host, and bits 2 and 3 can be written by the DSP56001.</p><p>To access the host flags, the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument must be a pointer to a <em>struct dsp56k_host_flags</em>. If bit 0 or 1 is set in the <em>dir</em> member, the corresponding bit in <em>out</em> will be written to the host flags. The state of all host flags will be returned in the lower four bits of the <em>status</em> member.</p>
+  </dd>
+  <dt>
+    \fBDSP56K_HOST_CMD\fP
+  </dt>
+  <dd>
+    <p>sends a host command. Allowed values are in the range 0 to 31, and is a user-defined command handled by the program running in the DSP56001.</p>
+  </dd>
 
-<p>The Motorola DSP56001 is a fully programmable 24-bit digital signal processor found in Atari Falcon030-compatible computers. The <em>dsp56k</em> special file is used to control the DSP56001, and to send and receive data using the bidirectional handshaked host port.</p>
-<p class='spacer'>
+</dl>
 
-<p>To send a data stream to the signal processor, use <a href="../man2/write.2.html"><strong>write</strong>(2)</a> to the device, and <a href="../man2/read.2.html"><strong>read</strong>(2)</a> to receive processed data. The data can be sent or received in 8, 16, 24, or 32-bit quantities on the host side, but will always be seen as 24-bit quantities in the DSP56001.</p>
-<p class='spacer'>
-
-  <p>The following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> calls are used to control the <em>dsp56k</em> device:</p>
-  <dl class='dl-horizontal'>
-    <dt><strong>DSP56K_UPLOAD</strong></dt>
-    <dd>
-  <p>resets the DSP56001 and uploads a program. The third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument must be a pointer to a <em>struct dsp56k_binary</em> with members <em>bin</em> pointing to a DSP56001 binary program, and <em>len</em> set to the length of the program, counted in 24-bit words.</p>
-    </dd>
-    <dt><strong>DSP56K_SET_TX_WSIZE</strong></dt>
-    <dd>
-  <p>sets the transmit word size. Allowed values are in the range 1 to 4, and is the number of bytes that will be sent at a time to the DSP56001. These data quantities will either be padded with zero bytes, or truncated to fit the native 24-bit data format of the DSP56001.</p>
-    </dd>
-    <dt><strong>DSP56K_SET_RX_WSIZE</strong></dt>
-    <dd>
-  <p>sets the receive word size. Allowed values are in the range 1 to 4, and is the number of bytes that will be received at a time from the DSP56001. These data quantities will either truncated, or padded with a null byte (&apos;nbsp;&apos;) to fit the native 24-bit data format of the DSP56001.</p>
-    </dd>
-    <dt><strong>DSP56K_HOST_FLAGS</strong></dt>
-    <dd>
-  <p>read and write the host flags. The host flags are four general-purpose bits that can be read by both the hosting computer and the DSP56001. Bits 0 and 1 can be written by the host, and bits 2 and 3 can be written by the DSP56001.</p>
-<p class='spacer'>
-
-  <p>To access the host flags, the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument must be a pointer to a <em>struct dsp56k_host_flags</em>. If bit 0 or 1 is set in the <em>dir</em> member, the corresponding bit in <em>out</em> will be written to the host flags. The state of all host flags will be returned in the lower four bits of the <em>status</em> member.</p>
-    </dd>
-    <dt><strong>DSP56K_HOST_CMD</strong></dt>
-    <dd>
-  <p>sends a host command. Allowed values are in the range 0 to 31, and is a user-defined command handled by the program running in the DSP56001.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
-
 <p>/dev/dsp56k</p>
         </div>
       </section>
@@ -163,11 +165,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO dsp56k&hellip;</h2>
         <div class="sectioncontent">
-
-<p><em>linux/include/asm-m68k/dsp56k.h</em>, <em>linux/drivers/char/dsp56k.c</em>, <a href="http://dsp56k.nocrew.org/">http://dsp56k.nocrew.org/</a> DSP56000/DSP56001 Digital Signal Processor User's Manual</p>
+<p><em>linux/include/asm-m68k/dsp56k.h</em>, <em>linux/drivers/char/dsp56k.c</em>,</p><p>DSP56000/DSP56001 Digital Signal Processor User's Manual</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="cpuid.4.html"><span aria-hidden="true">&larr;</span> cpuid.4: X86 cpuid access device</a></li>

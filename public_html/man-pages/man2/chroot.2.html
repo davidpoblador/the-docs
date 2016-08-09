@@ -90,53 +90,34 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;unistd.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>int chroot(const char *</strong><em>path</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-    <p><strong>chroot</strong>():</p>
-    <dl class='dl-vertical'>
-      <dt>Since glibc 2.2.2:</dt>
-      <dd>
-<pre>_XOPEN_SOURCE && ! (_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L)
+<p><strong>#include <unistd.h></strong></p><p><strong>int</strong> <strong>chroot(const</strong> <strong>char</strong> <strong>*</strong><em>path</em><strong>);</strong></p><p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>chroot</strong>():</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>Since glibc 2.2.2:</p>
+  </dt>
+  <dd>
+    
+<pre>
+_XOPEN_SOURCE && ! (_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L)
     || /* Since glibc 2.20: */ _DEFAULT_SOURCE
-    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE</pre>
+    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE
+</pre>
+<p>Before glibc 2.2.2: none</p>
+  </dd>
 
-      <dt>Before glibc 2.2.2: none</dt>
-      <dd>
-      </dd>
-    </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>chroot</strong>() changes the root directory of the calling process to that specified in <em>path</em>. This directory will be used for pathnames beginning with <em>/</em>. The root directory is inherited by all children of the calling process.</p>
-<p class='spacer'>
-
-<p>Only a privileged process (Linux: one with the <strong>CAP_SYS_CHROOT</strong> capability) may call <strong>chroot</strong>().</p>
-<p class='spacer'>
-
-<p>This call changes an ingredient in the pathname resolution process and does nothing else. In particular, it is not intended to be used for any kind of security purpose, neither to fully sandbox a process nor to restrict filesystem system calls. In the past, <strong>chroot</strong>() has been used by daemons to restrict themselves prior to passing paths supplied by untrusted users to system calls such as <a href="../man2/open.2.html"><strong>open</strong>(2)</a>. However, if a folder is moved out of the chroot directory, an attacker can exploit that to get out of the chroot directory as well. The easiest way to do that is to <a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a> to the to-be-moved directory, wait for it to be moved out, then open a path like ../../../etc/passwd.</p>
-<p class='spacer'>
-
-<p>A slightly trickier variation also works under some circumstances if <a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a> is not permitted. If a daemon allows a "chroot directory" to be specified, that usually means that if you want to prevent remote users from accessing files outside the chroot directory, you must ensure that folders are never moved out of it.</p>
-<p class='spacer'>
-
-  <p>This call does not change the current working directory, so that after the call &apos;<em>.</em>&apos; can be outside the tree rooted at &apos;<em>/</em>&apos;. In particular, the superuser can escape from a "chroot jail" by doing:</p>
+<p><strong>chroot</strong>() changes the root directory of the calling process to that specified in <em>path</em>. This directory will be used for pathnames beginning with <em>/</em>. The root directory is inherited by all children of the calling process.</p><p>Only a privileged process (Linux: one with the <strong>CAP_SYS_CHROOT</strong> capability) may call <strong>chroot</strong>().</p><p>This call changes an ingredient in the pathname resolution process and does nothing else. In particular, it is not intended to be used for any kind of security purpose, neither to fully sandbox a process nor to restrict filesystem system calls. In the past, <strong>chroot</strong>() has been used by daemons to restrict themselves prior to passing paths supplied by untrusted users to system calls such as <a href="../man2/open.2.html"><strong>open</strong>(2)</a>. However, if a folder is moved out of the chroot directory, an attacker can exploit that to get out of the chroot directory as well. The easiest way to do that is to <a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a> to the to-be-moved directory, wait for it to be moved out, then open a path like ../../../etc/passwd.</p><p>A slightly trickier variation also works under some circumstances if <a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a> is not permitted. If a daemon allows a "chroot directory" to be specified, that usually means that if you want to prevent remote users from accessing files outside the chroot directory, you must ensure that folders are never moved out of it.</p><p>This call does not change the current working directory, so that after the call &apos;<em>.</em>&apos; can be outside the tree rooted at &apos;<em>/</em>&apos;. In particular, the superuser can escape from a "chroot jail" by doing:</p>
 <pre>
-    mkdir foo; chroot foo; cd ..</pre>
 
-<p class='spacer'>
-
+    mkdir foo; chroot foo; cd ..
+</pre>
 <p>This call does not close open file descriptors, and such file descriptors may allow access to files outside the chroot tree.</p>
         </div>
       </section>
@@ -144,7 +125,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -152,53 +132,71 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>Depending on the filesystem, other errors can be returned. The more general errors are listed below:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>Search permission is denied on a component of the path prefix. (See also <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
+  </dd>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p><em>path</em> points outside your accessible address space.</p>
+  </dd>
+  <dt>
+    <p><strong>EIO</strong></p>
+  </dt>
+  <dd>
+    <p>An I/O error occurred.</p>
+  </dd>
+  <dt>
+    <p><strong>ELOOP</strong></p>
+  </dt>
+  <dd>
+    <p>Too many symbolic links were encountered in resolving <em>path</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENAMETOOLONG</strong></p>
+  </dt>
+  <dd>
+    <p><em>path</em> is too long.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOENT</strong></p>
+  </dt>
+  <dd>
+    <p>The file does not exist.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Insufficient kernel memory was available.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTDIR</strong></p>
+  </dt>
+  <dd>
+    <p>A component of <em>path</em> is not a directory.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>The caller has insufficient privilege.</p>
+  </dd>
 
-  <p>Depending on the filesystem, other errors can be returned. The more general errors are listed below:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EACCES</strong></dt>
-    <dd>
-  <p>Search permission is denied on a component of the path prefix. (See also <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
-    </dd>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p><em>path</em> points outside your accessible address space.</p>
-    </dd>
-    <dt><strong>EIO</strong></dt>
-    <dd>
-  <p>An I/O error occurred.</p>
-    </dd>
-    <dt><strong>ELOOP</strong></dt>
-    <dd>
-  <p>Too many symbolic links were encountered in resolving <em>path</em>.</p>
-    </dd>
-    <dt><strong>ENAMETOOLONG</strong></dt>
-    <dd>
-  <p><em>path</em> is too long.</p>
-    </dd>
-    <dt><strong>ENOENT</strong></dt>
-    <dd>
-  <p>The file does not exist.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Insufficient kernel memory was available.</p>
-    </dd>
-    <dt><strong>ENOTDIR</strong></dt>
-    <dd>
-  <p>A component of <em>path</em> is not a directory.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>The caller has insufficient privilege.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>SVr4, 4.4BSD, SUSv2 (marked LEGACY). This function is not part of POSIX.1-2001.</p>
         </div>
       </section>
@@ -206,22 +204,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>A child process created via <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> inherits its parent's root directory. The root directory is left unchanged by <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>FreeBSD has a stronger <strong>jail</strong>() system call.</p>
+<p>A child process created via <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> inherits its parent's root directory. The root directory is left unchanged by <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p><p>FreeBSD has a stronger <strong>jail</strong>() system call.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO chroot&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a>, <a href="../man2/pivot_root.2.html"><strong>pivot_root</strong>(2)</a>, <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="chown32.2.html"><span aria-hidden="true">&larr;</span> chown32.2: Change ownership of a file</a></li>

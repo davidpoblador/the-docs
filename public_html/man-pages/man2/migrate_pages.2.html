@@ -91,14 +91,13 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;numaif.h&gt;</strong>
+<pre>
+<strong>#include <numaif.h></strong>
 
-<strong>long migrate_pages(int </strong><em>pid</em><strong>, unsigned long </strong><em>maxnode,</em>
-<strong>                   const unsigned long *</strong><em>old_nodes,</em>
-<strong>                   const unsigned long *</strong><em>new_nodes</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
+<strong>long</strong> <strong>migrate_pages(int</strong> <strong></strong><em>pid</em><strong>,</strong> <strong>unsigned</strong> <strong>long</strong> <strong></strong><em>maxnode,</em>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>const</strong> <strong>unsigned</strong> <strong>long</strong> <strong>*</strong><em>old_nodes,</em>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>const</strong> <strong>unsigned</strong> <strong>long</strong> <strong>*</strong><em>new_nodes</em><strong>);</strong>
+</pre>
 <p>Link with <em>-lnuma</em>.</p>
         </div>
       </section>
@@ -106,24 +105,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>migrate_pages</strong>() attempts to move all pages of the process <em>pid</em> that are in memory nodes <em>old_nodes</em> to the memory nodes in <em>new_nodes</em>. Pages not located in any node in <em>old_nodes</em> will not be migrated. As far as possible, the kernel maintains the relative topology relationship inside <em>old_nodes</em> during the migration to <em>new_nodes</em>.</p>
-<p class='spacer'>
-
-<p>The <em>old_nodes</em> and <em>new_nodes</em> arguments are pointers to bit masks of node numbers, with up to <em>maxnode</em> bits in each mask. These masks are maintained as arrays of unsigned <em>long</em> integers (in the last <em>long</em> integer, the bits beyond those specified by <em>maxnode</em> are ignored). The <em>maxnode</em> argument is the maximum node number in the bit mask plus one (this is the same as in <a href="../man2/mbind.2.html"><strong>mbind</strong>(2)</a>, but different from <a href="../man2/select.2.html"><strong>select</strong>(2)</a>).</p>
-<p class='spacer'>
-
-<p>The <em>pid</em> argument is the ID of the process whose pages are to be moved. To move pages in another process, the caller must be privileged (<strong>CAP_SYS_NICE</strong>) or the real or effective user ID of the calling process must match the real or saved-set user ID of the target process. If <em>pid</em> is 0, then <strong>migrate_pages</strong>() moves pages of the calling process.</p>
-<p class='spacer'>
-
-<p>Pages shared with another process will be moved only if the initiating process has the <strong>CAP_SYS_NICE</strong> privilege.</p>
+<p><strong>migrate_pages</strong>() attempts to move all pages of the process <em>pid</em> that are in memory nodes <em>old_nodes</em> to the memory nodes in <em>new_nodes</em>. Pages not located in any node in <em>old_nodes</em> will not be migrated. As far as possible, the kernel maintains the relative topology relationship inside <em>old_nodes</em> during the migration to <em>new_nodes</em>.</p><p>The <em>old_nodes</em> and <em>new_nodes</em> arguments are pointers to bit masks of node numbers, with up to <em>maxnode</em> bits in each mask. These masks are maintained as arrays of unsigned <em>long</em> integers (in the last <em>long</em> integer, the bits beyond those specified by <em>maxnode</em> are ignored). The <em>maxnode</em> argument is the maximum node number in the bit mask plus one (this is the same as in <a href="../man2/mbind.2.html"><strong>mbind</strong>(2)</a>, but different from <a href="../man2/select.2.html"><strong>select</strong>(2)</a>).</p><p>The <em>pid</em> argument is the ID of the process whose pages are to be moved. To move pages in another process, the caller must be privileged (<strong>CAP_SYS_NICE</strong>) or the real or effective user ID of the calling process must match the real or saved-set user ID of the target process. If <em>pid</em> is 0, then <strong>migrate_pages</strong>() moves pages of the calling process.</p><p>Pages shared with another process will be moved only if the initiating process has the <strong>CAP_SYS_NICE</strong> privilege.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success <strong>migrate_pages</strong>() returns the number of pages that could not be moved (i.e., a return of zero means that all pages were successfully moved). On error, it returns -1, and sets <em>errno</em> to indicate the error.</p>
         </div>
       </section>
@@ -132,31 +120,40 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p>Part or all of the memory range specified by <em>old_nodes</em>/<em>new_nodes</em> and <em>maxnode</em> points outside your accessible address space.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The value specified by <em>maxnode</em> exceeds a kernel-imposed limit. Or, <em>old_nodes</em> or <em>new_nodes</em> specifies one or more node IDs that are greater than the maximum supported node ID. Or, none of the node IDs specified by <em>new_nodes</em> are on-line and allowed by the process's current cpuset context, or none of the specified nodes contain memory.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>Insufficient privilege (<strong>CAP_SYS_NICE</strong>) to move pages of the process specified by <em>pid</em>, or insufficient privilege (<strong>CAP_SYS_NICE</strong>) to access the specified target nodes.</p>
-    </dd>
-    <dt><strong>ESRCH</strong></dt>
-    <dd>
-  <p>No process matching <em>pid</em> could be found.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p>Part or all of the memory range specified by <em>old_nodes</em>/<em>new_nodes</em> and <em>maxnode</em> points outside your accessible address space.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The value specified by <em>maxnode</em> exceeds a kernel-imposed limit. Or, <em>old_nodes</em> or <em>new_nodes</em> specifies one or more node IDs that are greater than the maximum supported node ID. Or, none of the node IDs specified by <em>new_nodes</em> are on-line and allowed by the process's current cpuset context, or none of the specified nodes contain memory.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>Insufficient privilege (<strong>CAP_SYS_NICE</strong>) to move pages of the process specified by <em>pid</em>, or insufficient privilege (<strong>CAP_SYS_NICE</strong>) to access the specified target nodes.</p>
+  </dd>
+  <dt>
+    <p><strong>ESRCH</strong></p>
+  </dt>
+  <dd>
+    <p>No process matching <em>pid</em> could be found.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>migrate_pages</strong>() system call first appeared on Linux in version 2.6.16.</p>
         </div>
       </section>
@@ -164,7 +161,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>This system call is Linux-specific.</p>
         </div>
       </section>
@@ -172,31 +168,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>For information on library support, see <a href="../man7/numa.7.html"><strong>numa</strong>(7)</a>.</p>
-<p class='spacer'>
-
-<p>Use <a href="../man2/get_mempolicy.2.html"><strong>get_mempolicy</strong>(2)</a> with the <strong>MPOL_F_MEMS_ALLOWED</strong> flag to obtain the set of nodes that are allowed by the calling process's cpuset. Note that this information is subject to change at any time by manual or automatic reconfiguration of the cpuset.</p>
-<p class='spacer'>
-
-<p>Use of <strong>migrate_pages</strong>() may result in pages whose location (node) violates the memory policy established for the specified addresses (see <a href="../man2/mbind.2.html"><strong>mbind</strong>(2)</a>) and/or the specified process (see <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>). That is, memory policy does not constrain the destination nodes used by <strong>migrate_pages</strong>().</p>
-<p class='spacer'>
-
-<p>The <em>&lt;numaif.h&gt;</em> header is not included with glibc, but requires installing <em>libnuma-devel</em> or a similar package.</p>
+<p>For information on library support, see <a href="../man7/numa.7.html"><strong>numa</strong>(7)</a>.</p><p>Use <a href="../man2/get_mempolicy.2.html"><strong>get_mempolicy</strong>(2)</a> with the <strong>MPOL_F_MEMS_ALLOWED</strong> flag to obtain the set of nodes that are allowed by the calling process's cpuset. Note that this information is subject to change at any time by manual or automatic reconfiguration of the cpuset.</p><p>Use of <strong>migrate_pages</strong>() may result in pages whose location (node) violates the memory policy established for the specified addresses (see <a href="../man2/mbind.2.html"><strong>mbind</strong>(2)</a>) and/or the specified process (see <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>). That is, memory policy does not constrain the destination nodes used by <strong>migrate_pages</strong>().</p><p>The <em><numaif.h></em> header is not included with glibc, but requires installing <em>libnuma-devel</em> or a similar package.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO migrate_pages&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man2/get_mempolicy.2.html"><strong>get_mempolicy</strong>(2)</a>, <a href="../man2/mbind.2.html"><strong>mbind</strong>(2)</a>, <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>, <strong>numa</strong>(3), <a href="../man5/numa_maps.5.html"><strong>numa_maps</strong>(5)</a>, <a href="../man7/cpuset.7.html"><strong>cpuset</strong>(7)</a>, <a href="../man7/numa.7.html"><strong>numa</strong>(7)</a>, <strong>migratepages</strong>(8), <strong>numastat</strong>(8)</p>
-<p class='spacer'>
-
-<p><em>Documentation/vm/page_migration</em> in the Linux kernel source tree</p>
+<p><a href="../man2/get_mempolicy.2.html"><strong>get_mempolicy</strong>(2)</a>, <a href="../man2/mbind.2.html"><strong>mbind</strong>(2)</a>, <a href="../man2/set_mempolicy.2.html"><strong>set_mempolicy</strong>(2)</a>, <strong>numa</strong>(3), <a href="../man5/numa_maps.5.html"><strong>numa_maps</strong>(5)</a>, <a href="../man7/cpuset.7.html"><strong>cpuset</strong>(7)</a>, <a href="../man7/numa.7.html"><strong>numa</strong>(7)</a>, <strong>migratepages</strong>(8), <strong>numastat</strong>(8)</p><p><em>Documentation/vm/page_migration</em> in the Linux kernel source tree</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="memfd_create.2.html"><span aria-hidden="true">&larr;</span> memfd_create.2: Create an anonymous file</a></li>

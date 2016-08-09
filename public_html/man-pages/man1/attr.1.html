@@ -91,13 +91,15 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre>\f3attr\f1 [ \f3-LRSq\f1 ] \f3-s attrname\f1 [ \f3-V attrvalue\f1 ]  \f3pathname\f1
+<pre>
+\f3attr\f1 [ \f3-LRSq\f1 ] \f3-s attrname\f1 [ \f3-V attrvalue\f1 ]  \f3pathname\f1
 
 \f3attr\f1 [ \f3-LRSq\f1 ] \f3-g attrname pathname\f1
 
 \f3attr\f1 [ \f3-LRSq\f1 ] \f3-r attrname pathname\f1
 
 \f3attr\f1 [ \f3-LRSq\f1 ] \f3-l pathname\f1
+
 </pre>
 
         </div>
@@ -106,79 +108,55 @@
       <section>
         <h2 class="font-effect-shadow-multiple">OVERVIEW</h2>
         <div class="sectioncontent">
-
-<p>Extended attributes implement the ability for a user to attach name:value pairs to objects within the XFS filesystem.</p>
-<p class='spacer'>
-
-<p>This document describes the <em>attr</em> command, which is mostly compatible with the IRIX command of the same name. It is thus aimed specifically at users of the XFS filesystem - for filesystem independent extended attribute manipulation, consult the <a href="../man1/getfattr.1.html"><strong>getfattr</strong>(1)</a> and <a href="../man1/setfattr.1.html"><strong>setfattr</strong>(1)</a> documentation.</p>
-<p class='spacer'>
-
-<p>Extended attributes can be used to store meta-information about the file. For example "character-set=kanji" could tell a document browser to use the Kanji character set when displaying that document and "thumbnail=..." could provide a reduced resolution overview of a high resolution graphic image.</p>
-<p class='spacer'>
-
-<p>In the XFS filesystem, the <em>names</em> can be up to 256 bytes in length, terminated by the first 0 byte. The intent is that they be printable ASCII (or other character set) names for the attribute. The <em>values</em> can be up to 64KB of arbitrary binary data.</p>
-<p class='spacer'>
-
-<p>Attributes can be attached to all types of XFS inodes: regular files, directories, symbolic links, device nodes, etc.</p>
-<p class='spacer'>
-
-<p>XFS uses 2 disjoint attribute name spaces associated with every filesystem object. They are the <strong>root</strong> and <strong>user</strong> address spaces. The <strong>root</strong> address space is accessible only to the superuser, and then only by specifying a flag argument to the function call. Other users will not see or be able to modify attributes in the <strong>root</strong> address space. The <strong>user</strong> address space is protected by the normal file permissions mechanism, so the owner of the file can decide who is able to see and/or modify the value of attributes on any particular file.</p>
+<p>Extended attributes implement the ability for a user to attach name:value pairs to objects within the XFS filesystem.</p><p>This document describes the <em>attr</em> command, which is mostly compatible with the IRIX command of the same name. It is thus aimed specifically at users of the XFS filesystem - for filesystem independent extended attribute manipulation, consult the <a href="../man1/getfattr.1.html"><strong>getfattr</strong>(1)</a> and <a href="../man1/setfattr.1.html"><strong>setfattr</strong>(1)</a> documentation.</p><p>Extended attributes can be used to store meta-information about the file. For example "character-set=kanji" could tell a document browser to use the Kanji character set when displaying that document and "thumbnail=..." could provide a reduced resolution overview of a high resolution graphic image.</p><p>In the XFS filesystem, the <em>names</em> can be up to 256 bytes in length, terminated by the first 0 byte. The intent is that they be printable ASCII (or other character set) names for the attribute. The <em>values</em> can be up to 64KB of arbitrary binary data.</p><p>Attributes can be attached to all types of XFS inodes: regular files, directories, symbolic links, device nodes, etc.</p><p>XFS uses 2 disjoint attribute name spaces associated with every filesystem object. They are the <strong>root</strong> and <strong>user</strong> address spaces. The <strong>root</strong> address space is accessible only to the superuser, and then only by specifying a flag argument to the function call. Other users will not see or be able to modify attributes in the <strong>root</strong> address space. The <strong>user</strong> address space is protected by the normal file permissions mechanism, so the owner of the file can decide who is able to see and/or modify the value of attributes on any particular file.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <em>attr</em> utility allows the manipulation of extended attributes associated with filesystem objects from within shell scripts.</p><p>There are four main operations that <em>attr</em> can perform:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>GET</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>-g attrname</strong> option tells <em>attr</em> to search the named object and print (to \f4stdout) the value associated with that attribute name. With the <strong>-q</strong> flag, \f4stdout will be exactly and only the value of the attribute, suitable for storage directly into a file or processing via a piped command.</p>
+  </dd>
+  <dt>
+    <p><strong>LIST</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>-l</strong> option tells <em>attr</em> to list the names of all the attributes that are associated with the object, and the number of bytes in the value of each of those attributes. With the <strong>-q</strong> flag, \f4stdout will be a simple list of only the attribute names, one per line, suitable for input into a script.</p>
+  </dd>
+  <dt>
+    <p><strong>REMOVE</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>-r attrname</strong> option tells <em>attr</em> to remove an attribute with the given name from the object if the attribute exists. There is no output on successful completion.</p>
+  </dd>
+  <dt>
+    <p><strong>SET/CREATE</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>-s attrname</strong> option tells <em>attr</em> to set the named attribute of the object to the value read from \f4stdin. If an attribute with that name already exists, its value will be replaced with this one. If an attribute with that name does not already exist, one will be created with this value. With the <strong>-V attrvalue</strong> flag, the attribute will be set to have a value of <strong>attrvalue</strong> and \f4stdin will not be read. With the <strong>-q</strong> flag, \f4stdout will not be used. Without the <strong>-q</strong> flag, a message showing the attribute name and the entire value will be printed.</p>
+  </dd>
 
-<p>The <em>attr</em> utility allows the manipulation of extended attributes associated with filesystem objects from within shell scripts.</p>
-<p class='spacer'>
-
-  <p>There are four main operations that <em>attr</em> can perform:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>GET</strong></dt>
-    <dd>
-  <p>The <strong>-g attrname</strong> option tells <em>attr</em> to search the named object and print (to \f4stdout) the value associated with that attribute name. With the <strong>-q</strong> flag, \f4stdout will be exactly and only the value of the attribute, suitable for storage directly into a file or processing via a piped command.</p>
-    </dd>
-    <dt><strong>LIST</strong></dt>
-    <dd>
-  <p>The <strong>-l</strong> option tells <em>attr</em> to list the names of all the attributes that are associated with the object, and the number of bytes in the value of each of those attributes. With the <strong>-q</strong> flag, \f4stdout will be a simple list of only the attribute names, one per line, suitable for input into a script.</p>
-    </dd>
-    <dt><strong>REMOVE</strong></dt>
-    <dd>
-  <p>The <strong>-r attrname</strong> option tells <em>attr</em> to remove an attribute with the given name from the object if the attribute exists. There is no output on successful completion.</p>
-    </dd>
-    <dt><strong>SET/CREATE</strong></dt>
-    <dd>
-  <p>The <strong>-s attrname</strong> option tells <em>attr</em> to set the named attribute of the object to the value read from \f4stdin. If an attribute with that name already exists, its value will be replaced with this one. If an attribute with that name does not already exist, one will be created with this value. With the <strong>-V attrvalue</strong> flag, the attribute will be set to have a value of <strong>attrvalue</strong> and \f4stdin will not be read. With the <strong>-q</strong> flag, \f4stdout will not be used. Without the <strong>-q</strong> flag, a message showing the attribute name and the entire value will be printed.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>When the <strong>-L</strong> option is given and the named object is a symbolic link, operate on the attributes of the object referenced by the symbolic link. Without this option, operate on the attributes of the symbolic link itself.</p>
-<p class='spacer'>
-
-<p>When the <strong>-R</strong> option is given and the process has appropriate privileges, operate in the <em>root</em> attribute namespace rather that the <em>USER</em> attribute namespace.</p>
-<p class='spacer'>
-
-<p>The <strong>-S</strong> option is similar, except it specifies use of the <em>security</em> attribute namespace.</p>
-<p class='spacer'>
-
-<p>When the <strong>-q</strong> option is given <em>attr</em> will try to keep quiet. It will output error messages (to \f4stderr) but will not print status messages (to \f4stdout).</p>
+</dl>
+<p>When the <strong>-L</strong> option is given and the named object is a symbolic link, operate on the attributes of the object referenced by the symbolic link. Without this option, operate on the attributes of the symbolic link itself.</p><p>When the <strong>-R</strong> option is given and the process has appropriate privileges, operate in the <em>root</em> attribute namespace rather that the <em>USER</em> attribute namespace.</p><p>The <strong>-S</strong> option is similar, except it specifies use of the <em>security</em> attribute namespace.</p><p>When the <strong>-q</strong> option is given <em>attr</em> will try to keep quiet. It will output error messages (to \f4stderr) but will not print status messages (to \f4stdout).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>The standard file interchange/archive programs <strong>tar</strong>(1), and <strong>cpio</strong>(1) will not archive or restore extended attributes, while the <strong>xfsdump</strong>(8) program will.</p>
+<p>The standard file interchange/archive programs <a href="../man1/tar.1.html"><strong>tar</strong>(1)</a>, and <strong>cpio</strong>(1) will not archive or restore extended attributes, while the <a href="../man8/xfsdump.8.html"><strong>xfsdump</strong>(8)</a> program will.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CAVEATS</h2>
         <div class="sectioncontent">
-
 <p>The list option present in the IRIX version of this command is not supported. <em>getfattr</em> provides a mechanism to retrieve all of the attribute names.</p>
         </div>
       </section>
@@ -186,15 +164,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO attr&hellip;</h2>
         <div class="sectioncontent">
-
-<a href="../man1/getfattr.1.html"><strong>getfattr</strong>(1)</a>, <a href="../man1/setfattr.1.html"><strong>setfattr</strong>(1)</a>, <strong>attr_get</strong>(3), <strong>attr_set</strong>(3), <strong>attr_multi</strong>(3), <strong>attr_remove</strong>(3), <a href="../man5/attr.5.html"><strong>attr</strong>(5)</a>, and <strong>xfsdump</strong>(8).</p>
+<a href="../man1/getfattr.1.html"><strong>getfattr</strong>(1)</a>, <a href="../man1/setfattr.1.html"><strong>setfattr</strong>(1)</a>, <a href="../man3/attr_get.3.html"><strong>attr_get</strong>(3)</a>, <a href="../man3/attr_set.3.html"><strong>attr_set</strong>(3)</a>, <a href="../man3/attr_multi.3.html"><strong>attr_multi</strong>(3)</a>, <a href="../man3/attr_remove.3.html"><strong>attr_remove</strong>(3)</a>, <a href="../man5/attr.5.html"><strong>attr</strong>(5)</a>, and <a href="../man8/xfsdump.8.html"><strong>xfsdump</strong>(8)</a>.</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="aria_read_log.1.html"><span aria-hidden="true">&larr;</span> aria_read_log.1: Display aria log file contents</a></li>
-   <li class="next"><a href="audit2allow.1.html">audit2allow.1: Generate selinux policy allow/dontaudit rules from logs of denied operations audit2why - translates selinux audit messages into a description of why the access was denied (audit2allow -w) <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="audit2allow.1.html">audit2allow.1: Generate selinux policy allow/dontaudit rules from logs of denied operations  audit2why - translates selinux audit messages into a description of why the access was denied (audit2allow -w) <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

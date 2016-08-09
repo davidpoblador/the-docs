@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>vtimes: Get resource usage</title>
+  <title>getrusage: Get resource usage</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -30,7 +30,7 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">vtimes<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">getrusage<small> (2)</small></h1>
         <p class="lead">Get resource usage</p>
       </div>
 
@@ -48,14 +48,14 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/">
-      <span itemprop="name">Library calls</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man2/">
+      <span itemprop="name">System calls</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/vtimes.3.html">
-      <span itemprop="name">vtimes: Get resource usage</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man2/getrusage.2.html">
+      <span itemprop="name">getrusage: Get resource usage</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -80,8 +80,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/vtimes.3.html">
-      <span itemprop="name">vtimes: Get resource usage</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man2/getrusage.2.html">
+      <span itemprop="name">getrusage: Get resource usage</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -90,44 +90,38 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;sys/time.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>#include &lt;sys/resource.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>int getrusage(int </strong><em>who</em><strong>, struct rusage *</strong><em>usage</em><strong>);</strong></p>
+<p><strong>#include <sys/time.h></strong></p><p><strong>#include <sys/resource.h></strong></p><p><strong>int</strong> <strong>getrusage(int</strong> <strong></strong><em>who</em><strong>,</strong> <strong>struct</strong> <strong>rusage</strong> <strong>*</strong><em>usage</em><strong>);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>getrusage</strong>() returns resource usage measures for <em>who</em>, which can be one of the following:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>RUSAGE_SELF</strong></p>
+  </dt>
+  <dd>
+    <p>Return resource usage statistics for the calling process, which is the sum of resources used by all threads in the process.</p>
+  </dd>
+  <dt>
+    <p><strong>RUSAGE_CHILDREN</strong></p>
+  </dt>
+  <dd>
+    <p>Return resource usage statistics for all children of the calling process that have terminated and been waited for. These statistics will include the resources used by grandchildren, and further removed descendants, if all of the intervening descendants waited on their terminated children.</p>
+  </dd>
+  <dt>
+    <p><strong>RUSAGE_THREAD</strong> (since Linux 2.6.26)</p>
+  </dt>
+  <dd>
+    <p>Return resource usage statistics for the calling thread. The <strong>_GNU_SOURCE</strong> feature test macro must be defined (before including <em>any</em> header file) in order to obtain the definition of this constant from <em><sys/resource.h></em>.</p>
+  </dd>
 
-<p class='spacer'>
-
-  <p><strong>getrusage</strong>() returns resource usage measures for <em>who</em>, which can be one of the following:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>RUSAGE_SELF</strong></dt>
-    <dd>
-  <p>Return resource usage statistics for the calling process, which is the sum of resources used by all threads in the process.</p>
-    </dd>
-    <dt><strong>RUSAGE_CHILDREN</strong></dt>
-    <dd>
-  <p>Return resource usage statistics for all children of the calling process that have terminated and been waited for. These statistics will include the resources used by grandchildren, and further removed descendants, if all of the intervening descendants waited on their terminated children.</p>
-    </dd>
-    <dt><strong>RUSAGE_THREAD</strong> (since Linux 2.6.26)</dt>
-    <dd>
-  <p>Return resource usage statistics for the calling thread. The <strong>_GNU_SOURCE</strong> feature test macro must be defined (before including <em>any</em> header file) in order to obtain the definition of this constant from <em>&lt;sys/resource.h&gt;</em>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The resource usages are returned in the structure pointed to by <em>usage</em>, which has the following form:</p>
-<p class='spacer'>
-
-<pre>struct rusage {
+<pre>
+struct rusage {
     struct timeval ru_utime; /* user CPU time used */
     struct timeval ru_stime; /* system CPU time used */
     long   ru_maxrss;        /* maximum resident set size */
@@ -144,78 +138,108 @@
     long   ru_nsignals;      /* signals received */
     long   ru_nvcsw;         /* voluntary context switches */
     long   ru_nivcsw;        /* involuntary context switches */
-};</pre>
+};
+</pre>
+<p>Not all fields are completed; unmaintained fields are set to zero by the kernel. (The unmaintained fields are provided for compatibility with other systems, and because they may one day be supported on Linux.) The fields are interpreted as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><em>ru_utime</em></p>
+  </dt>
+  <dd>
+    <p>This is the total amount of time spent executing in user mode, expressed in a <em>timeval</em> structure (seconds plus microseconds).</p>
+  </dd>
+  <dt>
+    <p><em>ru_stime</em></p>
+  </dt>
+  <dd>
+    <p>This is the total amount of time spent executing in kernel mode, expressed in a <em>timeval</em> structure (seconds plus microseconds).</p>
+  </dd>
+  <dt>
+    <p><em>ru_maxrss</em> (since Linux 2.6.32)</p>
+  </dt>
+  <dd>
+    <p>This is the maximum resident set size used (in kilobytes). For <strong>RUSAGE_CHILDREN</strong>, this is the resident set size of the largest child, not the maximum resident set size of the process tree.</p>
+  </dd>
+  <dt>
+    <p><em>ru_ixrss</em> (unmaintained)</p>
+  </dt>
+  <dd>
+    <p>This field is currently unused on Linux.</p>
+  </dd>
+  <dt>
+    <p><em>ru_idrss</em> (unmaintained)</p>
+  </dt>
+  <dd>
+    <p>This field is currently unused on Linux.</p>
+  </dd>
+  <dt>
+    <p><em>ru_isrss</em> (unmaintained)</p>
+  </dt>
+  <dd>
+    <p>This field is currently unused on Linux.</p>
+  </dd>
+  <dt>
+    <p><em>ru_minflt</em></p>
+  </dt>
+  <dd>
+    <p>The number of page faults serviced without any I/O activity; here I/O activity is avoided by &ldquo;reclaiming&rdquo; a page frame from the list of pages awaiting reallocation.</p>
+  </dd>
+  <dt>
+    <p><em>ru_majflt</em></p>
+  </dt>
+  <dd>
+    <p>The number of page faults serviced that required I/O activity.</p>
+  </dd>
+  <dt>
+    <p><em>ru_nswap</em> (unmaintained)</p>
+  </dt>
+  <dd>
+    <p>This field is currently unused on Linux.</p>
+  </dd>
+  <dt>
+    <p><em>ru_inblock</em> (since Linux 2.6.22)</p>
+  </dt>
+  <dd>
+    <p>The number of times the filesystem had to perform input.</p>
+  </dd>
+  <dt>
+    <p><em>ru_oublock</em> (since Linux 2.6.22)</p>
+  </dt>
+  <dd>
+    <p>The number of times the filesystem had to perform output.</p>
+  </dd>
+  <dt>
+    <p><em>ru_msgsnd</em> (unmaintained)</p>
+  </dt>
+  <dd>
+    <p>This field is currently unused on Linux.</p>
+  </dd>
+  <dt>
+    <p><em>ru_msgrcv</em> (unmaintained)</p>
+  </dt>
+  <dd>
+    <p>This field is currently unused on Linux.</p>
+  </dd>
+  <dt>
+    <p><em>ru_nsignals</em> (unmaintained)</p>
+  </dt>
+  <dd>
+    <p>This field is currently unused on Linux.</p>
+  </dd>
+  <dt>
+    <p><em>ru_nvcsw</em> (since Linux 2.6)</p>
+  </dt>
+  <dd>
+    <p>The number of times a context switch resulted due to a process voluntarily giving up the processor before its time slice was completed (usually to await availability of a resource).</p>
+  </dd>
+  <dt>
+    <p><em>ru_nivcsw</em> (since Linux 2.6)</p>
+  </dt>
+  <dd>
+    <p>The number of times a context switch resulted due to a higher priority process becoming runnable or because the current process exceeded its time slice.</p>
+  </dd>
 
-<p class='spacer'>
-
-  <p>Not all fields are completed; unmaintained fields are set to zero by the kernel. (The unmaintained fields are provided for compatibility with other systems, and because they may one day be supported on Linux.) The fields are interpreted as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><em>ru_utime</em></dt>
-    <dd>
-  <p>This is the total amount of time spent executing in user mode, expressed in a <em>timeval</em> structure (seconds plus microseconds).</p>
-    </dd>
-    <dt><em>ru_stime</em></dt>
-    <dd>
-  <p>This is the total amount of time spent executing in kernel mode, expressed in a <em>timeval</em> structure (seconds plus microseconds).</p>
-    </dd>
-    <dt><em>ru_maxrss</em> (since Linux 2.6.32)</dt>
-    <dd>
-  <p>This is the maximum resident set size used (in kilobytes). For <strong>RUSAGE_CHILDREN</strong>, this is the resident set size of the largest child, not the maximum resident set size of the process tree.</p>
-    </dd>
-    <dt><em>ru_ixrss</em> (unmaintained)</dt>
-    <dd>
-  <p>This field is currently unused on Linux.</p>
-    </dd>
-    <dt><em>ru_idrss</em> (unmaintained)</dt>
-    <dd>
-  <p>This field is currently unused on Linux.</p>
-    </dd>
-    <dt><em>ru_isrss</em> (unmaintained)</dt>
-    <dd>
-  <p>This field is currently unused on Linux.</p>
-    </dd>
-    <dt><em>ru_minflt</em></dt>
-    <dd>
-  <p>The number of page faults serviced without any I/O activity; here I/O activity is avoided by &ldquo;reclaiming&rdquo; a page frame from the list of pages awaiting reallocation.</p>
-    </dd>
-    <dt><em>ru_majflt</em></dt>
-    <dd>
-  <p>The number of page faults serviced that required I/O activity.</p>
-    </dd>
-    <dt><em>ru_nswap</em> (unmaintained)</dt>
-    <dd>
-  <p>This field is currently unused on Linux.</p>
-    </dd>
-    <dt><em>ru_inblock</em> (since Linux 2.6.22)</dt>
-    <dd>
-  <p>The number of times the filesystem had to perform input.</p>
-    </dd>
-    <dt><em>ru_oublock</em> (since Linux 2.6.22)</dt>
-    <dd>
-  <p>The number of times the filesystem had to perform output.</p>
-    </dd>
-    <dt><em>ru_msgsnd</em> (unmaintained)</dt>
-    <dd>
-  <p>This field is currently unused on Linux.</p>
-    </dd>
-    <dt><em>ru_msgrcv</em> (unmaintained)</dt>
-    <dd>
-  <p>This field is currently unused on Linux.</p>
-    </dd>
-    <dt><em>ru_nsignals</em> (unmaintained)</dt>
-    <dd>
-  <p>This field is currently unused on Linux.</p>
-    </dd>
-    <dt><em>ru_nvcsw</em> (since Linux 2.6)</dt>
-    <dd>
-  <p>The number of times a context switch resulted due to a process voluntarily giving up the processor before its time slice was completed (usually to await availability of a resource).</p>
-    </dd>
-    <dt><em>ru_nivcsw</em> (since Linux 2.6)</dt>
-    <dd>
-  <p>The number of times a context switch resulted due to a higher priority process becoming runnable or because the current process exceeded its time slice.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
 
         </div>
       </section>
@@ -223,7 +247,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -232,25 +255,29 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p><em>usage</em> points outside the accessible address space.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>who</em> is invalid.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p><em>usage</em> points outside the accessible address space.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>who</em> is invalid.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -261,54 +288,29 @@
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
-<p>POSIX.1-2001, POSIX.1-2008, SVr4, 4.3BSD. POSIX.1 specifies <strong>getrusage</strong>(), but specifies only the fields <em>ru_utime</em> and <em>ru_stime</em>.</p>
-<p class='spacer'>
-
-<p><strong>RUSAGE_THREAD</strong> is Linux-specific.</p>
+<p>POSIX.1-2001, POSIX.1-2008, SVr4, 4.3BSD. POSIX.1 specifies <strong>getrusage</strong>(), but specifies only the fields <em>ru_utime</em> and <em>ru_stime</em>.</p><p><strong>RUSAGE_THREAD</strong> is Linux-specific.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>Resource usage metrics are preserved across an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>Including <em>&lt;sys/time.h&gt;</em> is not required these days, but increases portability. (Indeed, <em>struct timeval</em> is defined in <em>&lt;sys/time.h&gt;</em>.)</p>
-<p class='spacer'>
-
-<p>In Linux kernel versions before 2.6.9, if the disposition of <strong>SIGCHLD</strong> is set to <strong>SIG_IGN</strong> then the resource usages of child processes are automatically included in the value returned by <strong>RUSAGE_CHILDREN</strong>, although POSIX.1-2001 explicitly prohibits this. This nonconformance is rectified in Linux 2.6.9 and later.</p>
-<p class='spacer'>
-
-<p>The structure definition shown at the start of this page was taken from 4.3BSD Reno.</p>
-<p class='spacer'>
-
-<p>Ancient systems provided a <strong>vtimes</strong>() function with a similar purpose to <strong>getrusage</strong>(). For backward compatibility, glibc also provides <strong>vtimes</strong>(). All new applications should be written using <strong>getrusage</strong>().</p>
-<p class='spacer'>
-
-<p>See also the description of <em>/proc/PID/stat</em> in <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>.</p>
+<p>Resource usage metrics are preserved across an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p><p>Including <em><sys/time.h></em> is not required these days, but increases portability. (Indeed, <em>struct timeval</em> is defined in <em><sys/time.h></em>.)</p><p>In Linux kernel versions before 2.6.9, if the disposition of <strong>SIGCHLD</strong> is set to <strong>SIG_IGN</strong> then the resource usages of child processes are automatically included in the value returned by <strong>RUSAGE_CHILDREN</strong>, although POSIX.1-2001 explicitly prohibits this. This nonconformance is rectified in Linux 2.6.9 and later.</p><p>The structure definition shown at the start of this page was taken from 4.3BSD Reno.</p><p>Ancient systems provided a <strong>vtimes</strong>() function with a similar purpose to <strong>getrusage</strong>(). For backward compatibility, glibc also provides <strong>vtimes</strong>(). All new applications should be written using <strong>getrusage</strong>().</p><p>See also the description of <em>/proc/PID/stat</em> in <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>.</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO vtimes&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO getrusage&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>, <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>, <a href="../man2/times.2.html"><strong>times</strong>(2)</a>, <a href="../man2/wait.2.html"><strong>wait</strong>(2)</a>, <a href="../man2/wait4.2.html"><strong>wait4</strong>(2)</a>, <a href="../man3/clock.3.html"><strong>clock</strong>(3)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="vsyslog.3.html"><span aria-hidden="true">&larr;</span> vsyslog.3: Send messages to the system logger</a></li>

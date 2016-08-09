@@ -91,11 +91,13 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;fcntl.h&gt;</strong>
+<pre>
+<strong>#define</strong> <strong>_GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <fcntl.h></strong>
 
-<strong>ssize_t splice(int </strong><em>fd_in</em><strong>, loff_t *</strong><em>off_in</em><strong>, int </strong><em>fd_out</em><strong>,</strong>
-<strong>               loff_t *</strong><em>off_out</em><strong>, size_t </strong><em>len</em><strong>, unsigned int </strong><em>flags</em><strong>);</strong></pre>
+<strong>ssize_t</strong> <strong>splice(int</strong> <strong></strong><em>fd_in</em><strong>,</strong> <strong>loff_t</strong> <strong>*</strong><em>off_in</em><strong>,</strong> <strong>int</strong> <strong></strong><em>fd_out</em><strong>,</strong>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>loff_t</strong> <strong>*</strong><em>off_out</em><strong>,</strong> <strong>size_t</strong> <strong></strong><em>len</em><strong>,</strong> <strong>unsigned</strong> <strong>int</strong> <strong></strong><em>flags</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -103,63 +105,44 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>splice</strong>() moves data between two file descriptors without copying between kernel address space and user address space. It transfers up to <em>len</em> bytes of data from the file descriptor <em>fd_in</em> to the file descriptor <em>fd_out</em>, where one of the file descriptors must refer to a pipe.</p><p>The following semantics apply for <em>fd_in</em> and <em>off_in</em>:</p><ul>
+<li><p>If <em>fd_in</em> refers to a pipe, then <em>off_in</em> must be NULL.</p></li><li><p>If <em>fd_in</em> does not refer to a pipe and <em>off_in</em> is NULL, then bytes are read from <em>fd_in</em> starting from the file offset, and the file offset is adjusted appropriately.</p></li><li><p>If <em>fd_in</em> does not refer to a pipe and <em>off_in</em> is not NULL, then <em>off_in</em> must point to a buffer which specifies the starting offset from which bytes will be read from <em>fd_in</em>; in this case, the file offset of <em>fd_in</em> is not changed.</p></li>
+</ul><p>Analogous statements apply for <em>fd_out</em> and <em>off_out</em>.</p><p>The <em>flags</em> argument is a bit mask that is composed by ORing together zero or more of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SPLICE_F_MOVE</strong></p>
+  </dt>
+  <dd>
+    <p>Attempt to move pages instead of copying. This is only a hint to the kernel: pages may still be copied if the kernel cannot move the pages from the pipe, or if the pipe buffers don't refer to full pages. The initial implementation of this flag was buggy: therefore starting in Linux 2.6.21 it is a no-op (but is still permitted in a <strong>splice</strong>() call); in the future, a correct implementation may be restored.</p>
+  </dd>
+  <dt>
+    <p><strong>SPLICE_F_NONBLOCK</strong></p>
+  </dt>
+  <dd>
+    <p>Do not block on I/O. This makes the splice pipe operations nonblocking, but <strong>splice</strong>() may nevertheless block because the file descriptors that are spliced to/from may block (unless they have the <strong>O_NONBLOCK</strong> flag set).</p>
+  </dd>
+  <dt>
+    <p><strong>SPLICE_F_MORE</strong></p>
+  </dt>
+  <dd>
+    <p>More data will be coming in a subsequent splice. This is a helpful hint when the <em>fd_out</em> refers to a socket (see also the description of <strong>MSG_MORE</strong> in <a href="../man2/send.2.html"><strong>send</strong>(2)</a>, and the description of <strong>TCP_CORK</strong> in <a href="../man7/tcp.7.html"><strong>tcp</strong>(7)</a>).</p>
+  </dd>
+  <dt>
+    <p><strong>SPLICE_F_GIFT</strong></p>
+  </dt>
+  <dd>
+    <p>Unused for <strong>splice</strong>(); see <a href="../man2/vmsplice.2.html"><strong>vmsplice</strong>(2)</a>.</p>
+  </dd>
 
-<p><strong>splice</strong>() moves data between two file descriptors without copying between kernel address space and user address space. It transfers up to <em>len</em> bytes of data from the file descriptor <em>fd_in</em> to the file descriptor <em>fd_out</em>, where one of the file descriptors must refer to a pipe.</p>
-<p class='spacer'>
+</dl>
 
-  <p>The following semantics apply for <em>fd_in</em> and <em>off_in</em>:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>If <em>fd_in</em> refers to a pipe, then <em>off_in</em> must be NULL.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>If <em>fd_in</em> does not refer to a pipe and <em>off_in</em> is NULL, then bytes are read from <em>fd_in</em> starting from the file offset, and the file offset is adjusted appropriately.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>If <em>fd_in</em> does not refer to a pipe and <em>off_in</em> is not NULL, then <em>off_in</em> must point to a buffer which specifies the starting offset from which bytes will be read from <em>fd_in</em>; in this case, the file offset of <em>fd_in</em> is not changed.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>Analogous statements apply for <em>fd_out</em> and <em>off_out</em>.</p>
-<p class='spacer'>
-
-  <p>The <em>flags</em> argument is a bit mask that is composed by ORing together zero or more of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SPLICE_F_MOVE</strong></dt>
-    <dd>
-  <p>Attempt to move pages instead of copying. This is only a hint to the kernel: pages may still be copied if the kernel cannot move the pages from the pipe, or if the pipe buffers don't refer to full pages. The initial implementation of this flag was buggy: therefore starting in Linux 2.6.21 it is a no-op (but is still permitted in a <strong>splice</strong>() call); in the future, a correct implementation may be restored.</p>
-    </dd>
-    <dt><strong>SPLICE_F_NONBLOCK</strong></dt>
-    <dd>
-  <p>Do not block on I/O. This makes the splice pipe operations nonblocking, but <strong>splice</strong>() may nevertheless block because the file descriptors that are spliced to/from may block (unless they have the <strong>O_NONBLOCK</strong> flag set).</p>
-    </dd>
-    <dt><strong>SPLICE_F_MORE</strong></dt>
-    <dd>
-  <p>More data will be coming in a subsequent splice. This is a helpful hint when the <em>fd_out</em> refers to a socket (see also the description of <strong>MSG_MORE</strong> in <a href="../man2/send.2.html"><strong>send</strong>(2)</a>, and the description of <strong>TCP_CORK</strong> in <a href="../man7/tcp.7.html"><strong>tcp</strong>(7)</a>).</p>
-    </dd>
-    <dt><strong>SPLICE_F_GIFT</strong></dt>
-    <dd>
-  <p>Unused for <strong>splice</strong>(); see <a href="../man2/vmsplice.2.html"><strong>vmsplice</strong>(2)</a>.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
-<p>Upon successful completion, <strong>splice</strong>() returns the number of bytes spliced to or from the pipe.</p>
-<p class='spacer'>
-
-<p>A return value of 0 means end of input. If <em>fd_in</em> refers to a pipe, then this means that there was no data to transfer, and it would not make sense to block because there are no writers connected to the write end of the pipe.</p>
-<p class='spacer'>
-
-<p>On error, <strong>splice</strong>() returns -1 and <em>errno</em> is set to indicate the error.</p>
+<p>Upon successful completion, <strong>splice</strong>() returns the number of bytes spliced to or from the pipe.</p><p>A return value of 0 means end of input. If <em>fd_in</em> refers to a pipe, then this means that there was no data to transfer, and it would not make sense to block because there are no writers connected to the write end of the pipe.</p><p>On error, <strong>splice</strong>() returns -1 and <em>errno</em> is set to indicate the error.</p>
         </div>
       </section>
 
@@ -167,35 +150,46 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EAGAIN</strong></dt>
-    <dd>
-  <p><strong>SPLICE_F_NONBLOCK</strong> was specified in <em>flags</em>, and the operation would block.</p>
-    </dd>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p>One or both file descriptors are not valid, or do not have proper read-write mode.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>Target filesystem doesn't support splicing; target file is opened in append mode; neither of the file descriptors refers to a pipe; or offset given for nonseekable device.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Out of memory.</p>
-    </dd>
-    <dt><strong>ESPIPE</strong></dt>
-    <dd>
-  <p>Either <em>off_in</em> or <em>off_out</em> was not NULL, but the corresponding file descriptor refers to a pipe.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EAGAIN</strong></p>
+  </dt>
+  <dd>
+    <p><strong>SPLICE_F_NONBLOCK</strong> was specified in <em>flags</em>, and the operation would block.</p>
+  </dd>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p>One or both file descriptors are not valid, or do not have proper read-write mode.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>Target filesystem doesn't support splicing; target file is opened in append mode; neither of the file descriptors refers to a pipe; or offset given for nonseekable device.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Out of memory.</p>
+  </dd>
+  <dt>
+    <p><strong>ESPIPE</strong></p>
+  </dt>
+  <dd>
+    <p>Either <em>off_in</em> or <em>off_out</em> was not NULL, but the corresponding file descriptor refers to a pipe.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>splice</strong>() system call first appeared in Linux 2.6.17; library support was added to glibc in version 2.5.</p>
         </div>
       </section>
@@ -203,7 +197,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>This system call is Linux-specific.</p>
         </div>
       </section>
@@ -211,24 +204,28 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
+<p>The three system calls <strong>splice</strong>(), <a href="../man2/vmsplice.2.html"><strong>vmsplice</strong>(2)</a>, and <a href="../man2/tee.2.html"><strong>tee</strong>(2)</a>, provide user-space programs with full control over an arbitrary kernel buffer, implemented within the kernel using the same type of buffer that is used for a pipe. In overview, these system calls perform the following tasks:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>splice</strong>()</p>
+  </dt>
+  <dd>
+    <p>moves data from the buffer to an arbitrary file descriptor, or vice versa, or from one buffer to another.</p>
+  </dd>
+  <dt>
+    <p><a href="../man2/tee.2.html"><strong>tee</strong>(2)</a></p>
+  </dt>
+  <dd>
+    <p>"copies" the data from one buffer to another.</p>
+  </dd>
+  <dt>
+    <p><a href="../man2/vmsplice.2.html"><strong>vmsplice</strong>(2)</a></p>
+  </dt>
+  <dd>
+    <p>"copies" data from user space into the buffer.</p>
+  </dd>
 
-  <p>The three system calls <strong>splice</strong>(), <a href="../man2/vmsplice.2.html"><strong>vmsplice</strong>(2)</a>, and <a href="../man2/tee.2.html"><strong>tee</strong>(2)</a>, provide user-space programs with full control over an arbitrary kernel buffer, implemented within the kernel using the same type of buffer that is used for a pipe. In overview, these system calls perform the following tasks:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>splice</strong>()</dt>
-    <dd>
-  <p>moves data from the buffer to an arbitrary file descriptor, or vice versa, or from one buffer to another.</p>
-    </dd>
-    <dt><a href="../man2/tee.2.html"><strong>tee</strong>(2)</a></dt>
-    <dd>
-  <p>"copies" the data from one buffer to another.</p>
-    </dd>
-    <dt><a href="../man2/vmsplice.2.html"><strong>vmsplice</strong>(2)</a></dt>
-    <dd>
-  <p>"copies" data from user space into the buffer.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>Though we talk of copying, actual copies are generally avoided. The kernel does this by implementing a pipe buffer as a set of reference-counted pointers to pages of kernel memory. The kernel creates "copies" of pages in a buffer by creating new pointers (for the output buffer) referring to the pages, and increasing the reference counts for the pages: only pointers are copied, not the pages of the buffer.</p>
         </div>
       </section>
@@ -236,7 +233,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>See <a href="../man2/tee.2.html"><strong>tee</strong>(2)</a>.</p>
         </div>
       </section>
@@ -244,11 +240,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO splice&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/copy_file_range.2.html"><strong>copy_file_range</strong>(2)</a>, <a href="../man2/sendfile.2.html"><strong>sendfile</strong>(2)</a>, <a href="../man2/tee.2.html"><strong>tee</strong>(2)</a>, <a href="../man2/vmsplice.2.html"><strong>vmsplice</strong>(2)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="socketpair.2.html"><span aria-hidden="true">&larr;</span> socketpair.2: Create a pair of connected sockets</a></li>

@@ -91,13 +91,15 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;pthread.h&gt;</strong>
+<pre>
+<strong>#include <pthread.h></strong>
 
-<strong>void pthread_cleanup_push(void (*</strong><em>routine</em><strong>)(void *),</strong>
-<strong>                          void *</strong><em>arg</em><strong>);</strong>
-<strong>void pthread_cleanup_pop(int </strong><em>execute</em><strong>);</strong>
+<strong>void</strong> <strong>pthread_cleanup_push(void</strong> <strong>(*</strong><em>routine</em><strong>)(void</strong> <strong>*),</strong>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>void</strong> <strong>*</strong><em>arg</em><strong>);</strong>
+<strong>void</strong> <strong>pthread_cleanup_pop(int</strong> <strong></strong><em>execute</em><strong>);</strong>
 
-Compile and link with <em>-pthread</em>.</pre>
+Compile and link with <em>-pthread</em>.
+</pre>
 
         </div>
       </section>
@@ -105,44 +107,35 @@ Compile and link with <em>-pthread</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>These functions manipulate the calling thread's stack of thread-cancellation clean-up handlers. A clean-up handler is a function that is automatically executed when a thread is canceled (or in various other circumstances described below); it might, for example, unlock a mutex so that it becomes available to other threads in the process.</p><p>The <strong>pthread_cleanup_push</strong>() function pushes <em>routine</em> onto the top of the stack of clean-up handlers. When <em>routine</em> is later invoked, it will be given <em>arg</em> as its argument.</p><p>The <strong>pthread_cleanup_pop</strong>() function removes the routine at the top of the stack of clean-up handlers, and optionally executes it if <em>execute</em> is nonzero.</p><p>A cancellation clean-up handler is popped from the stack and executed in the following circumstances:</p>
+<dl class='dl-vertical'>
+  <dt>
+    1.
+  </dt>
+  <dd>
+    <p>When a thread is canceled, all of the stacked clean-up handlers are popped and executed in the reverse of the order in which they were pushed onto the stack.</p>
+  </dd>
+  <dt>
+    2.
+  </dt>
+  <dd>
+    <p>When a thread terminates by calling <a href="../man3/pthread_exit.3.html"><strong>pthread_exit</strong>(3)</a>, all clean-up handlers are executed as described in the preceding point. (Clean-up handlers are <em>not</em> called if the thread terminates by performing a <em>return</em> from the thread start function.)</p>
+  </dd>
+  <dt>
+    3.
+  </dt>
+  <dd>
+    <p>When a thread calls <strong>pthread_cleanup_pop</strong>() with a nonzero <em>execute</em> argument, the top-most clean-up handler is popped and executed.</p>
+  </dd>
 
-<p>These functions manipulate the calling thread's stack of thread-cancellation clean-up handlers. A clean-up handler is a function that is automatically executed when a thread is canceled (or in various other circumstances described below); it might, for example, unlock a mutex so that it becomes available to other threads in the process.</p>
-<p class='spacer'>
-
-<p>The <strong>pthread_cleanup_push</strong>() function pushes <em>routine</em> onto the top of the stack of clean-up handlers. When <em>routine</em> is later invoked, it will be given <em>arg</em> as its argument.</p>
-<p class='spacer'>
-
-<p>The <strong>pthread_cleanup_pop</strong>() function removes the routine at the top of the stack of clean-up handlers, and optionally executes it if <em>execute</em> is nonzero.</p>
-<p class='spacer'>
-
-  <p>A cancellation clean-up handler is popped from the stack and executed in the following circumstances:</p>
-  <dl class='dl-horizontal'>
-    <dt>1.</dt>
-    <dd>
-  <p>When a thread is canceled, all of the stacked clean-up handlers are popped and executed in the reverse of the order in which they were pushed onto the stack.</p>
-    </dd>
-    <dt>2.</dt>
-    <dd>
-  <p>When a thread terminates by calling <a href="../man3/pthread_exit.3.html"><strong>pthread_exit</strong>(3)</a>, all clean-up handlers are executed as described in the preceding point. (Clean-up handlers are <em>not</em> called if the thread terminates by performing a <em>return</em> from the thread start function.)</p>
-    </dd>
-    <dt>3.</dt>
-    <dd>
-  <p>When a thread calls <strong>pthread_cleanup_pop</strong>() with a nonzero <em>execute</em> argument, the top-most clean-up handler is popped and executed.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>POSIX.1 permits <strong>pthread_cleanup_push</strong>() and <strong>pthread_cleanup_pop</strong>() to be implemented as macros that expand to text containing &apos;<strong>{</strong>&apos; and &apos;<strong>}</strong>&apos;, respectively. For this reason, the caller must ensure that calls to these functions are paired within the same function, and at the same lexical nesting level. (In other words, a clean-up handler is established only during the execution of a specified section of code.)</p>
-<p class='spacer'>
-
-<p>Calling <a href="../man3/longjmp.3.html"><strong>longjmp</strong>(3)</a> (<a href="../man3/siglongjmp.3.html"><strong>siglongjmp</strong>(3)</a>) produces undefined results if any call has been made to <strong>pthread_cleanup_push</strong>() or <strong>pthread_cleanup_pop</strong>() without the matching call of the pair since the jump buffer was filled by <a href="../man3/setjmp.3.html"><strong>setjmp</strong>(3)</a> (<a href="../man3/sigsetjmp.3.html"><strong>sigsetjmp</strong>(3)</a>). Likewise, calling <a href="../man3/longjmp.3.html"><strong>longjmp</strong>(3)</a> (<a href="../man3/siglongjmp.3.html"><strong>siglongjmp</strong>(3)</a>) from inside a clean-up handler produces undefined results unless the jump buffer was also filled by <a href="../man3/setjmp.3.html"><strong>setjmp</strong>(3)</a> (<a href="../man3/sigsetjmp.3.html"><strong>sigsetjmp</strong>(3)</a>) inside the handler.</p>
+</dl>
+<p>POSIX.1 permits <strong>pthread_cleanup_push</strong>() and <strong>pthread_cleanup_pop</strong>() to be implemented as macros that expand to text containing &apos;<strong>{</strong>&apos; and &apos;<strong>}</strong>&apos;, respectively. For this reason, the caller must ensure that calls to these functions are paired within the same function, and at the same lexical nesting level. (In other words, a clean-up handler is established only during the execution of a specified section of code.)</p><p>Calling <a href="../man3/longjmp.3.html"><strong>longjmp</strong>(3)</a> (<a href="../man3/siglongjmp.3.html"><strong>siglongjmp</strong>(3)</a>) produces undefined results if any call has been made to <strong>pthread_cleanup_push</strong>() or <strong>pthread_cleanup_pop</strong>() without the matching call of the pair since the jump buffer was filled by <a href="../man3/setjmp.3.html"><strong>setjmp</strong>(3)</a> (<a href="../man3/sigsetjmp.3.html"><strong>sigsetjmp</strong>(3)</a>). Likewise, calling <a href="../man3/longjmp.3.html"><strong>longjmp</strong>(3)</a> (<a href="../man3/siglongjmp.3.html"><strong>siglongjmp</strong>(3)</a>) from inside a clean-up handler produces undefined results unless the jump buffer was also filled by <a href="../man3/setjmp.3.html"><strong>setjmp</strong>(3)</a> (<a href="../man3/sigsetjmp.3.html"><strong>sigsetjmp</strong>(3)</a>) inside the handler.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>These functions do not return a value.</p>
         </div>
       </section>
@@ -150,7 +143,6 @@ Compile and link with <em>-pthread</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
-
 <p>There are no errors.</p>
         </div>
       </section>
@@ -158,9 +150,7 @@ Compile and link with <em>-pthread</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -171,16 +161,12 @@ Compile and link with <em>-pthread</em>.</pre>
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2001, POSIX.1-2008.</p>
         </div>
       </section>
@@ -188,67 +174,44 @@ Compile and link with <em>-pthread</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>On Linux, the <strong>pthread_cleanup_push</strong>() and <strong>pthread_cleanup_pop</strong>() functions <em>are</em> implemented as macros that expand to text containing &apos;<strong>{</strong>&apos; and &apos;<strong>}</strong>&apos;, respectively. This means that variables declared within the scope of paired calls to these functions will be visible within only that scope.</p>
-<p class='spacer'>
-
-<p>POSIX.1 says that the effect of using <em>return</em>, <em>break</em>, <em>continue</em>, or <em>goto</em> to prematurely leave a block bracketed <strong>pthread_cleanup_push</strong>() and <strong>pthread_cleanup_pop</strong>() is undefined. Portable applications should avoid doing this.</p>
+<p>On Linux, the <strong>pthread_cleanup_push</strong>() and <strong>pthread_cleanup_pop</strong>() functions <em>are</em> implemented as macros that expand to text containing &apos;<strong>{</strong>&apos; and &apos;<strong>}</strong>&apos;, respectively. This means that variables declared within the scope of paired calls to these functions will be visible within only that scope.</p><p>POSIX.1 says that the effect of using <em>return</em>, <em>break</em>, <em>continue</em>, or <em>goto</em> to prematurely leave a block bracketed <strong>pthread_cleanup_push</strong>() and <strong>pthread_cleanup_pop</strong>() is undefined. Portable applications should avoid doing this.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-<p>The program below provides a simple example of the use of the functions described in this page. The program creates a thread that executes a loop bracketed by <strong>pthread_cleanup_push</strong>() and <strong>pthread_cleanup_pop</strong>(). This loop increments a global variable, <em>cnt</em>, once each second. Depending on what command-line arguments are supplied, the main thread sends the other thread a cancellation request, or sets a global variable that causes the other thread to exit its loop and terminate normally (by doing a <em>return</em>).</p>
-<p class='spacer'>
-
-<p>In the following shell session, the main thread sends a cancellation request to the other thread:</p>
-<p class='spacer'>
-
-<pre>$ <strong>./a.out</strong>
+<p>The program below provides a simple example of the use of the functions described in this page. The program creates a thread that executes a loop bracketed by <strong>pthread_cleanup_push</strong>() and <strong>pthread_cleanup_pop</strong>(). This loop increments a global variable, <em>cnt</em>, once each second. Depending on what command-line arguments are supplied, the main thread sends the other thread a cancellation request, or sets a global variable that causes the other thread to exit its loop and terminate normally (by doing a <em>return</em>).</p><p>In the following shell session, the main thread sends a cancellation request to the other thread:</p>
+<pre>
+$ <strong>./a.out</strong>
 New thread started
 cnt = 0
 cnt = 1
 Canceling thread
 Called clean-up handler
-Thread was canceled; cnt = 0</pre>
-
-<p class='spacer'>
-
-<p>From the above, we see that the thread was canceled, and that the cancellation clean-up handler was called and it reset the value of the global variable <em>cnt</em> to 0.</p>
-<p class='spacer'>
-
-<p>In the next run, the main program sets a global variable that causes other thread to terminate normally:</p>
-<p class='spacer'>
-
-<pre>$ <strong>./a.out x</strong>
+Thread was canceled; cnt = 0
+</pre>
+<p>From the above, we see that the thread was canceled, and that the cancellation clean-up handler was called and it reset the value of the global variable <em>cnt</em> to 0.</p><p>In the next run, the main program sets a global variable that causes other thread to terminate normally:</p>
+<pre>
+$ <strong>./a.out x</strong>
 New thread started
 cnt = 0
 cnt = 1
-Thread terminated normally; cnt = 2</pre>
-
-<p class='spacer'>
-
-<p>From the above, we see that the clean-up handler was not executed (because <em>cleanup_pop_arg</em> was 0), and therefore the value of <em>cnt</em> was not reset.</p>
-<p class='spacer'>
-
-<p>In the next run, the main program sets a global variable that causes the other thread to terminate normally, and supplies a nonzero value for <em>cleanup_pop_arg</em>:</p>
-<p class='spacer'>
-
-<pre>$ <strong>./a.out x 1</strong>
+Thread terminated normally; cnt = 2
+</pre>
+<p>From the above, we see that the clean-up handler was not executed (because <em>cleanup_pop_arg</em> was 0), and therefore the value of <em>cnt</em> was not reset.</p><p>In the next run, the main program sets a global variable that causes the other thread to terminate normally, and supplies a nonzero value for <em>cleanup_pop_arg</em>:</p>
+<pre>
+$ <strong>./a.out x 1</strong>
 New thread started
 cnt = 0
 cnt = 1
 Called clean-up handler
-Thread terminated normally; cnt = 0</pre>
+Thread terminated normally; cnt = 0
+</pre>
+<p>In the above, we see that although the thread was not canceled, the clean-up handler was executed, because the argument given to <strong>pthread_cleanup_pop</strong>() was nonzero.</p><h3>Program source</h3>
 
-<p class='spacer'>
-
-<p>In the above, we see that although the thread was not canceled, the clean-up handler was executed, because the argument given to <strong>pthread_cleanup_pop</strong>() was nonzero.</p>
-  <h3>Program source</h3>
-  <p></p>
-<pre>#include &lt;pthread.h&gt;
+<pre>
+#include &lt;pthread.h&gt;
 #include &lt;sys/types.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -327,7 +290,9 @@ main(int argc, char *argv[])
     else
         printf("Thread terminated normally; cnt = %d&#92;n", cnt);
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
+
 
         </div>
       </section>
@@ -335,11 +300,9 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pthread_cleanup_push&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/pthread_cancel.3.html"><strong>pthread_cancel</strong>(3)</a>, <a href="../man3/pthread_cleanup_push_defer_np.3.html"><strong>pthread_cleanup_push_defer_np</strong>(3)</a>, <a href="../man3/pthread_setcancelstate.3.html"><strong>pthread_setcancelstate</strong>(3)</a>, <a href="../man3/pthread_testcancel.3.html"><strong>pthread_testcancel</strong>(3)</a>, <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pthread_cleanup_pop_restore_np.3.html"><span aria-hidden="true">&larr;</span> pthread_cleanup_pop_restore_np.3: Push and pop thread cancellation clean-up handlers while saving cancelability type</a></li>

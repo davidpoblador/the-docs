@@ -90,130 +90,108 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>sandbox</strong> [-C] [-s] [ -d DPI ] [-l level ] [[-M | -X]  -H homedir -T tempdir ] [-I includefile ] [ -W windowmanager ] [ -w windowsize ] [[-i file ]...] [ -t type ] cmd</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p><strong>sandbox</strong> [-C] [-s] [ -d DPI ] [-l level ] [[-M | -X]  -H homedir -T tempdir ] [-I includefile ] [ -W windowmanager ] [ -w windowsize ] [[-i file ]...] [ -t type ] -S</p>
-<p class='spacer'>
-
+<p><strong>sandbox</strong> [-C] [-s] [ -d DPI ] [-l level ] [[-M | -X]  -H homedir -T tempdir ] [-I includefile ] [ -W windowmanager ] [ -w windowsize ] [[-i file ]...] [ -t type ] cmd</p><p><strong>sandbox</strong> [-C] [-s] [ -d DPI ] [-l level ] [[-M | -X]  -H homedir -T tempdir ] [-I includefile ] [ -W windowmanager ] [ -w windowsize ] [[-i file ]...] [ -t type ] -S</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>Run the <em>cmd</em> application within a tightly confined SELinux domain.  The default sandbox domain only allows applications the ability to read and write stdin, stdout and any other file descriptors handed to it. It is not allowed to open any other files.  The -M option will mount an alternate homedir and tmpdir to be used by the sandbox.</p><p>If you have the <em>policycoreutils-sandbox</em> package installed, you can use the -X option and the -M option. <strong>sandbox -X</strong> allows you to run X applications within a sandbox.  These applications will start up their own X Server and create a temporary home directory and /tmp.  The default SELinux policy does not allow any capabilities or network access.  It also prevents all access to the users other processes and files.  Files specified on the command that are in the home directory or /tmp will be copied into the sandbox directories.</p><p>If directories are specified with -H or -T the directory will have its context modified with <strong>chcon</strong>(1) unless a level is specified with -l.  If the MLS/MCS security level is specified, the user is responsible to set the correct labels.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-h&nbsp;--help</strong></p>
+  </dt>
+  <dd>
+    <p>display usage message</p>
+  </dd>
+  <dt>
+    <p><strong>-H&nbsp;--homedir</strong></p>
+  </dt>
+  <dd>
+    <p>Use alternate homedir to mount over your home directory.  Defaults to temporary. Requires -X or -M.</p>
+  </dd>
+  <dt>
+    <p><strong>-i</strong> <strong>--include</strong></p>
+  </dt>
+  <dd>
+    <p>Copy this file into the appropriate temporary sandbox directory. Command can be repeated.</p>
+  </dd>
+  <dt>
+    <p><strong>-I</strong> <strong>--includefile</strong></p>
+  </dt>
+  <dd>
+    <p>Copy all files listed in inputfile into the appropriate temporary sandbox directories.</p>
+  </dd>
+  <dt>
+    <p><strong>-l</strong> <strong>--level</strong></p>
+  </dt>
+  <dd>
+    <p>Specify the MLS/MCS Security Level to run the sandbox with.  Defaults to random.</p>
+  </dd>
+  <dt>
+    <p><strong>-M</strong> <strong>--mount</strong></p>
+  </dt>
+  <dd>
+    <p>Create a Sandbox with temporary files for $HOME and /tmp.</p>
+  </dd>
+  <dt>
+    <p><strong>-s</strong> <strong>--shred</strong></p>
+  </dt>
+  <dd>
+    <p>Shred temporary files created in $HOME and /tmp, before deleting.</p>
+  </dd>
+  <dt>
+    <p><strong>-t</strong> <strong>--type</strong></p>
+  </dt>
+  <dd>
+    <p>Use alternate sandbox type, defaults to sandbox_t or sandbox_x_t for -X.</p><p><strong>Examples:</strong></p><p>sandbox_t	-	No X, No Network Access, No Open, read/write on passed in file descriptors.</p><p>sandbox_min_t	-	No Network Access</p><p>sandbox_x_t	-	Ports for X applications to run locally</p><p>sandbox_web_t	-	Ports required for web browsing</p><p>sandbox_net_t	-		Network ports (for server software)</p><p>sandbox_net_client_t	-	All network ports</p>
+  </dd>
+  <dt>
+    <p><strong>-T</strong> <strong>--tmpdir</strong></p>
+  </dt>
+  <dd>
+    <p>Use alternate temporary directory to mount on /tmp.  Defaults to tmpfs. Requires -X or -M.</p>
+  </dd>
+  <dt>
+    <p><strong>-S</strong> <strong>--session</strong></p>
+  </dt>
+  <dd>
+    <p>Run a full desktop session, Requires level, and home and tmpdir.</p>
+  </dd>
+  <dt>
+    <p><strong>-w</strong> <strong>--windowsize</strong></p>
+  </dt>
+  <dd>
+    <p>Specifies the windowsize when creating an X based Sandbox. The default windowsize is 1000x700.</p>
+  </dd>
+  <dt>
+    <p><strong>-W</strong> <strong>--windowmanager</strong></p>
+  </dt>
+  <dd>
+    <p>Select alternative window manager to run within <strong>sandbox -X.</strong> Default to /usr/bin/openbox.</p>
+  </dd>
+  <dt>
+    <p><strong>-X</strong></p>
+  </dt>
+  <dd>
+    <p>Create an X based Sandbox for gui apps, temporary files for $HOME and /tmp, secondary Xserver, defaults to sandbox_x_t</p>
+  </dd>
+  <dt>
+    <p><strong>-d</strong> <strong>--dpi</strong></p>
+  </dt>
+  <dd>
+    <p>Set the DPI value for the sandbox X Server. Defaults to the current X Sever DPI.</p>
+  </dd>
+  <dt>
+    <p><strong>-C</strong> <strong>--capabilities</strong> Use capabilities within the</p>
+  </dt>
+  <dd>
+    <p>sandbox. By default applications executed within the sandbox will not be allowed to use capabilities (setuid apps), with the -C flag, you can use programs requiring capabilities.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-<p>Run the <em>cmd</em> application within a tightly confined SELinux domain.  The default sandbox domain only allows applications the ability to read and write stdin, stdout and any other file descriptors handed to it. It is not allowed to open any other files.  The -M option will mount an alternate homedir and tmpdir to be used by the sandbox.</p>
-<p class='spacer'>
-
-<p>If you have the <em>policycoreutils-sandbox</em> package installed, you can use the -X option and the -M option. <strong>sandbox -X</strong> allows you to run X applications within a sandbox.  These applications will start up their own X Server and create a temporary home directory and /tmp.  The default SELinux policy does not allow any capabilities or network access.  It also prevents all access to the users other processes and files.  Files specified on the command that are in the home directory or /tmp will be copied into the sandbox directories.</p>
-<p class='spacer'>
-
-<p>If directories are specified with -H or -T the directory will have its context modified with <strong>chcon</strong>(1) unless a level is specified with -l.  If the MLS/MCS security level is specified, the user is responsible to set the correct labels.</p>
-<p class='spacer'>
-
-  <dl class='dl-vertical'>
-    <dt><strong>-h&nbsp;--help</strong></dt>
-    <dd>
-  <p>display usage message</p>
-    </dd>
-    <dt><strong>-H&nbsp;--homedir</strong></dt>
-    <dd>
-  <p>Use alternate homedir to mount over your home directory.  Defaults to temporary. Requires -X or -M.</p>
-    </dd>
-    <dt><strong>-i</strong> <strong>--include</strong></dt>
-    <dd>
-  <p>Copy this file into the appropriate temporary sandbox directory. Command can be repeated.</p>
-    </dd>
-    <dt><strong>-I</strong> <strong>--includefile</strong></dt>
-    <dd>
-  <p>Copy all files listed in inputfile into the appropriate temporary sandbox directories.</p>
-    </dd>
-    <dt><strong>-l</strong> <strong>--level</strong></dt>
-    <dd>
-  <p>Specify the MLS/MCS Security Level to run the sandbox with.  Defaults to random.</p>
-    </dd>
-    <dt><strong>-M</strong> <strong>--mount</strong></dt>
-    <dd>
-  <p>Create a Sandbox with temporary files for $HOME and /tmp.</p>
-    </dd>
-    <dt><strong>-s</strong> <strong>--shred</strong></dt>
-    <dd>
-  <p>Shred temporary files created in $HOME and /tmp, before deleting.</p>
-    </dd>
-    <dt><strong>-t</strong> <strong>--type</strong></dt>
-    <dd>
-  <p>Use alternate sandbox type, defaults to sandbox_t or sandbox_x_t for -X.</p>
-<p class='spacer'>
-
-  <p><strong>Examples:</strong></p>
-<p class='spacer'>
-
-  <p>sandbox_t	-	No X, No Network Access, No Open, read/write on passed in file descriptors.</p>
-<p class='spacer'>
-
-  <p>sandbox_min_t	-	No Network Access</p>
-<p class='spacer'>
-
-  <p>sandbox_x_t	-	Ports for X applications to run locally</p>
-<p class='spacer'>
-
-  <p>sandbox_web_t	-	Ports required for web browsing</p>
-<p class='spacer'>
-
-  <p>sandbox_net_t	-		Network ports (for server software)</p>
-<p class='spacer'>
-
-  <p>sandbox_net_client_t	-	All network ports</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>-T</strong> <strong>--tmpdir</strong></dt>
-    <dd>
-  <p>Use alternate temporary directory to mount on /tmp.  Defaults to tmpfs. Requires -X or -M.</p>
-    </dd>
-    <dt><strong>-S</strong> <strong>--session</strong></dt>
-    <dd>
-  <p>Run a full desktop session, Requires level, and home and tmpdir.</p>
-    </dd>
-    <dt><strong>-w</strong> <strong>--windowsize</strong></dt>
-    <dd>
-<p class='spacer'>
-
-  <p>Specifies the windowsize when creating an X based Sandbox. The default windowsize is 1000x700.</p>
-    </dd>
-    <dt><strong>-W</strong> <strong>--windowmanager</strong></dt>
-    <dd>
-  <p>Select alternative window manager to run within <strong>sandbox -X.</strong> Default to /usr/bin/openbox.</p>
-    </dd>
-    <dt><strong>-X</strong></dt>
-    <dd>
-  <p>Create an X based Sandbox for gui apps, temporary files for $HOME and /tmp, secondary Xserver, defaults to sandbox_x_t</p>
-    </dd>
-    <dt><strong>-d</strong> <strong>--dpi</strong></dt>
-    <dd>
-  <p>Set the DPI value for the sandbox X Server. Defaults to the current X Sever DPI.</p>
-    </dd>
-    <dt><strong>-C</strong> <strong>--capabilities</strong> Use capabilities within the</dt>
-    <dd>
-  <p>sandbox. By default applications executed within the sandbox will not be allowed to use capabilities (setuid apps), with the -C flag, you can use programs requiring capabilities.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p>This manual page was written by <em>Dan Walsh &lt;dwalsh@redhat.com&gt;</em> and <em>Thomas Liu &lt;tliu@fedoraproject.org&gt;</em></p>
         </div>
       </section>
 
@@ -221,20 +199,29 @@
         <h2 class="font-effect-shadow-multiple">RELATED TO sandbox&hellip;</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <strong>runcon</strong>(1), <a href="../man8/seunshare.8.html"><strong>seunshare</strong>(8)</a>, <a href="../man8/selinux.8.html"><strong>selinux</strong>(8)</a></dt>
-    <dd>
-    </dd>
-  </dl>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <strong>runcon</strong>(1), <a href="../man8/seunshare.8.html"><strong>seunshare</strong>(8)</a>, <a href="../man8/selinux.8.html"><strong>selinux</strong>(8)</a></p>
+  </dt>
+  <dd>
+    
+  </dd>
+
+</dl>
 
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>This manual page was written by <em>Dan Walsh <dwalsh@redhat.com></em> and <em>Thomas Liu <tliu@fedoraproject.org></em></p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="rvnamed-ng.8.html"><span aria-hidden="true">&larr;</span> rvnamed-ng.8: Reverse name resolution daemon for iptraf (8)</a></li>
-   <li class="next"><a href="sefcontext_compile.8.html">sefcontext_compile.8: Compile file context regular expression files . <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="rvnamed-ng.8.html"><span aria-hidden="true">&larr;</span> rvnamed-ng.8: Reverse name resolution daemon for iptraf(8)</a></li>
+   <li class="next"><a href="sefcontext_compile.8.html">sefcontext_compile.8: Compile file context regular expression files <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

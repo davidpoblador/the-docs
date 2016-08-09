@@ -90,18 +90,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C++ SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p>#include &lt;QmcContext.h&gt;</p>
-<p class='spacer'>
-
-<p>CC ... -lqmc -lpcp</p>
+<p>#include &lt;QmcContext.h&gt;</p><p>CC ... -lqmc -lpcp</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
 <p>A <strong>QmcContext</strong> object is a container for a single <strong>PMAPI</strong>(3) context.  The object maintains a list of all the metric descriptors (<strong>QmcDesc</strong>), instance domains (<strong>QmcIndom</strong>) and metrics (<strong>QmcMetric</strong>) using the context to minimize the duplication of these objects.</p>
         </div>
       </section>
@@ -109,7 +104,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONSTRUCTORS</h2>
         <div class="sectioncontent">
-
 <p>A <strong>QmcContext</strong> object should be constructed through the <strong>QmcGroup::use</strong> interface.</p>
         </div>
       </section>
@@ -117,44 +111,45 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTOR LOOKUP</h2>
         <div class="sectioncontent">
+<p>The metric and instance domain descriptors are cached by the <strong>QmcContext</strong> object to reduce duplicate <a href="../man3/QmcDesc.3.html"><strong>QmcDesc</strong>(3)</a> and <a href="../man3/QmcIndom.3.html"><strong>QmcIndom</strong>(3)</a> objects and <strong>PMAPI</strong>(3) calls required to create them.  Also the mapping from metrics names to <strong>pmID</strong>s is also maintained to avoid <strong>pmLookupName</strong>(3) calls.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>int lookupDesc(const char *name, pmID& id);</strong></p>
+  </dt>
+  <dd>
+    <p>Search for the metric <em>name</em> in the name list and set <strong>id</strong> to the known <strong>pmID</strong>. If not found, use <strong>pmLookupName</strong>(3) to get the mapping.  If this call fails, the <strong>PMAPI</strong>(3) error code will be returned.</p>
+  </dd>
+  <dt>
+    <p><strong>int lookupDesc(const char *name, uint_t& desc, uint_t& indom);</strong></p>
+  </dt>
+  <dd>
+    <p>Find the index <em>desc</em> and <em>indom</em> to the <strong>QmcDesc</strong> object and the <strong>QmcIndom</strong> object for the metric <em>name</em>. The indexes can then be used with <strong>QmcContext::desc</strong> and <strong>QmcContext::indom</strong> to obtain references to the real objects. The methods will return a <strong>PMAPI</strong>(3) error code if the metric descriptor or instance domain could not be obtained.</p>
+  </dd>
+  <dt>
+    <p><strong>int lookupDesc(pmID pmid, uint_t& desc, uint_t& indom);</strong></p>
+  </dt>
+  <dd>
+    <p>Find the index <em>desc</em> and <em>indom</em> to the <strong>QmcDesc</strong> object and the <strong>QmcIndom</strong> object for the metric <em>pmid</em>. The indexes can then be used with <strong>QmcContext::desc</strong> and <strong>QmcContext::indom</strong> to obtain references to the real objects. The methods will return a <strong>PMAPI</strong>(3) error code if the metric descriptor or instance domain could not be obtained.</p>
+  </dd>
 
-  <p>The metric and instance domain descriptors are cached by the <strong>QmcContext</strong> object to reduce duplicate <a href="../man3/QmcDesc.3.html"><strong>QmcDesc</strong>(3)</a> and <a href="../man3/QmcIndom.3.html"><strong>QmcIndom</strong>(3)</a> objects and <strong>PMAPI</strong>(3) calls required to create them.  Also the mapping from metrics names to <strong>pmID</strong>s is also maintained to avoid <strong>pmLookupName</strong>(3) calls.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>int lookupDesc(const char *name, pmID& id);</strong></dt>
-    <dd>
-  <p>Search for the metric <em>name</em> in the name list and set <strong>id</strong> to the known <strong>pmID</strong>. If not found, use <strong>pmLookupName</strong>(3) to get the mapping.  If this call fails, the <strong>PMAPI</strong>(3) error code will be returned.</p>
-    </dd>
-    <dt><strong>int lookupDesc(const char *name, uint_t& desc, uint_t& indom);</strong></dt>
-    <dd>
-  <p>Find the index <em>desc</em> and <em>indom</em> to the <strong>QmcDesc</strong> object and the <strong>QmcIndom</strong> object for the metric <em>name</em>. The indexes can then be used with <strong>QmcContext::desc</strong> and <strong>QmcContext::indom</strong> to obtain references to the real objects. The methods will return a <strong>PMAPI</strong>(3) error code if the metric descriptor or instance domain could not be obtained.</p>
-    </dd>
-    <dt><strong>int lookupDesc(pmID pmid, uint_t& desc, uint_t& indom);</strong></dt>
-    <dd>
-  <p>Find the index <em>desc</em> and <em>indom</em> to the <strong>QmcDesc</strong> object and the <strong>QmcIndom</strong> object for the metric <em>pmid</em>. The indexes can then be used with <strong>QmcContext::desc</strong> and <strong>QmcContext::indom</strong> to obtain references to the real objects. The methods will return a <strong>PMAPI</strong>(3) error code if the metric descriptor or instance domain could not be obtained.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
+</dl>
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
-        <div class="sectioncontent">
-
-<p>Error messages are generated using <a href="../man3/pmprintf.3.html"><strong>pmprintf</strong>(3)</a> but are not flushed. It is the responsibility of the user to call <strong>pmflush</strong>(3) to output any messages.</p>
-<p class='spacer'>
-
-<p>Additional diagnostics may be activated by adding <strong>DBG_TRACE_PMC</strong> and <strong>DBG_TRACE_OPTFETCH</strong> to the global <em>pmDebug</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO QmcContext&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>PMAPI</strong>(3), <a href="../man3/QMC.3.html"><strong>QMC</strong>(3)</a>, <a href="../man3/QmcDesc.3.html"><strong>QmcDesc</strong>(3)</a>, <a href="../man3/QmcGroup.3.html"><strong>QmcGroup</strong>(3)</a>, <a href="../man3/QmcIndom.3.html"><strong>QmcIndom</strong>(3)</a>, <a href="../man3/QmcMetric.3.html"><strong>QmcMetric</strong>(3)</a>, <strong>pmflush</strong>(3), <strong>pmLookupName</strong>(3) and <a href="../man3/pmprintf.3.html"><strong>pmprintf</strong>(3)</a>.</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+<p>Error messages are generated using <a href="../man3/pmprintf.3.html"><strong>pmprintf</strong>(3)</a> but are not flushed. It is the responsibility of the user to call <strong>pmflush</strong>(3) to output any messages.</p><p>Additional diagnostics may be activated by adding <strong>DBG_TRACE_PMC</strong> and <strong>DBG_TRACE_OPTFETCH</strong> to the global <em>pmDebug</em>.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="QMC.3.html"><span aria-hidden="true">&larr;</span> QMC.3: Library for managing groups of performance co-pilot metrics</a></li>

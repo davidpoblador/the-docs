@@ -90,36 +90,17 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;sys/socket.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>struct cmsghdr *CMSG_FIRSTHDR(struct msghdr *</strong><em>msgh</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>struct cmsghdr *CMSG_NXTHDR(struct msghdr *</strong><em>msgh</em><strong>, struct cmsghdr *</strong><em>cmsg</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>size_t CMSG_ALIGN(size_t </strong><em>length</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>size_t CMSG_SPACE(size_t </strong><em>length</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>size_t CMSG_LEN(size_t </strong><em>length</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>unsigned char *CMSG_DATA(struct cmsghdr *</strong><em>cmsg</em><strong>);</strong></p>
-<p class='spacer'>
-
-<pre>struct cmsghdr {
+<p><strong>#include <sys/socket.h></strong></p><p><strong>struct</strong> <strong>cmsghdr</strong> <strong>*CMSG_FIRSTHDR(struct</strong> <strong>msghdr</strong> <strong>*</strong><em>msgh</em><strong>);</strong></p><p><strong>struct</strong> <strong>cmsghdr</strong> <strong>*CMSG_NXTHDR(struct</strong> <strong>msghdr</strong> <strong>*</strong><em>msgh</em><strong>,</strong> <strong>struct</strong> <strong>cmsghdr</strong> <strong>*</strong><em>cmsg</em><strong>);</strong></p><p><strong>size_t</strong> <strong>CMSG_ALIGN(size_t</strong> <strong></strong><em>length</em><strong>);</strong></p><p><strong>size_t</strong> <strong>CMSG_SPACE(size_t</strong> <strong></strong><em>length</em><strong>);</strong></p><p><strong>size_t</strong> <strong>CMSG_LEN(size_t</strong> <strong></strong><em>length</em><strong>);</strong></p><p><strong>unsigned</strong> <strong>char</strong> <strong>*CMSG_DATA(struct</strong> <strong>cmsghdr</strong> <strong>*</strong><em>cmsg</em><strong>);</strong></p>
+<pre>
+struct cmsghdr {
     size_t cmsg_len;    /* Data byte count, including header
                            (type is socklen_t in POSIX) */
     int    cmsg_level;  /* Originating protocol */
     int    cmsg_type;   /* Protocol-specific type */
 /* followed by
    unsigned char cmsg_data[]; */
-};</pre>
+};
+</pre>
 
         </div>
       </section>
@@ -127,42 +108,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>These macros are used to create and access control messages (also called ancillary data) that are not a part of the socket payload. This control information may include the interface the packet was received on, various rarely used header fields, an extended error description, a set of file descriptors or UNIX credentials. For instance, control messages can be used to send additional header fields such as IP options. Ancillary data is sent by calling <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> and received by calling <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. See their manual pages for more information.</p>
-<p class='spacer'>
-
-<p>Ancillary data is a sequence of <em>struct cmsghdr</em> structures with appended data. This sequence should be accessed using only the macros described in this manual page and never directly. See the specific protocol man pages for the available control message types. The maximum ancillary buffer size allowed per socket can be set using <em>/proc/sys/net/core/optmem_max</em>; see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>.</p>
-<p class='spacer'>
-
-<p><strong>CMSG_FIRSTHDR</strong>() returns a pointer to the first <em>cmsghdr</em> in the ancillary data buffer associated with the passed <em>msghdr</em>.</p>
-<p class='spacer'>
-
-<p><strong>CMSG_NXTHDR</strong>() returns the next valid <em>cmsghdr</em> after the passed <em>cmsghdr</em>. It returns NULL when there isn't enough space left in the buffer.</p>
-<p class='spacer'>
-
-<p><strong>CMSG_ALIGN</strong>(), given a length, returns it including the required alignment. This is a constant expression.</p>
-<p class='spacer'>
-
-<p><strong>CMSG_SPACE</strong>() returns the number of bytes an ancillary element with payload of the passed data length occupies. This is a constant expression.</p>
-<p class='spacer'>
-
-<p><strong>CMSG_DATA</strong>() returns a pointer to the data portion of a <em>cmsghdr</em>.</p>
-<p class='spacer'>
-
-<p><strong>CMSG_LEN</strong>() returns the value to store in the <em>cmsg_len</em> member of the <em>cmsghdr</em> structure, taking into account any necessary alignment. It takes the data length as an argument. This is a constant expression.</p>
-<p class='spacer'>
-
-<p>To create ancillary data, first initialize the <em>msg_controllen</em> member of the <em>msghdr</em> with the length of the control message buffer. Use <strong>CMSG_FIRSTHDR</strong>() on the <em>msghdr</em> to get the first control message and <strong>CMSG_NXTHDR</strong>() to get all subsequent ones. In each control message, initialize <em>cmsg_len</em> (with <strong>CMSG_LEN</strong>()), the other <em>cmsghdr</em> header fields, and the data portion using <strong>CMSG_DATA</strong>(). Finally, the <em>msg_controllen</em> field of the <em>msghdr</em> should be set to the sum of the <strong>CMSG_SPACE</strong>() of the length of all control messages in the buffer. For more information on the <em>msghdr</em>, see <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>When the control message buffer is too short to store all messages, the <strong>MSG_CTRUNC</strong> flag is set in the <em>msg_flags</em> member of the <em>msghdr</em>.</p>
+<p>These macros are used to create and access control messages (also called ancillary data) that are not a part of the socket payload. This control information may include the interface the packet was received on, various rarely used header fields, an extended error description, a set of file descriptors or UNIX credentials. For instance, control messages can be used to send additional header fields such as IP options. Ancillary data is sent by calling <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> and received by calling <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. See their manual pages for more information.</p><p>Ancillary data is a sequence of <em>struct cmsghdr</em> structures with appended data. This sequence should be accessed using only the macros described in this manual page and never directly. See the specific protocol man pages for the available control message types. The maximum ancillary buffer size allowed per socket can be set using <em>/proc/sys/net/core/optmem_max</em>; see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>.</p><p><strong>CMSG_FIRSTHDR</strong>() returns a pointer to the first <em>cmsghdr</em> in the ancillary data buffer associated with the passed <em>msghdr</em>.</p><p><strong>CMSG_NXTHDR</strong>() returns the next valid <em>cmsghdr</em> after the passed <em>cmsghdr</em>. It returns NULL when there isn't enough space left in the buffer.</p><p><strong>CMSG_ALIGN</strong>(), given a length, returns it including the required alignment. This is a constant expression.</p><p><strong>CMSG_SPACE</strong>() returns the number of bytes an ancillary element with payload of the passed data length occupies. This is a constant expression.</p><p><strong>CMSG_DATA</strong>() returns a pointer to the data portion of a <em>cmsghdr</em>.</p><p><strong>CMSG_LEN</strong>() returns the value to store in the <em>cmsg_len</em> member of the <em>cmsghdr</em> structure, taking into account any necessary alignment. It takes the data length as an argument. This is a constant expression.</p><p>To create ancillary data, first initialize the <em>msg_controllen</em> member of the <em>msghdr</em> with the length of the control message buffer. Use <strong>CMSG_FIRSTHDR</strong>() on the <em>msghdr</em> to get the first control message and <strong>CMSG_NXTHDR</strong>() to get all subsequent ones. In each control message, initialize <em>cmsg_len</em> (with <strong>CMSG_LEN</strong>()), the other <em>cmsghdr</em> header fields, and the data portion using <strong>CMSG_DATA</strong>(). Finally, the <em>msg_controllen</em> field of the <em>msghdr</em> should be set to the sum of the <strong>CMSG_SPACE</strong>() of the length of all control messages in the buffer. For more information on the <em>msghdr</em>, see <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>.</p><p>When the control message buffer is too short to store all messages, the <strong>MSG_CTRUNC</strong> flag is set in the <em>msg_flags</em> member of the <em>msghdr</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>This ancillary data model conforms to the POSIX.1g draft, 4.4BSD-Lite, the IPv6 advanced API described in RFC&nbsp;2292 and SUSv2. <strong>CMSG_ALIGN</strong>() is a Linux extension.</p>
         </div>
       </section>
@@ -170,22 +122,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>For portability, ancillary data should be accessed using only the macros described here. <strong>CMSG_ALIGN</strong>() is a Linux extension and should not be used in portable programs.</p>
-<p class='spacer'>
-
-<p>In Linux, <strong>CMSG_LEN</strong>(), <strong>CMSG_DATA</strong>(), and <strong>CMSG_ALIGN</strong>() are constant expressions (assuming their argument is constant); this could be used to declare the size of global variables. This may not be portable, however.</p>
+<p>For portability, ancillary data should be accessed using only the macros described here. <strong>CMSG_ALIGN</strong>() is a Linux extension and should not be used in portable programs.</p><p>In Linux, <strong>CMSG_LEN</strong>(), <strong>CMSG_DATA</strong>(), and <strong>CMSG_ALIGN</strong>() are constant expressions (assuming their argument is constant); this could be used to declare the size of global variables. This may not be portable, however.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>This code looks for the <strong>IP_TTL</strong> option in a received ancillary buffer:</p>
-<p class='spacer'>
-
-<pre>struct msghdr msgh;
+<pre>
+struct msghdr msgh;
 struct cmsghdr *cmsg;
 int *ttlptr;
 int received_ttl;
@@ -204,14 +150,11 @@ for (cmsg = CMSG_FIRSTHDR(&msgh); cmsg != NULL;
 
 if (cmsg == NULL) {
     /* Error: IP_TTL not enabled or small buffer or I/O error */
-}</pre>
-
-<p class='spacer'>
-
+}
+</pre>
 <p>The code below passes an array of file descriptors over a UNIX domain socket using <strong>SCM_RIGHTS</strong>:</p>
-<p class='spacer'>
-
-<pre>struct msghdr msg = { 0 };
+<pre>
+struct msghdr msg = { 0 };
 struct cmsghdr *cmsg;
 int myfds[NUM_FD];  /* Contains the file descriptors to pass */
 int *fdptr;
@@ -228,7 +171,8 @@ cmsg-&gt;cmsg_level = SOL_SOCKET;
 cmsg-&gt;cmsg_type = SCM_RIGHTS;
 cmsg-&gt;cmsg_len = CMSG_LEN(sizeof(int) * NUM_FD);
 fdptr = (int *) CMSG_DATA(cmsg);    /* Initialize the payload */
-memcpy(fdptr, myfds, NUM_FD * sizeof(int));</pre>
+memcpy(fdptr, myfds, NUM_FD * sizeof(int));
+</pre>
 
         </div>
       </section>
@@ -236,14 +180,9 @@ memcpy(fdptr, myfds, NUM_FD * sizeof(int));</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO cmsg&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a></p>
-<p class='spacer'>
-
-<p>RFC&nbsp;2292</p>
+<p><a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a></p><p>RFC&nbsp;2292</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="closelog.3.html"><span aria-hidden="true">&larr;</span> closelog.3: Send messages to the system logger</a></li>

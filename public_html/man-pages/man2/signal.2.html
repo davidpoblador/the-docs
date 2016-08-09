@@ -90,44 +90,35 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;signal.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>typedef void (*sighandler_t)(int);</strong></p>
-<p class='spacer'>
-
-<p><strong>sighandler_t signal(int </strong><em>signum</em><strong>, sighandler_t </strong><em>handler</em><strong>);</strong></p>
+<p><strong>#include <signal.h></strong></p><p><strong>typedef void (*sighandler_t)(int);</strong></p><p><strong>sighandler_t</strong> <strong>signal(int</strong> <strong></strong><em>signum</em><strong>,</strong> <strong>sighandler_t</strong> <strong></strong><em>handler</em><strong>);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The behavior of <strong>signal</strong>() varies across UNIX versions, and has also varied historically across different versions of Linux. <strong>Avoid its use</strong>: use <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> instead. See <em>Portability</em> below.</p><p><strong>signal</strong>() sets the disposition of the signal <em>signum</em> to <em>handler</em>, which is either <strong>SIG_IGN</strong>, <strong>SIG_DFL</strong>, or the address of a programmer-defined function (a "signal handler").</p><p>If the signal <em>signum</em> is delivered to the process, then one of the following happens:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p>If the disposition is set to <strong>SIG_IGN</strong>, then the signal is ignored.</p>
+  </dd>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p>If the disposition is set to <strong>SIG_DFL</strong>, then the default action associated with the signal (see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>) occurs.</p>
+  </dd>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p>If the disposition is set to a function, then first either the disposition is reset to <strong>SIG_DFL</strong>, or the signal is blocked (see <em>Portability</em> below), and then <em>handler</em> is called with argument <em>signum</em>. If invocation of the handler caused the signal to be blocked, then the signal is unblocked upon return from the handler.</p>
+  </dd>
 
-<p>The behavior of <strong>signal</strong>() varies across UNIX versions, and has also varied historically across different versions of Linux. <strong>Avoid its use</strong>: use <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> instead. See <em>Portability</em> below.</p>
-<p class='spacer'>
-
-<p><strong>signal</strong>() sets the disposition of the signal <em>signum</em> to <em>handler</em>, which is either <strong>SIG_IGN</strong>, <strong>SIG_DFL</strong>, or the address of a programmer-defined function (a "signal handler").</p>
-<p class='spacer'>
-
-  <p>If the signal <em>signum</em> is delivered to the process, then one of the following happens:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>If the disposition is set to <strong>SIG_IGN</strong>, then the signal is ignored.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>If the disposition is set to <strong>SIG_DFL</strong>, then the default action associated with the signal (see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>) occurs.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>If the disposition is set to a function, then first either the disposition is reset to <strong>SIG_DFL</strong>, or the signal is blocked (see <em>Portability</em> below), and then <em>handler</em> is called with argument <em>signum</em>. If invocation of the handler caused the signal to be blocked, then the signal is unblocked upon return from the handler.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The signals <strong>SIGKILL</strong> and <strong>SIGSTOP</strong> cannot be caught or ignored.</p>
         </div>
       </section>
@@ -135,7 +126,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p><strong>signal</strong>() returns the previous value of the signal handler, or <strong>SIG_ERR</strong> on error. In the event of an error, <em>errno</em> is set to indicate the cause.</p>
         </div>
       </section>
@@ -144,19 +134,22 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>signum</em> is invalid.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>signum</em> is invalid.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2001, POSIX.1-2008, C89, C99.</p>
         </div>
       </section>
@@ -164,69 +157,25 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>The effects of <strong>signal</strong>() in a multithreaded process are unspecified.</p>
-<p class='spacer'>
-
-<p>According to POSIX, the behavior of a process is undefined after it ignores a <strong>SIGFPE</strong>, <strong>SIGILL</strong>, or <strong>SIGSEGV</strong> signal that was not generated by <a href="../man2/kill.2.html"><strong>kill</strong>(2)</a> or <a href="../man3/raise.3.html"><strong>raise</strong>(3)</a>. Integer division by zero has undefined result. On some architectures it will generate a <strong>SIGFPE</strong> signal. (Also dividing the most negative integer by -1 may generate <strong>SIGFPE</strong>.) Ignoring this signal might lead to an endless loop.</p>
-<p class='spacer'>
-
-<p>See <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> for details on what happens when <strong>SIGCHLD</strong> is set to <strong>SIG_IGN</strong>.</p>
-<p class='spacer'>
-
-<p>See <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a> for a list of the async-signal-safe functions that can be safely called from inside a signal handler.</p>
-<p class='spacer'>
-
-  <p>The use of <em>sighandler_t</em> is a GNU extension, exposed if <strong>_GNU_SOURCE</strong> is defined; glibc also defines (the BSD-derived) <em>sig_t</em> if <strong>_BSD_SOURCE</strong> (glibc 2.19 and earlier) or <strong>_DEFAULT_SOURCE</strong> (glibc 2.19 and later) is defined. Without use of such a type, the declaration of <strong>signal</strong>() is the somewhat harder to read:</p>
+<p>The effects of <strong>signal</strong>() in a multithreaded process are unspecified.</p><p>According to POSIX, the behavior of a process is undefined after it ignores a <strong>SIGFPE</strong>, <strong>SIGILL</strong>, or <strong>SIGSEGV</strong> signal that was not generated by <a href="../man2/kill.2.html"><strong>kill</strong>(2)</a> or <a href="../man3/raise.3.html"><strong>raise</strong>(3)</a>. Integer division by zero has undefined result. On some architectures it will generate a <strong>SIGFPE</strong> signal. (Also dividing the most negative integer by -1 may generate <strong>SIGFPE</strong>.) Ignoring this signal might lead to an endless loop.</p><p>See <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> for details on what happens when <strong>SIGCHLD</strong> is set to <strong>SIG_IGN</strong>.</p><p>See <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a> for a list of the async-signal-safe functions that can be safely called from inside a signal handler.</p><p>The use of <em>sighandler_t</em> is a GNU extension, exposed if <strong>_GNU_SOURCE</strong> is defined; glibc also defines (the BSD-derived) <em>sig_t</em> if <strong>_BSD_SOURCE</strong> (glibc 2.19 and earlier) or <strong>_DEFAULT_SOURCE</strong> (glibc 2.19 and later) is defined. Without use of such a type, the declaration of <strong>signal</strong>() is the somewhat harder to read:</p>
 <pre>
-<strong>void ( *</strong><em>signal</em><strong>(int </strong><em>signum</em><strong>, void (*</strong><em>handler</em><strong>)(int)) ) (int);</strong></pre>
 
-  <h3>Portability</h3>
-<p>The only portable use of <strong>signal</strong>() is to set a signal's disposition to <strong>SIG_DFL</strong> or <strong>SIG_IGN</strong>. The semantics when using <strong>signal</strong>() to establish a signal handler vary across systems (and POSIX.1 explicitly permits this variation); <strong>do not use it for this purpose.</strong></p>
-<p class='spacer'>
+<strong>void</strong> <strong>(</strong> <strong>*</strong><em>signal</em><strong>(int</strong> <strong></strong><em>signum</em><strong>,</strong> <strong>void</strong> <strong>(*</strong><em>handler</em><strong>)(int))</strong> <strong>)</strong> <strong>(int);</strong>
+</pre>
+<h3>Portability</h3>
+<p>The only portable use of <strong>signal</strong>() is to set a signal's disposition to <strong>SIG_DFL</strong> or <strong>SIG_IGN</strong>. The semantics when using <strong>signal</strong>() to establish a signal handler vary across systems (and POSIX.1 explicitly permits this variation); <strong>do not use it for this purpose.</strong></p><p>POSIX.1 solved the portability mess by specifying <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, which provides explicit control of the semantics when a signal handler is invoked; use that interface instead of <strong>signal</strong>().</p><p>In the original UNIX systems, when a handler that was established using <strong>signal</strong>() was invoked by the delivery of a signal, the disposition of the signal would be reset to <strong>SIG_DFL</strong>, and the system did not block delivery of further instances of the signal. This is equivalent to calling <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> with the following flags:</p><p>    sa.sa_flags = SA_RESETHAND | SA_NODEFER;</p><p>System&nbsp;V also provides these semantics for <strong>signal</strong>(). This was bad because the signal might be delivered again before the handler had a chance to reestablish itself. Furthermore, rapid deliveries of the same signal could result in recursive invocations of the handler.</p><p>BSD improved on this situation, but unfortunately also changed the semantics of the existing <strong>signal</strong>() interface while doing so. On BSD, when a signal handler is invoked, the signal disposition is not reset, and further instances of the signal are blocked from being delivered while the handler is executing. Furthermore, certain blocking system calls are automatically restarted if interrupted by a signal handler (see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>). The BSD semantics are equivalent to calling <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> with the following flags:</p><p>    sa.sa_flags = SA_RESTART;</p><p>The situation on Linux is as follows:</p><ul>
+<li><p>The kernel's <strong>signal</strong>() system call provides System&nbsp;V semantics.</p></li><li><p>By default, in glibc 2 and later, the <strong>signal</strong>() wrapper function does not invoke the kernel system call. Instead, it calls <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> using flags that supply BSD semantics. This default behavior is provided as long as a suitable feature test macro is defined: <strong>_BSD_SOURCE</strong> on glibc 2.19 and earlier or <strong>_DEFAULT_SOURCE</strong> in glibc 2.19 and later. (By default, these macros are defined; see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> for details.) If such a feature test macro is not defined, then <strong>signal</strong>() provides System&nbsp;V semantics.</p></li>
+</ul>
 
-<p>POSIX.1 solved the portability mess by specifying <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, which provides explicit control of the semantics when a signal handler is invoked; use that interface instead of <strong>signal</strong>().</p>
-<p class='spacer'>
-
-<p>In the original UNIX systems, when a handler that was established using <strong>signal</strong>() was invoked by the delivery of a signal, the disposition of the signal would be reset to <strong>SIG_DFL</strong>, and the system did not block delivery of further instances of the signal. This is equivalent to calling <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> with the following flags:</p>
-<p class='spacer'>
-
-<pre>    sa.sa_flags = SA_RESETHAND | SA_NODEFER;</pre>
-
-<p class='spacer'>
-
-<p>System&nbsp;V also provides these semantics for <strong>signal</strong>(). This was bad because the signal might be delivered again before the handler had a chance to reestablish itself. Furthermore, rapid deliveries of the same signal could result in recursive invocations of the handler.</p>
-<p class='spacer'>
-
-<p>BSD improved on this situation, but unfortunately also changed the semantics of the existing <strong>signal</strong>() interface while doing so. On BSD, when a signal handler is invoked, the signal disposition is not reset, and further instances of the signal are blocked from being delivered while the handler is executing. Furthermore, certain blocking system calls are automatically restarted if interrupted by a signal handler (see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>). The BSD semantics are equivalent to calling <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> with the following flags:</p>
-<p class='spacer'>
-
-<pre>    sa.sa_flags = SA_RESTART;</pre>
-
-<p class='spacer'>
-
-  <p>The situation on Linux is as follows:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>The kernel's <strong>signal</strong>() system call provides System&nbsp;V semantics.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>By default, in glibc 2 and later, the <strong>signal</strong>() wrapper function does not invoke the kernel system call. Instead, it calls <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> using flags that supply BSD semantics. This default behavior is provided as long as a suitable feature test macro is defined: <strong>_BSD_SOURCE</strong> on glibc 2.19 and earlier or <strong>_DEFAULT_SOURCE</strong> in glibc 2.19 and later. (By default, these macros are defined; see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> for details.) If such a feature test macro is not defined, then <strong>signal</strong>() provides System&nbsp;V semantics.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO signal&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man1/kill.1.html"><strong>kill</strong>(1)</a>, <a href="../man2/alarm.2.html"><strong>alarm</strong>(2)</a>, <a href="../man2/kill.2.html"><strong>kill</strong>(2)</a>, <a href="../man2/killpg.2.html"><strong>killpg</strong>(2)</a>, <a href="../man2/pause.2.html"><strong>pause</strong>(2)</a>, <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, <a href="../man2/signalfd.2.html"><strong>signalfd</strong>(2)</a>, <a href="../man2/sigpending.2.html"><strong>sigpending</strong>(2)</a>, <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>, <a href="../man2/sigsuspend.2.html"><strong>sigsuspend</strong>(2)</a>, <a href="../man3/bsd_signal.3.html"><strong>bsd_signal</strong>(3)</a>, <a href="../man3/raise.3.html"><strong>raise</strong>(3)</a>, <a href="../man3/siginterrupt.3.html"><strong>siginterrupt</strong>(3)</a>, <a href="../man3/sigqueue.3.html"><strong>sigqueue</strong>(3)</a>, <a href="../man3/sigsetops.3.html"><strong>sigsetops</strong>(3)</a>, <a href="../man3/sigvec.3.html"><strong>sigvec</strong>(3)</a>, <a href="../man3/sysv_signal.3.html"><strong>sysv_signal</strong>(3)</a>, <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="sigaltstack.2.html"><span aria-hidden="true">&larr;</span> sigaltstack.2: Set and/or get signal stack context</a></li>

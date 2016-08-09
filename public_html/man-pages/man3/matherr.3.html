@@ -91,100 +91,74 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;math.h&gt;</strong>
+<pre>
+<strong>#include <math.h></strong>
 
-<strong>int matherr(struct exception *</strong><em>exc</em><strong>);</strong>
+<strong>int</strong> <strong>matherr(struct</strong> <strong>exception</strong> <strong>*</strong><em>exc</em><strong>);</strong>
 
-<strong>extern _LIB_VERSION_TYPE _LIB_VERSION;</strong></pre>
-
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-  <p><strong>significand</strong>(), <strong>significandf</strong>(), <strong>significandl</strong>(): /* Since glibc 2.19: */ _DEFAULT_SOURCE</p>
-<pre>    || /* Glibc versions &lt;= 2.19: */ _SVID_SOURCE</pre>
-
-<p class='spacer'>
-
-<p>Link with <em>-lm</em>.</p>
+<strong>extern _LIB_VERSION_TYPE _LIB_VERSION;</strong>
+</pre>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>significand</strong>(), <strong>significandf</strong>(), <strong>significandl</strong>():</p><p>/* Since glibc 2.19: */ _DEFAULT_SOURCE     || /* Glibc versions &lt;= 2.19: */ _SVID_SOURCE</p><p>Link with <em>-lm</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The System V Interface Definition (SVID) specifies that various math functions should invoke a function called <strong>matherr</strong>() if a math exception is detected. This function is called before the math function returns; after <strong>matherr</strong>() returns, the system then returns to the math function, which in turn returns to the caller.</p>
-<p class='spacer'>
-
-<p>The <strong>matherr</strong>() mechanism is supported by glibc, but is now obsolete: new applications should use the techniques described in <a href="../man7/math_error.7.html"><strong>math_error</strong>(7)</a> and <a href="../man3/fenv.3.html"><strong>fenv</strong>(3)</a>. This page documents the glibc <strong>matherr</strong>() mechanism as an aid for maintaining and porting older applications.</p>
-<p class='spacer'>
-
-<p>To employ <strong>matherr</strong>(), the programmer must define the <strong>_SVID_SOURCE</strong> feature test macro (before including <em>any</em> header files), and assign the value <strong>_SVID_</strong> to the external variable <strong>_LIB_VERSION</strong>.</p>
-<p class='spacer'>
-
-<p>The system provides a default version of <strong>matherr</strong>(). This version does nothing, and returns zero (see below for the significance of this). The default <strong>matherr</strong>() can be overridden by a programmer-defined version, which will be invoked when an exception occurs. The function is invoked with one argument, a pointer to an <em>exception</em> structure, defined as follows:</p>
-<p class='spacer'>
-
-<pre>struct exception {
+<p>The System V Interface Definition (SVID) specifies that various math functions should invoke a function called <strong>matherr</strong>() if a math exception is detected. This function is called before the math function returns; after <strong>matherr</strong>() returns, the system then returns to the math function, which in turn returns to the caller.</p><p>The <strong>matherr</strong>() mechanism is supported by glibc, but is now obsolete: new applications should use the techniques described in <a href="../man7/math_error.7.html"><strong>math_error</strong>(7)</a> and <a href="../man3/fenv.3.html"><strong>fenv</strong>(3)</a>. This page documents the glibc <strong>matherr</strong>() mechanism as an aid for maintaining and porting older applications.</p><p>To employ <strong>matherr</strong>(), the programmer must define the <strong>_SVID_SOURCE</strong> feature test macro (before including <em>any</em> header files), and assign the value <strong>_SVID_</strong> to the external variable <strong>_LIB_VERSION</strong>.</p><p>The system provides a default version of <strong>matherr</strong>(). This version does nothing, and returns zero (see below for the significance of this). The default <strong>matherr</strong>() can be overridden by a programmer-defined version, which will be invoked when an exception occurs. The function is invoked with one argument, a pointer to an <em>exception</em> structure, defined as follows:</p>
+<pre>
+struct exception {
     int    type;      /* Exception type */
     char  *name;      /* Name of function causing exception */
     double arg1;      /* 1st argument to function */
     double arg2;      /* 2nd argument to function */
     double retval;    /* Function return value */
-}</pre>
+}
+</pre>
+<p>The <em>type</em> field has one of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>DOMAIN</strong></p>
+  </dt>
+  <dd>
+    <p>A domain error occurred (the function argument was outside the range for which the function is defined). The return value depends on the function; <em>errno</em> is set to <strong>EDOM</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>SING</strong></p>
+  </dt>
+  <dd>
+    <p>A pole error occurred (the function result is an infinity). The return value in most cases is <strong>HUGE</strong> (the largest single precision floating-point number), appropriately signed. In most cases, <em>errno</em> is set to <strong>EDOM</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>OVERFLOW</strong></p>
+  </dt>
+  <dd>
+    <p>An overflow occurred. In most cases, the value <strong>HUGE</strong> is returned, and <em>errno</em> is set to <strong>ERANGE</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>UNDERFLOW</strong></p>
+  </dt>
+  <dd>
+    <p>An underflow occurred. 0.0 is returned, and <em>errno</em> is set to <strong>ERANGE</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>TLOSS</strong></p>
+  </dt>
+  <dd>
+    <p>Total loss of significance. 0.0 is returned, and <em>errno</em> is set to <strong>ERANGE</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>PLOSS</strong></p>
+  </dt>
+  <dd>
+    <p>Partial loss of significance. This value is unused on glibc (and many other systems).</p>
+  </dd>
 
-<p class='spacer'>
-
-  <p>The <em>type</em> field has one of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>DOMAIN</strong></dt>
-    <dd>
-  <p>A domain error occurred (the function argument was outside the range for which the function is defined). The return value depends on the function; <em>errno</em> is set to <strong>EDOM</strong>.</p>
-    </dd>
-    <dt><strong>SING</strong></dt>
-    <dd>
-  <p>A pole error occurred (the function result is an infinity). The return value in most cases is <strong>HUGE</strong> (the largest single precision floating-point number), appropriately signed. In most cases, <em>errno</em> is set to <strong>EDOM</strong>.</p>
-    </dd>
-    <dt><strong>OVERFLOW</strong></dt>
-    <dd>
-  <p>An overflow occurred. In most cases, the value <strong>HUGE</strong> is returned, and <em>errno</em> is set to <strong>ERANGE</strong>.</p>
-    </dd>
-    <dt><strong>UNDERFLOW</strong></dt>
-    <dd>
-  <p>An underflow occurred. 0.0 is returned, and <em>errno</em> is set to <strong>ERANGE</strong>.</p>
-    </dd>
-    <dt><strong>TLOSS</strong></dt>
-    <dd>
-  <p>Total loss of significance. 0.0 is returned, and <em>errno</em> is set to <strong>ERANGE</strong>.</p>
-    </dd>
-    <dt><strong>PLOSS</strong></dt>
-    <dd>
-  <p>Partial loss of significance. This value is unused on glibc (and many other systems).</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The <em>arg1</em> and <em>arg2</em> fields are the arguments supplied to the function (<em>arg2</em> is undefined for functions that take only one argument).</p>
-<p class='spacer'>
-
-<p>The <em>retval</em> field specifies the return value that the math function will return to its caller. The programmer-defined <strong>matherr</strong>() can modify this field to change the return value of the math function.</p>
-<p class='spacer'>
-
-<p>If the <strong>matherr</strong>() function returns zero, then the system sets <em>errno</em> as described above, and may print an error message on standard error (see below).</p>
-<p class='spacer'>
-
-<p>If the <strong>matherr</strong>() function returns a nonzero value, then the system does not set <em>errno</em>, and doesn't print an error message.</p>
-  <h3>Math functions that employ matherr()</h3>
-<p>The table below lists the functions and circumstances in which <strong>matherr</strong>() is called. The "Type" column indicates the value assigned to <em>exc-&gt;type</em> when calling <strong>matherr</strong>(). The "Result" column is the default return value assigned to <em>exc-&gt;retval</em>.</p>
-<p class='spacer'>
-
-<p>The "Msg?" and "errno" columns describe the default behavior if <strong>matherr</strong>() returns zero. If the "Msg?" columns contains "y", then the system prints an error message on standard error.</p>
-<p class='spacer'>
-
-    <p>The table uses the following notations and abbreviations:</p>
+</dl>
+<p>The <em>arg1</em> and <em>arg2</em> fields are the arguments supplied to the function (<em>arg2</em> is undefined for functions that take only one argument).</p><p>The <em>retval</em> field specifies the return value that the math function will return to its caller. The programmer-defined <strong>matherr</strong>() can modify this field to change the return value of the math function.</p><p>If the <strong>matherr</strong>() function returns zero, then the system sets <em>errno</em> as described above, and may print an error message on standard error (see below).</p><p>If the <strong>matherr</strong>() function returns a nonzero value, then the system does not set <em>errno</em>, and doesn't print an error message.</p><h3>Math functions that employ matherr()</h3>
+<p>The table below lists the functions and circumstances in which <strong>matherr</strong>() is called. The "Type" column indicates the value assigned to <em>exc->type</em> when calling <strong>matherr</strong>(). The "Result" column is the default return value assigned to <em>exc->retval</em>.</p><p>The "Msg?" and "errno" columns describe the default behavior if <strong>matherr</strong>() returns zero. If the "Msg?" columns contains "y", then the system prints an error message on standard error.</p><p>The table uses the following notations and abbreviations:</p>
 <pre>
+
 x        first argument to function
 y        second argument to function
 fin      finite value for argument
@@ -193,8 +167,8 @@ int      integral value for argument
 o/f      result overflowed
 u/f      result underflowed
 |x|      absolute value of x
-X_TLOSS  is a constant defined in <em>&lt;math.h&gt;</em></pre>
-
+X_TLOSS  is a constant defined in <em>&lt;math.h&gt;</em>
+</pre>
 <table class="table table-striped">
 <tr>
 <th>Function</th>
@@ -620,9 +594,7 @@ X_TLOSS  is a constant defined in <em>&lt;math.h&gt;</em></pre>
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -633,68 +605,48 @@ X_TLOSS  is a constant defined in <em>&lt;math.h&gt;</em></pre>
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-<p>The example program demonstrates the use of <strong>matherr</strong>() when calling <a href="../man3/log.3.html"><strong>log</strong>(3)</a>. The program takes up to three command-line arguments. The first argument is the floating-point number to be given to <a href="../man3/log.3.html"><strong>log</strong>(3)</a>. If the optional second argument is provided, then <strong>_LIB_VERSION</strong> is set to <strong>_SVID_</strong> so that <strong>matherr</strong>() is called, and the integer supplied in the command-line argument is used as the return value from <strong>matherr</strong>(). If the optional third command-line argument is supplied, then it specifies an alternative return value that <strong>matherr</strong>() should assign as the return value of the math function.</p>
-<p class='spacer'>
-
-<p>The following example run, where <a href="../man3/log.3.html"><strong>log</strong>(3)</a> is given an argument of 0.0, does not use <strong>matherr</strong>():</p>
-<p class='spacer'>
-
-<pre>$<strong> ./a.out 0.0</strong>
+<p>The example program demonstrates the use of <strong>matherr</strong>() when calling <a href="../man3/log.3.html"><strong>log</strong>(3)</a>. The program takes up to three command-line arguments. The first argument is the floating-point number to be given to <a href="../man3/log.3.html"><strong>log</strong>(3)</a>. If the optional second argument is provided, then <strong>_LIB_VERSION</strong> is set to <strong>_SVID_</strong> so that <strong>matherr</strong>() is called, and the integer supplied in the command-line argument is used as the return value from <strong>matherr</strong>(). If the optional third command-line argument is supplied, then it specifies an alternative return value that <strong>matherr</strong>() should assign as the return value of the math function.</p><p>The following example run, where <a href="../man3/log.3.html"><strong>log</strong>(3)</a> is given an argument of 0.0, does not use <strong>matherr</strong>():</p>
+<pre>
+$<strong></strong> <strong>./a.out</strong> <strong>0.0</strong>
 errno: Numerical result out of range
-x=-inf</pre>
-
-<p class='spacer'>
-
+x=-inf
+</pre>
 <p>In the following run, <strong>matherr</strong>() is called, and returns 0:</p>
-<p class='spacer'>
-
-<pre>$<strong> ./a.out 0.0 0</strong>
+<pre>
+$<strong></strong> <strong>./a.out</strong> <strong>0.0</strong> <strong>0</strong>
 matherr SING exception in log() function
         args:   0.000000, 0.000000
         retval: -340282346638528859811704183484516925440.000000
 log: SING error
 errno: Numerical argument out of domain
-x=-340282346638528859811704183484516925440.000000</pre>
-
-<p class='spacer'>
-
-<p>The message "log: SING error" was printed by the C library.</p>
-<p class='spacer'>
-
-<p>In the following run, <strong>matherr</strong>() is called, and returns a nonzero value:</p>
-<p class='spacer'>
-
-<pre>$<strong> ./a.out 0.0 1</strong>
+x=-340282346638528859811704183484516925440.000000
+</pre>
+<p>The message "log: SING error" was printed by the C library.</p><p>In the following run, <strong>matherr</strong>() is called, and returns a nonzero value:</p>
+<pre>
+$<strong></strong> <strong>./a.out</strong> <strong>0.0</strong> <strong>1</strong>
 matherr SING exception in log() function
         args:   0.000000, 0.000000
         retval: -340282346638528859811704183484516925440.000000
-x=-340282346638528859811704183484516925440.000000</pre>
-
-<p class='spacer'>
-
-<p>In this case, the C library did not print a message, and <em>errno</em> was not set.</p>
-<p class='spacer'>
-
-<p>In the following run, <strong>matherr</strong>() is called, changes the return value of the math function, and returns a nonzero value:</p>
-<p class='spacer'>
-
-<pre>$<strong> ./a.out 0.0 1 12345.0</strong>
+x=-340282346638528859811704183484516925440.000000
+</pre>
+<p>In this case, the C library did not print a message, and <em>errno</em> was not set.</p><p>In the following run, <strong>matherr</strong>() is called, changes the return value of the math function, and returns a nonzero value:</p>
+<pre>
+$<strong></strong> <strong>./a.out</strong> <strong>0.0</strong> <strong>1</strong> <strong>12345.0</strong>
 matherr SING exception in log() function
         args:   0.000000, 0.000000
         retval: -340282346638528859811704183484516925440.000000
-x=12345.000000</pre>
+x=12345.000000
+</pre>
+<h3>Program source</h3>
 
-  <h3>Program source</h3>
-  <p></p>
-<pre>#define _SVID_SOURCE
+<pre>
+#define _SVID_SOURCE
 #include &lt;errno.h&gt;
 #include &lt;math.h&gt;
 #include &lt;stdio.h&gt;
@@ -754,7 +706,9 @@ main(int argc, char *argv[])
 
     printf("x=%f&#92;n", x);
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
+
 
         </div>
       </section>
@@ -762,14 +716,12 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO matherr&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/fenv.3.html"><strong>fenv</strong>(3)</a>, <a href="../man7/math_error.7.html"><strong>math_error</strong>(7)</a>, <a href="../man7/standards.7.html"><strong>standards</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="matchpathcon_init.3.html"><span aria-hidden="true">&larr;</span> matchpathcon_init.3: Get the default selinux security context for the specified path from the file contexts configuration .</a></li>
+   <li class="previous"><a href="matchpathcon_init.3.html"><span aria-hidden="true">&larr;</span> matchpathcon_init.3: Get the default selinux security context for the specified path from the file contexts configuration</a></li>
    <li class="next"><a href="mblen.3.html">mblen.3: Determine number of bytes in next multibyte character <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

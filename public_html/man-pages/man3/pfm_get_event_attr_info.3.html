@@ -91,9 +91,11 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;perfmon/pfmlib.h&gt;</strong>
+<pre>
+<strong>#include <perfmon/pfmlib.h></strong>
 
-<strong>int pfm_get_event_attr_info(int </strong><em>idx</em><strong>, int </strong><em>attr</em><strong>, pfm_os_t </strong><em>os</em><strong>, pfm_event_attr_info_t *</strong><em>info</em><strong>);</strong>
+<strong>int</strong> <strong>pfm_get_event_attr_info(int</strong> <strong></strong><em>idx</em><strong>,</strong> <strong>int</strong> <strong></strong><em>attr</em><strong>,</strong> <strong>pfm_os_t</strong> <strong></strong><em>os</em><strong>,</strong> <strong>pfm_event_attr_info_t</strong> <strong>*</strong><em>info</em><strong>);</strong>
+
 </pre>
 
         </div>
@@ -102,29 +104,31 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>This function returns in <strong>info</strong> information about the attribute designated by <strong>attr</strong> for the event specified in <strong>idx</strong> and the os layer in <strong>os</strong>.</p><p>The <strong>pfm_os_t</strong> enumeration provides the following choices:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PFM_OS_NONE</strong></p>
+  </dt>
+  <dd>
+    <p>The returned information pertains only to what the PMU hardware exports. No operating system attributes is taken into account.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_OS_PERF_EVENT</strong></p>
+  </dt>
+  <dd>
+    <p>The returned information includes the actual PMU hardware and the additional attributes exported by the perf_events kernel interface. The perf_event attributes pertain only the PMU hardware. In case perf_events is not detected, an error is returned.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_OS_PERF_EVENT_EXT</strong></p>
+  </dt>
+  <dd>
+    <p>The returned information includes all of what is already provided by <strong>PFM_OS_PERF_EVENT</strong> plus all the software attributes controlled by perf_events, such as sampling period, precise sampling.</p>
+  </dd>
 
-<p>This function returns in <strong>info</strong> information about the attribute designated by <strong>attr</strong> for the event specified in <strong>idx</strong> and the os layer in <strong>os</strong>.</p>
-<p class='spacer'>
-
-  <p>The <strong>pfm_os_t</strong> enumeration provides the following choices:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>PFM_OS_NONE</strong></dt>
-    <dd>
-  <p>The returned information pertains only to what the PMU hardware exports. No operating system attributes is taken into account.</p>
-    </dd>
-    <dt><strong>PFM_OS_PERF_EVENT</strong></dt>
-    <dd>
-  <p>The returned information includes the actual PMU hardware and the additional attributes exported by the perf_events kernel interface. The perf_event attributes pertain only the PMU hardware. In case perf_events is not detected, an error is returned.</p>
-    </dd>
-    <dt><strong>PFM_OS_PERF_EVENT_EXT</strong></dt>
-    <dd>
-  <p>The returned information includes all of what is already provided by <strong>PFM_OS_PERF_EVENT</strong> plus all the software attributes controlled by perf_events, such as sampling period, precise sampling.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-  <p>The <strong>pfm_event_attr_info_t</strong> structure is defined as follows:</p>
-<pre>typedef struct {
+</dl>
+<p>The <strong>pfm_event_attr_info_t</strong> structure is defined as follows:</p>
+<pre>
+typedef struct {
         const char              *name;
         const char              *desc;
         const char              *equiv;
@@ -145,92 +149,128 @@
                 int             dfl_bool;
                 int             dfl_int;
         };
-} pfm_event_attr_info_t;</pre>
+} pfm_event_attr_info_t;
+</pre>
+<p>The fields of this structure are defined as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>name</strong></p>
+  </dt>
+  <dd>
+    <p>This is the name of the attribute. This is a read-only string.</p>
+  </dd>
+  <dt>
+    <p><strong>desc</strong></p>
+  </dt>
+  <dd>
+    <p>This is the description of the attribute. This is a read-only string. It may contain multiple sentences.</p>
+  </dd>
+  <dt>
+    <p><strong>equiv</strong></p>
+  </dt>
+  <dd>
+    <p>Certain attributes may be just variations of other attributes for the same event. They may be provided as handy shortcuts to avoid supplying a long list of attributes. For those attributes, this field is not NULL and contains the complete equivalent attribute string. This string, once appended to the event name, may be used library calls requiring an event string.</p>
+  </dd>
+  <dt>
+    <p><strong>code</strong></p>
+  </dt>
+  <dd>
+    <p>This is the raw attribute code. For PFM_ATTR_UMASK, this is the unit mask code. For all other attributes, this is an opaque index.</p>
+  </dd>
+  <dt>
+    <p><strong>type</strong></p>
+  </dt>
+  <dd>
+    <p>This is the type of the attribute. Attributes represent either sub-events or extra filters that can be applied to the event. Filters (also called modifiers)  may be tied to the event or the PMU register the event is programmed into. The type of an attribute determines how it must be specified. The following types are defined:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PFM_ATTR_UMASK</strong></p>
+  </dt>
+  <dd>
+    <p>This is a unit mask, i.e., a sub-event. It is specified using its name. Depending on the event, it may be possible to specify multiple unit masks.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ATTR_MOD_BOOL</strong></p>
+  </dt>
+  <dd>
+    <p>This is a boolean attribute. It has a value of 0, 1, y or n. The value is specified after the equal sign, e.g., foo=1. As a convenience, the equal sign and value may be omitted, in which case this is equivalent to =1.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ATTR_MOD_INTEGER</strong></p>
+  </dt>
+  <dd>
+    <p>This is an integer attribute. It has a value which must be passed after the equal sign. The range of valid values depends on the attribute and is usually specified in its description.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <p>The fields of this structure are defined as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>name</strong></dt>
-    <dd>
-  <p>This is the name of the attribute. This is a read-only string.</p>
-    </dd>
-    <dt><strong>desc</strong></dt>
-    <dd>
-  <p>This is the description of the attribute. This is a read-only string. It may contain multiple sentences.</p>
-    </dd>
-    <dt><strong>equiv</strong></dt>
-    <dd>
-  <p>Certain attributes may be just variations of other attributes for the same event. They may be provided as handy shortcuts to avoid supplying a long list of attributes. For those attributes, this field is not NULL and contains the complete equivalent attribute string. This string, once appended to the event name, may be used library calls requiring an event string.</p>
-    </dd>
-    <dt><strong>code</strong></dt>
-    <dd>
-  <p>This is the raw attribute code. For PFM_ATTR_UMASK, this is the unit mask code. For all other attributes, this is an opaque index.</p>
-    </dd>
-    <dt><strong>type</strong></dt>
-    <dd>
-      <p>This is the type of the attribute. Attributes represent either sub-events or extra filters that can be applied to the event. Filters (also called modifiers)  may be tied to the event or the PMU register the event is programmed into. The type of an attribute determines how it must be specified. The following types are defined:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>PFM_ATTR_UMASK</strong></dt>
-        <dd>
-      <p>This is a unit mask, i.e., a sub-event. It is specified using its name. Depending on the event, it may be possible to specify multiple unit masks.</p>
-        </dd>
-        <dt><strong>PFM_ATTR_MOD_BOOL</strong></dt>
-        <dd>
-      <p>This is a boolean attribute. It has a value of 0, 1, y or n. The value is specified after the equal sign, e.g., foo=1. As a convenience, the equal sign and value may be omitted, in which case this is equivalent to =1.</p>
-        </dd>
-        <dt><strong>PFM_ATTR_MOD_INTEGER</strong></dt>
-        <dd>
-      <p>This is an integer attribute. It has a value which must be passed after the equal sign. The range of valid values depends on the attribute and is usually specified in its description.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
+  </dd>
+  <dt>
+    <p><strong>idx</strong></p>
+  </dt>
+  <dd>
+    <p>This is the attribute index. It is identical to the value of <strong>attr</strong> passed to the call and is provided for completeness.</p>
+  </dd>
+  <dt>
+    <p><strong>size</strong></p>
+  </dt>
+  <dd>
+    <p>This field contains the size of the struct passed. This field is used to provide for extensibility of the struct without compromising backward compatibility. The value should be set to <strong>sizeof(pfm_event_attr_info_t)</strong>. If instead, a value of <strong>0</strong> is specified, the library assumes the struct passed is identical to the first ABI version which size is <strong>PFM_ATTR_INFO_ABI0</strong>. Thus, if fields were added after the first ABI, they will not be set by the library. The library does check that bytes beyond what is implemented are zeroes.</p>
+  </dd>
+  <dt>
+    <p><strong>is_dfl</strong></p>
+  </dt>
+  <dd>
+    <p>This field indicates whether or not this attribute is set by default. This applies mostly for PFM_ATTR_UMASK. If a unit mask is marked as default, and no unit mask is specified in the event string, then the library uses it by default. Note that there may be multiple defaults per event depending on how unit masks are grouped.</p>
+  </dd>
+  <dt>
+    <p><strong>is_precise</strong></p>
+  </dt>
+  <dd>
+    <p>This field indicates whether or not this umask supports precise sampling. Precise sampling is a hardware mechanism that avoids instruction address skid when using interrupt-based sampling. On Intel X86 processors, this field indicates that the umask supports Precise Event-Based Sampling (PEBS).</p>
+  </dd>
+  <dt>
+    <p><strong>dfl_val64, dfl_str, dfl_bool, dfl_int</strong></p>
+  </dt>
+  <dd>
+    <p>This union contains the value of an attribute. For PFM_ATTR_UMASK, the is the unit mask code, for all other types this is the actual value of the attribute.</p>
+  </dd>
+  <dt>
+    <p><strong>ctrl</strong></p>
+  </dt>
+  <dd>
+    <p>This field indicates which layer or source controls the attribute. The following sources are defined:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PFM_ATTR_CTRL_UNKNOWN</strong></p>
+  </dt>
+  <dd>
+    <p>The source controlling the attribute is not known.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ATTR_CTRL_PMU</strong></p>
+  </dt>
+  <dd>
+    <p>The attribute is controlled by the PMU hardware.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ATTR_CTRL_PERF_EVENT</strong></p>
+  </dt>
+  <dd>
+    <p>The attribute is controlled by the perf_events kernel interface.</p>
+  </dd>
 
-    </dd>
-    <dt><strong>idx</strong></dt>
-    <dd>
-  <p>This is the attribute index. It is identical to the value of <strong>attr</strong> passed to the call and is provided for completeness.</p>
-    </dd>
-    <dt><strong>size</strong></dt>
-    <dd>
-  <p>This field contains the size of the struct passed. This field is used to provide for extensibility of the struct without compromising backward compatibility. The value should be set to <strong>sizeof(pfm_event_attr_info_t)</strong>. If instead, a value of <strong>0</strong> is specified, the library assumes the struct passed is identical to the first ABI version which size is <strong>PFM_ATTR_INFO_ABI0</strong>. Thus, if fields were added after the first ABI, they will not be set by the library. The library does check that bytes beyond what is implemented are zeroes.</p>
-    </dd>
-    <dt><strong>is_dfl</strong></dt>
-    <dd>
-  <p>This field indicates whether or not this attribute is set by default. This applies mostly for PFM_ATTR_UMASK. If a unit mask is marked as default, and no unit mask is specified in the event string, then the library uses it by default. Note that there may be multiple defaults per event depending on how unit masks are grouped.</p>
-    </dd>
-    <dt><strong>is_precise</strong></dt>
-    <dd>
-  <p>This field indicates whether or not this umask supports precise sampling. Precise sampling is a hardware mechanism that avoids instruction address skid when using interrupt-based sampling. On Intel X86 processors, this field indicates that the umask supports Precise Event-Based Sampling (PEBS).</p>
-    </dd>
-    <dt><strong>dfl_val64, dfl_str, dfl_bool, dfl_int</strong></dt>
-    <dd>
-  <p>This union contains the value of an attribute. For PFM_ATTR_UMASK, the is the unit mask code, for all other types this is the actual value of the attribute.</p>
-    </dd>
-    <dt><strong>ctrl</strong></dt>
-    <dd>
-      <p>This field indicates which layer or source controls the attribute. The following sources are defined:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>PFM_ATTR_CTRL_UNKNOWN</strong></dt>
-        <dd>
-      <p>The source controlling the attribute is not known.</p>
-        </dd>
-        <dt><strong>PFM_ATTR_CTRL_PMU</strong></dt>
-        <dd>
-      <p>The attribute is controlled by the PMU hardware.</p>
-        </dd>
-        <dt><strong>PFM_ATTR_CTRL_PERF_EVENT</strong></dt>
-        <dd>
-      <p>The attribute is controlled by the perf_events kernel interface.</p>
-        </dd>
-      </dl>
-    </dd>
-    <dt><strong>reserved</strong></dt>
-    <dd>
-  <p>These fields must be set to zero.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+
+  </dd>
+  <dt>
+    <p><strong>reserved</strong></p>
+  </dt>
+  <dd>
+    <p>These fields must be set to zero.</p>
+  </dd>
+
+</dl>
 
         </div>
       </section>
@@ -238,9 +278,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
 <p>If successful, the function returns <strong>PFM_SUCCESS</strong> and attribute information in <strong>info</strong>, otherwise it returns an error code.</p>
         </div>
       </section>
@@ -249,35 +286,40 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>PFMLIB_ERR_NOINIT</strong></dt>
-    <dd>
-  <p>Library has not been initialized properly.</p>
-    </dd>
-    <dt><strong>PFMLIB_ERR_INVAL</strong></dt>
-    <dd>
-  <p>The <strong>idx</strong> or <strong>attr</strong> arguments are invalid or <strong>info</strong> is <strong>NULL</strong> or <strong>size</strong> is not zero.</p>
-    </dd>
-    <dt><strong>PFM_ERR_NOTSUPP</strong></dt>
-    <dd>
-  <p>The requested os layer has not been detected on the host system.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PFMLIB_ERR_NOINIT</strong></p>
+  </dt>
+  <dd>
+    <p>Library has not been initialized properly.</p>
+  </dd>
+  <dt>
+    <p><strong>PFMLIB_ERR_INVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>idx</strong> or <strong>attr</strong> arguments are invalid or <strong>info</strong> is <strong>NULL</strong> or <strong>size</strong> is not zero.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_NOTSUPP</strong></p>
+  </dt>
+  <dd>
+    <p>The requested os layer has not been detected on the host system.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
-
 <p>Stephane Eranian &lt;eranian@gmail.com&gt;</p>
-<p class='spacer'>
-
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="perror.3.html"><span aria-hidden="true">&larr;</span> perror.3: Print a system error message</a></li>
+   <li class="previous"><a href="pfm_find_event.3.html"><span aria-hidden="true">&larr;</span> pfm_find_event.3: None</a></li>
    <li class="next"><a href="pfm_get_event_encoding.3.html">pfm_get_event_encoding.3: Get raw event encoding <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

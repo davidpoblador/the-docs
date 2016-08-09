@@ -90,46 +90,20 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;unistd.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>#include &lt;sys/mman.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>int mincore(void *</strong><em>addr</em><strong>, size_t </strong><em>length</em><strong>, unsigned char *</strong><em>vec</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-<p><strong>mincore</strong>():</p>
-<pre>    Since glibc 2.19:
-        _DEFAULT_SOURCE
-    Glibc 2.19 and earlier:
-        _BSD_SOURCE || _SVID_SOURCE</pre>
-
+<p><strong>#include <unistd.h></strong></p><p><strong>#include <sys/mman.h></strong></p><p><strong>int</strong> <strong>mincore(void</strong> <strong>*</strong><em>addr</em><strong>,</strong> <strong>size_t</strong> <strong></strong><em>length</em><strong>,</strong> <strong>unsigned</strong> <strong>char</strong> <strong>*</strong><em>vec</em><strong>);</strong></p><p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>mincore</strong>():     Since glibc 2.19:         _DEFAULT_SOURCE     Glibc 2.19 and earlier:         _BSD_SOURCE || _SVID_SOURCE</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>mincore</strong>() returns a vector that indicates whether pages of the calling process's virtual memory are resident in core (RAM), and so will not cause a disk access (page fault) if referenced. The kernel returns residency information about the pages starting at the address <em>addr</em>, and continuing for <em>length</em> bytes.</p>
-<p class='spacer'>
-
-<p>The <em>addr</em> argument must be a multiple of the system page size. The <em>length</em> argument need not be a multiple of the page size, but since residency information is returned for whole pages, <em>length</em> is effectively rounded up to the next multiple of the page size. One may obtain the page size (<strong>PAGE_SIZE</strong>) using <em>sysconf(_SC_PAGESIZE)</em>.</p>
-<p class='spacer'>
-
-<p>The <em>vec</em> argument must point to an array containing at least <em>(length+PAGE_SIZE-1) / PAGE_SIZE</em> bytes. On return, the least significant bit of each byte will be set if the corresponding page is currently resident in memory, and be clear otherwise. (The settings of the other bits in each byte are undefined; these bits are reserved for possible later use.) Of course the information returned in <em>vec</em> is only a snapshot: pages that are not locked in memory can come and go at any moment, and the contents of <em>vec</em> may already be stale by the time this call returns.</p>
+<p><strong>mincore</strong>() returns a vector that indicates whether pages of the calling process's virtual memory are resident in core (RAM), and so will not cause a disk access (page fault) if referenced. The kernel returns residency information about the pages starting at the address <em>addr</em>, and continuing for <em>length</em> bytes.</p><p>The <em>addr</em> argument must be a multiple of the system page size. The <em>length</em> argument need not be a multiple of the page size, but since residency information is returned for whole pages, <em>length</em> is effectively rounded up to the next multiple of the page size. One may obtain the page size (<strong>PAGE_SIZE</strong>) using <em>sysconf(_SC_PAGESIZE)</em>.</p><p>The <em>vec</em> argument must point to an array containing at least <em>(length+PAGE_SIZE-1) / PAGE_SIZE</em> bytes. On return, the least significant bit of each byte will be set if the corresponding page is currently resident in memory, and be clear otherwise. (The settings of the other bits in each byte are undefined; these bits are reserved for possible later use.) Of course the information returned in <em>vec</em> is only a snapshot: pages that are not locked in memory can come and go at any moment, and the contents of <em>vec</em> may already be stale by the time this call returns.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, <strong>mincore</strong>() returns zero. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -137,33 +111,41 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p><strong>EAGAIN</strong> kernel is temporarily out of resources.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p><em>vec</em> points to an invalid address.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>addr</em> is not a multiple of the page size.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p><em>length</em> is greater than (<em>TASK_SIZE</em> - <em>addr</em>). (This could occur if a negative value is specified for <em>length</em>, since that value will be interpreted as a large unsigned integer.) In Linux 2.6.11 and earlier, the error <strong>EINVAL</strong> was returned for this condition.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p><em>addr</em> to <em>addr</em> + <em>length</em> contained unmapped memory.</p>
+  </dd>
 
-  <p><strong>EAGAIN</strong> kernel is temporarily out of resources.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p><em>vec</em> points to an invalid address.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>addr</em> is not a multiple of the page size.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p><em>length</em> is greater than (<em>TASK_SIZE</em> - <em>addr</em>). (This could occur if a negative value is specified for <em>length</em>, since that value will be interpreted as a large unsigned integer.) In Linux 2.6.11 and earlier, the error <strong>EINVAL</strong> was returned for this condition.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p><em>addr</em> to <em>addr</em> + <em>length</em> contained unmapped memory.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>Available since Linux 2.3.99pre1 and glibc 2.2.</p>
         </div>
       </section>
@@ -171,7 +153,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p><strong>mincore</strong>() is not specified in POSIX.1, and it is not available on all UNIX implementations.</p>
         </div>
       </section>
@@ -179,7 +160,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>Before kernel 2.6.21, <strong>mincore</strong>() did not return correct information for <strong>MAP_PRIVATE</strong> mappings, or for nonlinear mappings (established using <a href="../man2/remap_file_pages.2.html"><strong>remap_file_pages</strong>(2)</a>).</p>
         </div>
       </section>
@@ -187,11 +167,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO mincore&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a>, <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="migrate_pages.2.html"><span aria-hidden="true">&larr;</span> migrate_pages.2: Move all pages in a process to another set of nodes</a></li>

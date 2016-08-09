@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p>#include &lt;linux/loop.h&gt;</p>
         </div>
       </section>
@@ -98,39 +97,35 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-  <p>The loop device is a block device that maps its data blocks not to a physical device such as a hard disk or optical disk drive, but to the blocks of a regular file in a filesystem or to another block device. This can be useful for example to provide a block device for a filesystem image stored in a file, so that it can be mounted with the <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a> command. You could do</p>
+<p>The loop device is a block device that maps its data blocks not to a physical device such as a hard disk or optical disk drive, but to the blocks of a regular file in a filesystem or to another block device. This can be useful for example to provide a block device for a filesystem image stored in a file, so that it can be mounted with the <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a> command. You could do</p>
 <pre>
 $ <strong>dd if=/dev/zero of=file.img bs=1MiB count=10</strong>
 $ <strong>sudo losetup /dev/loop4 file.img </strong>
 $ <strong>sudo mkfs -t ext4 /dev/loop4</strong>
 $ <strong>sudo mkdir /myloopdev</strong>
-$ <strong>sudo mount /dev/loop4 /myloopdev</strong></pre>
-
-<p class='spacer'>
-
-<p>See <a href="../man8/losetup.8.html"><strong>losetup</strong>(8)</a> for another example.</p>
-<p class='spacer'>
-
-<p>A transfer function can be specified for each loop device for encryption and decryption purposes.</p>
-<p class='spacer'>
-
-  <p>The following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> operations are provided by the loop block device:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>LOOP_SET_FD</strong></dt>
-    <dd>
-  <p>Associate the loop device with the open file whose file descriptor is passed as the (third) <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument.</p>
-    </dd>
-    <dt><strong>LOOP_CLR_FD</strong></dt>
-    <dd>
-  <p>Disassociate the loop device from any file descriptor.</p>
-    </dd>
-    <dt><strong>LOOP_SET_STATUS</strong></dt>
-    <dd>
-  <p>Set the status of the loop device using the (third) <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument. This argument is a pointer to <em>loop_info</em> structure, defined in <em>&lt;linux/loop.h&gt;</em> as:</p>
-<p class='spacer'>
-
-<pre>struct loop_info {
+$ <strong>sudo mount /dev/loop4 /myloopdev</strong>
+</pre>
+<p>See <a href="../man8/losetup.8.html"><strong>losetup</strong>(8)</a> for another example.</p><p>A transfer function can be specified for each loop device for encryption and decryption purposes.</p><p>The following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> operations are provided by the loop block device:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>LOOP_SET_FD</strong></p>
+  </dt>
+  <dd>
+    <p>Associate the loop device with the open file whose file descriptor is passed as the (third) <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument.</p>
+  </dd>
+  <dt>
+    <p><strong>LOOP_CLR_FD</strong></p>
+  </dt>
+  <dd>
+    <p>Disassociate the loop device from any file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>LOOP_SET_STATUS</strong></p>
+  </dt>
+  <dd>
+    <p>Set the status of the loop device using the (third) <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument. This argument is a pointer to <em>loop_info</em> structure, defined in <em><linux/loop.h></em> as:</p>
+<pre>
+struct loop_info {
     int           lo_number;            /* ioctl r/o */
     dev_t         lo_device;            /* ioctl r/o */
     unsigned long lo_inode;             /* ioctl r/o */
@@ -144,52 +139,61 @@ $ <strong>sudo mount /dev/loop4 /myloopdev</strong></pre>
                                         /* ioctl w/o */
     unsigned long lo_init[2];
     char          reserved[4];
-};</pre>
+};
+</pre>
+<p>The encryption type (<em>lo_encrypt_type</em>) should be one of <strong>LO_CRYPT_NONE</strong>, <strong>LO_CRYPT_XOR</strong>, <strong>LO_CRYPT_DES</strong>, <strong>LO_CRYPT_FISH2</strong>, <strong>LO_CRYPT_BLOW</strong>, <strong>LO_CRYPT_CAST128</strong>, <strong>LO_CRYPT_IDEA</strong>, <strong>LO_CRYPT_DUMMY</strong>, <strong>LO_CRYPT_SKIPJACK</strong>, or (since Linux 2.6.0) <strong>LO_CRYPT_CRYPTOAPI</strong>.</p><p>The <em>lo_flags</em> field is a bit mask that can include zero or more of the following:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>LO_FLAGS_READ_ONLY</strong></p>
+  </dt>
+  <dd>
+    <p>The loopback device is read-only.</p>
+  </dd>
+  <dt>
+    <p><strong>LO_FLAGS_AUTOCLEAR</strong> (since Linux 2.6.25)</p>
+  </dt>
+  <dd>
+    <p>The loopback device will autodestruct on last close.</p>
+  </dd>
+  <dt>
+    <p><strong>LO_FLAGS_PARTSCAN</strong> (since Linux 3.2)</p>
+  </dt>
+  <dd>
+    <p>Allow automatic partition scanning.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <p>The encryption type (<em>lo_encrypt_type</em>) should be one of <strong>LO_CRYPT_NONE</strong>, <strong>LO_CRYPT_XOR</strong>, <strong>LO_CRYPT_DES</strong>, <strong>LO_CRYPT_FISH2</strong>, <strong>LO_CRYPT_BLOW</strong>, <strong>LO_CRYPT_CAST128</strong>, <strong>LO_CRYPT_IDEA</strong>, <strong>LO_CRYPT_DUMMY</strong>, <strong>LO_CRYPT_SKIPJACK</strong>, or (since Linux 2.6.0) <strong>LO_CRYPT_CRYPTOAPI</strong>.</p>
-<p class='spacer'>
+  </dd>
+  <dt>
+    <p><strong>LOOP_GET_STATUS</strong></p>
+  </dt>
+  <dd>
+    <p>Get the status of the loop device. The (third) <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument must be a pointer to a <em>struct</em> <em>loop_info</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>LOOP_CHANGE_FD</strong> (since Linux 2.6.5)</p>
+  </dt>
+  <dd>
+    <p>Switch the backing store of the loop device to the new file identified file descriptor specified in the (third) <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument, which is an integer. This operation is possible only if the loop device is read-only and the new backing store is the same size and type as the old backing store.</p>
+  </dd>
+  <dt>
+    <p><strong>LOOP_SET_CAPACITY</strong> (since Linux 2.6.30)</p>
+  </dt>
+  <dd>
+    <p>Resize a live loop device. One can change the size of the underlying backing store and then use this operation so that the loop driver learns about the new size. This operation takes no argument.</p>
+  </dd>
 
-      <p>The <em>lo_flags</em> field is a bit mask that can include zero or more of the following:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>LO_FLAGS_READ_ONLY</strong></dt>
-        <dd>
-      <p>The loopback device is read-only.</p>
-        </dd>
-        <dt><strong>LO_FLAGS_AUTOCLEAR</strong> (since Linux 2.6.25)</dt>
-        <dd>
-      <p>The loopback device will autodestruct on last close.</p>
-        </dd>
-        <dt><strong>LO_FLAGS_PARTSCAN</strong> (since Linux 3.2)</dt>
-        <dd>
-      <p>Allow automatic partition scanning.</p>
-        </dd>
-      </dl>
-    </dd>
-    <dt><strong>LOOP_GET_STATUS</strong></dt>
-    <dd>
-  <p>Get the status of the loop device. The (third) <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument must be a pointer to a <em>struct loop_info</em>.</p>
-    </dd>
-    <dt><strong>LOOP_CHANGE_FD</strong> (since Linux 2.6.5)</dt>
-    <dd>
-  <p>Switch the backing store of the loop device to the new file identified file descriptor specified in the (third) <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument, which is an integer. This operation is possible only if the loop device is read-only and the new backing store is the same size and type as the old backing store.</p>
-    </dd>
-    <dt><strong>LOOP_SET_CAPACITY</strong> (since Linux 2.6.30)</dt>
-    <dd>
-  <p>Resize a live loop device. One can change the size of the underlying backing store and then use this operation so that the loop driver learns about the new size. This operation takes no argument.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-  <p>Since Linux 2.6, there are two new <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> operations:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>LOOP_SET_STATUS64</strong>, <strong>LOOP_GET_STATUS64</strong></dt>
-    <dd>
-  <p>These are similar to <strong>LOOP_SET_STATUS</strong> and <strong>LOOP_GET_STATUS</strong> described above but use the <em>loop_info64</em> structure, which has some additional fields and a larger range for some other fields:</p>
-<p class='spacer'>
-
-<pre>struct loop_info64 {
+</dl>
+<p>Since Linux 2.6, there are two new <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> operations:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>LOOP_SET_STATUS64</strong>, <strong>LOOP_GET_STATUS64</strong></p>
+  </dt>
+  <dd>
+    <p>These are similar to <strong>LOOP_SET_STATUS</strong> and <strong>LOOP_GET_STATUS</strong> described above but use the <em>loop_info64</em> structure, which has some additional fields and a larger range for some other fields:</p>
+<pre>
+struct loop_info64 {
     uint64_t lo_device;                   /* ioctl r/o */
     uint64_t lo_inode;                    /* ioctl r/o */
     uint64_t lo_rdevice;                  /* ioctl r/o */
@@ -203,46 +207,56 @@ $ <strong>sudo mount /dev/loop4 /myloopdev</strong></pre>
     uint8_t  lo_crypt_name[LO_NAME_SIZE];
     uint8_t  lo_encrypt_key[LO_KEY_SIZE]; /* ioctl w/o */
     uint64_t lo_init[2];
-};</pre>
+};
+</pre>
 
-    </dd>
-  </dl>
-  <h3>/dev/loop-control</h3>
-  <p>Since Linux 3.1, the kernel provides the <em>/dev/loop-control</em> device, which permits an application to dynamically find a free device, and to add and remove loop devices from the system. To perform these operations, one first opens <em>/dev/loop-control</em> and then employs one of the following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> operations:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>LOOP_CTL_GET_FREE</strong></dt>
-    <dd>
-  <p>Allocate or find a free loop device for use. On success, the device number is returned as the result of the call. This operation takes no argument.</p>
-    </dd>
-    <dt><strong>LOOP_CTL_ADD</strong></dt>
-    <dd>
-  <p>Add the new loop device whose device number is specified as a long integer in the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument. On success, the device index is returned as the result of the call. If the device is already allocated, the call fails with the error <strong>EEXIST</strong>.</p>
-    </dd>
-    <dt><strong>LOOP_CTL_REMOVE</strong></dt>
-    <dd>
-  <p>Remove the loop device whose device number is specified as a long integer in the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument. On success, the device number is returned as the result of the call. If the device is in use, the call fails with the error <strong>EBUSY</strong>.</p>
-    </dd>
-  </dl>
+  </dd>
+
+</dl>
+<h3>/dev/loop-control</h3>
+<p>Since Linux 3.1, the kernel provides the <em>/dev/loop-control</em> device, which permits an application to dynamically find a free device, and to add and remove loop devices from the system. To perform these operations, one first opens <em>/dev/loop-control</em> and then employs one of the following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> operations:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>LOOP_CTL_GET_FREE</strong></p>
+  </dt>
+  <dd>
+    <p>Allocate or find a free loop device for use. On success, the device number is returned as the result of the call. This operation takes no argument.</p>
+  </dd>
+  <dt>
+    <p><strong>LOOP_CTL_ADD</strong></p>
+  </dt>
+  <dd>
+    <p>Add the new loop device whose device number is specified as a long integer in the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument. On success, the device index is returned as the result of the call. If the device is already allocated, the call fails with the error <strong>EEXIST</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>LOOP_CTL_REMOVE</strong></p>
+  </dt>
+  <dd>
+    <p>Remove the loop device whose device number is specified as a long integer in the third <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> argument. On success, the device number is returned as the result of the call. If the device is in use, the call fails with the error <strong>EBUSY</strong>.</p>
+  </dd>
+
+</dl>
+
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>The program below uses the <em>/dev/loop-control</em> device to find a free loop device, opens the loop device, opens a file to be used as the underlying storage for the device, and then associates the loop device with the backing store. The following shell session demonstrates the use of the program:</p>
-<p class='spacer'>
-
-<pre>$ <strong>dd if=/dev/zero of=file.img bs=1MiB count=10</strong>
+<pre>
+$ <strong>dd if=/dev/zero of=file.img bs=1MiB count=10</strong>
 10+0 records in
 10+0 records out
 10485760 bytes (10 MB) copied, 0.00609385 s, 1.7 GB/s
 $ <strong>sudo ./mnt_loop file.img</strong>
-loopname = /dev/loop5</pre>
+loopname = /dev/loop5
+</pre>
+<h3>Program source</h3>
 
-  <h3>Program source</h3>
-  <p></p>
-<pre>#include &lt;fcntl.h&gt;
+<pre>
+#include &lt;fcntl.h&gt;
 #include &lt;linux/loop.h&gt;
 #include &lt;sys/ioctl.h&gt;
 #include &lt;stdio.h&gt;
@@ -287,7 +301,9 @@ main(int argc, char *argv[])
         errExit("ioctl-LOOP_SET_FD");
 
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
+
 
         </div>
       </section>
@@ -295,7 +311,6 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
-
 <p><em>/dev/loop*</em>: the loop block special device files</p>
         </div>
       </section>
@@ -303,11 +318,9 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO loop&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man8/losetup.8.html"><strong>losetup</strong>(8)</a>, <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="lirc.4.html"><span aria-hidden="true">&larr;</span> lirc.4: Lirc devices</a></li>

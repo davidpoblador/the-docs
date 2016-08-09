@@ -91,8 +91,10 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre>#include &lt;sys/types.h&gt;
-#include &lt;db.h&gt;</pre>
+<pre>
+#include &lt;sys/types.h&gt;
+#include &lt;db.h&gt;
+</pre>
 
         </div>
       </section>
@@ -100,18 +102,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><em>Note well</em>: This page documents interfaces provided in glibc up until version 2.1. Since version 2.2, glibc no longer provides these interfaces. Probably, you are looking for the APIs provided by the <em>libdb</em> library instead.</p>
-<p class='spacer'>
-
-<p>The routine <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is the library interface to database files. One of the supported file formats is hash files. The general description of the database access methods is in <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, this manual page describes only the hash-specific information.</p>
-<p class='spacer'>
-
-<p>The hash data structure is an extensible, dynamic hashing scheme.</p>
-<p class='spacer'>
-
-  <p>The access-method-specific data structure provided to <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is defined in the <em>&lt;db.h&gt;</em> include file as follows:</p>
+<p><em>Note</em> <em>well</em>: This page documents interfaces provided in glibc up until version 2.1. Since version 2.2, glibc no longer provides these interfaces. Probably, you are looking for the APIs provided by the <em>libdb</em> library instead.</p><p>The routine <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is the library interface to database files. One of the supported file formats is hash files. The general description of the database access methods is in <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, this manual page describes only the hash-specific information.</p><p>The hash data structure is an extensible, dynamic hashing scheme.</p><p>The access-method-specific data structure provided to <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is defined in the <em><db.h></em> include file as follows:</p>
 <pre>
+
 typedef struct {
     unsigned int       bsize;
     unsigned int       ffactor;
@@ -119,53 +112,55 @@ typedef struct {
     unsigned int       cachesize;
     uint32_t         (*hash)(const void *, size_t);
     int         lorder;
-} HASHINFO;</pre>
+} HASHINFO;
+</pre>
+<p>The elements of this structure are as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><em>bsize</em></p>
+  </dt>
+  <dd>
+    <p>defines the hash table bucket size, and is, by default, 256 bytes. It may be preferable to increase the page size for disk-resident tables and tables with large data items.</p>
+  </dd>
+  <dt>
+    <p><em>ffactor</em></p>
+  </dt>
+  <dd>
+    <p>indicates a desired density within the hash table. It is an approximation of the number of keys allowed to accumulate in any one bucket, determining when the hash table grows or shrinks. The default value is 8.</p>
+  </dd>
+  <dt>
+    <p><em>nelem</em></p>
+  </dt>
+  <dd>
+    <p>is an estimate of the final size of the hash table. If not set or set too low, hash tables will expand gracefully as keys are entered, although a slight performance degradation may be noticed. The default value is 1.</p>
+  </dd>
+  <dt>
+    <p><em>cachesize</em></p>
+  </dt>
+  <dd>
+    <p>is the suggested maximum size, in bytes, of the memory cache. This value is <em>only</em> <em>advisory</em>, and the access method will allocate more memory rather than fail.</p>
+  </dd>
+  <dt>
+    <p><em>hash</em></p>
+  </dt>
+  <dd>
+    <p>is a user-defined hash function. Since no hash function performs equally well on all possible data, the user may find that the built-in hash function does poorly on a particular data set. A user-specified hash functions must take two arguments (a pointer to a byte string and a length) and return a 32-bit quantity to be used as the hash value.</p>
+  </dd>
+  <dt>
+    <p><em>lorder</em></p>
+  </dt>
+  <dd>
+    <p>is the byte order for integers in the stored database metadata. The number should represent the order as an integer; for example, big endian order would be the number 4,321. If <em>lorder</em> is 0 (no order is specified), the current host order is used. If the file already exists, the specified value is ignored and the value specified when the tree was created is used.</p>
+  </dd>
 
-<p class='spacer'>
-
-  <p>The elements of this structure are as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><em>bsize</em></dt>
-    <dd>
-  <p>defines the hash table bucket size, and is, by default, 256 bytes. It may be preferable to increase the page size for disk-resident tables and tables with large data items.</p>
-    </dd>
-    <dt><em>ffactor</em></dt>
-    <dd>
-  <p>indicates a desired density within the hash table. It is an approximation of the number of keys allowed to accumulate in any one bucket, determining when the hash table grows or shrinks. The default value is 8.</p>
-    </dd>
-    <dt><em>nelem</em></dt>
-    <dd>
-  <p>is an estimate of the final size of the hash table. If not set or set too low, hash tables will expand gracefully as keys are entered, although a slight performance degradation may be noticed. The default value is 1.</p>
-    </dd>
-    <dt><em>cachesize</em></dt>
-    <dd>
-  <p>is the suggested maximum size, in bytes, of the memory cache. This value is <em>only advisory</em>, and the access method will allocate more memory rather than fail.</p>
-    </dd>
-    <dt><em>hash</em></dt>
-    <dd>
-  <p>is a user-defined hash function. Since no hash function performs equally well on all possible data, the user may find that the built-in hash function does poorly on a particular data set. A user-specified hash functions must take two arguments (a pointer to a byte string and a length) and return a 32-bit quantity to be used as the hash value.</p>
-    </dd>
-    <dt><em>lorder</em></dt>
-    <dd>
-  <p>is the byte order for integers in the stored database metadata. The number should represent the order as an integer; for example, big endian order would be the number 4,321. If <em>lorder</em> is 0 (no order is specified), the current host order is used. If the file already exists, the specified value is ignored and the value specified when the tree was created is used.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>If the file already exists (and the <strong>O_TRUNC</strong> flag is not specified), the values specified for <em>bsize</em>, <em>ffactor</em>, <em>lorder</em>, and <em>nelem</em> are ignored and the values specified when the tree was created are used.</p>
-<p class='spacer'>
-
-<p>If a hash function is specified, <em>hash_open</em> will attempt to determine if the hash function specified is the same as the one with which the database was created, and will fail if it is not.</p>
-<p class='spacer'>
-
-<p>Backward-compatible interfaces to the routines described in <strong>dbm</strong>(3), and <strong>ndbm</strong>(3) are provided, however these interfaces are not compatible with previous file formats.</p>
+</dl>
+<p>If the file already exists (and the <strong>O_TRUNC</strong> flag is not specified), the values specified for <em>bsize</em>, <em>ffactor</em>, <em>lorder</em>, and <em>nelem</em> are ignored and the values specified when the tree was created are used.</p><p>If a hash function is specified, <em>hash_open</em> will attempt to determine if the hash function specified is the same as the one with which the database was created, and will fail if it is not.</p><p>Backward-compatible interfaces to the routines described in <strong>dbm</strong>(3), and <strong>ndbm</strong>(3) are provided, however these interfaces are not compatible with previous file formats.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
-
 <p>The <em>hash</em> access method routines may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>.</p>
         </div>
       </section>
@@ -173,7 +168,6 @@ typedef struct {
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>Only big and little endian byte order are supported.</p>
         </div>
       </section>
@@ -181,17 +175,9 @@ typedef struct {
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO hash&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man3/btree.3.html"><strong>btree</strong>(3)</a>, <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, <a href="../man3/mpool.3.html"><strong>mpool</strong>(3)</a>, <a href="../man3/recno.3.html"><strong>recno</strong>(3)</a></p>
-<p class='spacer'>
-
-<p><em>Dynamic Hash Tables</em>, Per-Ake Larson, Communications of the ACM, April 1988.</p>
-<p class='spacer'>
-
-<p><em>A New Hash Package for UNIX</em>, Margo Seltzer, USENIX Proceedings, Winter 1991.</p>
+<p><a href="../man3/btree.3.html"><strong>btree</strong>(3)</a>, <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, <a href="../man3/mpool.3.html"><strong>mpool</strong>(3)</a>, <a href="../man3/recno.3.html"><strong>recno</strong>(3)</a></p><p><em>Dynamic</em> <em>Hash</em> <em>Tables</em>, Per-Ake Larson, Communications of the ACM, April 1988.</p><p><em>A</em> <em>New</em> <em>Hash</em> <em>Package</em> <em>for</em> <em>UNIX</em>, Margo Seltzer, USENIX Proceedings, Winter 1991.</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="handle.3.html"><span aria-hidden="true">&larr;</span> handle.3: File handle operations</a></li>

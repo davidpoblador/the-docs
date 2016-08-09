@@ -91,24 +91,26 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;db.h&gt;</strong>
-<strong>#include &lt;mpool.h&gt;</strong>
+<pre>
+<strong>#include <db.h></strong>
+<strong>#include <mpool.h></strong>
 
-<strong>MPOOL *mpool_open(DBT *</strong><em>key</em><strong>, int </strong><em>fd</em><strong>, pgno_t </strong><em>pagesize</em><strong>, pgno_t </strong><em>maxcache</em><strong>);</strong>
+<strong>MPOOL</strong> <strong>*mpool_open(DBT</strong> <strong>*</strong><em>key</em><strong>,</strong> <strong>int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>pgno_t</strong> <strong></strong><em>pagesize</em><strong>,</strong> <strong>pgno_t</strong> <strong></strong><em>maxcache</em><strong>);</strong>
 
-<strong>void mpool_filter(MPOOL *</strong><em>mp</em><strong>, void (*pgin)(void *, pgno_t, void *),</strong>
-<strong>                  void (*</strong><em>pgout</em><strong>)(void *, pgno_t, void *),</strong>
-<strong>                  void *</strong><em>pgcookie</em><strong>);</strong>
+<strong>void</strong> <strong>mpool_filter(MPOOL</strong> <strong>*</strong><em>mp</em><strong>,</strong> <strong>void</strong> <strong>(*pgin)(void</strong> <strong>*,</strong> <strong>pgno_t,</strong> <strong>void</strong> <strong>*),</strong>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>void</strong> <strong>(*</strong><em>pgout</em><strong>)(void</strong> <strong>*,</strong> <strong>pgno_t,</strong> <strong>void</strong> <strong>*),</strong>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>void</strong> <strong>*</strong><em>pgcookie</em><strong>);</strong>
 
-<strong>void *mpool_new(MPOOL *</strong><em>mp</em><strong>, pgno_t *</strong><em>pgnoaddr</em><strong>);</strong>
+<strong>void</strong> <strong>*mpool_new(MPOOL</strong> <strong>*</strong><em>mp</em><strong>,</strong> <strong>pgno_t</strong> <strong>*</strong><em>pgnoaddr</em><strong>);</strong>
 
-<strong>void *mpool_get(MPOOL *</strong><em>mp</em><strong>, pgno_t </strong><em>pgno</em><strong>, unsigned int </strong><em>flags</em><strong>);</strong>
+<strong>void</strong> <strong>*mpool_get(MPOOL</strong> <strong>*</strong><em>mp</em><strong>,</strong> <strong>pgno_t</strong> <strong></strong><em>pgno</em><strong>,</strong> <strong>unsigned</strong> <strong>int</strong> <strong></strong><em>flags</em><strong>);</strong>
 
-<strong>int mpool_put(MPOOL *</strong><em>mp</em><strong>, void *</strong><em>pgaddr</em><strong>, unsigned int </strong><em>flags</em><strong>);</strong>
+<strong>int</strong> <strong>mpool_put(MPOOL</strong> <strong>*</strong><em>mp</em><strong>,</strong> <strong>void</strong> <strong>*</strong><em>pgaddr</em><strong>,</strong> <strong>unsigned</strong> <strong>int</strong> <strong></strong><em>flags</em><strong>);</strong>
 
-<strong>int mpool_sync(MPOOL *</strong><em>mp</em><strong>);</strong>
+<strong>int</strong> <strong>mpool_sync(MPOOL</strong> <strong>*</strong><em>mp</em><strong>);</strong>
 
-<strong>int mpool_close(MPOOL *</strong><em>mp</em><strong>);</strong></pre>
+<strong>int</strong> <strong>mpool_close(MPOOL</strong> <strong>*</strong><em>mp</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -116,77 +118,40 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><em>Note</em> <em>well</em>: This page documents interfaces provided in glibc up until version 2.1. Since version 2.2, glibc no longer provides these interfaces. Probably, you are looking for the APIs provided by the <em>libdb</em> library instead.</p><p><em>Mpool</em> is the library interface intended to provide page oriented buffer management of files. The buffers may be shared between processes.</p><p>The function <strong>mpool_open</strong>() initializes a memory pool. The <em>key</em> argument is the byte string used to negotiate between multiple processes wishing to share buffers. If the file buffers are mapped in shared memory, all processes using the same key will share the buffers. If <em>key</em> is NULL, the buffers are mapped into private memory. The <em>fd</em> argument is a file descriptor for the underlying file, which must be seekable. If <em>key</em> is non-NULL and matches a file already being mapped, the <em>fd</em> argument is ignored.</p><p>The <em>pagesize</em> argument is the size, in bytes, of the pages into which the file is broken up. The <em>maxcache</em> argument is the maximum number of pages from the underlying file to cache at any one time. This value is not relative to the number of processes which share a file's buffers, but will be the largest value specified by any of the processes sharing the file.</p><p>The <strong>mpool_filter</strong>() function is intended to make transparent input and output processing of the pages possible. If the <em>pgin</em> function is specified, it is called each time a buffer is read into the memory pool from the backing file. If the <em>pgout</em> function is specified, it is called each time a buffer is written into the backing file. Both functions are called with the <em>pgcookie</em> pointer, the page number and a pointer to the page to being read or written.</p><p>The function <strong>mpool_new</strong>() takes an <em>MPOOL</em> pointer and an address as arguments. If a new page can be allocated, a pointer to the page is returned and the page number is stored into the <em>pgnoaddr</em> address. Otherwise, NULL is returned and <em>errno</em> is set.</p><p>The function <strong>mpool_get</strong>() takes an <em>MPOOL</em> pointer and a page number as arguments. If the page exists, a pointer to the page is returned. Otherwise, NULL is returned and <em>errno</em> is set. The <em>flags</em> argument is not currently used.</p><p>The function <strong>mpool_put</strong>() unpins the page referenced by <em>pgaddr</em>. <em>pgaddr</em> must be an address previously returned by <strong>mpool_get</strong>() or <strong>mpool_new</strong>(). The flag value is specified by ORing any of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>MPOOL_DIRTY</strong></p>
+  </dt>
+  <dd>
+    <p>The page has been modified and needs to be written to the backing file.</p>
+  </dd>
 
-<p><em>Note well</em>: This page documents interfaces provided in glibc up until version 2.1. Since version 2.2, glibc no longer provides these interfaces. Probably, you are looking for the APIs provided by the <em>libdb</em> library instead.</p>
-<p class='spacer'>
-
-<p><em>Mpool</em> is the library interface intended to provide page oriented buffer management of files. The buffers may be shared between processes.</p>
-<p class='spacer'>
-
-<p>The function <strong>mpool_open</strong>() initializes a memory pool. The <em>key</em> argument is the byte string used to negotiate between multiple processes wishing to share buffers. If the file buffers are mapped in shared memory, all processes using the same key will share the buffers. If <em>key</em> is NULL, the buffers are mapped into private memory. The <em>fd</em> argument is a file descriptor for the underlying file, which must be seekable. If <em>key</em> is non-NULL and matches a file already being mapped, the <em>fd</em> argument is ignored.</p>
-<p class='spacer'>
-
-<p>The <em>pagesize</em> argument is the size, in bytes, of the pages into which the file is broken up. The <em>maxcache</em> argument is the maximum number of pages from the underlying file to cache at any one time. This value is not relative to the number of processes which share a file's buffers, but will be the largest value specified by any of the processes sharing the file.</p>
-<p class='spacer'>
-
-<p>The <strong>mpool_filter</strong>() function is intended to make transparent input and output processing of the pages possible. If the <em>pgin</em> function is specified, it is called each time a buffer is read into the memory pool from the backing file. If the <em>pgout</em> function is specified, it is called each time a buffer is written into the backing file. Both functions are called with the <em>pgcookie</em> pointer, the page number and a pointer to the page to being read or written.</p>
-<p class='spacer'>
-
-<p>The function <strong>mpool_new</strong>() takes an <em>MPOOL</em> pointer and an address as arguments. If a new page can be allocated, a pointer to the page is returned and the page number is stored into the <em>pgnoaddr</em> address. Otherwise, NULL is returned and <em>errno</em> is set.</p>
-<p class='spacer'>
-
-<p>The function <strong>mpool_get</strong>() takes an <em>MPOOL</em> pointer and a page number as arguments. If the page exists, a pointer to the page is returned. Otherwise, NULL is returned and <em>errno</em> is set. The <em>flags</em> argument is not currently used.</p>
-<p class='spacer'>
-
-  <p>The function <strong>mpool_put</strong>() unpins the page referenced by <em>pgaddr</em>. <em>pgaddr</em> must be an address previously returned by <strong>mpool_get</strong>() or <strong>mpool_new</strong>(). The flag value is specified by ORing any of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>MPOOL_DIRTY</strong></dt>
-    <dd>
-  <p>The page has been modified and needs to be written to the backing file.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p><strong>mpool_put</strong>() returns 0 on success and -1 if an error occurs.</p>
-<p class='spacer'>
-
-<p>The function <strong>mpool_sync</strong>() writes all modified pages associated with the <em>MPOOL</em> pointer to the backing file. <strong>mpool_sync</strong>() returns 0 on success and -1 if an error occurs.</p>
-<p class='spacer'>
-
-<p>The <strong>mpool_close</strong>() function free's up any allocated memory associated with the memory pool cookie. Modified pages are <strong>not</strong> written to the backing file. <strong>mpool_close</strong>() returns 0 on success and -1 if an error occurs.</p>
+</dl>
+<p><strong>mpool_put</strong>() returns 0 on success and -1 if an error occurs.</p><p>The function <strong>mpool_sync</strong>() writes all modified pages associated with the <em>MPOOL</em> pointer to the backing file. <strong>mpool_sync</strong>() returns 0 on success and -1 if an error occurs.</p><p>The <strong>mpool_close</strong>() function free's up any allocated memory associated with the memory pool cookie. Modified pages are <strong>not</strong> written to the backing file. <strong>mpool_close</strong>() returns 0 on success and -1 if an error occurs.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>The <strong>mpool_open</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>.</p><p>The <strong>mpool_get</strong>() function may fail and set <em>errno</em> for the following:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The requested record doesn't exist.</p>
+  </dd>
 
-<p>The <strong>mpool_open</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>.</p>
-<p class='spacer'>
-
-  <p>The <strong>mpool_get</strong>() function may fail and set <em>errno</em> for the following:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The requested record doesn't exist.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The <strong>mpool_new</strong>() and <strong>mpool_get</strong>() functions may fail and set <em>errno</em> for any of the errors specified for the library routines <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>.</p>
-<p class='spacer'>
-
-<p>The <strong>mpool_sync</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man2/write.2.html"><strong>write</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>The <strong>mpool_close</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/free.3.html"><strong>free</strong>(3)</a>.</p>
+</dl>
+<p>The <strong>mpool_new</strong>() and <strong>mpool_get</strong>() functions may fail and set <em>errno</em> for any of the errors specified for the library routines <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>.</p><p>The <strong>mpool_sync</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man2/write.2.html"><strong>write</strong>(2)</a>.</p><p>The <strong>mpool_close</strong>() function may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/free.3.html"><strong>free</strong>(3)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>Not in POSIX.1. Present on the BSDs.</p>
         </div>
       </section>
@@ -194,11 +159,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO mpool&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/btree.3.html"><strong>btree</strong>(3)</a>, <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, <a href="../man3/hash.3.html"><strong>hash</strong>(3)</a>, <a href="../man3/recno.3.html"><strong>recno</strong>(3)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="modfl.3.html"><span aria-hidden="true">&larr;</span> modfl.3: Extract signed integral and fractional values from floating-point number</a></li>

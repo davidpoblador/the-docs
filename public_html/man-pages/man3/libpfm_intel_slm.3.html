@@ -91,10 +91,12 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;perfmon/pfmlib.h&gt;</strong>
+<pre>
+<strong>#include <perfmon/pfmlib.h></strong>
 
 <strong>PMU name: slm</strong>
 <strong>PMU desc: Intel Silvermont</strong>
+
 </pre>
 
         </div>
@@ -103,96 +105,93 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
 <p>The library supports the Intel Silvermont core PMU.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">MODIFIERS</h2>
         <div class="sectioncontent">
+<p>The following modifiers are supported on Intel Silvermont processors:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>u</strong></p>
+  </dt>
+  <dd>
+    <p>Measure at user level which includes privilege levels 1, 2, 3. This corresponds to <strong>PFM_PLM3</strong>. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>k</strong></p>
+  </dt>
+  <dd>
+    <p>Measure at kernel level which includes privilege level 0. This corresponds to <strong>PFM_PLM0</strong>. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>i</strong></p>
+  </dt>
+  <dd>
+    <p>Invert the meaning of the event. The counter will now count cycles in which the event is <strong>not</strong> occurring. This is a boolean modifier</p>
+  </dd>
+  <dt>
+    <p><strong>e</strong></p>
+  </dt>
+  <dd>
+    <p>Enable edge detection, i.e., count only when there is a state transition from no occurrence of the event to at least one occurrence. This modifier must be combined with a counter mask modifier (m) with a value greater or equal to one. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>c</strong></p>
+  </dt>
+  <dd>
+    <p>Set the counter mask value. The mask acts as a threshold. The counter will count the number of cycles in which the number of occurrences of the event is greater or equal to the threshold. This is an integer modifier with values in the range [0:255].</p>
+  </dd>
 
-  <p>The following modifiers are supported on Intel Silvermont processors:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>u</strong></dt>
-    <dd>
-  <p>Measure at user level which includes privilege levels 1, 2, 3. This corresponds to <strong>PFM_PLM3</strong>. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>k</strong></dt>
-    <dd>
-  <p>Measure at kernel level which includes privilege level 0. This corresponds to <strong>PFM_PLM0</strong>. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>i</strong></dt>
-    <dd>
-  <p>Invert the meaning of the event. The counter will now count cycles in which the event is <strong>not</strong> occurring. This is a boolean modifier</p>
-    </dd>
-    <dt><strong>e</strong></dt>
-    <dd>
-  <p>Enable edge detection, i.e., count only when there is a state transition from no occurrence of the event to at least one occurrence. This modifier must be combined with a counter mask modifier (m) with a value greater or equal to one. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>c</strong></dt>
-    <dd>
-  <p>Set the counter mask value. The mask acts as a threshold. The counter will count the number of cycles in which the number of occurrences of the event is greater or equal to the threshold. This is an integer modifier with values in the range [0:255].</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">OFFCORE_RESPONSE events</h2>
         <div class="sectioncontent">
+<p>Intel Silvermont provides two offcore_response events: <strong>OFFCORE_RESPONSE_0</strong> and <strong>OFFCORE_RESPONSE_1</strong>.</p><p>Those events need special treatment in the performance monitoring infrastructure because each event uses an extra register to store some settings. Thus, in case multiple offcore_response events are monitored simultaneously, the kernel needs to manage the sharing of that extra register.</p><p>The offcore_response events are exposed as a normal event by the library. The extra settings are exposed as regular umasks. The library takes care of encoding the events according to the underlying kernel interface.</p><p>On Intel Silvermont, the umasks are divided into three categories: request, supplier and snoop. The user must provide at least one umask for each category. The categories are shown in the umask descriptions. The library provides a default umask per category if not provided by the user.</p><p>There is also the special response umask called <strong>ANY_RESPONSE</strong>. When this umask is used then it overrides any supplier and snoop umasks. In other words, users can specify either <strong>ANY_RESPONSE</strong> <strong>OR</strong> any combinations of supplier + snoops.</p><p>In case no supplier or snoop is specified, the library defaults to using <strong>ANY_RESPONSE</strong>.</p><p>For instance, the following are valid event selections:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>OFFCORE_RESPONSE_0:DMND_DATA_RD:ANY_RESPONSE</strong></p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>OFFCORE_RESPONSE_0:ANY_REQUEST</strong></p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>OFFCORE_RESPONSE_0:ANY_RFO:LLC_HITM:SNOOP_ANY</strong></p>
+  </dt>
+  <dd>
+    
+  </dd>
 
-<p>Intel Silvermont provides two offcore_response events: <strong>OFFCORE_RESPONSE_0</strong> and <strong>OFFCORE_RESPONSE_1</strong>.</p>
-<p class='spacer'>
-
-<p>Those events need special treatment in the performance monitoring infrastructure because each event uses an extra register to store some settings. Thus, in case multiple offcore_response events are monitored simultaneously, the kernel needs to manage the sharing of that extra register.</p>
-<p class='spacer'>
-
-<p>The offcore_response events are exposed as a normal event by the library. The extra settings are exposed as regular umasks. The library takes care of encoding the events according to the underlying kernel interface.</p>
-<p class='spacer'>
-
-<p>On Intel Silvermont, the umasks are divided into three categories: request, supplier and snoop. The user must provide at least one umask for each category. The categories are shown in the umask descriptions. The library provides a default umask per category if not provided by the user.</p>
-<p class='spacer'>
-
-<p>There is also the special response umask called <strong>ANY_RESPONSE</strong>. When this umask is used then it overrides any supplier and snoop umasks. In other words, users can specify either <strong>ANY_RESPONSE</strong> <strong>OR</strong> any combinations of supplier + snoops.</p>
-<p class='spacer'>
-
-<p>In case no supplier or snoop is specified, the library defaults to using <strong>ANY_RESPONSE</strong>.</p>
-<p class='spacer'>
-
-  <p>For instance, the following are valid event selections:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>OFFCORE_RESPONSE_0:DMND_DATA_RD:ANY_RESPONSE</strong></dt>
-    <dd>
-    </dd>
-    <dt><strong>OFFCORE_RESPONSE_0:ANY_REQUEST</strong></dt>
-    <dd>
-    </dd>
-    <dt><strong>OFFCORE_RESPONSE_0:ANY_RFO:LLC_HITM:SNOOP_ANY</strong></dt>
-    <dd>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>But the following are illegal:</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>OFFCORE_RESPONSE_0:ANY_RFO:NON_DRAM:ANY_RESPONSE</strong></p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>OFFCORE_RESPONSE_0:ANY_RFO:L2_HIT:SNOOP_ANY:ANY_RESPONSE</strong></p>
+  </dt>
+  <dd>
+    
+  </dd>
 
-  <dl class='dl-vertical'>
-    <dt><strong>OFFCORE_RESPONSE_0:ANY_RFO:NON_DRAM:ANY_RESPONSE</strong></dt>
-    <dd>
-    </dd>
-    <dt><strong>OFFCORE_RESPONSE_0:ANY_RFO:L2_HIT:SNOOP_ANY:ANY_RESPONSE</strong></dt>
-    <dd>
-<p class='spacer'>
+</dl>
 
-    </dd>
-  </dl>
         </div>
       </section>
 
@@ -200,7 +199,9 @@
         <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
 
-<pre>Stephane Eranian &lt;eranian@gmail.com&gt;
+<pre>
+Stephane Eranian &lt;eranian@gmail.com&gt;
+
 </pre>
 
         </div>

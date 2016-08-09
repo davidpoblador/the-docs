@@ -91,10 +91,12 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;perfmon/pfmlib.h&gt;</strong>
+<pre>
+<strong>#include <perfmon/pfmlib.h></strong>
 
 <strong>PMU name: perf_raw</strong>
 <strong>PMU desc: Raw perf_events event syntax</strong>
+
 </pre>
 
         </div>
@@ -103,75 +105,84 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The library supports a pseudo PMU model to allow raw encodings of PMU events for the Linux perf_events kernel interface.</p>
-<p class='spacer'>
-
-<p>With this PMU, it is possible to provide the raw hexadecimal encoding of any hardware event for any PMU models. The raw encoding is passed as is to the kernel. All events are encoded as <strong>PERF_TYPE_RAW</strong>. As such, perf_events generic events, such as cycles, instructions, cannot be encoded by this PMU.</p>
-<p class='spacer'>
-
-<p>The syntax is very simple: rX. X is the hexadecimal 64-bit value for the event. It may include event filters on some PMU models. The hexadecimal number is passed without the 0x prefix, e.g., r01c4.</p>
-<p class='spacer'>
-
-<p>The library's standard perf_events attributes are supported by this PMU model. They are separated with colons as is customary with the library.</p>
-<p class='spacer'>
-
+<p>The library supports a pseudo PMU model to allow raw encodings of PMU events for the Linux perf_events kernel interface.</p><p>With this PMU, it is possible to provide the raw hexadecimal encoding of any hardware event for any PMU models. The raw encoding is passed as is to the kernel. All events are encoded as <strong>PERF_TYPE_RAW</strong>. As such, perf_events generic events, such as cycles, instructions, cannot be encoded by this PMU.</p><p>The syntax is very simple: rX. X is the hexadecimal 64-bit value for the event. It may include event filters on some PMU models. The hexadecimal number is passed without the 0x prefix, e.g., r01c4.</p><p>The library's standard perf_events attributes are supported by this PMU model. They are separated with colons as is customary with the library.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">MODIFIERS</h2>
         <div class="sectioncontent">
+<p>The following modifiers are supported by this PMU model:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>u</strong></p>
+  </dt>
+  <dd>
+    <p>Measure at user level which includes privilege levels 1, 2, 3. This corresponds to <strong>PFM_PLM3</strong>. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>k</strong></p>
+  </dt>
+  <dd>
+    <p>Measure at kernel level which includes privilege level 0. This corresponds to <strong>PFM_PLM0</strong>. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>h</strong></p>
+  </dt>
+  <dd>
+    <p>Measure at the hypervisor level. This corresponds to <strong>PFM_PLMH</strong>. This is a boolean modifier</p>
+  </dd>
+  <dt>
+    <p><strong>mg</strong></p>
+  </dt>
+  <dd>
+    <p>Measure guest execution only. This is a boolean modifier</p>
+  </dd>
+  <dt>
+    <p><strong>mh</strong></p>
+  </dt>
+  <dd>
+    <p>Measure host execution only. This is a boolean modifier</p>
+  </dd>
+  <dt>
+    <p><strong>period</strong></p>
+  </dt>
+  <dd>
+    <p>Specify the the sampling period value. Value can be expressed in decimal or hexadecimal. Value is 64-bit wide. This option is mutually exclusive with <strong>freq</strong>. The period is expressed in the unit of the event. There is no default value.</p>
+  </dd>
+  <dt>
+    <p><strong>freq</strong></p>
+  </dt>
+  <dd>
+    <p>Specify the the sampling frequency value. Value can be expressed in decimal or hexadecimal. Value is 64-bit wide. This options is mutually exclusive with <strong>period</strong>. The value is expressed in Hertz. For instance, freq=100, means that the event should be sampled 100 times per second on average. There is no default value.</p>
+  </dd>
+  <dt>
+    <p><strong>excl</strong></p>
+  </dt>
+  <dd>
+    <p>The associated event is the only event measured on the PMU. This applies only to hardware events. This attribute requires admin privileges. Default is off.</p>
+  </dd>
+  <dt>
+    <p><strong>precise</strong></p>
+  </dt>
+  <dd>
+    <p>Enables precise sampling mode. This option is only valid on sampling events. This is an integer value. It can have the following values: 1 enable precise sampling, 2 enable precise sampling and eliminate skid. Not all events necessarily support precise mode, this is dependent on the underlying PMU. Eliminating skid is a best effort feature. It may not work for all samples.</p>
+  </dd>
+  <dt>
+    <p><strong>cpu</strong></p>
+  </dt>
+  <dd>
+    <p>This integer option is used with system-wide events, i.e., events attached to a CPU instead of a thread. The value designate the CPU to attach the event to. It is up to the caller of the library to use the cpu field in the library event encoding argument to create the event. No verification on the validity of the CPU number is made by the library. Default value is -1 for this field.</p>
+  </dd>
+  <dt>
+    <p><strong>pinned</strong></p>
+  </dt>
+  <dd>
+    <p>This boolean option is used with system-wide events, i.e., events attached to a CPU instead of a thread. If set, then the event is marked as pinned. That means it needs to remain on the counters at all time, i.e., it cannot be multiplexed. There can only be as many pinned events as there are counters, yet the library does not check for that, the perf_event subsystem does. The default value for this field is false, i.e., the event is not pinned.</p>
+  </dd>
 
-  <p>The following modifiers are supported by this PMU model:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>u</strong></dt>
-    <dd>
-  <p>Measure at user level which includes privilege levels 1, 2, 3. This corresponds to <strong>PFM_PLM3</strong>. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>k</strong></dt>
-    <dd>
-  <p>Measure at kernel level which includes privilege level 0. This corresponds to <strong>PFM_PLM0</strong>. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>h</strong></dt>
-    <dd>
-  <p>Measure at the hypervisor level. This corresponds to <strong>PFM_PLMH</strong>. This is a boolean modifier</p>
-    </dd>
-    <dt><strong>mg</strong></dt>
-    <dd>
-  <p>Measure guest execution only. This is a boolean modifier</p>
-    </dd>
-    <dt><strong>mh</strong></dt>
-    <dd>
-  <p>Measure host execution only. This is a boolean modifier</p>
-    </dd>
-    <dt><strong>period</strong></dt>
-    <dd>
-  <p>Specify the the sampling period value. Value can be expressed in decimal or hexadecimal. Value is 64-bit wide. This option is mutually exclusive with <strong>freq</strong>. The period is expressed in the unit of the event. There is no default value.</p>
-    </dd>
-    <dt><strong>freq</strong></dt>
-    <dd>
-  <p>Specify the the sampling frequency value. Value can be expressed in decimal or hexadecimal. Value is 64-bit wide. This options is mutually exclusive with <strong>period</strong>. The value is expressed in Hertz. For instance, freq=100, means that the event should be sampled 100 times per second on average. There is no default value.</p>
-    </dd>
-    <dt><strong>excl</strong></dt>
-    <dd>
-  <p>The associated event is the only event measured on the PMU. This applies only to hardware events. This attribute requires admin privileges. Default is off.</p>
-    </dd>
-    <dt><strong>precise</strong></dt>
-    <dd>
-  <p>Enables precise sampling mode. This option is only valid on sampling events. This is an integer value. It can have the following values: 1 enable precise sampling, 2 enable precise sampling and eliminate skid. Not all events necessarily support precise mode, this is dependent on the underlying PMU. Eliminating skid is a best effort feature. It may not work for all samples.</p>
-    </dd>
-    <dt><strong>cpu</strong></dt>
-    <dd>
-  <p>This integer option is used with system-wide events, i.e., events attached to a CPU instead of a thread. The value designate the CPU to attach the event to. It is up to the caller of the library to use the cpu field in the library event encoding argument to create the event. No verification on the validity of the CPU number is made by the library. Default value is -1 for this field.</p>
-    </dd>
-    <dt><strong>pinned</strong></dt>
-    <dd>
-  <p>This boolean option is used with system-wide events, i.e., events attached to a CPU instead of a thread. If set, then the event is marked as pinned. That means it needs to remain on the counters at all time, i.e., it cannot be multiplexed. There can only be as many pinned events as there are counters, yet the library does not check for that, the perf_event subsystem does. The default value for this field is false, i.e., the event is not pinned.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-  </dl>
         </div>
       </section>
 
@@ -179,7 +190,9 @@
         <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
 
-<pre>Stephane Eranian &lt;eranian@gmail.com&gt;
+<pre>
+Stephane Eranian &lt;eranian@gmail.com&gt;
+
 </pre>
 
         </div>

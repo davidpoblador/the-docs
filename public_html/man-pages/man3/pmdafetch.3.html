@@ -90,73 +90,27 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p>#include &lt;pcp/pmapi.h&gt;</p>
-<p class='spacer'>
-
-<p>#include &lt;pcp/impl.h&gt;</p>
-<p class='spacer'>
-
-<p>#include &lt;pcp/pmda.h&gt;</p>
-<p class='spacer'>
-
-<p>int pmdaFetch(int <em>numpmid</em>, pmID *<em>pmidlist</em>, pmResult **<em>resp</em>, pmdaExt&nbsp;*<em>pmda</em>);</p>
-<p class='spacer'>
-
-<p>void pmdaSetFetchCallBack(pmdaInterface *<em>dispatch</em>, pmdaFetchCallBack&nbsp;<em>callback</em>);</p>
-<p class='spacer'>
-
-<p>cc ... -lpcp_pmda -lpcp</p>
+<p>#include &lt;pcp/pmapi.h&gt;</p><p>#include &lt;pcp/impl.h&gt;</p><p>#include &lt;pcp/pmda.h&gt;</p><p>int pmdaFetch(int <em>numpmid</em>, pmID *<em>pmidlist</em>, pmResult **<em>resp</em>, pmdaExt&nbsp;*<em>pmda</em>);</p><p>void pmdaSetFetchCallBack(pmdaInterface *<em>dispatch</em>, pmdaFetchCallBack&nbsp;<em>callback</em>);</p><p>cc ... -lpcp_pmda -lpcp</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>pmdaFetch</strong> is a generic callback used by a <strong>PMDA</strong>(3) to process a fetch request from <strong>pmcd</strong>(1). The request from <strong>pmcd</strong> is initiated by a client calling <strong>pmFetch</strong>(3).</p>
-<p class='spacer'>
-
-  <p>This is the only generic callback in <em>libpcp_pmda</em> (see <strong>PMDA</strong>(3)) that is incomplete, requiring a further <strong>pmdaFetchCallBack</strong> method of its own.  The additional callback should be registered using <strong>pmdaSetFetchCallBack</strong> and the <strong>pmdaFetchCallBack</strong> method has the following prototype:</p>
-<pre>int func(pmdaMetric *mdesc, unsigned int inst, pmAtomValue *avp)</pre>
-
-<p class='spacer'>
-
-<p><strong>pmdaFetch</strong> will allocate and resize the <em>resp</em> result structure, to store values for the <em>numpmid</em> metrics listed in <em>pmidlist</em>.</p>
-<p class='spacer'>
-
-<p>For each instance listed in the profile (see <strong>pmdaProfile</strong>(3)) of each metric listed in <em>pmidlist</em>, the <strong>pmdaFetchCallBack</strong> method is called to fill the <strong>pmAtomValue</strong> structure identified by <em>avp</em> with a value for a specific metric-instance pair identified by the metric descriptor <em>mdesc</em> and the instance <em>inst</em>. This value is then copied into the <strong>pmResult</strong> structure.</p>
-<p class='spacer'>
-
-<p>The <strong>pmdaFetchCallBack</strong> method should return a value less than zero for an error, and the most likely cases would be <strong>PM_ERR_PMID</strong> if the metric identified by <em>mdesc</em> is not known to the method, or <strong>PM_ERR_INST</strong> if the method believes the instance <em>inst</em> is not known for the metric identified by <em>mdesc</em>.</p>
-<p class='spacer'>
-
-<p>The success error codes depend on the version of <strong>PMDA_INTERFACE</strong> the PMDA is using.</p>
-<p class='spacer'>
-
-<p>If the PMDA is using <strong>PMDA_INTERFACE_2</strong> then on success the <strong>pmdaFetchCallBack</strong> method should return <strong>0</strong>.</p>
-<p class='spacer'>
-
-<p>If the PMDA is using <strong>PMDA_INTERFACE_3</strong> or <strong>PMDA_INTERFACE_4</strong> then on success the <strong>pmdaFetchCallBack</strong> method should return <strong>1</strong> if a value is returned via <em>avp</em>, else <strong>0</strong> if no values are currently available for the requested metric-instance pair although <em>mdesc</em> and <em>inst</em> both seem reasonable.</p>
-<p class='spacer'>
-
-<p>If the PMDA is using <strong>PMDA_INTERFACE_5</strong> or later then on success the <strong>pmdaFetchCallBack</strong> method should return <strong>PMDA_FETCH_STATIC</strong> ( .BR 1 ) if the value returned via <em>avp</em> can be ignored by <strong>pmdaFetch</strong> once it has been copied into the <strong>pmResult</strong> structure, else <strong>PMDA_FETCH_DYNAMIC</strong> ( .BR 2 ) if the value returned via <em>avp</em> uses the either the <strong>vp</strong> or <strong>cp</strong> fields of the <strong>pmAtomValue</strong> and the associated value (buffer) was allocated using one of <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>, <a href="../man3/calloc.3.html"><strong>calloc</strong>(3)</a>, <a href="../man3/realloc.3.html"><strong>realloc</strong>(3)</a>, <strong>strdup (3)</strong> etc. and <strong>pmdaFetch</strong> should release the memory by calling <a href="../man3/free.3.html"><strong>free</strong>(3)</a> once a new buffer has been allocated and the value copied, else <strong>PMDA_FETCH_NOVALUES</strong> ( .BR 0 ) if no values are currently available for the requested metric-instance pair although <em>mdesc</em> and <em>inst</em> both seem reasonable.</p>
-<p class='spacer'>
-
-<p>If the <strong>pmdaFetchCallBack</strong> method returns a value for an instance of a metric of type <strong>PM_TYPE_STRING</strong> or <strong>PM_TYPE_AGGREGATE</strong> some special care is needed &ndash; the method should either use a static buffer, set <em>avp-&gt;cp</em> or <em>avp-&gt;vp</em> to the address of the buffer and return <strong>PMDA_FETCH_STATIC</strong>, or use a dynamically allocated buffer, keep a static reference to the buffer's address, return <strong>PMDA_FETCH_STATIC</strong> and <em>free (3)</em> or <em>realloc (3)</em> or reuse the buffer the next time the <strong>pmdaFetchCallBack</strong> method is called, else use a dynamically allocated buffer and return <strong>PMDA_FETCH_DYNAMIC</strong>.</p>
+<p><strong>pmdaFetch</strong> is a generic callback used by a <strong>PMDA</strong>(3) to process a fetch request from <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>. The request from <strong>pmcd</strong> is initiated by a client calling <strong>pmFetch</strong>(3).</p><p>This is the only generic callback in <em>libpcp_pmda</em> (see <strong>PMDA</strong>(3)) that is incomplete, requiring a further <strong>pmdaFetchCallBack</strong> method of its own.  The additional callback should be registered using <strong>pmdaSetFetchCallBack</strong> and the <strong>pmdaFetchCallBack</strong> method has the following prototype:</p>
+<pre>
+int func(pmdaMetric *mdesc, unsigned int inst, pmAtomValue *avp)
+</pre>
+<p><strong>pmdaFetch</strong> will allocate and resize the <em>resp</em> result structure, to store values for the <em>numpmid</em> metrics listed in <em>pmidlist</em>.</p><p>For each instance listed in the profile (see <strong>pmdaProfile</strong>(3)) of each metric listed in <em>pmidlist</em>, the <strong>pmdaFetchCallBack</strong> method is called to fill the <strong>pmAtomValue</strong> structure identified by <em>avp</em> with a value for a specific metric-instance pair identified by the metric descriptor <em>mdesc</em> and the instance <em>inst</em>. This value is then copied into the <strong>pmResult</strong> structure.</p><p>The <strong>pmdaFetchCallBack</strong> method should return a value less than zero for an error, and the most likely cases would be <strong>PM_ERR_PMID</strong> if the metric identified by <em>mdesc</em> is not known to the method, or <strong>PM_ERR_INST</strong> if the method believes the instance <em>inst</em> is not known for the metric identified by <em>mdesc</em>.</p><p>The success error codes depend on the version of <strong>PMDA_INTERFACE</strong> the PMDA is using.</p><p>If the PMDA is using <strong>PMDA_INTERFACE_2</strong> then on success the <strong>pmdaFetchCallBack</strong> method should return <strong>0</strong>.</p><p>If the PMDA is using <strong>PMDA_INTERFACE_3</strong> or <strong>PMDA_INTERFACE_4</strong> then on success the <strong>pmdaFetchCallBack</strong> method should return <strong>1</strong> if a value is returned via <em>avp</em>, else <strong>0</strong> if no values are currently available for the requested metric-instance pair although <em>mdesc</em> and <em>inst</em> both seem reasonable.</p><p>If the PMDA is using <strong>PMDA_INTERFACE_5</strong> or later then on success the <strong>pmdaFetchCallBack</strong> method should return <strong>PMDA_FETCH_STATIC</strong> ( .BR 1 ) if the value returned via <em>avp</em> can be ignored by <strong>pmdaFetch</strong> once it has been copied into the <strong>pmResult</strong> structure, else <strong>PMDA_FETCH_DYNAMIC</strong> ( .BR 2 ) if the value returned via <em>avp</em> uses the either the <strong>vp</strong> or <strong>cp</strong> fields of the <strong>pmAtomValue</strong> and the associated value (buffer) was allocated using one of <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>, <a href="../man3/calloc.3.html"><strong>calloc</strong>(3)</a>, <a href="../man3/realloc.3.html"><strong>realloc</strong>(3)</a>, <strong>strdup (3)</strong> etc. and <strong>pmdaFetch</strong> should release the memory by calling <a href="../man3/free.3.html"><strong>free</strong>(3)</a> once a new buffer has been allocated and the value copied, else <strong>PMDA_FETCH_NOVALUES</strong> ( .BR 0 ) if no values are currently available for the requested metric-instance pair although <em>mdesc</em> and <em>inst</em> both seem reasonable.</p><p>If the <strong>pmdaFetchCallBack</strong> method returns a value for an instance of a metric of type <strong>PM_TYPE_STRING</strong> or <strong>PM_TYPE_AGGREGATE</strong> some special care is needed &ndash; the method should either use a static buffer, set <em>avp->cp</em> or <em>avp->vp</em> to the address of the buffer and return <strong>PMDA_FETCH_STATIC</strong>, or use a dynamically allocated buffer, keep a static reference to the buffer's address, return <strong>PMDA_FETCH_STATIC</strong> and <em>free (3)</em> or <em>realloc (3)</em> or reuse the buffer the next time the <strong>pmdaFetchCallBack</strong> method is called, else use a dynamically allocated buffer and return <strong>PMDA_FETCH_DYNAMIC</strong>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
 <p>The following code fragments are for a hypothetical PMDA has with metrics (A, B, C and D) and an instance domain (X) with two instances (X1 and X2).  The instance domain and metrics description tables (see <strong>pmdaInit</strong>(3)) could be defined as:</p>
-<p class='spacer'>
-
-<pre>static pmdaInstid _X[] = {
+<pre>
+static pmdaInstid _X[] = {
     { 0, "X1" }, { 1, "X2" }
 };
 
@@ -182,16 +136,11 @@ static pmdaMetric metrictab[] = {
     { (void *)0,
       { PMDA_PMID(0,3), PM_TYPE_STRING, PM_INDOM_NULL,
         PM_SEM_INSTANT, {0,0,0,0,0,0} }, },
-};</pre>
-
-<p class='spacer'>
-
-<p class='spacer'>
-
+};
+</pre>
 <p>A <strong>pmdaFetchCallBack</strong> method to be called from <strong>pmdaFetch</strong> could be defined as:</p>
-<p class='spacer'>
-
-<pre>int
+<pre>
+int
 myFetchCallBack(pmdaMetric *mdesc, unsigned int inst, pmAtomValue *avp)
 {
   static char sbuf[20]; // reuse this buffer
@@ -230,9 +179,8 @@ myFetchCallBack(pmdaMetric *mdesc, unsigned int inst, pmAtomValue *avp)
       return PM_ERR_PMID;
   }
   return PMDA_FETCH_STATIC;
-}</pre>
-
-<p class='spacer'>
+}
+</pre>
 
         </div>
       </section>
@@ -240,32 +188,40 @@ myFetchCallBack(pmdaMetric *mdesc, unsigned int inst, pmAtomValue *avp)
       <section>
         <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
         <div class="sectioncontent">
+<p>The following error messages indicate that there is discrepancy between the namespace, <strong>pmdaMetric</strong> and <strong>pmdaIndom</strong> tables passed to <strong>pmdaInit</strong>(3), and the registered fetch callback:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>pmdaFetch:</strong> <strong>Requested</strong> <strong>metric</strong> <strong></strong><em>metric</em><strong></strong> <strong>is</strong> <strong>not</strong> <strong>defined</strong></p>
+  </dt>
+  <dd>
+    <p>A requested metric <em>metric</em> is not listed in the <strong>pmdaMetric</strong> table.  The namespace for this <strong>PMDA</strong>(3) may contain additional metrics.</p>
+  </dd>
+  <dt>
+    <p><strong>pmdaFetch:</strong> <strong>PMID</strong> <strong></strong><em>pmid</em><strong></strong> <strong>not</strong> <strong>handled</strong> <strong>by</strong> <strong>fetch</strong> <strong>callback</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>pmdaFetchCallBack</strong> method has returned <strong>PM_ERR_PMID</strong>. This indicates that a metric may be listed in the <strong>pmdaMetric</strong> table, but is not supported by the callback method.</p>
+  </dd>
+  <dt>
+    <p><strong>pmdaFetch:</strong> <strong>Instance</strong> <strong></strong><em>inst</em><strong></strong> <strong>of</strong> <strong>PMID</strong> <strong></strong><em>pmid</em><strong></strong> <strong>not</strong> <strong>handled</strong> <strong>by</strong> <strong>fetch</strong> <strong>callback</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>pmdaFetchCallBack</strong> method has returned <strong>PM_ERR_INST</strong>. This indicates that an instance of metric is listed in the <strong>pmdaIndom</strong> table, but is not supported by the callback method.</p>
+  </dd>
+  <dt>
+    <p><strong>pmdaFetch: Fetch callback error:</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>pmdaFetchCallBack</strong> method returned a result other than <strong>PMDA_FETCH_NOVALUES</strong>, <strong>PMDA_FETCH_STATIC</strong>, <strong>PMDA_FETCH_DYNAMIC</strong>, <strong>PM_ERR_PMID</strong> or <strong>PM_ERR_INST</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>pmdaFetch:</strong> <strong>Descriptor</strong> <strong>type</strong> <strong>(</strong><em>type</em><strong>)</strong> <strong>for</strong> <strong>metric</strong> <strong></strong><em>pmid</em><strong></strong> <strong>is</strong> <strong>bad</strong></p>
+  </dt>
+  <dd>
+    <p>The data type <em>type</em> specified for the metric <em>pmid</em> in the <strong>pmdaMetric</strong> table is illegal.</p>
+  </dd>
 
-  <p>The following error messages indicate that there is discrepancy between the namespace, <strong>pmdaMetric</strong> and <strong>pmdaIndom</strong> tables passed to <strong>pmdaInit</strong>(3), and the registered fetch callback:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>pmdaFetch: Requested metric </strong><em>metric</em><strong> is not defined</strong></dt>
-    <dd>
-  <p>A requested metric <em>metric</em> is not listed in the <strong>pmdaMetric</strong> table.  The namespace for this <strong>PMDA</strong>(3) may contain additional metrics.</p>
-    </dd>
-    <dt><strong>pmdaFetch: PMID </strong><em>pmid</em><strong> not handled by fetch callback</strong></dt>
-    <dd>
-  <p>The <strong>pmdaFetchCallBack</strong> method has returned <strong>PM_ERR_PMID</strong>. This indicates that a metric may be listed in the <strong>pmdaMetric</strong> table, but is not supported by the callback method.</p>
-    </dd>
-    <dt><strong>pmdaFetch: Instance </strong><em>inst</em><strong> of PMID </strong><em>pmid</em><strong> not handled by fetch callback</strong></dt>
-    <dd>
-  <p>The <strong>pmdaFetchCallBack</strong> method has returned <strong>PM_ERR_INST</strong>. This indicates that an instance of metric is listed in the <strong>pmdaIndom</strong> table, but is not supported by the callback method.</p>
-    </dd>
-    <dt><strong>pmdaFetch: Fetch callback error:</strong></dt>
-    <dd>
-  <p>The <strong>pmdaFetchCallBack</strong> method returned a result other than <strong>PMDA_FETCH_NOVALUES</strong>, <strong>PMDA_FETCH_STATIC</strong>, <strong>PMDA_FETCH_DYNAMIC</strong>, <strong>PM_ERR_PMID</strong> or <strong>PM_ERR_INST</strong>.</p>
-    </dd>
-    <dt><strong>pmdaFetch: Descriptor type (</strong><em>type</em><strong>) for metric </strong><em>pmid</em><strong> is bad</strong></dt>
-    <dd>
-  <p>The data type <em>type</em> specified for the metric <em>pmid</em> in the <strong>pmdaMetric</strong> table is illegal.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p><strong>pmdaFetch</strong> will return <strong>-errno</strong> if an error occurred while allocating the <strong>pmResult</strong> structure or copying the value from the <strong>pmAtomValue</strong>.</p>
         </div>
       </section>
@@ -273,7 +229,6 @@ myFetchCallBack(pmdaMetric *mdesc, unsigned int inst, pmAtomValue *avp)
       <section>
         <h2 class="font-effect-shadow-multiple">CAVEAT</h2>
         <div class="sectioncontent">
-
 <p>The PMDA must be using <strong>PMDA_INTERFACE_2</strong> or later, as specified in the call to <strong>pmdaDSO</strong>(3) or <strong>pmdaDaemon</strong>(3).</p>
         </div>
       </section>
@@ -281,11 +236,9 @@ myFetchCallBack(pmdaMetric *mdesc, unsigned int inst, pmAtomValue *avp)
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmdafetch&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>pmcd</strong>(1), <strong>PMAPI</strong>(3), <strong>PMDA</strong>(3), <strong>pmdaDaemon</strong>(3), <strong>pmdaDSO</strong>(3), <strong>pmdaInit</strong>(3) and <strong>pmFetch</strong>(3).</p>
+<p><a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>, <strong>PMAPI</strong>(3), <strong>PMDA</strong>(3), <strong>pmdaDaemon</strong>(3), <strong>pmdaDSO</strong>(3), <strong>pmdaInit</strong>(3) and <strong>pmFetch</strong>(3).</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmdaeventqueue.3.html"><span aria-hidden="true">&larr;</span> pmdaeventqueue.3: Utilities for pmdas managing event queues</a></li>

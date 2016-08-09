@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p><strong>pmcpp</strong> [\f3-Prs\f1] [\f3-D\f1 \f2name\f1[=\f2value\f1] ...] [\f3-I\f1 \f2dir\f1 ...] [\f2infile\f1]</p>
         </div>
       </section>
@@ -98,181 +97,19 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>pmcpp</strong> provides a very simple pre-processor originally designed for manipulating Performance Metric Name Space (PMNS) files for the Performance Co-Pilot (PCP), but later generalized to provide conditional blocks, include file processing, in-line shell command execution and macro substitution for arbitrary files. It is most commonly used internally to process the PMNS file(s) after <strong>pmLoadNameSpace</strong>(3) or <strong>pmLoadASCIINameSpace</strong>(3) is called and to pre-process the configuration files for <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>.</p>
-<p class='spacer'>
-
-<p>Input lines are read from <em>infile</em> (or standard input if <em>infile</em> is not specified), processed and written to standard output.</p>
-<p class='spacer'>
-
-<p>All C-style comments of the form /* ... */ are stripped from the input stream.</p>
-<p class='spacer'>
-
-<p>There are no predefined macros for <strong>pmcpp</strong> although macros may be defined on the command line using the <strong>-D</strong> option, where <em>name</em> and <em>value</em> must follow the same rules as described below for the <strong>#define</strong> directive.</p>
-<p class='spacer'>
-
-  <p><strong>pmcpp</strong> accepts the following directives in the input stream (like <strong>cpp</strong>(1)):</p>
-  <dl class='dl-horizontal'>
-    <dt>&bull;</dt>
-    <dd>
-  <p>#include "<em>filename"</em></p>
-<p class='spacer'>
-
-  <p>or</p>
-<p class='spacer'>
-
-  <p>#include &lt;<em>filename&gt;</em></p>
-<p class='spacer'>
-
-  <p>In either case the directory search path for <em>filename</em> tries <em>filename</em> first, then the directory for the command line <em>infile</em> (if any), followed by any directories named in <strong>-I</strong> command line arguments, and finally the <strong>$PCP_VAR_DIR/pmns</strong> directory (the latter is for backwards compatibility with earlier versions of <strong>pmcpp</strong> and the implied used from <strong>pmLoadASCIINameSpace</strong>(3)). <strong>#include</strong> directives may be nested, up to a maximum depth of 5.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>#shell "<em>command"</em></p>
-<p class='spacer'>
-
-  <p>or</p>
-<p class='spacer'>
-
-  <p>#shell 'command'</p>
-<p class='spacer'>
-
-  <p>The shell <em>command</em> will be executed and the standard output is inserted into the stream of data to be processed by <strong>pmcpp</strong>. Functionally this is similar to a <strong>#include</strong> directive, except input lines are read from a <em>command</em> rather than a file. The <strong>#shell</strong> directive is most useful for including or excluding <strong>#define</strong> or <strong>#undef</strong> directives based on run-time logic in the <em>command</em>.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>#define <em>name value</em></p>
-<p class='spacer'>
-
-  <p>or</p>
-<p class='spacer'>
-
-  <p>#define <em>name "value"</em></p>
-<p class='spacer'>
-
-  <p>or</p>
-<p class='spacer'>
-
-  <p>#define <em>name 'value'</em></p>
-<p class='spacer'>
-
-  <p>Defines a value for the macro <em>name</em> which must be a valid C-style name, so leading alphabetic or underscore followed by zero or more alphanumerics or underscores. <em>value</em> is optional (and defaults to an empty string). There is no character escape mechanism, but either single quotes or double quotes may be used to define a <em>value</em> with special characters or embedded horizontal white space (no newlines).</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>#undef <em>name</em></p>
-<p class='spacer'>
-
-  <p>Removes the macro definition, if any, for <em>name</em>.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>#ifdef <em>name</em></p>
-<p class='spacer'>
-
-  <p>...</p>
-<p class='spacer'>
-
-  <p><strong>#endif</strong></p>
-<p class='spacer'>
-
-  <p>or</p>
-<p class='spacer'>
-
-  <p>#ifndef <em>name</em></p>
-<p class='spacer'>
-
-  <p>...</p>
-<p class='spacer'>
-
-  <p><strong>#endif</strong></p>
-<p class='spacer'>
-
-  <p>The enclosing lines will be stripped or included, depending if the macro <em>name</em> is defined or not.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p><strong>#else</strong></p>
-<p class='spacer'>
-
-  <p>Within a <strong>#ifdef</strong> or <strong>#ifndef</strong> block, <strong>#else</strong> may be used to delimit lines to be included if the preceding ``if'' condition is false.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>Macro substitution is achieved by breaking the input stream into words separated by white space or characters that are not valid in a macro name, i.e. not alphanumeric and not underscore. Each word is checked and if it matches a macro name, the word is replaced by the macro value, otherwise the word is unchanged.</p>
-<p class='spacer'>
-
-<p>There is generally one output line for each input line, although the line may be empty if the text has been stripped due to the handling of comments or conditional directives.  When there is a change in the input stream, an additional output line is generated of the form:</p>
-<p class='spacer'>
-
-<p># lineno "filename"</p>
-<p class='spacer'>
-
-<p>to indicate the <em>following</em> line of output corresponds to line number <em>lineno</em> of the input file <em>filename</em>.</p>
-<p class='spacer'>
-
-<p>The <strong>-P</strong> argument suppresses the generation of these linemarker lines.</p>
-<p class='spacer'>
-
-  <p>The <strong>-s</strong> argument changes the expected input style from C-like to shell-like (where # is a comment prefix).  This forces the following changes in <strong>pmcpp</strong> behaviour:</p>
-  <dl class='dl-horizontal'>
-    <dt>&bull;</dt>
-    <dd>
-  <p>The control prefix character changes from <strong>#</strong> to <strong>%</strong>, so <strong>%include</strong> for example.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>No comment stripping is performed.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>To provide finer control of macro expansion, the <strong>-r</strong> option restricts macro substitution to words that match the patterns <strong>#</strong>name or <strong>#{</strong>name<strong>}</strong> or if <strong>-s</strong> is specified, then <strong>%</strong>name or <strong>%{</strong>name<strong>}</strong>. In this mode, the macro <em>name</em> alone in the input stream will never be expanded, however in control lines (like <strong>#ifdef</strong>) the macro <em>name</em> should appear alone with out the prefix character or the curly braces (refer to the EXAMPLES below).</p>
-<p class='spacer'>
-
-  <p>Important <strong>cpp</strong>(1) features that are <strong>not</strong> supported by <strong>pmcpp</strong> include:</p>
-  <dl class='dl-horizontal'>
-    <dt>&bull;</dt>
-    <dd>
-  <p>Macros with parameters - the <strong>pmcpp</strong> macros support only parameterless string substitution.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>#if <em>expr</em></p>
-<p class='spacer'>
-
-  <p>...</p>
-<p class='spacer'>
-
-  <p><strong>#endif</strong></p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>Nested use of <strong>#ifdef</strong> or <strong>#ifndef</strong>.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>Stripping C++ style comments, as in // comment.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>Error recovery - the first error encountered by <strong>pmcpp</strong> will be fatal.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p><strong>cpp</strong>(1) command line options like <strong>-o</strong>, <strong>-W</strong>, <strong>-U</strong>, and <strong>-x</strong>.</p>
-    </dd>
-  </dl>
+<p><strong>pmcpp</strong> provides a very simple pre-processor originally designed for manipulating Performance Metric Name Space (PMNS) files for the Performance Co-Pilot (PCP), but later generalized to provide conditional blocks, include file processing, in-line shell command execution and macro substitution for arbitrary files. It is most commonly used internally to process the PMNS file(s) after <strong>pmLoadNameSpace</strong>(3) or <strong>pmLoadASCIINameSpace</strong>(3) is called and to pre-process the configuration files for <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>.</p><p>Input lines are read from <em>infile</em> (or standard input if <em>infile</em> is not specified), processed and written to standard output.</p><p>All C-style comments of the form /* ... */ are stripped from the input stream.</p><p>There are no predefined macros for <strong>pmcpp</strong> although macros may be defined on the command line using the <strong>-D</strong> option, where <em>name</em> and <em>value</em> must follow the same rules as described below for the <strong>#define</strong> directive.</p><p><strong>pmcpp</strong> accepts the following directives in the input stream (like <strong>cpp</strong>(1)):</p><ul>
+<li><p>#include "<em>filename"</em></p><p>or</p><p>#include &lt;<em>filename&gt;</em></p><p>In either case the directory search path for <em>filename</em> tries <em>filename</em> first, then the directory for the command line <em>infile</em> (if any), followed by any directories named in <strong>-I</strong> command line arguments, and finally the <strong>$PCP_VAR_DIR/pmns</strong> directory (the latter is for backwards compatibility with earlier versions of <strong>pmcpp</strong> and the implied used from <strong>pmLoadASCIINameSpace</strong>(3)). <strong>#include</strong> directives may be nested, up to a maximum depth of 5.</p></li><li><p>#shell "<em>command"</em></p><p>or</p><p>#shell 'command'</p><p>The shell <em>command</em> will be executed and the standard output is inserted into the stream of data to be processed by <strong>pmcpp</strong>. Functionally this is similar to a <strong>#include</strong> directive, except input lines are read from a <em>command</em> rather than a file. The <strong>#shell</strong> directive is most useful for including or excluding <strong>#define</strong> or <strong>#undef</strong> directives based on run-time logic in the <em>command</em>.</p></li><li><p>#define <em>name value</em></p><p>or</p><p>#define <em>name "value"</em></p><p>or</p><p>#define <em>name 'value'</em></p><p>Defines a value for the macro <em>name</em> which must be a valid C-style name, so leading alphabetic or underscore followed by zero or more alphanumerics or underscores. <em>value</em> is optional (and defaults to an empty string). There is no character escape mechanism, but either single quotes or double quotes may be used to define a <em>value</em> with special characters or embedded horizontal white space (no newlines).</p></li><li><p>#undef <em>name</em></p><p>Removes the macro definition, if any, for <em>name</em>.</p></li><li><p>#ifdef <em>name</em></p><p>...</p><p><strong>#endif</strong></p><p>or</p><p>#ifndef <em>name</em></p><p>...</p><p><strong>#endif</strong></p><p>The enclosing lines will be stripped or included, depending if the macro <em>name</em> is defined or not.</p></li><li><p><strong>#else</strong></p><p>Within a <strong>#ifdef</strong> or <strong>#ifndef</strong> block, <strong>#else</strong> may be used to delimit lines to be included if the preceding ``if'' condition is false.</p></li>
+</ul><p>Macro substitution is achieved by breaking the input stream into words separated by white space or characters that are not valid in a macro name, i.e. not alphanumeric and not underscore. Each word is checked and if it matches a macro name, the word is replaced by the macro value, otherwise the word is unchanged.</p><p>There is generally one output line for each input line, although the line may be empty if the text has been stripped due to the handling of comments or conditional directives.  When there is a change in the input stream, an additional output line is generated of the form:</p><p># lineno "filename"</p><p>to indicate the <em>following</em> line of output corresponds to line number <em>lineno</em> of the input file <em>filename</em>.</p><p>The <strong>-P</strong> argument suppresses the generation of these linemarker lines.</p><p>The <strong>-s</strong> argument changes the expected input style from C-like to shell-like (where # is a comment prefix).  This forces the following changes in <strong>pmcpp</strong> behaviour:</p><ul>
+<li><p>The control prefix character changes from <strong>#</strong> to <strong>%</strong>, so <strong>%include</strong> for example.</p></li><li><p>No comment stripping is performed.</p></li>
+</ul><p>To provide finer control of macro expansion, the <strong>-r</strong> option restricts macro substitution to words that match the patterns <strong>#</strong>name or <strong>#{</strong>name<strong>}</strong> or if <strong>-s</strong> is specified, then <strong>%</strong>name or <strong>%{</strong>name<strong>}</strong>. In this mode, the macro <em>name</em> alone in the input stream will never be expanded, however in control lines (like <strong>#ifdef</strong>) the macro <em>name</em> should appear alone with out the prefix character or the curly braces (refer to the EXAMPLES below).</p><p>Important <strong>cpp</strong>(1) features that are <strong>not</strong> supported by <strong>pmcpp</strong> include:</p><ul>
+<li><p>Macros with parameters - the <strong>pmcpp</strong> macros support only parameterless string substitution.</p></li><li><p>#if <em>expr</em></p><p>...</p><p><strong>#endif</strong></p></li><li><p>Nested use of <strong>#ifdef</strong> or <strong>#ifndef</strong>.</p></li><li><p>Stripping C++ style comments, as in // comment.</p></li><li><p>Error recovery - the first error encountered by <strong>pmcpp</strong> will be fatal.</p></li><li><p><strong>cpp</strong>(1) command line options like <strong>-o</strong>, <strong>-W</strong>, <strong>-U</strong>, and <strong>-x</strong>.</p></li>
+</ul>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
 <table class="table table-striped">
 <tr>
 <th>Command: <strong>pmcpp</strong></th>
@@ -295,6 +132,11 @@
 <td></td></tr>
 
 <tr>
+<td></td>
+<td></td>
+<td></td></tr>
+
+<tr>
 <td>root {</td>
 <td>root {</td>
 <td></td></tr>
@@ -308,18 +150,11 @@
 <td>}</td>
 <td>}</td>
 <td></td></tr>
-</table>
-
-<p class='spacer'>
-
-  <p>For the following examples, the file <em>frequencies</em> contains the lines:</p>
-<pre>%define dk_freq 1minute
-%define cpu_freq '15 sec'</pre>
-
-<p class='spacer'>
-
-<p class='spacer'>
-
+</table><p>For the following examples, the file <em>frequencies</em> contains the lines:</p>
+<pre>
+%define dk_freq 1minute
+%define cpu_freq '15 sec'
+</pre>
 <table class="table table-striped">
 <tr>
 <th>Command: <strong>pmcpp -rs</strong></th>
@@ -347,6 +182,11 @@
 <td></td></tr>
 
 <tr>
+<td></td>
+<td></td>
+<td></td></tr>
+
+<tr>
 <td>log mandatory on %dk_freq {</td>
 <td>log mandatory on 1minute {</td>
 <td></td></tr>
@@ -359,6 +199,11 @@
 <tr>
 <td>}</td>
 <td>}</td>
+<td></td></tr>
+
+<tr>
+<td></td>
+<td></td>
 <td></td></tr>
 
 <tr>
@@ -400,13 +245,7 @@
 <td>%endif</td>
 <td></td>
 <td></td></tr>
-</table>
-
-<p class='spacer'>
-
-<p class='spacer'>
-
-<table class="table table-striped">
+</table><table class="table table-striped">
 <tr>
 <th>Command: <strong>pmcpp -rs -Dwant_cpu</strong></th>
 <th></th>
@@ -433,6 +272,11 @@
 <td></td></tr>
 
 <tr>
+<td></td>
+<td></td>
+<td></td></tr>
+
+<tr>
 <td>log mandatory on %dk_freq {</td>
 <td>log mandatory on 1minute {</td>
 <td></td></tr>
@@ -445,6 +289,11 @@
 <tr>
 <td>}</td>
 <td>}</td>
+<td></td></tr>
+
+<tr>
+<td></td>
+<td></td>
 <td></td></tr>
 
 <tr>
@@ -487,26 +336,22 @@
 <td></td>
 <td></td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PCP ENVIRONMENT</h2>
         <div class="sectioncontent">
-
-<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <strong>pcp.conf</strong>(5).</p>
+<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmcpp&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>cpp</strong>(1), <strong>pmLoadASCIINameSpace</strong>(3), <strong>pmLoadNameSpace</strong>(3), <strong>pmns</strong>(5), <strong>pcp.conf</strong>(5) and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
+<p><strong>cpp</strong>(1), <strong>pmLoadASCIINameSpace</strong>(3), <strong>pmLoadNameSpace</strong>(3), <a href="../man5/pmns.5.html"><strong>pmns</strong>(5)</a>, <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a> and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmconfig.1.html"><span aria-hidden="true">&larr;</span> pmconfig.1: Performance co-pilot configuration parameters</a></li>

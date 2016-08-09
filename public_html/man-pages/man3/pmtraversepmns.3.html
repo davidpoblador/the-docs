@@ -90,15 +90,11 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p>#include &lt;pcp/pmapi.h&gt;</p>
-<p class='spacer'>
-
-<pre>int pmTraversePMNS(const char *<em>name</em>, void (*<em>dometric</em>)(const char *));
-int pmTraversePMNS_r(const char *<em>name</em>, void (*<em>dometric_r</em>)(const char *, void *), void *<em>closure</em>);</pre>
-
-<p class='spacer'>
-
+<pre>
+int pmTraversePMNS(const char *<em>name</em>, void (*<em>dometric</em>)(const char *));
+int pmTraversePMNS_r(const char *<em>name</em>, void (*<em>dometric_r</em>)(const char *, void *), void *<em>closure</em>);
+</pre>
 <p>cc ... -lpcp</p>
         </div>
       </section>
@@ -106,22 +102,14 @@ int pmTraversePMNS_r(const char *<em>name</em>, void (*<em>dometric_r</em>)(cons
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The routine <strong>pmTraversePMNS</strong> may be used to perform a depth-first traversal of the Performance Metrics Name Space (PMNS).</p><p>The traversal starts at the node identified by <em>name</em> - if <em>name</em> is an empty string (i.e. \f3""\f1), the traversal starts at the root of the PMNS. Usually <em>name</em> would be the pathname of a non-leaf node in the PMNS.</p><p>For each leaf node (i.e. performance metric) found in the traversal, the user-supplied routine <em>dometric</em> is called with the full pathname of that metric in the PMNS as the single argument. This argument is null-byte terminated, and is constructed from a buffer that is managed internally to <strong>pmTraversePMNS</strong>. Consequently the value is only valid during the call to <em>dometric</em> - if the pathname needs to be retained, it should be copied using <a href="../man3/strdup.3.html"><strong>strdup</strong>(3)</a> before returning from <em>dometric</em>.</p><p>The <strong>pmTraversePMNS_r</strong> routine performs the same function, except the callback method <em>func_r</em> has an additional parameter that will be <em>closure</em> from the initial call to <strong>pmTraversePMNS_r</strong>. The additional parameter to <strong>pmTraversePMNS_r</strong> and the callback method allows the caller to pass context through <strong>pmTraversePMNS_r</strong> and into the callback method <em>func_r</em>, making the service more useful for multi-threaded applications where thread-private data can be accessed in the callback method via the <em>closure</em> argument.</p><p>On success <strong>pmTraversePMNS</strong> returns the number of children of <em>name</em>, which may be zero.</p>
+        </div>
+      </section>
 
-<p class='spacer'>
-
-<p>The routine <strong>pmTraversePMNS</strong> may be used to perform a depth-first traversal of the Performance Metrics Name Space (PMNS).</p>
-<p class='spacer'>
-
-<p>The traversal starts at the node identified by <em>name</em> - if <em>name</em> is an empty string (i.e. \f3""\f1), the traversal starts at the root of the PMNS. Usually <em>name</em> would be the pathname of a non-leaf node in the PMNS.</p>
-<p class='spacer'>
-
-<p>For each leaf node (i.e. performance metric) found in the traversal, the user-supplied routine <em>dometric</em> is called with the full pathname of that metric in the PMNS as the single argument. This argument is null-byte terminated, and is constructed from a buffer that is managed internally to <strong>pmTraversePMNS</strong>. Consequently the value is only valid during the call to <em>dometric</em> - if the pathname needs to be retained, it should be copied using <a href="../man3/strdup.3.html"><strong>strdup</strong>(3)</a> before returning from <em>dometric</em>.</p>
-<p class='spacer'>
-
-<p>The <strong>pmTraversePMNS_r</strong> routine performs the same function, except the callback method <em>func_r</em> has an additional parameter that will be <em>closure</em> from the initial call to <strong>pmTraversePMNS_r</strong>. The additional parameter to <strong>pmTraversePMNS_r</strong> and the callback method allows the caller to pass context through <strong>pmTraversePMNS_r</strong> and into the callback method <em>func_r</em>, making the service more useful for multi-threaded applications where thread-private data can be accessed in the callback method via the <em>closure</em> argument.</p>
-<p class='spacer'>
-
-<p>On success <strong>pmTraversePMNS</strong> returns the number of children of <em>name</em>, which may be zero.</p>
+      <section>
+        <h2 class="font-effect-shadow-multiple">RELATED TO pmtraversepmns&hellip;</h2>
+        <div class="sectioncontent">
+<p><strong>PMAPI</strong>(3) and <strong>pmGetChildren</strong>(3).</p>
         </div>
       </section>
 
@@ -129,31 +117,30 @@ int pmTraversePMNS_r(const char *<em>name</em>, void (*<em>dometric_r</em>)(cons
         <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-horizontal'>
-    <dt>f3PM_ERR_NOPMNSf1</dt>
-    <dd>
-  <p>Failed to access a PMNS for operation. Note that if the application hasn't a priori called <strong>pmLoadNameSpace</strong>(3) and wants to use the distributed PMNS, then a call to <strong>pmTraversePMNS</strong> must be made inside a current context.</p>
-    </dd>
-    <dt>f3PM_ERR_NAMEf1</dt>
-    <dd>
-  <p>The initial pathname <em>name</em> is not valid in the current PMNS.</p>
-    </dd>
-    <dt>f3PM_ERR_*f1</dt>
-    <dd>
-  <p>Other diagnostics are for protocol failures when accessing the distributed PMNS.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    \f3PM_ERR_NOPMNS\f1
+  </dt>
+  <dd>
+    <p>Failed to access a PMNS for operation. Note that if the application hasn't a priori called <strong>pmLoadNameSpace</strong>(3) and wants to use the distributed PMNS, then a call to <strong>pmTraversePMNS</strong> must be made inside a current context.</p>
+  </dd>
+  <dt>
+    \f3PM_ERR_NAME\f1
+  </dt>
+  <dd>
+    <p>The initial pathname <em>name</em> is not valid in the current PMNS.</p>
+  </dd>
+  <dt>
+    \f3PM_ERR_*\f1
+  </dt>
+  <dd>
+    <p>Other diagnostics are for protocol failures when accessing the distributed PMNS.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO pmtraversepmns&hellip;</h2>
-        <div class="sectioncontent">
-
-<p><strong>PMAPI</strong>(3) and <strong>pmGetChildren</strong>(3).</p>
-        </div>
-      </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmtime.3.html"><span aria-hidden="true">&larr;</span> pmtime.3: Time control functions for synchronizing the archive position and update interval between one or more applications</a></li>

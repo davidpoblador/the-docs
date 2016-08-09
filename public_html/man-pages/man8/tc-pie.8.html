@@ -90,78 +90,41 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p><strong>tc qdisc ... pie</strong> [ <strong>limit</strong> PACKETS ] [ <strong>target</strong> TIME ] [ <strong>tupdate</strong> TIME ] [ <strong>alpha</strong> int ] [ <strong>beta</strong> int ] [ <strong>ecn</strong> | <strong>noecn</strong> ] [ <strong>bytemode</strong> | <strong>nobytemode</strong> ]</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>Proportional Integral controller-Enhanced (PIE) is a control theoretic active queue management scheme. It is based on the proportional integral controller but aims to control delay. The main design goals are</p>
-<pre> o Low latency control
- o High link utilization
- o Simple implementation
- o Guaranteed stability and fast responsiveness</pre>
-
-<p class='spacer'>
-
+<p>Proportional Integral controller-Enhanced (PIE) is a control theoretic active queue management scheme. It is based on the proportional integral controller but aims to control delay. The main design goals are  o Low latency control  o High link utilization  o Simple implementation  o Guaranteed stability and fast responsiveness</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ALGORITHM</h2>
         <div class="sectioncontent">
-
-<p>PIE is designed to control delay effectively. First, an average dequeue rate is estimated based on the standing queue. The rate is used to calculate the current delay. Then, on a periodic basis, the delay is used to calculate the dropping probabilty. Finally, on arrival, a packet is dropped (or marked) based on this probability.</p>
-<p class='spacer'>
-
-<p>PIE makes adjustments to the probability based on the trend of the delay i.e. whether it is going up or down.The delay converges quickly to the target value specified.</p>
-<p class='spacer'>
-
-<p>alpha and beta are statically chosen parameters chosen to control the drop probability growth and are determined through control theoretic approaches. alpha determines how the deviation between the current and target latency changes probability. beta exerts additional adjustments depending on the latency trend.</p>
-<p class='spacer'>
-
-<p>The drop probabilty is used to mark packets in ecn mode. However, as in RED, beyond 10% packets are dropped based on this probability. The bytemode is used to drop packets proportional to the packet size.</p>
-<p class='spacer'>
-
-<p>Additional details can be found in the paper cited below.</p>
-<p class='spacer'>
-
+<p>PIE is designed to control delay effectively. First, an average dequeue rate is estimated based on the standing queue. The rate is used to calculate the current delay. Then, on a periodic basis, the delay is used to calculate the dropping probabilty. Finally, on arrival, a packet is dropped (or marked) based on this probability.</p><p>PIE makes adjustments to the probability based on the trend of the delay i.e. whether it is going up or down.The delay converges quickly to the target value specified.</p><p>alpha and beta are statically chosen parameters chosen to control the drop probability growth and are determined through control theoretic approaches. alpha determines how the deviation between the current and target latency changes probability. beta exerts additional adjustments depending on the latency trend.</p><p>The drop probabilty is used to mark packets in ecn mode. However, as in RED, beyond 10% packets are dropped based on this probability. The bytemode is used to drop packets proportional to the packet size.</p><p>Additional details can be found in the paper cited below.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PARAMETERS</h2>
         <div class="sectioncontent">
-
-  <h3>limit</h3>
+<h3>limit</h3>
 <p>limit on the queue size in packets. Incoming packets are dropped when this limit is reached. Default is 1000 packets.</p>
-<p class='spacer'>
-
-  <h3>target</h3>
+<h3>target</h3>
 <p>is the expected queue delay. The default target delay is 20ms.</p>
-<p class='spacer'>
-
-  <h3>tupdate</h3>
+<h3>tupdate</h3>
 <p>is the frequency at which the system drop probability is calculated. The default is 30ms.</p>
-<p class='spacer'>
+<h3>alpha</h3>
 
-  <h3>alpha</h3>
-  <h3>beta</h3>
+<h3>beta</h3>
 <p>alpha and beta are parameters chosen to control the drop probability. These should be in the range between 0 and 32.</p>
-<p class='spacer'>
-
-  <h3>ecn | noecn</h3>
+<h3>ecn | noecn</h3>
 <p>is used to mark packets instead of dropping <strong>ecn</strong> to turn on ecn mode, <strong>noecn</strong> to turn off ecn mode. By default, <strong>ecn</strong> is turned off.</p>
-<p class='spacer'>
-
-  <h3>bytemode | nobytemode</h3>
+<h3>bytemode | nobytemode</h3>
 <p>is used to scale drop probability proportional to packet size <strong>bytemode</strong> to turn on bytemode, <strong>nobytemode</strong> to turn off bytemode. By default, <strong>bytemode</strong> is turned off.</p>
-<p class='spacer'>
 
         </div>
       </section>
@@ -169,75 +132,34 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
         <div class="sectioncontent">
-
-<pre> # tc qdisc add dev eth0 root pie
- # tc -s qdisc show
-   qdisc pie 8034: dev eth0 root refcnt 2 limit 200p target 19000us tupdate 29000us alpha 2 beta 20
-   Sent 7443524 bytes 7204 pkt (dropped 900, overlimits 0 requeues 0)
-   backlog 38998b 37p requeues 0
-   prob 0.123384 delay 25000us avg_dq_rate 1464840
-   pkts_in 7241 overlimit 900 dropped 0 maxq 186 ecn_mark 0</pre>
-
-<p class='spacer'>
-
-<pre> # tc qdisc add dev eth0 root pie limit 100 target 20ms tupdate 30ms ecn
- # tc -s qdisc show
-   qdisc pie 8036: dev eth0 root refcnt 2 limit 200p target 19000 tupdate 29000 alpha 2 beta 20 ecn
-   Sent 2491922 bytes 2507 pkt (dropped 214, overlimits 0 requeues 0)
-   backlog 33728b 32p requeues 0
-   prob 0.102262 delay 24000us avg_dq_rate 1464840
-   pkts_in 2468 overlimit 214 dropped 0 maxq 192 ecn_mark 71</pre>
-
-<p class='spacer'>
-
-<pre> # tc qdisc add dev eth0 root pie limit 100 target 50ms tupdate 30ms bytemode
- # tc -s qdisc show
-   qdisc pie 8036: dev eth0 root refcnt 2 limit 200p target 19000 tupdate 29000 alpha 2 beta 20 ecn
-   Sent 2491922 bytes 2507 pkt (dropped 214, overlimits 0 requeues 0)
-   backlog 33728b 32p requeues 0
-   prob 0.102262 delay 24000us avg_dq_rate 1464840
-   pkts_in 2468 overlimit 214 dropped 0 maxq 192 ecn_mark 71</pre>
-
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">SOURCES</h2>
-        <div class="sectioncontent">
-
-<pre> o IETF draft submission is at http://tools.ietf.org/html/draft-pan-tsvwg-pie-00
- o IEEE  Conference on High Performance Switching and Routing 2013 : "PIE: A</pre>
-
-<p>Lightweight Control Scheme to Address the Bufferbloat Problem"</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
-        <div class="sectioncontent">
-
-<p>PIE was implemented by Vijay Subramanian and Mythili Prabhu, also the authors of this man page. Please report bugs and corrections to the Linux networking development mailing list at &lt;netdev@vger.kernel.org&gt;.</p>
+<p> # tc qdisc add dev eth0 root pie  # tc -s qdisc show    qdisc pie 8034: dev eth0 root refcnt 2 limit 200p target 19000us tupdate 29000us alpha 2 beta 20    Sent 7443524 bytes 7204 pkt (dropped 900, overlimits 0 requeues 0)    backlog 38998b 37p requeues 0    prob 0.123384 delay 25000us avg_dq_rate 1464840    pkts_in 7241 overlimit 900 dropped 0 maxq 186 ecn_mark 0</p><p> # tc qdisc add dev eth0 root pie limit 100 target 20ms tupdate 30ms ecn  # tc -s qdisc show    qdisc pie 8036: dev eth0 root refcnt 2 limit 200p target 19000 tupdate 29000 alpha 2 beta 20 ecn    Sent 2491922 bytes 2507 pkt (dropped 214, overlimits 0 requeues 0)    backlog 33728b 32p requeues 0    prob 0.102262 delay 24000us avg_dq_rate 1464840    pkts_in 2468 overlimit 214 dropped 0 maxq 192 ecn_mark 71</p><p> # tc qdisc add dev eth0 root pie limit 100 target 50ms tupdate 30ms bytemode  # tc -s qdisc show    qdisc pie 8036: dev eth0 root refcnt 2 limit 200p target 19000 tupdate 29000 alpha 2 beta 20 ecn    Sent 2491922 bytes 2507 pkt (dropped 214, overlimits 0 requeues 0)    backlog 33728b 32p requeues 0    prob 0.102262 delay 24000us avg_dq_rate 1464840    pkts_in 2468 overlimit 214 dropped 0 maxq 192 ecn_mark 71</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO tc-pie&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>tc</strong>(8), <a href="../man8/tc-codel.8.html"><strong>tc-codel</strong>(8)</a> <a href="../man8/tc-red.8.html"><strong>tc-red</strong>(8)</a></p>
-<p class='spacer'>
-
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">SOURCES</h2>
+        <div class="sectioncontent">
+<p> o IETF draft submission is at http://tools.ietf.org/html/draft-pan-tsvwg-pie-00  o IEEE  Conference on High Performance Switching and Routing 2013 : "PIE: A Lightweight Control Scheme to Address the Bufferbloat Problem"</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+<p>PIE was implemented by Vijay Subramanian and Mythili Prabhu, also the authors of this man page. Please report bugs and corrections to the Linux networking development mailing list at &lt;netdev@vger.kernel.org&gt;.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="tc-pfifo_fast.8.html"><span aria-hidden="true">&larr;</span> tc-pfifo_fast.8: Three-band first in, first out queue</a></li>
-   <li class="next"><a href="tc-prio.8.html">tc-prio.8: Priority qdisc <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="tc-police.8.html">tc-police.8: Policing action <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

@@ -91,14 +91,16 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;seccomp.h&gt;</strong>
+<pre>
+<strong>#include <seccomp.h></strong>
 
 <strong>typedef void * scmp_filter_ctx;</strong>
 
-<strong>scmp_filter_ctx seccomp_init(uint32_t </strong><em>def_action</em><strong>);</strong>
-<strong>int seccomp_reset(scmp_filter_ctx </strong><em>ctx</em><strong>, uint32_t </strong><em>def_action</em><strong>);</strong>
+<strong>scmp_filter_ctx</strong> <strong>seccomp_init(uint32_t</strong> <strong></strong><em>def_action</em><strong>);</strong>
+<strong>int</strong> <strong>seccomp_reset(scmp_filter_ctx</strong> <strong></strong><em>ctx</em><strong>,</strong> <strong>uint32_t</strong> <strong></strong><em>def_action</em><strong>);</strong>
 
-Link with <em>-lseccomp</em>.</pre>
+Link with <em>-lseccomp</em>.
+</pre>
 
         </div>
       </section>
@@ -106,45 +108,47 @@ Link with <em>-lseccomp</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>seccomp_init</strong>() and <strong>seccomp_reset</strong>() functions (re)initialize the internal seccomp filter state, prepares it for use, and sets the default action based on the <em>def_action</em> parameter.  The <strong>seccomp_init</strong>() function must be called before any other libseccomp functions as the rest of the library API will fail if the filter context is not initialized properly. The <strong>seccomp_reset</strong>() function releases the existing filter context state before reinitializing it and can only be called after a call to <strong>seccomp_init</strong>() has succeeded.</p><p>When the caller is finished configuring the seccomp filter and has loaded it into the kernel, the caller should call <a href="../man3/seccomp_release.3.html"><strong>seccomp_release</strong>(3)</a> to release all of the filter context state.</p><p>Valid <em>def_action</em> values are as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SCMP_ACT_KILL</strong></p>
+  </dt>
+  <dd>
+    <p>The thread will be terminated by the kernel with SIGSYS when it calls a syscall that does not match any of the configured seccomp filter rules.  The thread will not be able to catch the signal.</p>
+  </dd>
+  <dt>
+    <p><strong>SCMP_ACT_TRAP</strong></p>
+  </dt>
+  <dd>
+    <p>The thread will be sent a SIGSYS signal when it calls a syscall that does not match any of the configured seccomp filter rules.  It may catch this and change its behavior accordingly.  When using SA_SIGINFO with <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, si_code will be set to SYS_SECCOMP, si_syscall will be set to the syscall that failed the rules, and si_arch will be set to the AUDIT_ARCH for the active ABI.</p>
+  </dd>
+  <dt>
+    <p><strong>SCMP_ACT_ERRNO(uint16_t errno)</strong></p>
+  </dt>
+  <dd>
+    <p>The thread will receive a return value of <em>errno</em> when it calls a syscall that does not match any of the configured seccomp filter rules.</p>
+  </dd>
+  <dt>
+    <p><strong>SCMP_ACT_TRACE(uint16_t msg_num)</strong></p>
+  </dt>
+  <dd>
+    <p>If the thread is being traced and the tracing process specified the <strong>PTRACE_O_TRACESECCOMP</strong> option in the call to <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>, the tracing process will be notified, via <strong>PTRACE_EVENT_SECCOMP</strong>, and the value provided in <em>msg_num</em> can be retrieved using the <strong>PTRACE_GETEVENTMSG</strong> option.</p>
+  </dd>
+  <dt>
+    <p><strong>SCMP_ACT_ALLOW</strong></p>
+  </dt>
+  <dd>
+    <p>The seccomp filter will have no effect on the thread calling the syscall if it does not match any of the configured seccomp filter rules.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-<p>The <strong>seccomp_init</strong>() and <strong>seccomp_reset</strong>() functions (re)initialize the internal seccomp filter state, prepares it for use, and sets the default action based on the <em>def_action</em> parameter.  The <strong>seccomp_init</strong>() function must be called before any other libseccomp functions as the rest of the library API will fail if the filter context is not initialized properly. The <strong>seccomp_reset</strong>() function releases the existing filter context state before reinitializing it and can only be called after a call to <strong>seccomp_init</strong>() has succeeded.</p>
-<p class='spacer'>
-
-<p>When the caller is finished configuring the seccomp filter and has loaded it into the kernel, the caller should call <a href="../man3/seccomp_release.3.html"><strong>seccomp_release</strong>(3)</a> to release all of the filter context state.</p>
-<p class='spacer'>
-
-  <p>Valid <em>def_action</em> values are as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SCMP_ACT_KILL</strong></dt>
-    <dd>
-  <p>The thread will be terminated by the kernel with SIGSYS when it calls a syscall that does not match any of the configured seccomp filter rules.  The thread will not be able to catch the signal.</p>
-    </dd>
-    <dt><strong>SCMP_ACT_TRAP</strong></dt>
-    <dd>
-  <p>The thread will be sent a SIGSYS signal when it calls a syscall that does not match any of the configured seccomp filter rules.  It may catch this and change its behavior accordingly.  When using SA_SIGINFO with <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>, si_code will be set to SYS_SECCOMP, si_syscall will be set to the syscall that failed the rules, and si_arch will be set to the AUDIT_ARCH for the active ABI.</p>
-    </dd>
-    <dt><strong>SCMP_ACT_ERRNO(uint16_t errno)</strong></dt>
-    <dd>
-  <p>The thread will receive a return value of <em>errno</em> when it calls a syscall that does not match any of the configured seccomp filter rules.</p>
-    </dd>
-    <dt><strong>SCMP_ACT_TRACE(uint16_t msg_num)</strong></dt>
-    <dd>
-  <p>If the thread is being traced and the tracing process specified the <strong>PTRACE_O_TRACESECCOMP</strong> option in the call to <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>, the tracing process will be notified, via <strong>PTRACE_EVENT_SECCOMP</strong>, and the value provided in <em>msg_num</em> can be retrieved using the <strong>PTRACE_GETEVENTMSG</strong> option.</p>
-    </dd>
-    <dt><strong>SCMP_ACT_ALLOW</strong></dt>
-    <dd>
-  <p>The seccomp filter will have no effect on the thread calling the syscall if it does not match any of the configured seccomp filter rules.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>The <strong>seccomp_init</strong>() function returns a filter context on success, NULL on failure.  The <strong>seccomp_reset</strong>() function returns zero on success, negative errno values on failure.</p>
         </div>
       </section>
@@ -153,7 +157,8 @@ Link with <em>-lseccomp</em>.</pre>
         <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
         <div class="sectioncontent">
 
-<pre>#include &lt;seccomp.h&gt;
+<pre>
+#include &lt;seccomp.h&gt;
 
 int main(int argc, char *argv[])
 {
@@ -175,7 +180,8 @@ int main(int argc, char *argv[])
 out:
 	seccomp_release(ctx);
 	return -rc;
-}</pre>
+}
+</pre>
 
         </div>
       </section>
@@ -183,20 +189,13 @@ out:
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>While the seccomp filter can be generated independent of the kernel, kernel support is required to load and enforce the seccomp filter generated by libseccomp.</p>
-<p class='spacer'>
-
-<p>The libseccomp project site, with more information and the source code repository, can be found at https://github.com/seccomp/libseccomp.  This tool, as well as the libseccomp library, is currently under development, please report any bugs at the project site or directly to the author.</p>
+<p>While the seccomp filter can be generated independent of the kernel, kernel support is required to load and enforce the seccomp filter generated by libseccomp.</p><p>The libseccomp project site, with more information and the source code repository, can be found at https://github.com/seccomp/libseccomp.  This tool, as well as the libseccomp library, is currently under development, please report any bugs at the project site or directly to the author.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
-
 <p>Paul Moore &lt;paul@paul-moore.com&gt;</p>
         </div>
       </section>
@@ -204,13 +203,9 @@ out:
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO seccomp_init&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/seccomp_release.3.html"><strong>seccomp_release</strong>(3)</a></p>
-<p class='spacer'>
-
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="seccomp_export_pfc.3.html"><span aria-hidden="true">&larr;</span> seccomp_export_pfc.3: Export the seccomp filter</a></li>

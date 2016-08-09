@@ -91,78 +91,58 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;unistd.h&gt;</strong>
+<pre>
+<strong>#include <unistd.h></strong>
 
-<strong>int unlink(const char *</strong><em>pathname</em><strong>);</strong>
+<strong>int</strong> <strong>unlink(const</strong> <strong>char</strong> <strong>*</strong><em>pathname</em><strong>);</strong>
 
-<strong>#include &lt;fcntl.h&gt;           </strong>/* Definition of AT_* constants */
-<strong>#include &lt;unistd.h&gt;</strong>
+<strong>#include</strong> <strong><fcntl.h></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong>/* Definition of AT_* constants */
+<strong>#include <unistd.h></strong>
 
-<strong>int unlinkat(int </strong><em>dirfd</em><strong>, const char *</strong><em>pathname</em><strong>, int </strong><em>flags</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-    <p><strong>unlinkat</strong>():</p>
-    <dl class='dl-vertical'>
-      <dt>Since glibc 2.10:</dt>
-      <dd>
+<strong>int</strong> <strong>unlinkat(int</strong> <strong></strong><em>dirfd</em><strong>,</strong> <strong>const</strong> <strong>char</strong> <strong>*</strong><em>pathname</em><strong>,</strong> <strong>int</strong> <strong></strong><em>flags</em><strong>);</strong>
+</pre>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>unlinkat</strong>():</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>Since glibc 2.10:</p>
+  </dt>
+  <dd>
     <p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
-      </dd>
-      <dt>Before glibc 2.10:</dt>
-      <dd>
+  </dd>
+  <dt>
+    <p>Before glibc 2.10:</p>
+  </dt>
+  <dd>
     <p>_ATFILE_SOURCE</p>
-      </dd>
-    </dl>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>unlink</strong>() deletes a name from the filesystem. If that name was the last link to a file and no processes have the file open, the file is deleted and the space it was using is made available for reuse.</p><p>If the name was the last link to a file but any processes still have the file open, the file will remain in existence until the last file descriptor referring to it is closed.</p><p>If the name referred to a symbolic link, the link is removed.</p><p>If the name referred to a socket, FIFO, or device, the name for it is removed but processes which have the object open may continue to use it.</p><h3>unlinkat()</h3>
+<p>The <strong>unlinkat</strong>() system call operates in exactly the same way as either <strong>unlink</strong>() or <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a> (depending on whether or not <em>flags</em> includes the <strong>AT_REMOVEDIR</strong> flag) except for the differences described here.</p><p>If the pathname given in <em>pathname</em> is relative, then it is interpreted relative to the directory referred to by the file descriptor <em>dirfd</em> (rather than relative to the current working directory of the calling process, as is done by <strong>unlink</strong>() and <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a> for a relative pathname).</p><p>If the pathname given in <em>pathname</em> is relative and <em>dirfd</em> is the special value <strong>AT_FDCWD</strong>, then <em>pathname</em> is interpreted relative to the current working directory of the calling process (like <strong>unlink</strong>() and <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a>).</p><p>If the pathname given in <em>pathname</em> is absolute, then <em>dirfd</em> is ignored.</p><p><em>flags</em> is a bit mask that can either be specified as 0, or by ORing together flag values that control the operation of <strong>unlinkat</strong>(). Currently, only one such flag is defined:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>AT_REMOVEDIR</strong></p>
+  </dt>
+  <dd>
+    <p>By default, <strong>unlinkat</strong>() performs the equivalent of <strong>unlink</strong>() on <em>pathname</em>. If the <strong>AT_REMOVEDIR</strong> flag is specified, then performs the equivalent of <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a> on <em>pathname</em>.</p>
+  </dd>
 
-<p><strong>unlink</strong>() deletes a name from the filesystem. If that name was the last link to a file and no processes have the file open, the file is deleted and the space it was using is made available for reuse.</p>
-<p class='spacer'>
-
-<p>If the name was the last link to a file but any processes still have the file open, the file will remain in existence until the last file descriptor referring to it is closed.</p>
-<p class='spacer'>
-
-<p>If the name referred to a symbolic link, the link is removed.</p>
-<p class='spacer'>
-
-<p>If the name referred to a socket, FIFO, or device, the name for it is removed but processes which have the object open may continue to use it.</p>
-  <h3>unlinkat()</h3>
-<p>The <strong>unlinkat</strong>() system call operates in exactly the same way as either <strong>unlink</strong>() or <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a> (depending on whether or not <em>flags</em> includes the <strong>AT_REMOVEDIR</strong> flag) except for the differences described here.</p>
-<p class='spacer'>
-
-<p>If the pathname given in <em>pathname</em> is relative, then it is interpreted relative to the directory referred to by the file descriptor <em>dirfd</em> (rather than relative to the current working directory of the calling process, as is done by <strong>unlink</strong>() and <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a> for a relative pathname).</p>
-<p class='spacer'>
-
-<p>If the pathname given in <em>pathname</em> is relative and <em>dirfd</em> is the special value <strong>AT_FDCWD</strong>, then <em>pathname</em> is interpreted relative to the current working directory of the calling process (like <strong>unlink</strong>() and <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a>).</p>
-<p class='spacer'>
-
-<p>If the pathname given in <em>pathname</em> is absolute, then <em>dirfd</em> is ignored.</p>
-<p class='spacer'>
-
-  <p><em>flags</em> is a bit mask that can either be specified as 0, or by ORing together flag values that control the operation of <strong>unlinkat</strong>(). Currently, only one such flag is defined:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>AT_REMOVEDIR</strong></dt>
-    <dd>
-  <p>By default, <strong>unlinkat</strong>() performs the equivalent of <strong>unlink</strong>() on <em>pathname</em>. If the <strong>AT_REMOVEDIR</strong> flag is specified, then performs the equivalent of <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a> on <em>pathname</em>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>See <a href="../man2/openat.2.html"><strong>openat</strong>(2)</a> for an explanation of the need for <strong>unlinkat</strong>().</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -171,92 +151,128 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EACCES</strong></dt>
-    <dd>
-  <p>Write access to the directory containing <em>pathname</em> is not allowed for the process's effective UID, or one of the directories in <em>pathname</em> did not allow search permission. (See also <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
-    </dd>
-    <dt><strong>EBUSY</strong></dt>
-    <dd>
-  <p>The file <em>pathname</em> cannot be unlinked because it is being used by the system or another process; for example, it is a mount point or the NFS client software created it to represent an active but otherwise nameless inode ("NFS silly renamed").</p>
-    </dd>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p><em>pathname</em> points outside your accessible address space.</p>
-    </dd>
-    <dt><strong>EIO</strong></dt>
-    <dd>
-  <p>An I/O error occurred.</p>
-    </dd>
-    <dt><strong>EISDIR</strong></dt>
-    <dd>
-  <p><em>pathname</em> refers to a directory. (This is the non-POSIX value returned by Linux since 2.1.132.)</p>
-    </dd>
-    <dt><strong>ELOOP</strong></dt>
-    <dd>
-  <p>Too many symbolic links were encountered in translating <em>pathname</em>.</p>
-    </dd>
-    <dt><strong>ENAMETOOLONG</strong></dt>
-    <dd>
-  <p><em>pathname</em> was too long.</p>
-    </dd>
-    <dt><strong>ENOENT</strong></dt>
-    <dd>
-  <p>A component in <em>pathname</em> does not exist or is a dangling symbolic link, or <em>pathname</em> is empty.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Insufficient kernel memory was available.</p>
-    </dd>
-    <dt><strong>ENOTDIR</strong></dt>
-    <dd>
-  <p>A component used as a directory in <em>pathname</em> is not, in fact, a directory.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>The system does not allow unlinking of directories, or unlinking of directories requires privileges that the calling process doesn't have. (This is the POSIX prescribed error return; as noted above, Linux returns <strong>EISDIR</strong> for this case.)</p>
-    </dd>
-    <dt><strong>EPERM</strong> (Linux only)</dt>
-    <dd>
-  <p>The filesystem does not allow unlinking of files.</p>
-    </dd>
-    <dt><strong>EPERM</strong> or <strong>EACCES</strong></dt>
-    <dd>
-  <p>The directory containing <em>pathname</em> has the sticky bit (<strong>S_ISVTX</strong>) set and the process's effective UID is neither the UID of the file to be deleted nor that of the directory containing it, and the process is not privileged (Linux: does not have the <strong>CAP_FOWNER</strong> capability).</p>
-    </dd>
-    <dt><strong>EROFS</strong></dt>
-    <dd>
-  <p><em>pathname</em> refers to a file on a read-only filesystem.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>Write access to the directory containing <em>pathname</em> is not allowed for the process's effective UID, or one of the directories in <em>pathname</em> did not allow search permission. (See also <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
+  </dd>
+  <dt>
+    <p><strong>EBUSY</strong></p>
+  </dt>
+  <dd>
+    <p>The file <em>pathname</em> cannot be unlinked because it is being used by the system or another process; for example, it is a mount point or the NFS client software created it to represent an active but otherwise nameless inode ("NFS silly renamed").</p>
+  </dd>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> points outside your accessible address space.</p>
+  </dd>
+  <dt>
+    <p><strong>EIO</strong></p>
+  </dt>
+  <dd>
+    <p>An I/O error occurred.</p>
+  </dd>
+  <dt>
+    <p><strong>EISDIR</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> refers to a directory. (This is the non-POSIX value returned by Linux since 2.1.132.)</p>
+  </dd>
+  <dt>
+    <p><strong>ELOOP</strong></p>
+  </dt>
+  <dd>
+    <p>Too many symbolic links were encountered in translating <em>pathname</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENAMETOOLONG</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> was too long.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOENT</strong></p>
+  </dt>
+  <dd>
+    <p>A component in <em>pathname</em> does not exist or is a dangling symbolic link, or <em>pathname</em> is empty.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Insufficient kernel memory was available.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTDIR</strong></p>
+  </dt>
+  <dd>
+    <p>A component used as a directory in <em>pathname</em> is not, in fact, a directory.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>The system does not allow unlinking of directories, or unlinking of directories requires privileges that the calling process doesn't have. (This is the POSIX prescribed error return; as noted above, Linux returns <strong>EISDIR</strong> for this case.)</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong> (Linux only)</p>
+  </dt>
+  <dd>
+    <p>The filesystem does not allow unlinking of files.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong> or <strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>The directory containing <em>pathname</em> has the sticky bit (<strong>S_ISVTX</strong>) set and the process's effective UID is neither the UID of the file to be deleted nor that of the directory containing it, and the process is not privileged (Linux: does not have the <strong>CAP_FOWNER</strong> capability).</p>
+  </dd>
+  <dt>
+    <p><strong>EROFS</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> refers to a file on a read-only filesystem.</p>
+  </dd>
 
-  <p>The same errors that occur for <strong>unlink</strong>() and <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a> can also occur for <strong>unlinkat</strong>(). The following additional errors can occur for <strong>unlinkat</strong>():</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>dirfd</em> is not a valid file descriptor.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>An invalid flag value was specified in <em>flags</em>.</p>
-    </dd>
-    <dt><strong>EISDIR</strong></dt>
-    <dd>
-  <p><em>pathname</em> refers to a directory, and <strong>AT_REMOVEDIR</strong> was not specified in <em>flags</em>.</p>
-    </dd>
-    <dt><strong>ENOTDIR</strong></dt>
-    <dd>
-  <p><em>pathname</em> is relative and <em>dirfd</em> is a file descriptor referring to a file other than a directory.</p>
-    </dd>
-  </dl>
+</dl>
+<p>The same errors that occur for <strong>unlink</strong>() and <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a> can also occur for <strong>unlinkat</strong>(). The following additional errors can occur for <strong>unlinkat</strong>():</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>dirfd</em> is not a valid file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>An invalid flag value was specified in <em>flags</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>EISDIR</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> refers to a directory, and <strong>AT_REMOVEDIR</strong> was not specified in <em>flags</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTDIR</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> is relative and <em>dirfd</em> is a file descriptor referring to a file other than a directory.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p><strong>unlinkat</strong>() was added to Linux in kernel 2.6.16; library support was added to glibc in version 2.4.</p>
         </div>
       </section>
@@ -264,27 +280,22 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
-<p><strong>unlink</strong>(): SVr4, 4.3BSD, POSIX.1-2001, POSIX.1-2008.</p>
-<p class='spacer'>
-
-<p><strong>unlinkat</strong>(): POSIX.1-2008.</p>
+<p><strong>unlink</strong>(): SVr4, 4.3BSD, POSIX.1-2001, POSIX.1-2008.</p><p><strong>unlinkat</strong>(): POSIX.1-2008.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-  <h3>Glibc notes</h3>
+<h3>Glibc notes</h3>
 <p>On older kernels where <strong>unlinkat</strong>() is unavailable, the glibc wrapper function falls back to the use of <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a> or <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a>. When <em>pathname</em> is a relative pathname, glibc constructs a pathname based on the symbolic link in <em>/proc/self/fd</em> that corresponds to the <em>dirfd</em> argument.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>Infelicities in the protocol underlying NFS can cause the unexpected disappearance of files which are still being used.</p>
         </div>
       </section>
@@ -292,11 +303,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO unlink&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>rm</strong>(1), <a href="../man2/chmod.2.html"><strong>chmod</strong>(2)</a>, <a href="../man2/link.2.html"><strong>link</strong>(2)</a>, <a href="../man2/mknod.2.html"><strong>mknod</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/rename.2.html"><strong>rename</strong>(2)</a>, <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a>, <a href="../man3/mkfifo.3.html"><strong>mkfifo</strong>(3)</a>, <a href="../man3/remove.3.html"><strong>remove</strong>(3)</a>, <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>, <a href="../man7/symlink.7.html"><strong>symlink</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="unimplemented.2.html"><span aria-hidden="true">&larr;</span> unimplemented.2: Unimplemented system calls</a></li>

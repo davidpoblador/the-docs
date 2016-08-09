@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p><strong>myisampack [</strong><strong><em>options</em></strong><strong>] </strong><strong><em>file_name</em></strong><strong> ...</strong></p>
         </div>
       </section>
@@ -98,122 +97,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>The <strong>myisampack</strong> utility compresses MyISAM tables. <strong>myisampack</strong> works by compressing each column in the table separately. Usually, <strong>myisampack</strong> packs the data file 40%&ndash;70%.</p>
-<p class='spacer'>
-
-<p>When the table is used later, the server reads into memory the information needed to decompress columns. This results in much better performance when accessing individual rows, because you only have to uncompress exactly one row.</p>
-<p class='spacer'>
-
-<p>MySQL uses mmap() when possible to perform memory mapping on compressed tables. If mmap() does not work, MySQL falls back to normal read/write file operations.</p>
-<p class='spacer'>
-
-<p>Please note the following:</p>
-<p class='spacer'>
-
-<p>If the <strong>mysqld</strong> server was invoked with external locking disabled, it is not a good idea to invoke <strong>myisampack</strong> if the table might be updated by the server during the packing process. It is safest to compress tables with the server stopped.</p>
-<p class='spacer'>
-
-<p>After packing a table, it becomes read only. This is generally intended (such as when accessing packed tables on a CD).</p>
-<p class='spacer'>
-
-<p>Invoke <strong>myisampack</strong> like this:</p>
-<p class='spacer'>
-
-<pre>shell&gt; <strong>myisampack [</strong><strong><em>options</em></strong><strong>] </strong><strong><em>file_name</em></strong><strong> ...</strong></pre>
-
-<p class='spacer'>
-
-<p>Each file name argument should be the name of an index (.MYI) file. If you are not in the database directory, you should specify the path name to the file. It is permissible to omit the .MYI extension.</p>
-<p class='spacer'>
-
-<p>After you compress a table with <strong>myisampack</strong>, you should use <strong>myisamchk -rq</strong> to rebuild its indexes. <strong>myisamchk</strong>(1).</p>
-<p class='spacer'>
-
-<p><strong>myisampack</strong> supports the following options. It also reads option files and supports the options for processing them described at Section&nbsp;4.2.3.3.1, &ldquo;Command-Line Options that Affect Option-File Handling&rdquo;.</p>
-<p class='spacer'>
-
-  <p><strong>--help</strong>, <strong>-?</strong></p>
-<p class='spacer'>
-
-<p>Display a help message and exit.</p>
-<p class='spacer'>
-
-  <p><strong>--backup</strong>, <strong>-b</strong></p>
-<p class='spacer'>
-
-<p>Make a backup of each table\'s data file using the name <em>tbl_name</em>.OLD.</p>
-<p class='spacer'>
-
-  <p><strong>--character-sets-dir=</strong><strong><em>path</em></strong></p>
-<p class='spacer'>
-
-<p>The directory where character sets are installed. See Section&nbsp;9.5, &ldquo;Character Set Configuration&rdquo;.</p>
-<p class='spacer'>
-
-  <p><strong>--debug[=</strong><strong><em>debug_options</em></strong><strong>]</strong>, <strong>-# [</strong><strong><em>debug_options</em></strong><strong>]</strong></p>
-<p class='spacer'>
-
-<p>Write a debugging log. A typical <em>debug_options</em> string is \'d:t:o,<em>file_name</em>\'. The default is \'d:t:o\'.</p>
-<p class='spacer'>
-
-  <p><strong>--force</strong>, <strong>-f</strong></p>
-<p class='spacer'>
-
-<p>Produce a packed table even if it becomes larger than the original or if the intermediate file from an earlier invocation of <strong>myisampack</strong> exists. (<strong>myisampack</strong> creates an intermediate file named <em>tbl_name</em>.TMD in the database directory while it compresses the table. If you kill <strong>myisampack</strong>, the .TMD file might not be deleted.) Normally, <strong>myisampack</strong> exits with an error if it finds that <em>tbl_name</em>.TMD exists. With <strong>--force</strong>, <strong>myisampack</strong> packs the table anyway.</p>
-<p class='spacer'>
-
-  <p><strong>--join=</strong><strong><em>big_tbl_name</em></strong>, <strong>-j </strong><strong><em>big_tbl_name</em></strong></p>
-<p class='spacer'>
-
-  <p>Join all tables named on the command line into a single packed table <em>big_tbl_name</em>. All tables that are to be combined <em>must</em> have identical structure (same column names and types, same indexes, and so forth).</p>
-<p class='spacer'>
-
-<p><em>big_tbl_name</em> must not exist prior to the join operation. All source tables named on the command line to be merged into <em>big_tbl_name</em> must exist. The source tables are read for the join operation but not modified. The join operation does not create a .frm file for <em>big_tbl_name</em>, so after the join operation finishes, copy the .frm file from one of the source tables and name it <em>big_tbl_name</em>.frm.</p>
-<p class='spacer'>
-
-  <p><strong>--silent</strong>, <strong>-s</strong></p>
-<p class='spacer'>
-
-<p>Silent mode. Write output only when errors occur.</p>
-<p class='spacer'>
-
-  <p><strong>--test</strong>, <strong>-t</strong></p>
-<p class='spacer'>
-
-<p>Do not actually pack the table, just test packing it.</p>
-<p class='spacer'>
-
-  <p><strong>--tmpdir=</strong><strong><em>path</em></strong>, <strong>-T </strong><strong><em>path</em></strong></p>
-<p class='spacer'>
-
-<p>Use the named directory as the location where <strong>myisampack</strong> creates temporary files.</p>
-<p class='spacer'>
-
-  <p><strong>--verbose</strong>, <strong>-v</strong></p>
-<p class='spacer'>
-
-<p>Verbose mode. Write information about the progress of the packing operation and its result.</p>
-<p class='spacer'>
-
-  <p><strong>--version</strong>, <strong>-V</strong></p>
-<p class='spacer'>
-
-<p>Display version information and exit.</p>
-<p class='spacer'>
-
-  <p><strong>--wait</strong>, <strong>-w</strong></p>
-<p class='spacer'>
-
-<p>Wait and retry if the table is in use. If the <strong>mysqld</strong> server was invoked with external locking disabled, it is not a good idea to invoke <strong>myisampack</strong> if the table might be updated by the server during the packing process.</p>
-<p class='spacer'>
-
-<p>The following sequence of commands illustrates a typical table compression session:</p>
-<p class='spacer'>
-
-<pre>shell&gt; <strong>ls -l station.*</strong>
+<p>The <strong>myisampack</strong> utility compresses MyISAM tables. <strong>myisampack</strong> works by compressing each column in the table separately. Usually, <strong>myisampack</strong> packs the data file 40%&ndash;70%.</p><p>When the table is used later, the server reads into memory the information needed to decompress columns. This results in much better performance when accessing individual rows, because you only have to uncompress exactly one row.</p><p>MySQL uses mmap() when possible to perform memory mapping on compressed tables. If mmap() does not work, MySQL falls back to normal read/write file operations.</p><p>Please note the following:</p><p>If the <strong>mysqld</strong> server was invoked with external locking disabled, it is not a good idea to invoke <strong>myisampack</strong> if the table might be updated by the server during the packing process. It is safest to compress tables with the server stopped.</p><p>After packing a table, it becomes read only. This is generally intended (such as when accessing packed tables on a CD).</p><p>Invoke <strong>myisampack</strong> like this:</p>
+<pre>
+shell&gt; <strong>myisampack [</strong><strong><em>options</em></strong><strong>] </strong><strong><em>file_name</em></strong><strong> ...</strong>
+</pre>
+<p>Each file name argument should be the name of an index (.MYI) file. If you are not in the database directory, you should specify the path name to the file. It is permissible to omit the .MYI extension.</p><p>After you compress a table with <strong>myisampack</strong>, you should use <strong>myisamchk -rq</strong> to rebuild its indexes. <a href="../man1/myisamchk.1.html"><strong>myisamchk</strong>(1)</a>.</p><p><strong>myisampack</strong> supports the following options. It also reads option files and supports the options for processing them described at Section&nbsp;4.2.3.3.1, &ldquo;Command-Line Options that Affect Option-File Handling&rdquo;.</p><p><strong>--help</strong>, <strong>-?</strong></p><p>Display a help message and exit.</p><p><strong>--backup</strong>, <strong>-b</strong></p><p>Make a backup of each table\'s data file using the name <em>tbl_name</em>.OLD.</p><p><strong>--character-sets-dir=</strong><strong><em>path</em></strong></p><p>The directory where character sets are installed. See Section&nbsp;9.5, &ldquo;Character Set Configuration&rdquo;.</p><p><strong>--debug[=</strong><strong><em>debug_options</em></strong><strong>]</strong>, <strong>-# [</strong><strong><em>debug_options</em></strong><strong>]</strong></p><p>Write a debugging log. A typical <em>debug_options</em> string is \'d:t:o,<em>file_name</em>\'. The default is \'d:t:o\'.</p><p><strong>--force</strong>, <strong>-f</strong></p><p>Produce a packed table even if it becomes larger than the original or if the intermediate file from an earlier invocation of <strong>myisampack</strong> exists. (<strong>myisampack</strong> creates an intermediate file named <em>tbl_name</em>.TMD in the database directory while it compresses the table. If you kill <strong>myisampack</strong>, the .TMD file might not be deleted.) Normally, <strong>myisampack</strong> exits with an error if it finds that <em>tbl_name</em>.TMD exists. With <strong>--force</strong>, <strong>myisampack</strong> packs the table anyway.</p><p><strong>--join=</strong><strong><em>big_tbl_name</em></strong>, <strong>-j </strong><strong><em>big_tbl_name</em></strong></p><p>Join all tables named on the command line into a single packed table <em>big_tbl_name</em>. All tables that are to be combined <em>must</em> have identical structure (same column names and types, same indexes, and so forth).</p><p><em>big_tbl_name</em> must not exist prior to the join operation. All source tables named on the command line to be merged into <em>big_tbl_name</em> must exist. The source tables are read for the join operation but not modified. The join operation does not create a .frm file for <em>big_tbl_name</em>, so after the join operation finishes, copy the .frm file from one of the source tables and name it <em>big_tbl_name</em>.frm.</p><p><strong>--silent</strong>, <strong>-s</strong></p><p>Silent mode. Write output only when errors occur.</p><p><strong>--test</strong>, <strong>-t</strong></p><p>Do not actually pack the table, just test packing it.</p><p><strong>--tmpdir=</strong><strong><em>path</em></strong>, <strong>-T </strong><strong><em>path</em></strong></p><p>Use the named directory as the location where <strong>myisampack</strong> creates temporary files.</p><p><strong>--verbose</strong>, <strong>-v</strong></p><p>Verbose mode. Write information about the progress of the packing operation and its result.</p><p><strong>--version</strong>, <strong>-V</strong></p><p>Display version information and exit.</p><p><strong>--wait</strong>, <strong>-w</strong></p><p>Wait and retry if the table is in use. If the <strong>mysqld</strong> server was invoked with external locking disabled, it is not a good idea to invoke <strong>myisampack</strong> if the table might be updated by the server during the packing process.</p><p>The following sequence of commands illustrates a typical table compression session:</p>
+<pre>
+shell&gt; <strong>ls -l station.*</strong>
 -rw-rw-r--   1 monty    my         994128 Apr 17 19:00 station.MYD
 -rw-rw-r--   1 monty    my          53248 Apr 17 19:00 station.MYI
 -rw-rw-r--   1 monty    my           5767 Apr 17 19:00 station.frm
@@ -375,195 +265,36 @@ Field Start Length Type                         Huff tree  Bits
 54    806   1                                           3     9
 55    807   20     no empty                             3     9
 56    827   4      no zeros, <strong>zerofill</strong>(2)                2     9
-57    831   4      no zeros, <strong>zerofill</strong>(1)                2     9</pre>
-
-<p class='spacer'>
-
-<p><strong>myisampack</strong> displays the following kinds of information:</p>
-<p class='spacer'>
-
-  <p>normal</p>
-<p class='spacer'>
-
-<p>The number of columns for which no extra packing is used.</p>
-<p class='spacer'>
-
-  <p>empty-space</p>
-<p class='spacer'>
-
-<p>The number of columns containing values that are only spaces. These occupy one bit.</p>
-<p class='spacer'>
-
-  <p>empty-zero</p>
-<p class='spacer'>
-
-<p>The number of columns containing values that are only binary zeros. These occupy one bit.</p>
-<p class='spacer'>
-
-  <p>empty-fill</p>
-<p class='spacer'>
-
-<p>The number of integer columns that do not occupy the full byte range of their type. These are changed to a smaller type. For example, a BIGINT column (eight bytes) can be stored as a TINYINT column (one byte) if all its values are in the range from -128 to 127.</p>
-<p class='spacer'>
-
-  <p>pre-space</p>
-<p class='spacer'>
-
-<p>The number of decimal columns that are stored with leading spaces. In this case, each value contains a count for the number of leading spaces.</p>
-<p class='spacer'>
-
-  <p>end-space</p>
-<p class='spacer'>
-
-<p>The number of columns that have a lot of trailing spaces. In this case, each value contains a count for the number of trailing spaces.</p>
-<p class='spacer'>
-
-  <p>table-lookup</p>
-<p class='spacer'>
-
-<p>The column had only a small number of different values, which were converted to an ENUM before Huffman compression.</p>
-<p class='spacer'>
-
-  <p>zero</p>
-<p class='spacer'>
-
-<p>The number of columns for which all values are zero.</p>
-<p class='spacer'>
-
-  <p>Original trees</p>
-<p class='spacer'>
-
-<p>The initial number of Huffman trees.</p>
-<p class='spacer'>
-
-  <p>After join</p>
-<p class='spacer'>
-
-<p>The number of distinct Huffman trees left after joining trees to save some header space.</p>
-<p class='spacer'>
-
-<p>After a table has been compressed, the Field lines displayed by <strong>myisamchk -dvv</strong> include additional information about each column:</p>
-<p class='spacer'>
-
-  <p>Type</p>
-<p class='spacer'>
-
-  <p>The data type. The value may contain any of the following descriptors:</p>
-<p class='spacer'>
-
-    <p>constant</p>
-<p class='spacer'>
-
-  <p>All rows have the same value.</p>
-<p class='spacer'>
-
-    <p>no endspace</p>
-<p class='spacer'>
-
-  <p>Do not store endspace.</p>
-<p class='spacer'>
-
-    <p>no endspace, not_always</p>
-<p class='spacer'>
-
-  <p>Do not store endspace and do not do endspace compression for all values.</p>
-<p class='spacer'>
-
-    <p>no endspace, no empty</p>
-<p class='spacer'>
-
-  <p>Do not store endspace. Do not store empty values.</p>
-<p class='spacer'>
-
-    <p>table-lookup</p>
-<p class='spacer'>
-
-  <p>The column was converted to an ENUM.</p>
-<p class='spacer'>
-
-    <p>zerofill(<em>N</em>)</p>
-<p class='spacer'>
-
-  <p>The most significant <em>N</em> bytes in the value are always 0 and are not stored.</p>
-<p class='spacer'>
-
-    <p>no zeros</p>
-<p class='spacer'>
-
-  <p>Do not store zeros.</p>
-<p class='spacer'>
-
-    <p>always zero</p>
-<p class='spacer'>
-
-<p>Zero values are stored using one bit.</p>
-<p class='spacer'>
-
-  <p>Huff tree</p>
-<p class='spacer'>
-
-<p>The number of the Huffman tree associated with the column.</p>
-<p class='spacer'>
-
-  <p>Bits</p>
-<p class='spacer'>
-
-<p>The number of bits used in the Huffman tree.</p>
-<p class='spacer'>
-
-<p>After you run <strong>myisampack</strong>, you must run <strong>myisamchk</strong> to re-create any indexes. At this time, you can also sort the index blocks and create statistics needed for the MySQL optimizer to work more efficiently:</p>
-<p class='spacer'>
-
-<pre>shell&gt; <strong>myisamchk -rq --sort-index --analyze </strong><strong><em>tbl_name</em></strong><strong>.MYI</strong></pre>
-
-<p class='spacer'>
-
-<p>After you have installed the packed table into the MySQL database directory, you should execute <strong>mysqladmin flush-tables</strong> to force <strong>mysqld</strong> to start using the new table.</p>
-<p class='spacer'>
-
-<p>To unpack a packed table, use the <strong>--unpack</strong> option to <strong>myisamchk</strong>.</p>
+57    831   4      no zeros, <strong>zerofill</strong>(1)                2     9
+</pre>
+<p><strong>myisampack</strong> displays the following kinds of information:</p><p>normal</p><p>The number of columns for which no extra packing is used.</p><p>empty-space</p><p>The number of columns containing values that are only spaces. These occupy one bit.</p><p>empty-zero</p><p>The number of columns containing values that are only binary zeros. These occupy one bit.</p><p>empty-fill</p><p>The number of integer columns that do not occupy the full byte range of their type. These are changed to a smaller type. For example, a BIGINT column (eight bytes) can be stored as a TINYINT column (one byte) if all its values are in the range from -128 to 127.</p><p>pre-space</p><p>The number of decimal columns that are stored with leading spaces. In this case, each value contains a count for the number of leading spaces.</p><p>end-space</p><p>The number of columns that have a lot of trailing spaces. In this case, each value contains a count for the number of trailing spaces.</p><p>table-lookup</p><p>The column had only a small number of different values, which were converted to an ENUM before Huffman compression.</p><p>zero</p><p>The number of columns for which all values are zero.</p><p>Original trees</p><p>The initial number of Huffman trees.</p><p>After join</p><p>The number of distinct Huffman trees left after joining trees to save some header space.</p><p>After a table has been compressed, the Field lines displayed by <strong>myisamchk -dvv</strong> include additional information about each column:</p><p>Type</p><p>The data type. The value may contain any of the following descriptors:</p><p>constant</p><p>All rows have the same value.</p><p>no endspace</p><p>Do not store endspace.</p><p>no endspace, not_always</p><p>Do not store endspace and do not do endspace compression for all values.</p><p>no endspace, no empty</p><p>Do not store endspace. Do not store empty values.</p><p>table-lookup</p><p>The column was converted to an ENUM.</p><p>zerofill(<em>N</em>)</p><p>The most significant <em>N</em> bytes in the value are always 0 and are not stored.</p><p>no zeros</p><p>Do not store zeros.</p><p>always zero</p><p>Zero values are stored using one bit.</p><p>Huff tree</p><p>The number of the Huffman tree associated with the column.</p><p>Bits</p><p>The number of bits used in the Huffman tree.</p><p>After you run <strong>myisampack</strong>, you must run <strong>myisamchk</strong> to re-create any indexes. At this time, you can also sort the index blocks and create statistics needed for the MySQL optimizer to work more efficiently:</p>
+<pre>
+shell&gt; <strong>myisamchk -rq --sort-index --analyze </strong><strong><em>tbl_name</em></strong><strong>.MYI</strong>
+</pre>
+<p>After you have installed the packed table into the MySQL database directory, you should execute <strong>mysqladmin flush-tables</strong> to force <strong>mysqld</strong> to start using the new table.</p><p>To unpack a packed table, use the <strong>--unpack</strong> option to <strong>myisamchk</strong>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">COPYRIGHT</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>Copyright 2007-2008 MySQL AB, 2008-2010 Sun Microsystems, Inc., 2010-2015 MariaDB Foundation</p>
-<p class='spacer'>
-
-<p>This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.</p>
-<p class='spacer'>
-
-<p>This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
-<p class='spacer'>
-
-<p>You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p>MariaDB Foundation (http://www.mariadb.org/).</p>
+<p>Copyright 2007-2008 MySQL AB, 2008-2010 Sun Microsystems, Inc., 2010-2015 MariaDB Foundation</p><p>This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.</p><p>This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p><p>You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO myisampack&hellip;</h2>
         <div class="sectioncontent">
-
 <p>For more information, please refer to the MariaDB Knowledge Base, available online at https://mariadb.com/kb/</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>MariaDB Foundation (http://www.mariadb.org/).</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="myisamlog.1.html"><span aria-hidden="true">&larr;</span> myisamlog.1: Display myisam log file contents</a></li>

@@ -90,102 +90,92 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p>#include &lt;pcp/pmapi.h&gt;</p>
-<p class='spacer'>
-
-<p>int pmUnpackEventRecords(pmValueSet *<em>vsp</em>, int <em>idx</em>, pmResult ***<em>rap</em>);</p>
-<p class='spacer'>
-
-<p>int pmUnpackHighResEventRecords(pmValueSet *<em>vsp</em>, int <em>idx</em>, pmHighResResult ***<em>hrap</em>);</p>
-<p class='spacer'>
-
-<p>cc ... -lpcp</p>
+<p>#include &lt;pcp/pmapi.h&gt;</p><p>int pmUnpackEventRecords(pmValueSet *<em>vsp</em>, int <em>idx</em>, pmResult ***<em>rap</em>);</p><p>int pmUnpackHighResEventRecords(pmValueSet *<em>vsp</em>, int <em>idx</em>, pmHighResResult ***<em>hrap</em>);</p><p>cc ... -lpcp</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>Event records are encoded as a packed array of records within a <em>pmResult</em> using a container metric with a value of type <strong>PM_TYPE_EVENT ,</strong> and a <em>pmHighResResult</em> when using a metric of type <strong>PM_TYPE_HIGHRES_EVENT</strong>.</p><p><strong>pmUnpackEventRecords</strong> and <strong>pmUnpackHighResEventRecords</strong> may be used to unpack event records from a metric value identified by <em>vsp</em> and <em>idx</em>. If the metric has a singular value, <em>idx</em> should be 0, else the ordinal instance value identified by <em>idx</em> will be unpacked, i.e. vsp-&gt;vlist[idx]. The unpacked records are turned into either <em>pmResult</em> or <em>pmHighResResult</em> structures, one per event record and one metric per event parameter, and <em>rap</em> is returned as a pointer to an array (NULL pointer terminated) of pointers to the result structures.</p><p>The only difference between the two result types is the timestamp scale; the <em>pmHighResResult</em> allows for nanosecond precision, whereas <em>pmResult</em> allows for microsecond resolution.</p><p>Some control information from the packed event records is unpacked into additional ``anonymous'' metrics as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>1.</p>
+  </dt>
+  <dd>
+    <p>If the event record has a non-zero flags value, then the corresponding <em>pmResult</em>/<em>pmHighResResult</em> will have the flags value encoded with the additional metric <strong>event.flags</strong> that is inserted ahead of all other event parameters.</p>
+  </dd>
+  <dt>
+    <p>2.</p>
+  </dt>
+  <dd>
+    <p>If the event record flag is set to <strong>PM_EVENT_FLAG_MISSED</strong>, then the corresponding <em>pmResult</em>/<em>pmHighResResult</em> will have one metric <strong>event.missed</strong> with a value that equals the number of event records ``missed'' because either the PMDA could not keep up, or the PMAPI client did not collect the event records fast enough.</p>
+  </dd>
 
-<p>Event records are encoded as a packed array of records within a <em>pmResult</em> using a container metric with a value of type <strong>PM_TYPE_EVENT ,</strong> and a <em>pmHighResResult</em> when using a metric of type <strong>PM_TYPE_HIGHRES_EVENT</strong>.</p>
-<p class='spacer'>
-
-<p><strong>pmUnpackEventRecords</strong> and <strong>pmUnpackHighResEventRecords</strong> may be used to unpack event records from a metric value identified by <em>vsp</em> and <em>idx</em>. If the metric has a singular value, <em>idx</em> should be 0, else the ordinal instance value identified by <em>idx</em> will be unpacked, i.e. vsp-&gt;vlist[idx]. The unpacked records are turned into either <em>pmResult</em> or <em>pmHighResResult</em> structures, one per event record and one metric per event parameter, and <em>rap</em> is returned as a pointer to an array (NULL pointer terminated) of pointers to the result structures.</p>
-<p class='spacer'>
-
-<p>The only difference between the two result types is the timestamp scale; the <em>pmHighResResult</em> allows for nanosecond precision, whereas <em>pmResult</em> allows for microsecond resolution.</p>
-<p class='spacer'>
-
-  <p>Some control information from the packed event records is unpacked into additional ``anonymous'' metrics as follows:</p>
-  <dl class='dl-horizontal'>
-    <dt>1.</dt>
-    <dd>
-  <p>If the event record has a non-zero flags value, then the corresponding <em>pmResult</em>/<em>pmHighResResult</em> will have the flags value encoded with the additional metric <strong>event.flags</strong> that is inserted ahead of all other event parameters.</p>
-    </dd>
-    <dt>2.</dt>
-    <dd>
-  <p>If the event record flag is set to <strong>PM_EVENT_FLAG_MISSED</strong>, then the corresponding <em>pmResult</em>/<em>pmHighResResult</em> will have one metric <strong>event.missed</strong> with a value that equals the number of event records ``missed'' because either the PMDA could not keep up, or the PMAPI client did not collect the event records fast enough.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p><strong>pmUnpackEventRecords</strong> returns the number of <em>pmResult</em> structures as the return value, which is &gt;= 0 for success. Similarly, <strong>pmUnpackHighResEventRecords</strong> returns the number of <em>pmHighResResult</em> structures as the return value, which is &gt;= 0 for success.</p>
-<p class='spacer'>
-
-<p><em>rap</em> and the associated <em>pmResult</em> structures may be freed using the convenience function <strong>pmFreeEventResult</strong>(3).</p>
-<p class='spacer'>
-
-<p>Similarly, the <em>hrap</em> and the associated <em>pmHighResResult</em> structures may be freed using the convenience function <strong>pmFreeHighResEventResult</strong>.</p>
+</dl>
+<p><strong>pmUnpackEventRecords</strong> returns the number of <em>pmResult</em> structures as the return value, which is &gt;= 0 for success. Similarly, <strong>pmUnpackHighResEventRecords</strong> returns the number of <em>pmHighResResult</em> structures as the return value, which is &gt;= 0 for success.</p><p><em>rap</em> and the associated <em>pmResult</em> structures may be freed using the convenience function <strong>pmFreeEventResult</strong>(3).</p><p>Similarly, the <em>hrap</em> and the associated <em>pmHighResResult</em> structures may be freed using the convenience function <strong>pmFreeHighResEventResult</strong>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
+<p>The following errors are possible:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>PM_ERR_CONV</p>
+  </dt>
+  <dd>
+    <p>The values associated with <em>vsp</em> are not encoded using the format PM_VAL_DPTR or PM_VAL_SPTR, or the flags at the head of the event record has an unexpected value.</p>
+  </dd>
+  <dt>
+    <p>PM_ERR_INST</p>
+  </dt>
+  <dd>
+    <p>The value associated with <em>vsp</em> is not singular as expected.</p>
+  </dd>
+  <dt>
+    <p>PM_ERR_TYPE</p>
+  </dt>
+  <dd>
+    <p><em>vsp</em> is not a value of type <strong>PM_TYPE_EVENT</strong>.</p>
+  </dd>
+  <dt>
+    <p>PM_ERR_TOOSMALL</p>
+  </dt>
+  <dd>
+    <p>The value identified by <em>vbp</em> is not legal because the value length is less than the minimum size, or the number of event records encoded in the (value header) <em>pmEventArray</em>/<em>pmEventHighResArray</em> structure is negative, or the number of missed event records in the array is negative.</p>
+  </dd>
+  <dt>
+    <p>PM_ERR_TOOBIG</p>
+  </dt>
+  <dd>
+    <p>Either <strong>vsp</strong> indicates more than one value is present (all the event records are expected to be packed in a single metric value), or when unpacking the event records, the processing continues past the end of the enclosing value.  Indicates corruption of the packed event record.</p>
+  </dd>
+  <dt>
+    <p>PM_ERR_TYPE</p>
+  </dt>
+  <dd>
+    <p>Event parameters must have one of the arithmetic types, else <strong>PM_TYPE_AGGREGATE</strong>, <strong>PM_TYPE_STRING</strong> or <strong>PM_TYPE_AGGREGATE_STATIC</strong>.</p>
+  </dd>
+  <dt>
+    <p>other values &lt; 0</p>
+  </dt>
+  <dd>
+    <p>refer to <strong>pmErrStr</strong>(3).</p>
+  </dd>
 
-  <p>The following errors are possible:</p>
-  <dl class='dl-vertical'>
-    <dt>PM_ERR_CONV</dt>
-    <dd>
-  <p>The values associated with <em>vsp</em> are not encoded using the format PM_VAL_DPTR or PM_VAL_SPTR, or the flags at the head of the event record has an unexpected value.</p>
-    </dd>
-    <dt>PM_ERR_INST</dt>
-    <dd>
-  <p>The value associated with <em>vsp</em> is not singular as expected.</p>
-    </dd>
-    <dt>PM_ERR_TYPE</dt>
-    <dd>
-  <p><em>vsp</em> is not a value of type <strong>PM_TYPE_EVENT</strong>.</p>
-    </dd>
-    <dt>PM_ERR_TOOSMALL</dt>
-    <dd>
-  <p>The value identified by <em>vbp</em> is not legal because the value length is less than the minimum size, or the number of event records encoded in the (value header) <em>pmEventArray</em>/<em>pmEventHighResArray</em> structure is negative, or the number of missed event records in the array is negative.</p>
-    </dd>
-    <dt>PM_ERR_TOOBIG</dt>
-    <dd>
-  <p>Either <strong>vsp</strong> indicates more than one value is present (all the event records are expected to be packed in a single metric value), or when unpacking the event records, the processing continues past the end of the enclosing value.  Indicates corruption of the packed event record.</p>
-    </dd>
-    <dt>PM_ERR_TYPE</dt>
-    <dd>
-  <p>Event parameters must have one of the arithmetic types, else <strong>PM_TYPE_AGGREGATE</strong>, <strong>PM_TYPE_STRING</strong> or <strong>PM_TYPE_AGGREGATE_STATIC</strong>.</p>
-    </dd>
-    <dt>other values &lt; 0</dt>
-    <dd>
-  <p>refer to <strong>pmErrStr</strong>(3).</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmunpackeventrecords&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>PMAPI</strong>(3) and <strong>pmFreeEventResult</strong>(3).</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmunloadnamespace.3.html"><span aria-hidden="true">&larr;</span> pmunloadnamespace.3: Unload a local performance metrics name space for an application</a></li>

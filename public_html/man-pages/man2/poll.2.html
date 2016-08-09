@@ -91,16 +91,18 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;poll.h&gt;</strong>
+<pre>
+<strong>#include <poll.h></strong>
 
-<strong>int poll(struct pollfd *</strong><em>fds</em><strong>, nfds_t </strong><em>nfds</em><strong>, int </strong><em>timeout</em><strong>);</strong>
+<strong>int</strong> <strong>poll(struct</strong> <strong>pollfd</strong> <strong>*</strong><em>fds</em><strong>,</strong> <strong>nfds_t</strong> <strong></strong><em>nfds</em><strong>,</strong> <strong>int</strong> <strong></strong><em>timeout</em><strong>);</strong>
 
-<strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;signal.h&gt;</strong>
-<strong>#include &lt;poll.h&gt;</strong>
+<strong>#define</strong> <strong>_GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <signal.h></strong>
+<strong>#include <poll.h></strong>
 
-<strong>int ppoll(struct pollfd *</strong><em>fds</em><strong>, nfds_t </strong><em>nfds</em><strong>, </strong>
-<strong>        const struct timespec *</strong><em>tmo_p</em><strong>, const sigset_t *</strong><em>sigmask</em><strong>);</strong></pre>
+<strong>int</strong> <strong>ppoll(struct</strong> <strong>pollfd</strong> <strong>*</strong><em>fds</em><strong>,</strong> <strong>nfds_t</strong> <strong></strong><em>nfds</em><strong>,</strong> <strong></strong>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>const</strong> <strong>struct</strong> <strong>timespec</strong> <strong>*</strong><em>tmo_p</em><strong>,</strong> <strong>const</strong> <strong>sigset_t</strong> <strong>*</strong><em>sigmask</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -108,121 +110,101 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>poll</strong>() performs a similar task to <a href="../man2/select.2.html"><strong>select</strong>(2)</a>: it waits for one of a set of file descriptors to become ready to perform I/O.</p>
-<p class='spacer'>
-
-  <p>The set of file descriptors to be monitored is specified in the <em>fds</em> argument, which is an array of structures of the following form:</p>
+<p><strong>poll</strong>() performs a similar task to <a href="../man2/select.2.html"><strong>select</strong>(2)</a>: it waits for one of a set of file descriptors to become ready to perform I/O.</p><p>The set of file descriptors to be monitored is specified in the <em>fds</em> argument, which is an array of structures of the following form:</p>
 <pre>
+
 struct pollfd {
     int   fd;         /* file descriptor */
     short events;     /* requested events */
     short revents;    /* returned events */
-};</pre>
-
-<p class='spacer'>
-
-<p>The caller should specify the number of items in the <em>fds</em> array in <em>nfds</em>.</p>
-<p class='spacer'>
-
-<p>The field <em>fd</em> contains a file descriptor for an open file. If this field is negative, then the corresponding <em>events</em> field is ignored and the <em>revents</em> field returns zero. (This provides an easy way of ignoring a file descriptor for a single <strong>poll</strong>() call: simply negate the <em>fd</em> field. Note, however, that this technique can't be used to ignore file descriptor 0.)</p>
-<p class='spacer'>
-
-<p>The field <em>events</em> is an input parameter, a bit mask specifying the events the application is interested in for the file descriptor <em>fd</em>. This field may be specified as zero, in which case the only events that can be returned in <em>revents</em> are <strong>POLLHUP</strong>, <strong>POLLERR</strong>, and <strong>POLLNVAL</strong> (see below).</p>
-<p class='spacer'>
-
-<p>The field <em>revents</em> is an output parameter, filled by the kernel with the events that actually occurred. The bits returned in <em>revents</em> can include any of those specified in <em>events</em>, or one of the values <strong>POLLERR</strong>, <strong>POLLHUP</strong>, or <strong>POLLNVAL</strong>. (These three bits are meaningless in the <em>events</em> field, and will be set in the <em>revents</em> field whenever the corresponding condition is true.)</p>
-<p class='spacer'>
-
-<p>If none of the events requested (and no error) has occurred for any of the file descriptors, then <strong>poll</strong>() blocks until one of the events occurs.</p>
-<p class='spacer'>
-
-  <p>The <em>timeout</em> argument specifies the number of milliseconds that <strong>poll</strong>() should block waiting for a file descriptor to become ready. The call will block until either:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>a file descriptor becomes ready;</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>the call is interrupted by a signal handler; or</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>the timeout expires.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>Note that the <em>timeout</em> interval will be rounded up to the system clock granularity, and kernel scheduling delays mean that the blocking interval may overrun by a small amount. Specifying a negative value in <em>timeout</em> means an infinite timeout. Specifying a <em>timeout</em> of zero causes <strong>poll</strong>() to return immediately, even if no file descriptors are ready.</p>
-<p class='spacer'>
-
-    <p>The bits that may be set/returned in <em>events</em> and <em>revents</em> are defined in <em>&lt;poll.h&gt;</em>:</p>
-    <dl class='dl-vertical'>
-      <dt><strong>POLLIN</strong></dt>
-      <dd>
-    <p>There is data to read.</p>
-      </dd>
-      <dt><strong>POLLPRI</strong></dt>
-      <dd>
-    <p>There is urgent data to read (e.g., out-of-band data on TCP socket; pseudoterminal master in packet mode has seen state change in slave).</p>
-      </dd>
-      <dt><strong>POLLOUT</strong></dt>
-      <dd>
-    <p>Writing is now possible, though a write larger that the available space in a socket or pipe will still block (unless <strong>O_NONBLOCK</strong> is set).</p>
-      </dd>
-      <dt><strong>POLLRDHUP</strong> (since Linux 2.6.17)</dt>
-      <dd>
-    <p>Stream socket peer closed connection, or shut down writing half of connection. The <strong>_GNU_SOURCE</strong> feature test macro must be defined (before including <em>any</em> header files) in order to obtain this definition.</p>
-      </dd>
-      <dt><strong>POLLERR</strong></dt>
-      <dd>
-    <p>Error condition (only returned in <em>revents</em>; ignored in <em>events</em>).</p>
-      </dd>
-      <dt><strong>POLLHUP</strong></dt>
-      <dd>
-    <p>Hang up (only returned in <em>revents</em>; ignored in <em>events</em>). Note that when reading from a channel such as a pipe or a stream socket, this event merely indicates that the peer closed its end of the channel. Subsequent reads from the channel will return 0 (end of file) only after all outstanding data in the channel has been consumed.</p>
-      </dd>
-      <dt><strong>POLLNVAL</strong></dt>
-      <dd>
-    <p>Invalid request: <em>fd</em> not open (only returned in <em>revents</em>; ignored in <em>events</em>).</p>
-      </dd>
-    </dl>
-<p class='spacer'>
-
-    <p>When compiling with <strong>_XOPEN_SOURCE</strong> defined, one also has the following, which convey no further information beyond the bits listed above:</p>
-    <dl class='dl-vertical'>
-      <dt><strong>POLLRDNORM</strong></dt>
-      <dd>
-    <p>Equivalent to <strong>POLLIN</strong>.</p>
-      </dd>
-      <dt><strong>POLLRDBAND</strong></dt>
-      <dd>
-    <p>Priority band data can be read (generally unused on Linux).</p>
-      </dd>
-      <dt><strong>POLLWRNORM</strong></dt>
-      <dd>
-    <p>Equivalent to <strong>POLLOUT</strong>.</p>
-      </dd>
-      <dt><strong>POLLWRBAND</strong></dt>
-      <dd>
-    <p>Priority data may be written.</p>
-      </dd>
-    </dl>
-<p class='spacer'>
-
-<p>Linux also knows about, but does not use <strong>POLLMSG</strong>.</p>
-  <h3>ppoll()</h3>
-<p>The relationship between <strong>poll</strong>() and <strong>ppoll</strong>() is analogous to the relationship between <a href="../man2/select.2.html"><strong>select</strong>(2)</a> and <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a>: like <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a>, <strong>ppoll</strong>() allows an application to safely wait until either a file descriptor becomes ready or until a signal is caught.</p>
-<p class='spacer'>
-
-  <p>Other than the difference in the precision of the <em>timeout</em> argument, the following <strong>ppoll</strong>() call:</p>
-<pre>
-    ready = ppoll(&fds, nfds, tmo_p, &sigmask);
+};
 </pre>
+<p>The caller should specify the number of items in the <em>fds</em> array in <em>nfds</em>.</p><p>The field <em>fd</em> contains a file descriptor for an open file. If this field is negative, then the corresponding <em>events</em> field is ignored and the <em>revents</em> field returns zero. (This provides an easy way of ignoring a file descriptor for a single <strong>poll</strong>() call: simply negate the <em>fd</em> field. Note, however, that this technique can't be used to ignore file descriptor 0.)</p><p>The field <em>events</em> is an input parameter, a bit mask specifying the events the application is interested in for the file descriptor <em>fd</em>. This field may be specified as zero, in which case the only events that can be returned in <em>revents</em> are <strong>POLLHUP</strong>, <strong>POLLERR</strong>, and <strong>POLLNVAL</strong> (see below).</p><p>The field <em>revents</em> is an output parameter, filled by the kernel with the events that actually occurred. The bits returned in <em>revents</em> can include any of those specified in <em>events</em>, or one of the values <strong>POLLERR</strong>, <strong>POLLHUP</strong>, or <strong>POLLNVAL</strong>. (These three bits are meaningless in the <em>events</em> field, and will be set in the <em>revents</em> field whenever the corresponding condition is true.)</p><p>If none of the events requested (and no error) has occurred for any of the file descriptors, then <strong>poll</strong>() blocks until one of the events occurs.</p><p>The <em>timeout</em> argument specifies the number of milliseconds that <strong>poll</strong>() should block waiting for a file descriptor to become ready. The call will block until either:</p><ul>
+<li><p>a file descriptor becomes ready;</p></li><li><p>the call is interrupted by a signal handler; or</p></li><li><p>the timeout expires.</p></li>
+</ul><p>Note that the <em>timeout</em> interval will be rounded up to the system clock granularity, and kernel scheduling delays mean that the blocking interval may overrun by a small amount. Specifying a negative value in <em>timeout</em> means an infinite timeout. Specifying a <em>timeout</em> of zero causes <strong>poll</strong>() to return immediately, even if no file descriptors are ready.</p><p>The bits that may be set/returned in <em>events</em> and <em>revents</em> are defined in <em>&lt;poll.h&gt;</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>POLLIN</strong></p>
+  </dt>
+  <dd>
+    <p>There is data to read.</p>
+  </dd>
+  <dt>
+    <p><strong>POLLPRI</strong></p>
+  </dt>
+  <dd>
+    <p>There is urgent data to read (e.g., out-of-band data on TCP socket; pseudoterminal master in packet mode has seen state change in slave).</p>
+  </dd>
+  <dt>
+    <p><strong>POLLOUT</strong></p>
+  </dt>
+  <dd>
+    <p>Writing is now possible, though a write larger that the available space in a socket or pipe will still block (unless <strong>O_NONBLOCK</strong> is set).</p>
+  </dd>
+  <dt>
+    <p><strong>POLLRDHUP</strong> (since Linux 2.6.17)</p>
+  </dt>
+  <dd>
+    <p>Stream socket peer closed connection, or shut down writing half of connection. The <strong>_GNU_SOURCE</strong> feature test macro must be defined (before including <em>any</em> header files) in order to obtain this definition.</p>
+  </dd>
+  <dt>
+    <p><strong>POLLERR</strong></p>
+  </dt>
+  <dd>
+    <p>Error condition (only returned in <em>revents</em>; ignored in <em>events</em>).</p>
+  </dd>
+  <dt>
+    <p><strong>POLLHUP</strong></p>
+  </dt>
+  <dd>
+    <p>Hang up (only returned in <em>revents</em>; ignored in <em>events</em>). Note that when reading from a channel such as a pipe or a stream socket, this event merely indicates that the peer closed its end of the channel. Subsequent reads from the channel will return 0 (end of file) only after all outstanding data in the channel has been consumed.</p>
+  </dd>
+  <dt>
+    <p><strong>POLLNVAL</strong></p>
+  </dt>
+  <dd>
+    <p>Invalid request: <em>fd</em> not open (only returned in <em>revents</em>; ignored in <em>events</em>).</p>
+  </dd>
 
-  <p>is equivalent to <em>atomically</em> executing the following calls:</p>
+</dl>
+<p>When compiling with <strong>_XOPEN_SOURCE</strong> defined, one also has the following, which convey no further information beyond the bits listed above:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>POLLRDNORM</strong></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <strong>POLLIN</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>POLLRDBAND</strong></p>
+  </dt>
+  <dd>
+    <p>Priority band data can be read (generally unused on Linux).</p>
+  </dd>
+  <dt>
+    <p><strong>POLLWRNORM</strong></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <strong>POLLOUT</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>POLLWRBAND</strong></p>
+  </dt>
+  <dd>
+    <p>Priority data may be written.</p>
+  </dd>
+
+</dl>
+<p>Linux also knows about, but does not use <strong>POLLMSG</strong>.</p><h3>ppoll()</h3>
+<p>The relationship between <strong>poll</strong>() and <strong>ppoll</strong>() is analogous to the relationship between <a href="../man2/select.2.html"><strong>select</strong>(2)</a> and <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a>: like <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a>, <strong>ppoll</strong>() allows an application to safely wait until either a file descriptor becomes ready or until a signal is caught.</p><p>Other than the difference in the precision of the <em>timeout</em> argument, the following <strong>ppoll</strong>() call:</p>
 <pre>
+
+    ready = ppoll(&fds, nfds, tmo_p, &sigmask);
+
+</pre>
+<p>is equivalent to <em>atomically</em> executing the following calls:</p>
+<pre>
+
     sigset_t origmask;
     int timeout;
 
@@ -230,33 +212,24 @@ struct pollfd {
               (tmo_p-&gt;tv_sec * 1000 + tmo_p-&gt;tv_nsec / 1000000);
     pthread_sigmask(SIG_SETMASK, &sigmask, &origmask);
     ready = poll(&fds, nfds, timeout);
-    pthread_sigmask(SIG_SETMASK, &origmask, NULL);</pre>
-
-<p class='spacer'>
-
-<p>See the description of <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a> for an explanation of why <strong>ppoll</strong>() is necessary.</p>
-<p class='spacer'>
-
-<p>If the <em>sigmask</em> argument is specified as NULL, then no signal mask manipulation is performed (and thus <strong>ppoll</strong>() differs from <strong>poll</strong>() only in the precision of the <em>timeout</em> argument).</p>
-<p class='spacer'>
-
-  <p>The <em>tmo_p</em> argument specifies an upper limit on the amount of time that <strong>ppoll</strong>() will block. This argument is a pointer to a structure of the following form:</p>
+    pthread_sigmask(SIG_SETMASK, &origmask, NULL);
+</pre>
+<p>See the description of <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a> for an explanation of why <strong>ppoll</strong>() is necessary.</p><p>If the <em>sigmask</em> argument is specified as NULL, then no signal mask manipulation is performed (and thus <strong>ppoll</strong>() differs from <strong>poll</strong>() only in the precision of the <em>timeout</em> argument).</p><p>The <em>tmo_p</em> argument specifies an upper limit on the amount of time that <strong>ppoll</strong>() will block. This argument is a pointer to a structure of the following form:</p>
 <pre>
+
 struct timespec {
     long    tv_sec;         /* seconds */
     long    tv_nsec;        /* nanoseconds */
-};</pre>
-
-<p class='spacer'>
-
+};
+</pre>
 <p>If <em>tmo_p</em> is specified as NULL, then <strong>ppoll</strong>() can block indefinitely.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, a positive number is returned; this is the number of structures which have nonzero <em>revents</em> fields (in other words, those descriptors with events or errors reported). A value of 0 indicates that the call timed out and no file descriptors were ready. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -265,42 +238,47 @@ struct timespec {
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p>The array given as argument was not contained in the calling program's address space.</p>
-    </dd>
-    <dt><strong>EINTR</strong></dt>
-    <dd>
-  <p>A signal occurred before any requested event; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The <em>nfds</em> value exceeds the <strong>RLIMIT_NOFILE</strong> value.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>There was no space to allocate file descriptor tables.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p>The array given as argument was not contained in the calling program's address space.</p>
+  </dd>
+  <dt>
+    <p><strong>EINTR</strong></p>
+  </dt>
+  <dd>
+    <p>A signal occurred before any requested event; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The <em>nfds</em> value exceeds the <strong>RLIMIT_NOFILE</strong> value.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>There was no space to allocate file descriptor tables.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
-<p>The <strong>poll</strong>() system call was introduced in Linux 2.1.23. On older kernels that lack this system call, the glibc (and the old Linux libc) <strong>poll</strong>() wrapper function provides emulation using <a href="../man2/select.2.html"><strong>select</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>The <strong>ppoll</strong>() system call was added to Linux in kernel 2.6.16. The <strong>ppoll</strong>() library call was added in glibc 2.4.</p>
+<p>The <strong>poll</strong>() system call was introduced in Linux 2.1.23. On older kernels that lack this system call, the glibc (and the old Linux libc) <strong>poll</strong>() wrapper function provides emulation using <a href="../man2/select.2.html"><strong>select</strong>(2)</a>.</p><p>The <strong>ppoll</strong>() system call was added to Linux in kernel 2.6.16. The <strong>ppoll</strong>() library call was added in glibc 2.4.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p><strong>poll</strong>() conforms to POSIX.1-2001 and POSIX.1-2008. <strong>ppoll</strong>() is Linux-specific.</p>
         </div>
       </section>
@@ -308,26 +286,15 @@ struct timespec {
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
+<p>On some other UNIX systems, <strong>poll</strong>() can fail with the error <strong>EAGAIN</strong> if the system fails to allocate kernel-internal resources, rather than <strong>ENOMEM</strong> as Linux does. POSIX permits this behavior. Portable programs may wish to check for <strong>EAGAIN</strong> and loop, just as with <strong>EINTR</strong>.</p><p>Some implementations define the nonstandard constant <strong>INFTIM</strong> with the value -1 for use as a <em>timeout</em> for <strong>poll</strong>(). This constant is not provided in glibc.</p><p>For a discussion of what may happen if a file descriptor being monitored by <strong>poll</strong>() is closed in another thread, see <a href="../man2/select.2.html"><strong>select</strong>(2)</a>.</p><h3>C library/kernel differences</h3>
+<p>The Linux <strong>ppoll</strong>() system call modifies its <em>tmo_p</em> argument. However, the glibc wrapper function hides this behavior by using a local variable for the timeout argument that is passed to the system call. Thus, the glibc <strong>ppoll</strong>() function does not modify its <em>tmo_p</em> argument.</p><p>The raw <strong>ppoll</strong>() system call has a fifth argument, <em>size_t</em> <em>sigsetsize</em>, which specifies the size in bytes of the <em>sigmask</em> argument. The glibc <strong>ppoll</strong>() wrapper function specifies this argument as a fixed value (equal to <em>sizeof(sigset_t)</em>).</p>
 
-<p>On some other UNIX systems, <strong>poll</strong>() can fail with the error <strong>EAGAIN</strong> if the system fails to allocate kernel-internal resources, rather than <strong>ENOMEM</strong> as Linux does. POSIX permits this behavior. Portable programs may wish to check for <strong>EAGAIN</strong> and loop, just as with <strong>EINTR</strong>.</p>
-<p class='spacer'>
-
-<p>Some implementations define the nonstandard constant <strong>INFTIM</strong> with the value -1 for use as a <em>timeout</em> for <strong>poll</strong>(). This constant is not provided in glibc.</p>
-<p class='spacer'>
-
-<p>For a discussion of what may happen if a file descriptor being monitored by <strong>poll</strong>() is closed in another thread, see <a href="../man2/select.2.html"><strong>select</strong>(2)</a>.</p>
-  <h3>C library/kernel differences</h3>
-<p>The Linux <strong>ppoll</strong>() system call modifies its <em>tmo_p</em> argument. However, the glibc wrapper function hides this behavior by using a local variable for the timeout argument that is passed to the system call. Thus, the glibc <strong>ppoll</strong>() function does not modify its <em>tmo_p</em> argument.</p>
-<p class='spacer'>
-
-<p>The raw <strong>ppoll</strong>() system call has a fifth argument, <em>size_t sigsetsize</em>, which specifies the size in bytes of the <em>sigmask</em> argument. The glibc <strong>ppoll</strong>() wrapper function specifies this argument as a fixed value (equal to <em>sizeof(sigset_t)</em>).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>See the discussion of spurious readiness notifications under the BUGS section of <a href="../man2/select.2.html"><strong>select</strong>(2)</a>.</p>
         </div>
       </section>
@@ -335,11 +302,9 @@ struct timespec {
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO poll&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/restart_syscall.2.html"><strong>restart_syscall</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/select_tut.2.html"><strong>select_tut</strong>(2)</a>, <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pivot_root.2.html"><span aria-hidden="true">&larr;</span> pivot_root.2: Change the root filesystem</a></li>

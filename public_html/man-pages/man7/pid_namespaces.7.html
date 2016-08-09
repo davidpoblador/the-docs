@@ -90,72 +90,18 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>For an overview of namespaces, see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>.</p>
-<p class='spacer'>
-
-<p>PID namespaces isolate the process ID number space, meaning that processes in different PID namespaces can have the same PID. PID namespaces allow containers to provide functionality such as suspending/resuming the set of processes in the container and migrating the container to a new host while the processes inside the container maintain the same PIDs.</p>
-<p class='spacer'>
-
-<p>PIDs in a new PID namespace start at 1, somewhat like a standalone system, and calls to <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/vfork.2.html"><strong>vfork</strong>(2)</a>, or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> will produce processes with PIDs that are unique within the namespace.</p>
-<p class='spacer'>
-
-<p>Use of PID namespaces requires a kernel that is configured with the <strong>CONFIG_PID_NS</strong> option.</p>
-  <h3>The namespace init process</h3>
-<p>The first process created in a new namespace (i.e., the process created using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_NEWPID</strong> flag, or the first child created by a process after a call to <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> using the <strong>CLONE_NEWPID</strong> flag) has the PID 1, and is the "init" process for the namespace (see <strong>init</strong>(1)). A child process that is orphaned within the namespace will be reparented to this process rather than <strong>init</strong>(1) (unless one of the ancestors of the child in the same PID namespace employed the <a href="../man2/prctl.2.html"><strong>prctl</strong>(2)</a> <strong>PR_SET_CHILD_SUBREAPER</strong> command to mark itself as the reaper of orphaned descendant processes).</p>
-<p class='spacer'>
-
-<p>If the "init" process of a PID namespace terminates, the kernel terminates all of the processes in the namespace via a <strong>SIGKILL</strong> signal. This behavior reflects the fact that the "init" process is essential for the correct operation of a PID namespace. In this case, a subsequent <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> into this PID namespace will fail with the error <strong>ENOMEM</strong>; it is not possible to create a new processes in a PID namespace whose "init" process has terminated. Such scenarios can occur when, for example, a process uses an open file descriptor for a <em>/proc/[pid]/ns/pid</em> file corresponding to a process that was in a namespace to <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> into that namespace after the "init" process has terminated. Another possible scenario can occur after a call to <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>: if the first child subsequently created by a <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> terminates, then subsequent calls to <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> will fail with <strong>ENOMEM</strong>.</p>
-<p class='spacer'>
-
-<p>Only signals for which the "init" process has established a signal handler can be sent to the "init" process by other members of the PID namespace. This restriction applies even to privileged processes, and prevents other members of the PID namespace from accidentally killing the "init" process.</p>
-<p class='spacer'>
-
-<p>Likewise, a process in an ancestor namespace can&ndash;subject to the usual permission checks described in <a href="../man2/kill.2.html"><strong>kill</strong>(2)</a>&ndash;send signals to the "init" process of a child PID namespace only if the "init" process has established a handler for that signal. (Within the handler, the <em>siginfo_t</em> <em>si_pid</em> field described in <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> will be zero.) <strong>SIGKILL</strong> or <strong>SIGSTOP</strong> are treated exceptionally: these signals are forcibly delivered when sent from an ancestor PID namespace. Neither of these signals can be caught by the "init" process, and so will result in the usual actions associated with those signals (respectively, terminating and stopping the process).</p>
-<p class='spacer'>
-
-<p>Starting with Linux 3.4, the <a href="../man2/reboot.2.html"><strong>reboot</strong>(2)</a> system call causes a signal to be sent to the namespace "init" process. See <a href="../man2/reboot.2.html"><strong>reboot</strong>(2)</a> for more details.</p>
-  <h3>Nesting PID namespaces</h3>
-<p>PID namespaces can be nested: each PID namespace has a parent, except for the initial ("root") PID namespace. The parent of a PID namespace is the PID namespace of the process that created the namespace using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>. PID namespaces thus form a tree, with all namespaces ultimately tracing their ancestry to the root namespace.</p>
-<p class='spacer'>
-
-<p>A process is visible to other processes in its PID namespace, and to the processes in each direct ancestor PID namespace going back to the root PID namespace. In this context, "visible" means that one process can be the target of operations by another process using system calls that specify a process ID. Conversely, the processes in a child PID namespace can't see processes in the parent and further removed ancestor namespaces. More succinctly: a process can see (e.g., send signals with <a href="../man2/kill.2.html"><strong>kill</strong>(2)</a>, set nice values with <a href="../man2/setpriority.2.html"><strong>setpriority</strong>(2)</a>, etc.) only processes contained in its own PID namespace and in descendants of that namespace.</p>
-<p class='spacer'>
-
-<p>A process has one process ID in each of the layers of the PID namespace hierarchy in which is visible, and walking back though each direct ancestor namespace through to the root PID namespace. System calls that operate on process IDs always operate using the process ID that is visible in the PID namespace of the caller. A call to <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a> always returns the PID associated with the namespace in which the process was created.</p>
-<p class='spacer'>
-
-<p>Some processes in a PID namespace may have parents that are outside of the namespace. For example, the parent of the initial process in the namespace (i.e., the <strong>init</strong>(1) process with PID 1) is necessarily in another namespace. Likewise, the direct children of a process that uses <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> to cause its children to join a PID namespace are in a different PID namespace from the caller of <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>. Calls to <a href="../man2/getppid.2.html"><strong>getppid</strong>(2)</a> for such processes return 0.</p>
-<p class='spacer'>
-
-<p>While processes may freely descend into child PID namespaces (e.g., using <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> with <strong>CLONE_NEWPID</strong>), they may not move in the other direction. That is to say, processes may not enter any ancestor namespaces (parent, grandparent, etc.). Changing PID namespaces is a one way operation.</p>
-  <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> and <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> semantics</h3>
-<p>Calls to <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> that specify a PID namespace file descriptor and calls to <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWPID</strong> flag cause children subsequently created by the caller to be placed in a different PID namespace from the caller. These calls do not, however, change the PID namespace of the calling process, because doing so would change the caller's idea of its own PID (as reported by <strong>getpid</strong>()), which would break many applications and libraries.</p>
-<p class='spacer'>
-
-<p>To put things another way: a process's PID namespace membership is determined when the process is created and cannot be changed thereafter. Among other things, this means that the parental relationship between processes mirrors the parental relationship between PID namespaces: the parent of a process is either in the same namespace or resides in the immediate parent PID namespace.</p>
-  <h3>Compatibility of CLONE_NEWPID with other CLONE_* flags</h3>
-  <p><strong>CLONE_NEWPID</strong> can't be combined with some other <strong>CLONE_*</strong> flags:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p><strong>CLONE_THREAD</strong> requires being in the same PID namespace in order that the threads in a process can send signals to each other. Similarly, it must be possible to see all of the threads of a processes in the <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> filesystem.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p><strong>CLONE_SIGHAND</strong> requires being in the same PID namespace; otherwise the process ID of the process sending a signal could not be meaningfully encoded when a signal is sent (see the description of the <em>siginfo_t</em> type in <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>). A signal queue shared by processes in multiple PID namespaces will defeat that.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p><strong>CLONE_VM</strong> requires all of the threads to be in the same PID namespace, because, from the point of view of a core dump, if two processes share the same address space then they are threads and will be core dumped together. When a core dump is written, the PID of each thread is written into the core dump. Writing the process IDs could not meaningfully succeed if some of the process IDs were in a parent PID namespace.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>To summarize: there is a technical requirement for each of <strong>CLONE_THREAD</strong>, <strong>CLONE_SIGHAND</strong>, and <strong>CLONE_VM</strong> to share a PID namespace. (Note furthermore that in <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> requires <strong>CLONE_VM</strong> to be specified if <strong>CLONE_THREAD</strong> or <strong>CLONE_SIGHAND</strong> is specified.) Thus, call sequences such as the following will fail (with the error <strong>EINVAL</strong>):</p>
-<p class='spacer'>
-
-<pre>    unshare(CLONE_NEWPID);
+<p>For an overview of namespaces, see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>.</p><p>PID namespaces isolate the process ID number space, meaning that processes in different PID namespaces can have the same PID. PID namespaces allow containers to provide functionality such as suspending/resuming the set of processes in the container and migrating the container to a new host while the processes inside the container maintain the same PIDs.</p><p>PIDs in a new PID namespace start at 1, somewhat like a standalone system, and calls to <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/vfork.2.html"><strong>vfork</strong>(2)</a>, or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> will produce processes with PIDs that are unique within the namespace.</p><p>Use of PID namespaces requires a kernel that is configured with the <strong>CONFIG_PID_NS</strong> option.</p><h3>The namespace init process</h3>
+<p>The first process created in a new namespace (i.e., the process created using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_NEWPID</strong> flag, or the first child created by a process after a call to <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> using the <strong>CLONE_NEWPID</strong> flag) has the PID 1, and is the "init" process for the namespace (see <strong>init</strong>(1)). A child process that is orphaned within the namespace will be reparented to this process rather than <strong>init</strong>(1) (unless one of the ancestors of the child in the same PID namespace employed the <a href="../man2/prctl.2.html"><strong>prctl</strong>(2)</a> <strong>PR_SET_CHILD_SUBREAPER</strong> command to mark itself as the reaper of orphaned descendant processes).</p><p>If the "init" process of a PID namespace terminates, the kernel terminates all of the processes in the namespace via a <strong>SIGKILL</strong> signal. This behavior reflects the fact that the "init" process is essential for the correct operation of a PID namespace. In this case, a subsequent <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> into this PID namespace will fail with the error <strong>ENOMEM</strong>; it is not possible to create a new processes in a PID namespace whose "init" process has terminated. Such scenarios can occur when, for example, a process uses an open file descriptor for a <em>/proc/[pid]/ns/pid</em> file corresponding to a process that was in a namespace to <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> into that namespace after the "init" process has terminated. Another possible scenario can occur after a call to <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>: if the first child subsequently created by a <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> terminates, then subsequent calls to <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> will fail with <strong>ENOMEM</strong>.</p><p>Only signals for which the "init" process has established a signal handler can be sent to the "init" process by other members of the PID namespace. This restriction applies even to privileged processes, and prevents other members of the PID namespace from accidentally killing the "init" process.</p><p>Likewise, a process in an ancestor namespace can&ndash;subject to the usual permission checks described in <a href="../man2/kill.2.html"><strong>kill</strong>(2)</a>&ndash;send signals to the "init" process of a child PID namespace only if the "init" process has established a handler for that signal. (Within the handler, the <em>siginfo_t</em> <em>si_pid</em> field described in <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a> will be zero.) <strong>SIGKILL</strong> or <strong>SIGSTOP</strong> are treated exceptionally: these signals are forcibly delivered when sent from an ancestor PID namespace. Neither of these signals can be caught by the "init" process, and so will result in the usual actions associated with those signals (respectively, terminating and stopping the process).</p><p>Starting with Linux 3.4, the <a href="../man2/reboot.2.html"><strong>reboot</strong>(2)</a> system call causes a signal to be sent to the namespace "init" process. See <a href="../man2/reboot.2.html"><strong>reboot</strong>(2)</a> for more details.</p>
+<h3>Nesting PID namespaces</h3>
+<p>PID namespaces can be nested: each PID namespace has a parent, except for the initial ("root") PID namespace. The parent of a PID namespace is the PID namespace of the process that created the namespace using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>. PID namespaces thus form a tree, with all namespaces ultimately tracing their ancestry to the root namespace.</p><p>A process is visible to other processes in its PID namespace, and to the processes in each direct ancestor PID namespace going back to the root PID namespace. In this context, "visible" means that one process can be the target of operations by another process using system calls that specify a process ID. Conversely, the processes in a child PID namespace can't see processes in the parent and further removed ancestor namespaces. More succinctly: a process can see (e.g., send signals with <a href="../man2/kill.2.html"><strong>kill</strong>(2)</a>, set nice values with <a href="../man2/setpriority.2.html"><strong>setpriority</strong>(2)</a>, etc.) only processes contained in its own PID namespace and in descendants of that namespace.</p><p>A process has one process ID in each of the layers of the PID namespace hierarchy in which is visible, and walking back though each direct ancestor namespace through to the root PID namespace. System calls that operate on process IDs always operate using the process ID that is visible in the PID namespace of the caller. A call to <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a> always returns the PID associated with the namespace in which the process was created.</p><p>Some processes in a PID namespace may have parents that are outside of the namespace. For example, the parent of the initial process in the namespace (i.e., the <strong>init</strong>(1) process with PID 1) is necessarily in another namespace. Likewise, the direct children of a process that uses <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> to cause its children to join a PID namespace are in a different PID namespace from the caller of <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>. Calls to <a href="../man2/getppid.2.html"><strong>getppid</strong>(2)</a> for such processes return 0.</p><p>While processes may freely descend into child PID namespaces (e.g., using <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> with <strong>CLONE_NEWPID</strong>), they may not move in the other direction. That is to say, processes may not enter any ancestor namespaces (parent, grandparent, etc.). Changing PID namespaces is a one way operation.</p>
+<a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> and <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> semantics</h3>
+<p>Calls to <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a> that specify a PID namespace file descriptor and calls to <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWPID</strong> flag cause children subsequently created by the caller to be placed in a different PID namespace from the caller. These calls do not, however, change the PID namespace of the calling process, because doing so would change the caller's idea of its own PID (as reported by <strong>getpid</strong>()), which would break many applications and libraries.</p><p>To put things another way: a process's PID namespace membership is determined when the process is created and cannot be changed thereafter. Among other things, this means that the parental relationship between processes mirrors the parental relationship between PID namespaces: the parent of a process is either in the same namespace or resides in the immediate parent PID namespace.</p>
+<h3>Compatibility of CLONE_NEWPID with other CLONE_* flags</h3>
+<p><strong>CLONE_NEWPID</strong> can't be combined with some other <strong>CLONE_*</strong> flags:</p><ul>
+<li><p><strong>CLONE_THREAD</strong> requires being in the same PID namespace in order that the threads in a process can send signals to each other. Similarly, it must be possible to see all of the threads of a processes in the <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> filesystem.</p></li><li><p><strong>CLONE_SIGHAND</strong> requires being in the same PID namespace; otherwise the process ID of the process sending a signal could not be meaningfully encoded when a signal is sent (see the description of the <em>siginfo_t</em> type in <a href="../man2/sigaction.2.html"><strong>sigaction</strong>(2)</a>). A signal queue shared by processes in multiple PID namespaces will defeat that.</p></li><li><p><strong>CLONE_VM</strong> requires all of the threads to be in the same PID namespace, because, from the point of view of a core dump, if two processes share the same address space then they are threads and will be core dumped together. When a core dump is written, the PID of each thread is written into the core dump. Writing the process IDs could not meaningfully succeed if some of the process IDs were in a parent PID namespace.</p></li>
+</ul><p>To summarize: there is a technical requirement for each of <strong>CLONE_THREAD</strong>, <strong>CLONE_SIGHAND</strong>, and <strong>CLONE_VM</strong> to share a PID namespace. (Note furthermore that in <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> requires <strong>CLONE_VM</strong> to be specified if <strong>CLONE_THREAD</strong> or <strong>CLONE_SIGHAND</strong> is specified.) Thus, call sequences such as the following will fail (with the error <strong>EINVAL</strong>):</p>
+<pre>
+    unshare(CLONE_NEWPID);
     clone(..., CLONE_VM, ...);    /* Fails */
 
     setns(fd, CLONE_NEWPID);
@@ -165,32 +111,20 @@
     setns(fd, CLONE_NEWPID);      /* Fails */
 
     clone(..., CLONE_VM, ...);
-    unshare(CLONE_NEWPID);        /* Fails */</pre>
+    unshare(CLONE_NEWPID);        /* Fails */
+</pre>
 
-  <h3>/proc and PID namespaces</h3>
-<p>A <em>/proc</em> filesystem shows (in the <em>/proc/PID</em> directories) only processes visible in the PID namespace of the process that performed the mount, even if the <em>/proc</em> filesystem is viewed from processes in other namespaces.</p>
-<p class='spacer'>
-
-<p>After creating a new PID namespace, it is useful for the child to change its root directory and mount a new procfs instance at <em>/proc</em> so that tools such as <strong>ps</strong>(1) work correctly. If a new mount namespace is simultaneously created by including <strong>CLONE_NEWNS</strong> in the <em>flags</em> argument of <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, then it isn't necessary to change the root directory: a new procfs instance can be mounted directly over <em>/proc</em>.</p>
-<p class='spacer'>
-
-<p>From a shell, the command to mount <em>/proc</em> is:</p>
-<p class='spacer'>
-
-<pre>    $ mount -t proc proc /proc</pre>
-
-<p class='spacer'>
-
-<p>Calling <a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a> on the path <em>/proc/self</em> yields the process ID of the caller in the PID namespace of the procfs mount (i.e., the PID namespace of the process that mounted the procfs). This can be useful for introspection purposes, when a process wants to discover its PID in other namespaces.</p>
-  <h3>Miscellaneous</h3>
+<h3>/proc and PID namespaces</h3>
+<p>A <em>/proc</em> filesystem shows (in the <em>/proc/PID</em> directories) only processes visible in the PID namespace of the process that performed the mount, even if the <em>/proc</em> filesystem is viewed from processes in other namespaces.</p><p>After creating a new PID namespace, it is useful for the child to change its root directory and mount a new procfs instance at <em>/proc</em> so that tools such as <strong>ps</strong>(1) work correctly. If a new mount namespace is simultaneously created by including <strong>CLONE_NEWNS</strong> in the <em>flags</em> argument of <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, then it isn't necessary to change the root directory: a new procfs instance can be mounted directly over <em>/proc</em>.</p><p>From a shell, the command to mount <em>/proc</em> is:</p><p>    $ mount -t proc proc /proc</p><p>Calling <a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a> on the path <em>/proc/self</em> yields the process ID of the caller in the PID namespace of the procfs mount (i.e., the PID namespace of the process that mounted the procfs). This can be useful for introspection purposes, when a process wants to discover its PID in other namespaces.</p>
+<h3>Miscellaneous</h3>
 <p>When a process ID is passed over a UNIX domain socket to a process in a different PID namespace (see the description of <strong>SCM_CREDENTIALS</strong> in <a href="../man7/unix.7.html"><strong>unix</strong>(7)</a>), it is translated into the corresponding PID value in the receiving process's PID namespace.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>Namespaces are a Linux-specific feature.</p>
         </div>
       </section>
@@ -198,7 +132,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>See <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>.</p>
         </div>
       </section>
@@ -206,11 +139,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pid_namespaces&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>, <a href="../man8/switch_root.8.html"><strong>switch_root</strong>(8)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="persistent-keyring.7.html"><span aria-hidden="true">&larr;</span> persistent-keyring.7: Per-user persistent keyring</a></li>

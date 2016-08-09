@@ -90,129 +90,111 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>fallocate</strong> [<strong>-c</strong>|<strong>-p</strong>|<strong>-z</strong>] [<strong>-o</strong> <em>offset</em>] <strong>-l</strong> <em>length</em> [<strong>-n</strong>] <em>filename</em></p>
-<p class='spacer'>
-
-<p><strong>fallocate -d</strong> [<strong>-o</strong> <em>offset</em>] [<strong>-l</strong> <em>length</em>] <em>filename</em></p>
+<p><strong>fallocate</strong> [<strong>-c</strong>|<strong>-p</strong>|<strong>-z</strong>] [<strong>-o</strong> <em>offset</em>] <strong>-l</strong> <em>length</em> [<strong>-n</strong>] <em>filename</em></p><p><strong>fallocate -d</strong> [<strong>-o</strong> <em>offset</em>] [<strong>-l</strong> <em>length</em>] <em>filename</em></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>fallocate</strong> is used to manipulate the allocated disk space for a file, either to deallocate or preallocate it.  For filesystems which support the fallocate system call, preallocation is done quickly by allocating blocks and marking them as uninitialized, requiring no IO to the data blocks.  This is much faster than creating a file by filling it with zeroes.</p>
-<p class='spacer'>
-
-<p>The exit code returned by <strong>fallocate</strong> is 0 on success and 1 on failure.</p>
+<p><strong>fallocate</strong> is used to manipulate the allocated disk space for a file, either to deallocate or preallocate it.  For filesystems which support the fallocate system call, preallocation is done quickly by allocating blocks and marking them as uninitialized, requiring no IO to the data blocks.  This is much faster than creating a file by filling it with zeroes.</p><p>The exit code returned by <strong>fallocate</strong> is 0 on success and 1 on failure.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
         <div class="sectioncontent">
+<p>The <em>length</em> and <em>offset</em> arguments may be followed by the multiplicative suffixes KiB (=1024), MiB (=1024*1024), and so on for GiB, TiB, PiB, EiB, ZiB and YiB (the "iB" is optional, e.g., "K" has the same meaning as "KiB") or the suffixes KB (=1000), MB (=1000*1000), and so on for GB, TB, PB, EB, ZB and YB.</p><p>The options <strong>--collapse-range</strong>, <strong>--dig-holes</strong>, <strong>--punch-hole</strong> and <strong>--zero-range</strong> are mutually exclusive.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-c</strong>,<strong></strong> <strong>--collapse-range</strong></p>
+  </dt>
+  <dd>
+    <p>Removes a byte range from a file, without leaving a hole.  The byte range to be collapsed starts at <em>offset</em> and continues for <em>length</em> bytes.  At the completion of the operation, the contents of the file starting at the location <em>offset</em>+<em>length</em> will be appended at the location <em>offset</em>, and the file will be <em>length</em> bytes smaller.  The option <strong>--keep-size</strong> may not be specified for the collapse-range operation.</p><p>Available since Linux 3.15 for ext4 (only for extent-based files) and XFS.</p>
+  </dd>
+  <dt>
+    <p><strong>-d</strong>,<strong></strong> <strong>--dig-holes</strong></p>
+  </dt>
+  <dd>
+    <p>Detect and dig holes.  This makes the file sparse in-place, without using extra disk space.  The minimum size of the hole depends on filesystem I/O block size (usually 4096 bytes).  Also, when using this option, <strong>--keep-size</strong> is implied.  If no range is specified by <strong>--offset</strong> and <strong>--length</strong>, then the entire file is analyzed for holes.</p><p>You can think of this option as doing a "<strong>cp --sparse</strong>" and then renaming the destination file to the original, without the need for extra disk space.</p><p>See <strong>--punch-hole</strong> for a list of supported filesystems.</p>
+  </dd>
+  <dt>
+    <p><strong>-l</strong>,<strong></strong> <strong>--length</strong> <strong></strong>length</p>
+  </dt>
+  <dd>
+    <p>Specifies the length of the range, in bytes.</p>
+  </dd>
+  <dt>
+    <p><strong>-n</strong>,<strong></strong> <strong>--keep-size</strong></p>
+  </dt>
+  <dd>
+    <p>Do not modify the apparent length of the file.  This may effectively allocate blocks past EOF, which can be removed with a truncate.</p>
+  </dd>
+  <dt>
+    <p><strong>-o</strong>,<strong></strong> <strong>--offset</strong> <strong></strong>offset</p>
+  </dt>
+  <dd>
+    <p>Specifies the beginning offset of the range, in bytes.</p>
+  </dd>
+  <dt>
+    <p><strong>-p</strong>,<strong></strong> <strong>--punch-hole</strong></p>
+  </dt>
+  <dd>
+    <p>Deallocates space (i.e., creates a hole) in the byte range starting at <em>offset</em> and continuing for <em>length</em> bytes.  Within the specified range, partial filesystem blocks are zeroed, and whole filesystem blocks are removed from the file.  After a successful call, subsequent reads from this range will return zeroes.  This option may not be specified at the same time as  the <strong>--zero-range</strong> option. Also, when using this option, <strong>--keep-size</strong> is implied.</p><p>Supported for XFS (since Linux 2.6.38), ext4 (since Linux 3.0), Btrfs (since Linux 3.7) and tmpfs (since Linux 3.5).</p>
+  </dd>
+  <dt>
+    <p><strong>-v</strong>,<strong></strong> <strong>--verbose</strong></p>
+  </dt>
+  <dd>
+    <p>Enable verbose mode.</p>
+  </dd>
+  <dt>
+    <p><strong>-z</strong>,<strong></strong> <strong>--zero-range</strong></p>
+  </dt>
+  <dd>
+    <p>Zeroes space in the byte range starting at <em>offset</em> and continuing for <em>length</em> bytes.  Within the specified range, blocks are preallocated for the regions that span the holes in the file.  After a successful call, subsequent reads from this range will return zeroes.</p><p>Zeroing is done within the filesystem preferably by converting the range into unwritten extents.  This approach means that the specified range will not be physically zeroed out on the device (except for partial blocks at the either end of the range), and I/O is (otherwise) required only to update metadata.</p><p>Option <strong>--keep-size</strong> can be specified to prevent file length modification.</p><p>Available since Linux 3.14 for ext4 (only for extent-based files) and XFS.</p>
+  </dd>
+  <dt>
+    <p><strong>-V</strong>,<strong></strong> <strong>--version</strong></p>
+  </dt>
+  <dd>
+    <p>Display version information and exit.</p>
+  </dd>
+  <dt>
+    <p><strong>-h</strong>,<strong></strong> <strong>--help</strong></p>
+  </dt>
+  <dd>
+    <p>Display help text and exit.</p>
+  </dd>
 
-<p>The <em>length</em> and <em>offset</em> arguments may be followed by the multiplicative suffixes KiB (=1024), MiB (=1024*1024), and so on for GiB, TiB, PiB, EiB, ZiB and YiB (the "iB" is optional, e.g., "K" has the same meaning as "KiB") or the suffixes KB (=1000), MB (=1000*1000), and so on for GB, TB, PB, EB, ZB and YB.</p>
-<p class='spacer'>
+</dl>
 
-  <p>The options <strong>--collapse-range</strong>, <strong>--dig-holes</strong>, <strong>--punch-hole</strong> and <strong>--zero-range</strong> are mutually exclusive.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>-c</strong>,<strong> --collapse-range</strong></dt>
-    <dd>
-  <p>Removes a byte range from a file, without leaving a hole.  The byte range to be collapsed starts at <em>offset</em> and continues for <em>length</em> bytes.  At the completion of the operation, the contents of the file starting at the location <em>offset</em>+<em>length</em> will be appended at the location <em>offset</em>, and the file will be <em>length</em> bytes smaller.  The option <strong>--keep-size</strong> may not be specified for the collapse-range operation.</p>
-<p class='spacer'>
-
-  <p>Available since Linux 3.15 for ext4 (only for extent-based files) and XFS.</p>
-    </dd>
-    <dt><strong>-d</strong>,<strong> --dig-holes</strong></dt>
-    <dd>
-  <p>Detect and dig holes.  This makes the file sparse in-place, without using extra disk space.  The minimum size of the hole depends on filesystem I/O block size (usually 4096 bytes).  Also, when using this option, <strong>--keep-size</strong> is implied.  If no range is specified by <strong>--offset</strong> and <strong>--length</strong>, then the entire file is analyzed for holes.</p>
-<p class='spacer'>
-
-  <p>You can think of this option as doing a "<strong>cp --sparse</strong>" and then renaming the destination file to the original, without the need for extra disk space.</p>
-<p class='spacer'>
-
-  <p>See <strong>--punch-hole</strong> for a list of supported filesystems.</p>
-    </dd>
-    <dt><strong>-l</strong>,<strong> --length </strong>length</dt>
-    <dd>
-  <p>Specifies the length of the range, in bytes.</p>
-    </dd>
-    <dt><strong>-n</strong>,<strong> --keep-size</strong></dt>
-    <dd>
-  <p>Do not modify the apparent length of the file.  This may effectively allocate blocks past EOF, which can be removed with a truncate.</p>
-    </dd>
-    <dt><strong>-o</strong>,<strong> --offset </strong>offset</dt>
-    <dd>
-  <p>Specifies the beginning offset of the range, in bytes.</p>
-    </dd>
-    <dt><strong>-p</strong>,<strong> --punch-hole</strong></dt>
-    <dd>
-  <p>Deallocates space (i.e., creates a hole) in the byte range starting at <em>offset</em> and continuing for <em>length</em> bytes.  Within the specified range, partial filesystem blocks are zeroed, and whole filesystem blocks are removed from the file.  After a successful call, subsequent reads from this range will return zeroes.  This option may not be specified at the same time as  the <strong>--zero-range</strong> option. Also, when using this option, <strong>--keep-size</strong> is implied.</p>
-<p class='spacer'>
-
-  <p>Supported for XFS (since Linux 2.6.38), ext4 (since Linux 3.0), Btrfs (since Linux 3.7) and tmpfs (since Linux 3.5).</p>
-    </dd>
-    <dt><strong>-v</strong>,<strong> --verbose</strong></dt>
-    <dd>
-  <p>Enable verbose mode.</p>
-    </dd>
-    <dt><strong>-z</strong>,<strong> --zero-range</strong></dt>
-    <dd>
-  <p>Zeroes space in the byte range starting at <em>offset</em> and continuing for <em>length</em> bytes.  Within the specified range, blocks are preallocated for the regions that span the holes in the file.  After a successful call, subsequent reads from this range will return zeroes.</p>
-<p class='spacer'>
-
-  <p>Zeroing is done within the filesystem preferably by converting the range into unwritten extents.  This approach means that the specified range will not be physically zeroed out on the device (except for partial blocks at the either end of the range), and I/O is (otherwise) required only to update metadata.</p>
-<p class='spacer'>
-
-  <p>Option <strong>--keep-size</strong> can be specified to prevent file length modification.</p>
-<p class='spacer'>
-
-  <p>Available since Linux 3.14 for ext4 (only for extent-based files) and XFS.</p>
-    </dd>
-    <dt><strong>-V</strong>,<strong> --version</strong></dt>
-    <dd>
-  <p>Display version information and exit.</p>
-    </dd>
-    <dt><strong>-h</strong>,<strong> --help</strong></dt>
-    <dd>
-  <p>Display help text and exit.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
-
-<p><a href="mailto:sandeen@redhat.com">sandeen@redhat.com</a> Eric Sandeen</p>
-<p class='spacer'>
-
-<p><a href="mailto:kzak@redhat.com">kzak@redhat.com</a> Karel Zak</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
-        <div class="sectioncontent">
-
-<p>The fallocate command is part of the util-linux package and is available from <a href="ftp://ftp.kernel.org/pub/linux/utils/util-linux/">ftp://ftp.kernel.org/pub/linux/utils/util-linux/</a> Linux Kernel Archive</p>
+<p>Eric Sandeen</p><p>Karel Zak</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO fallocate&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a>, <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a>, <strong>truncate</strong>(1)</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AVAILABILITY</h2>
+        <div class="sectioncontent">
+<p>The fallocate command is part of the util-linux package and is available from</p><p>Linux Kernel Archive</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="eject.1.html"><span aria-hidden="true">&larr;</span> eject.1: Eject removable media</a></li>
+   <li class="previous"><a href="expiry.1.html"><span aria-hidden="true">&larr;</span> expiry.1: None</a></li>
    <li class="next"><a href="fgconsole.1.html">fgconsole.1: Print the number of the active vt. <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

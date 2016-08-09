@@ -91,16 +91,15 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;pthread.h&gt;</strong>
+<pre>
+<strong>#define</strong> <strong>_GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <pthread.h></strong>
 
-<strong>int pthread_tryjoin_np(pthread_t </strong><em>thread</em><strong>, void **</strong><em>retval</em><strong>);</strong>
+<strong>int</strong> <strong>pthread_tryjoin_np(pthread_t</strong> <strong></strong><em>thread</em><strong>,</strong> <strong>void</strong> <strong>**</strong><em>retval</em><strong>);</strong>
 
-<strong>int pthread_timedjoin_np(pthread_t </strong><em>thread</em><strong>, void **</strong><em>retval</em><strong>,</strong>
-<strong>                         const struct timespec *</strong><em>abstime</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
+<strong>int</strong> <strong>pthread_timedjoin_np(pthread_t</strong> <strong></strong><em>thread</em><strong>,</strong> <strong>void</strong> <strong>**</strong><em>retval</em><strong>,</strong>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>const</strong> <strong>struct</strong> <strong>timespec</strong> <strong>*</strong><em>abstime</em><strong>);</strong>
+</pre>
 <p>Compile and link with <em>-pthread</em>.</p>
         </div>
       </section>
@@ -108,20 +107,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>These functions operate in the same way as <a href="../man3/pthread_join.3.html"><strong>pthread_join</strong>(3)</a>, except for the differences described on this page.</p>
-<p class='spacer'>
-
-<p>The <strong>pthread_tryjoin_np</strong>() function performs a nonblocking join with the thread <em>thread</em>, returning the exit status of the thread in <em>*retval</em>. If <em>thread</em> has not yet terminated, then instead of blocking, as is done by <a href="../man3/pthread_join.3.html"><strong>pthread_join</strong>(3)</a>, the call returns an error.</p>
-<p class='spacer'>
-
-<p>The <strong>pthread_timedjoin_np</strong>() function performs a join-with-timeout. If <em>thread</em> has not yet terminated, then the call blocks until a maximum time, specified in <em>abstime</em>. If the timeout expires before <em>thread</em> terminates, the call returns an error. The <em>abstime</em> argument is a structure of the following form, specifying an absolute time measured since the Epoch (see <a href="../man2/time.2.html"><strong>time</strong>(2)</a>):</p>
-<p class='spacer'>
-
-<pre>struct timespec {
+<p>These functions operate in the same way as <a href="../man3/pthread_join.3.html"><strong>pthread_join</strong>(3)</a>, except for the differences described on this page.</p><p>The <strong>pthread_tryjoin_np</strong>() function performs a nonblocking join with the thread <em>thread</em>, returning the exit status of the thread in <em>*retval</em>. If <em>thread</em> has not yet terminated, then instead of blocking, as is done by <a href="../man3/pthread_join.3.html"><strong>pthread_join</strong>(3)</a>, the call returns an error.</p><p>The <strong>pthread_timedjoin_np</strong>() function performs a join-with-timeout. If <em>thread</em> has not yet terminated, then the call blocks until a maximum time, specified in <em>abstime</em>. If the timeout expires before <em>thread</em> terminates, the call returns an error. The <em>abstime</em> argument is a structure of the following form, specifying an absolute time measured since the Epoch (see <a href="../man2/time.2.html"><strong>time</strong>(2)</a>):</p>
+<pre>
+struct timespec {
     time_t tv_sec;     /* seconds */
     long   tv_nsec;    /* nanoseconds */
-};</pre>
+};
+</pre>
 
         </div>
       </section>
@@ -129,7 +121,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, these functions return 0; on error, they return an error number.</p>
         </div>
       </section>
@@ -137,29 +128,32 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>These functions can fail with the same errors as <a href="../man3/pthread_join.3.html"><strong>pthread_join</strong>(3)</a>. <strong>pthread_tryjoin_np</strong>() can in addition fail with the following error:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBUSY</strong></p>
+  </dt>
+  <dd>
+    <p><em>thread</em> had not yet terminated at the time of the call.</p>
+  </dd>
 
-  <p>These functions can fail with the same errors as <a href="../man3/pthread_join.3.html"><strong>pthread_join</strong>(3)</a>. <strong>pthread_tryjoin_np</strong>() can in addition fail with the following error:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EBUSY</strong></dt>
-    <dd>
-  <p><em>thread</em> had not yet terminated at the time of the call.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+<p><strong>pthread_timedjoin_np</strong>() can in addition fail with the following errors:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>ETIMEDOUT</strong></p>
+  </dt>
+  <dd>
+    <p>The call timed out before <em>thread</em> terminated.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>abstime</em> value is invalid (<em>tv_sec</em> is less than 0 or <em>tv_nsec</em> is greater than 1e9).</p>
+  </dd>
 
-  <p><strong>pthread_timedjoin_np</strong>() can in addition fail with the following errors:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>ETIMEDOUT</strong></dt>
-    <dd>
-  <p>The call timed out before <em>thread</em> terminated.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>abstime</em> value is invalid (<em>tv_sec</em> is less than 0 or <em>tv_nsec</em> is greater than 1e9).</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p><strong>pthread_timedjoin_np</strong>() never returns the error <strong>EINTR</strong>.</p>
         </div>
       </section>
@@ -167,7 +161,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>These functions first appeared in glibc in version 2.3.3.</p>
         </div>
       </section>
@@ -175,9 +168,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -188,14 +179,12 @@
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>These functions are nonstandard GNU extensions; hence the suffix "_np" (nonportable) in the names.</p>
         </div>
       </section>
@@ -203,11 +192,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>The following code waits to join for up to 5 seconds:</p>
-<p class='spacer'>
-
-<pre>    struct timespec ts;
+<pre>
+    struct timespec ts;
     int s;
 
     ...
@@ -221,7 +208,8 @@
     s = pthread_timedjoin_np(thread, NULL, &ts);
     if (s != 0) {
         /* Handle error */
-    }</pre>
+    }
+</pre>
 
         </div>
       </section>
@@ -229,11 +217,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pthread_tryjoin_np&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>, <a href="../man3/pthread_exit.3.html"><strong>pthread_exit</strong>(3)</a>, <a href="../man3/pthread_join.3.html"><strong>pthread_join</strong>(3)</a>, <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pthread_timedjoin_np.3.html"><span aria-hidden="true">&larr;</span> pthread_timedjoin_np.3: Try to join with a terminated thread</a></li>

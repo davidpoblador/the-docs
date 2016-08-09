@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pcrestack: Perl-compatible regular expressions</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Perl-compatible regular expressions">
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">pcrestack<small> (3)</small></h1>
+        <p class="lead">Perl-compatible regular expressions</p>
+      </div>
+
+    <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/">
+      <span itemprop="name">Carta.tech</span>
+    </a>
+    <meta itemprop="position" content="1" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/">
+      <span itemprop="name">Man Pages</span>
+    </a>
+    <meta itemprop="position" content="2" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/">
+      <span itemprop="name">Library calls</span>
+    </a>
+    <meta itemprop="position" content="3" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/pcrestack.3.html">
+      <span itemprop="name">pcrestack: Perl-compatible regular expressions</span>
+    </a>
+    <meta itemprop="position" content="4" />
+  </li>
+</ol>
+<ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/">
+      <span itemprop="name">Carta.tech</span>
+    </a>
+    <meta itemprop="position" content="1" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/">
+      <span itemprop="name">Packages</span>
+    </a>
+    <meta itemprop="position" content="2" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/mariadb/">
+      <span itemprop="name">mariadb</span>
+    </a>
+    <meta itemprop="position" content="3" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/pcrestack.3.html">
+      <span itemprop="name">pcrestack: Perl-compatible regular expressions</span>
+    </a>
+    <meta itemprop="position" content="4" />
+  </li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">PCRE DISCUSSION OF STACK USAGE</h2>
+        <div class="sectioncontent">
+<p>When you call <strong>pcre[16|32]_exec()</strong>, it makes use of an internal function called <strong>match()</strong>. This calls itself recursively at branch points in the pattern, in order to remember the state of the match so that it can back up and try a different alternative if the first one fails. As matching proceeds deeper and deeper into the tree of possibilities, the recursion depth increases. The <strong>match()</strong> function is also called in other circumstances, for example, whenever a parenthesized sub-pattern is entered, and in certain cases of repetition.</p><p>Not all calls of <strong>match()</strong> increase the recursion depth; for an item such as a* it may be called several times at the same level, after matching different numbers of a's. Furthermore, in a number of cases where the result of the recursive call would immediately be passed back as the result of the current call (a "tail recursion"), the function is just restarted instead.</p><p>The above comments apply when <strong>pcre[16|32]_exec()</strong> is run in its normal interpretive manner. If the pattern was studied with the PCRE_STUDY_JIT_COMPILE option, and just-in-time compiling was successful, and the options passed to <strong>pcre[16|32]_exec()</strong> were not incompatible, the matching process uses the JIT-compiled code instead of the <strong>match()</strong> function. In this case, the memory requirements are handled entirely differently. See the <strong>pcrejit</strong> documentation for details.</p><p>The <strong>pcre[16|32]_dfa_exec()</strong> function operates in an entirely different way, and uses recursion only when there is a regular expression recursion or subroutine call in the pattern. This includes the processing of assertion and "once-only" subpatterns, which are handled like subroutine calls. Normally, these are never very deep, and the limit on the complexity of <strong>pcre[16|32]_dfa_exec()</strong> is controlled by the amount of workspace it is given. However, it is possible to write patterns with runaway infinite recursions; such patterns will cause <strong>pcre[16|32]_dfa_exec()</strong> to run out of stack. At present, there is no protection against this.</p><p>The comments that follow do NOT apply to <strong>pcre[16|32]_dfa_exec()</strong>; they are relevant only for <strong>pcre[16|32]_exec()</strong> without the JIT optimization.</p><h3>Reducing \fBpcre[16|32]_exec()\fP's stack usage</h3>
+<p>Each time that <strong>match()</strong> is actually called recursively, it uses memory from the process stack. For certain kinds of pattern and data, very large amounts of stack may be needed, despite the recognition of "tail recursion". You can often reduce the amount of recursion, and therefore the amount of stack used, by modifying the pattern that is being matched. Consider, for example, this pattern:</p><p>  ([^&lt;]|&lt;(?!inet))+</p><p>It matches from wherever it starts until it encounters "&lt;inet" or the end of the data, and is the kind of pattern that might be used when processing an XML file. Each iteration of the outer parentheses matches either one character that is not "&lt;" or a "&lt;" that is not followed by "inet". However, each time a parenthesis is processed, a recursion occurs, so this formulation uses a stack frame for each matched character. For a long string, a lot of stack is required. Consider now this rewritten pattern, which matches exactly the same strings:</p><p>  ([^&lt;]++|&lt;(?!inet))+</p><p>This uses very much less stack, because runs of characters that do not contain "&lt;" are "swallowed" in one item inside the parentheses. Recursion happens only when a "&lt;" character that is not followed by "inet" is encountered (and we assume this is relatively rare). A possessive quantifier is used to stop any backtracking into the runs of non-"&lt;" characters, but that is not related to stack usage.</p><p>This example shows that one way of avoiding stack problems when matching long subject strings is to write repeated parenthesized subpatterns to match more than one character whenever possible.</p>
+<h3>Compiling PCRE to use heap instead of stack for \fBpcre[16|32]_exec()\fP</h3>
+<p>In environments where stack memory is constrained, you might want to compile PCRE to use heap memory instead of stack for remembering back-up points when <strong>pcre[16|32]_exec()</strong> is running. This makes it run a lot more slowly, however. Details of how to do this are given in the <strong>pcrebuild</strong> documentation. When built in this way, instead of using the stack, PCRE obtains and frees memory by calling the functions that are pointed to by the <strong>pcre[16|32]_stack_malloc</strong> and <strong>pcre[16|32]_stack_free</strong> variables. By default, these point to <strong>malloc()</strong> and <strong>free()</strong>, but you can replace the pointers to cause PCRE to use your own functions. Since the block sizes are always the same, and are always freed in reverse order, it may be possible to implement customized memory handlers that are more efficient than the standard functions.</p>
+<h3>Limiting \fBpcre[16|32]_exec()\fP's stack usage</h3>
+<p>You can set limits on the number of times that <strong>match()</strong> is called, both in total and recursively. If a limit is exceeded, <strong>pcre[16|32]_exec()</strong> returns an error code. Setting suitable limits should prevent it from running out of stack. The default values of the limits are very large, and unlikely ever to operate. They can be changed when PCRE is built, and they can also be set when <strong>pcre[16|32]_exec()</strong> is called. For details of these interfaces, see the <strong>pcrebuild</strong> documentation and the section on extra data for <strong>pcre[16|32]_exec()</strong> in the <strong>pcreapi</strong> documentation.</p><p>As a very rough rule of thumb, you should reckon on about 500 bytes per recursion. Thus, if you want to limit your stack usage to 8Mb, you should set the limit at 16000 recursions. A 64Mb stack, on the other hand, can support around 128000 recursions.</p><p>In Unix-like environments, the <strong>pcretest</strong> test program has a command line option (<strong>-S</strong>) that can be used to increase the size of its stack. As long as the stack is large enough, another option (<strong>-M</strong>) can be used to find the smallest limits that allow a particular pattern to match a given subject string. This is done by calling <strong>pcre[16|32]_exec()</strong> repeatedly with different limits.</p>
+<h3>Obtaining an estimate of stack usage</h3>
+<p>The actual amount of stack used per recursion can vary quite a lot, depending on the compiler that was used to build PCRE and the optimization or debugging options that were set for it. The rule of thumb value of 500 bytes mentioned above may be larger or smaller than what is actually needed. A better approximation can be obtained by running this command:</p><p>  pcretest -m -C</p><p>The <strong>-C</strong> option causes <strong>pcretest</strong> to output information about the options with which PCRE was compiled. When <strong>-m</strong> is also given (before <strong>-C</strong>), information about stack use is given in a line like this:</p><p>  Match recursion uses stack: approximate frame size = 640 bytes</p><p>The value is approximate because some recursions need a bit more (up to perhaps 16 more bytes).</p><p>If the above command is given when PCRE is compiled to use the heap instead of the stack for recursion, the value that is output is the size of each block that is obtained from the heap.</p>
+<h3>Changing stack size in Unix-like systems</h3>
+<p>In Unix-like environments, there is not often a problem with the stack unless very long strings are involved, though the default limit on stack size varies from system to system. Values from 8Mb to 64Mb are common. You can find your default limit by running the command:</p><p>  ulimit -s</p><p>Unfortunately, the effect of running out of stack is often SIGSEGV, though sometimes a more explicit error message is given. You can normally increase the limit on stack size by code such as this:</p><p>  struct rlimit rlim;   getrlimit(RLIMIT_STACK, &rlim);   rlim.rlim_cur = 100*1024*1024;   setrlimit(RLIMIT_STACK, &rlim);</p><p>This reads the current limits (soft and hard) using <strong>getrlimit()</strong>, then attempts to increase the soft limit to 100Mb using <strong>setrlimit()</strong>. You must do this before calling <strong>pcre[16|32]_exec()</strong>.</p>
+<h3>Changing stack size in Mac OS X</h3>
+<p>Using <strong>setrlimit()</strong>, as described above, should also work on Mac OS X. It is also possible to set a stack size when linking a program. There is a discussion about stack sizes in Mac OS X at this web site: http://developer.apple.com/qa/qa2005/qa1419.html.</p>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+
+<pre>
+Philip Hazel
+University Computing Service
+Cambridge CB2 3QH, England.
+</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">REVISION</h2>
+        <div class="sectioncontent">
+
+<pre>
+Last updated: 24 June 2012
+Copyright (c) 1997-2012 University of Cambridge.
+</pre>
+
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="pcresample.3.html"><span aria-hidden="true">&larr;</span> pcresample.3: Perl-compatible regular expressions</a></li>
+   <li class="next"><a href="pcresyntax.3.html">pcresyntax.3: Perl-compatible regular expressions <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

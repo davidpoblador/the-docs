@@ -90,63 +90,49 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p><strong>tc qdisc ... dev</strong> dev <strong>( parent</strong> classid <strong>| root) [ handle</strong> major: <strong>] prio [ bands</strong> bands <strong>] [ priomap</strong> band band band... <strong>] [ estimator</strong> interval timeconstant <strong>]</strong></p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The PRIO qdisc is a simple classful queueing discipline that contains an arbitrary number of classes of differing priority. The classes are dequeued in numerical descending order of priority. PRIO is a scheduler and never delays packets - it is a work-conserving qdisc, though the qdiscs contained in the classes may not be.</p>
-<p class='spacer'>
-
-<p>Very useful for lowering latency when there is no need for slowing down traffic.</p>
-<p class='spacer'>
-
+<p>The PRIO qdisc is a simple classful queueing discipline that contains an arbitrary number of classes of differing priority. The classes are dequeued in numerical descending order of priority. PRIO is a scheduler and never delays packets - it is a work-conserving qdisc, though the qdiscs contained in the classes may not be.</p><p>Very useful for lowering latency when there is no need for slowing down traffic.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ALGORITHM</h2>
         <div class="sectioncontent">
-
-<p>On creation with 'tc qdisc add', a fixed number of bands is created. Each band is a class, although is not possible to add classes with 'tc qdisc add', the number of bands to be created must instead be specified on the command line attaching PRIO to its root.</p>
-<p class='spacer'>
-
-<p>When dequeueing, band 0 is tried first and only if it did not deliver a packet does PRIO try band 1, and so onwards. Maximum reliability packets should therefore go to band 0, minimum delay to band 1 and the rest to band 2.</p>
-<p class='spacer'>
-
-<p>As the PRIO qdisc itself will have minor number 0, band 0 is actually major:1, band 1 is major:2, etc. For major, substitute the major number assigned to the qdisc on 'tc qdisc add' with the <strong>handle</strong> parameter.</p>
-<p class='spacer'>
-
+<p>On creation with 'tc qdisc add', a fixed number of bands is created. Each band is a class, although is not possible to add classes with 'tc qdisc add', the number of bands to be created must instead be specified on the command line attaching PRIO to its root.</p><p>When dequeueing, band 0 is tried first and only if it did not deliver a packet does PRIO try band 1, and so onwards. Maximum reliability packets should therefore go to band 0, minimum delay to band 1 and the rest to band 2.</p><p>As the PRIO qdisc itself will have minor number 0, band 0 is actually major:1, band 1 is major:2, etc. For major, substitute the major number assigned to the qdisc on 'tc qdisc add' with the <strong>handle</strong> parameter.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CLASSIFICATION</h2>
         <div class="sectioncontent">
+<p>Three methods are available to PRIO to determine in which band a packet will be enqueued.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>From userspace</p>
+  </dt>
+  <dd>
+    <p>A process with sufficient privileges can encode the destination class directly with SO_PRIORITY, see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>.</strong></p>
+  </dd>
+  <dt>
+    <p>with a tc filter</p>
+  </dt>
+  <dd>
+    <p>A tc filter attached to the root qdisc can point traffic directly to a class</p>
+  </dd>
+  <dt>
+    <p>with the priomap</p>
+  </dt>
+  <dd>
+    <p>Based on the packet priority, which in turn is derived from the Type of Service assigned to the packet.</p>
+  </dd>
 
-  <p>Three methods are available to PRIO to determine in which band a packet will be enqueued.</p>
-  <dl class='dl-vertical'>
-    <dt>From userspace</dt>
-    <dd>
-  <p>A process with sufficient privileges can encode the destination class directly with SO_PRIORITY, see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>.</strong></p>
-    </dd>
-    <dt>with a tc filter</dt>
-    <dd>
-  <p>A tc filter attached to the root qdisc can point traffic directly to a class</p>
-    </dd>
-    <dt>with the priomap</dt>
-    <dd>
-  <p>Based on the packet priority, which in turn is derived from the Type of Service assigned to the packet.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>Only the priomap is specific to this qdisc.</p>
         </div>
       </section>
@@ -155,45 +141,39 @@
         <h2 class="font-effect-shadow-multiple">QDISC PARAMETERS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-horizontal'>
-    <dt>bands</dt>
-    <dd>
-  <p>Number of bands. If changed from the default of 3, <strong>priomap</strong> must be updated as well.</p>
-    </dd>
-    <dt>priomap</dt>
-    <dd>
-  <p>The priomap maps the priority of a packet to a class. The priority can either be set directly from userspace, or be derived from the Type of Service of the packet.</p>
-<p class='spacer'>
-
-  <p>Determines how packet priorities, as assigned by the kernel, map to bands. Mapping occurs based on the TOS octet of the packet, which looks like this:</p>
-<p class='spacer'>
-
-<pre>0   1   2   3   4   5   6   7
+<dl class='dl-vertical'>
+  <dt>
+    <p>bands</p>
+  </dt>
+  <dd>
+    <p>Number of bands. If changed from the default of 3, <strong>priomap</strong> must be updated as well.</p>
+  </dd>
+  <dt>
+    <p>priomap</p>
+  </dt>
+  <dd>
+    <p>The priomap maps the priority of a packet to a class. The priority can either be set directly from userspace, or be derived from the Type of Service of the packet.</p><p>Determines how packet priorities, as assigned by the kernel, map to bands. Mapping occurs based on the TOS octet of the packet, which looks like this:</p>
+<pre>
+0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 |           |               |   |
 |PRECEDENCE |      TOS      |MBZ|
 |           |               |   |
-+---+---+---+---+---+---+---+---+</pre>
-
-<p class='spacer'>
-
-  <p>The four TOS bits (the 'TOS field') are defined as:</p>
-<p class='spacer'>
-
-<pre>Binary Decimal  Meaning
++---+---+---+---+---+---+---+---+
+</pre>
+<p>The four TOS bits (the 'TOS field') are defined as:</p>
+<pre>
+Binary Decimal  Meaning
 -----------------------------------------
 1000   8         Minimize delay (md)
 0100   4         Maximize throughput (mt)
 0010   2         Maximize reliability (mr)
 0001   1         Minimize monetary cost (mmc)
-0000   0         Normal Service</pre>
-
-<p class='spacer'>
-
-  <p>As there is 1 bit to the right of these four bits, the actual value of the TOS field is double the value of the TOS bits. Tcpdump -v -v shows you the value of the entire TOS field, not just the four bits. It is the value you see in the first column of this table:</p>
-<p class='spacer'>
-
-<pre>TOS     Bits  Means                    Linux Priority    Band
+0000   0         Normal Service
+</pre>
+<p>As there is 1 bit to the right of these four bits, the actual value of the TOS field is double the value of the TOS bits. Tcpdump -v -v shows you the value of the entire TOS field, not just the four bits. It is the value you see in the first column of this table:</p>
+<pre>
+TOS     Bits  Means                    Linux Priority    Band
 ------------------------------------------------------------
 0x0     0     Normal Service           0 Best Effort     1
 0x2     1     Minimize Monetary Cost   0 Best Effort     1
@@ -210,30 +190,11 @@
 0x18    12    mt+md                    4 Int. Bulk       1
 0x1a    13    mmc+mt+md                4 Int. Bulk       1
 0x1c    14    mr+mt+md                 4 Int. Bulk       1
-0x1e    15    mmc+mr+mt+md             4 Int. Bulk       1</pre>
-
-<p class='spacer'>
-
-  <p>The second column contains the value of the relevant four TOS bits, followed by their translated meaning. For example, 15 stands for a packet wanting Minimal Monetary Cost, Maximum Reliability, Maximum Throughput AND Minimum Delay.</p>
-<p class='spacer'>
-
-  <p>The fourth column lists the way the Linux kernel interprets the TOS bits, by showing to which Priority they are mapped.</p>
-<p class='spacer'>
-
-  <p>The last column shows the result of the default priomap. On the command line, the default priomap looks like this:</p>
-<p class='spacer'>
-
-<pre>    1 2 2 2 1 2 0 0 1 1 1 1 1 1 1 1</pre>
-
-<p class='spacer'>
-
-  <p>This means that priority 4, for example, gets mapped to band number 1. The priomap also allows you to list higher priorities (&gt; 7) which do not correspond to TOS mappings, but which are set by other means.</p>
-<p class='spacer'>
-
-  <p>This table from RFC 1349 (read it for more details) explains how applications might very well set their TOS bits:</p>
-<p class='spacer'>
-
-<pre>TELNET                   1000           (minimize delay)
+0x1e    15    mmc+mr+mt+md             4 Int. Bulk       1
+</pre>
+<p>The second column contains the value of the relevant four TOS bits, followed by their translated meaning. For example, 15 stands for a packet wanting Minimal Monetary Cost, Maximum Reliability, Maximum Throughput AND Minimum Delay.</p><p>The fourth column lists the way the Linux kernel interprets the TOS bits, by showing to which Priority they are mapped.</p><p>The last column shows the result of the default priomap. On the command line, the default priomap looks like this:</p><p>    1 2 2 2 1 2 0 0 1 1 1 1 1 1 1 1</p><p>This means that priority 4, for example, gets mapped to band number 1. The priomap also allows you to list higher priorities (&gt; 7) which do not correspond to TOS mappings, but which are set by other means.</p><p>This table from RFC 1349 (read it for more details) explains how applications might very well set their TOS bits:</p>
+<pre>
+TELNET                   1000           (minimize delay)
 FTP
         Control          1000           (minimize delay)
         Data             0100           (maximize throughput)
@@ -254,45 +215,39 @@ NNTP                     0001           (minimize monetary cost)
 ICMP
         Errors           0000
         Requests         0000 (mostly)
-        Responses        &lt;same as request&gt; (mostly)</pre>
+        Responses        &lt;same as request&gt; (mostly)
+</pre>
 
-<p class='spacer'>
+  </dd>
 
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CLASSES</h2>
         <div class="sectioncontent">
-
 <p>PRIO classes cannot be configured further - they are automatically created when the PRIO qdisc is attached. Each class however can contain yet a further qdisc.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>Large amounts of traffic in the lower bands can cause starvation of higher bands. Can be prevented by attaching a shaper (for example, <a href="../man8/tc-tbf.8.html"><strong>tc-tbf</strong>(8)</a></strong> to these bands to make sure they cannot dominate the link.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
-
 <p>Alexey N. Kuznetsov, &lt;kuznet@ms2.inr.ac.ru&gt;,  J Hadi Salim &lt;hadi@cyberus.ca&gt;. This manpage maintained by bert hubert &lt;ahu@ds9a.nl&gt;</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="tc-pie.8.html"><span aria-hidden="true">&larr;</span> tc-pie.8: Proportional integral controller-enhanced aqm algorithm</a></li>
+   <li class="previous"><a href="tc-police.8.html"><span aria-hidden="true">&larr;</span> tc-police.8: Policing action</a></li>
    <li class="next"><a href="tc-red.8.html">tc-red.8: Random early detection <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

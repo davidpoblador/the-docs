@@ -90,63 +90,40 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;sys/socket.h&gt;</strong></p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p><strong>sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDPLITE);</strong></p>
+<p><strong>#include <sys/socket.h></strong></p><p><strong>sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDPLITE);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>This is an implementation of the Lightweight User Datagram Protocol (UDP-Lite), as described in RFC&nbsp;3828.</p>
-<p class='spacer'>
-
-<p>UDP-Lite is an extension of UDP (RFC&nbsp;768) to support variable-length checksums. This has advantages for some types of multimedia transport that may be able to make use of slightly damaged datagrams, rather than having them discarded by lower-layer protocols.</p>
-<p class='spacer'>
-
-<p>The variable-length checksum coverage is set via a <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> option. If this option is not set, the only difference to UDP is in using a different IP protocol identifier (IANA number 136).</p>
-<p class='spacer'>
-
-<p>The UDP-Lite implementation is a full extension of <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a>&ndash;that is, it shares the same API and API behavior, and in addition offers two socket options to control the checksum coverage.</p>
-  <h3>Address format</h3>
+<p>This is an implementation of the Lightweight User Datagram Protocol (UDP-Lite), as described in RFC&nbsp;3828.</p><p>UDP-Lite is an extension of UDP (RFC&nbsp;768) to support variable-length checksums. This has advantages for some types of multimedia transport that may be able to make use of slightly damaged datagrams, rather than having them discarded by lower-layer protocols.</p><p>The variable-length checksum coverage is set via a <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> option. If this option is not set, the only difference to UDP is in using a different IP protocol identifier (IANA number 136).</p><p>The UDP-Lite implementation is a full extension of <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a>&ndash;that is, it shares the same API and API behavior, and in addition offers two socket options to control the checksum coverage.</p><h3>Address format</h3>
 <p>UDP-Litev4 uses the <em>sockaddr_in</em> address format described in <strong>ip</strong>(7). UDP-Litev6 uses the <em>sockaddr_in6</em> address format described in <a href="../man7/ipv6.7.html"><strong>ipv6</strong>(7)</a>.</p>
-  <h3>Socket options</h3>
-<p>To set or get a UDP-Lite socket option, call <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> to read or <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> to write the option with the option level argument set to <strong>IPPROTO_UDPLITE</strong>. In addition, all <strong>IPPROTO_UDP</strong> socket options are valid on a UDP-Lite socket. See <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a> for more information.</p>
-<p class='spacer'>
+<h3>Socket options</h3>
+<p>To set or get a UDP-Lite socket option, call <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> to read or <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> to write the option with the option level argument set to <strong>IPPROTO_UDPLITE</strong>. In addition, all <strong>IPPROTO_UDP</strong> socket options are valid on a UDP-Lite socket. See <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a> for more information.</p><p>The following two options are specific to UDP-Lite.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>UDPLITE_SEND_CSCOV</strong></p>
+  </dt>
+  <dd>
+    <p>This option sets the sender checksum coverage and takes an <em>int</em> as argument, with a checksum coverage value in the range 0..2^16-1.</p><p>A value of 0 means that the entire datagram is always covered. Values from 1-7 are illegal (RFC&nbsp;3828, 3.1) and are rounded up to the minimum coverage of 8.</p><p>With regard to IPv6 jumbograms (RFC&nbsp;2675), the UDP-Litev6 checksum coverage is limited to the first 2^16-1 octets, as per RFC&nbsp;3828, 3.5. Higher values are therefore silently truncated to 2^16-1. If in doubt, the current coverage value can always be queried using <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>UDPLITE_RECV_CSCOV</strong></p>
+  </dt>
+  <dd>
+    <p>This is the receiver-side analogue and uses the same argument format and value range as <strong>UDPLITE_SEND_CSCOV</strong>. This option is not required to enable traffic with partial checksum coverage. Its function is that of a traffic filter: when enabled, it instructs the kernel to drop all packets which have a coverage <em>less</em> than the specified coverage value.</p><p>When the value of <strong>UDPLITE_RECV_CSCOV</strong> exceeds the actual packet coverage, incoming packets are silently dropped, but may generate a warning message in the system log.</p>
+  </dd>
 
-  <p>The following two options are specific to UDP-Lite.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>UDPLITE_SEND_CSCOV</strong></dt>
-    <dd>
-  <p>This option sets the sender checksum coverage and takes an <em>int</em> as argument, with a checksum coverage value in the range 0..2^16-1.</p>
-<p class='spacer'>
+</dl>
 
-  <p>A value of 0 means that the entire datagram is always covered. Values from 1-7 are illegal (RFC&nbsp;3828, 3.1) and are rounded up to the minimum coverage of 8.</p>
-<p class='spacer'>
 
-  <p>With regard to IPv6 jumbograms (RFC&nbsp;2675), the UDP-Litev6 checksum coverage is limited to the first 2^16-1 octets, as per RFC&nbsp;3828, 3.5. Higher values are therefore silently truncated to 2^16-1. If in doubt, the current coverage value can always be queried using <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a>.</p>
-    </dd>
-    <dt><strong>UDPLITE_RECV_CSCOV</strong></dt>
-    <dd>
-  <p>This is the receiver-side analogue and uses the same argument format and value range as <strong>UDPLITE_SEND_CSCOV</strong>. This option is not required to enable traffic with partial checksum coverage. Its function is that of a traffic filter: when enabled, it instructs the kernel to drop all packets which have a coverage <em>less</em> than the specified coverage value.</p>
-<p class='spacer'>
-
-  <p>When the value of <strong>UDPLITE_RECV_CSCOV</strong> exceeds the actual packet coverage, incoming packets are silently dropped, but may generate a warning message in the system log.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
-
 <p>All errors documented for <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a> may be returned. UDP-Lite does not add further errors.</p>
         </div>
       </section>
@@ -154,18 +131,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
-
-<p><em>/proc/net/snmp</em> - basic UDP-Litev4 statistics counters.</p>
-<p class='spacer'>
-
-<p><em>/proc/net/snmp6</em> - basic UDP-Litev6 statistics counters.</p>
+<p><em>/proc/net/snmp</em> - basic UDP-Litev4 statistics counters.</p><p><em>/proc/net/snmp6</em> - basic UDP-Litev6 statistics counters.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>UDP-Litev4/v6 first appeared in Linux 2.6.20.</p>
         </div>
       </section>
@@ -173,12 +145,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
-  <p>Where glibc support is missing, the following definitions are needed:</p>
+<p>Where glibc support is missing, the following definitions are needed:</p>
 <pre>
+
 #define IPPROTO_UDPLITE     136
 #define UDPLITE_SEND_CSCOV  10
-#define UDPLITE_RECV_CSCOV  11</pre>
+#define UDPLITE_RECV_CSCOV  11
+</pre>
 
         </div>
       </section>
@@ -186,17 +159,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO udplite&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>ip</strong>(7), <a href="../man7/ipv6.7.html"><strong>ipv6</strong>(7)</a>, <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>, <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a></p>
-<p class='spacer'>
-
-<p>RFC&nbsp;3828 for the Lightweight User Datagram Protocol (UDP-Lite).</p>
-<p class='spacer'>
-
-<p><em>Documentation/networking/udplite.txt</em> in the Linux kernel source tree</p>
+<p><strong>ip</strong>(7), <a href="../man7/ipv6.7.html"><strong>ipv6</strong>(7)</a>, <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>, <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a></p><p>RFC&nbsp;3828 for the Lightweight User Datagram Protocol (UDP-Lite).</p><p><em>Documentation/networking/udplite.txt</em> in the Linux kernel source tree</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="udp.7.html"><span aria-hidden="true">&larr;</span> udp.7: User datagram protocol for ipv4</a></li>

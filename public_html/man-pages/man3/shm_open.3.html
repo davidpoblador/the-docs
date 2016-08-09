@@ -90,81 +90,54 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;sys/mman.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>#include &lt;sys/stat.h&gt;</strong>        /* For mode constants */</p>
-<p class='spacer'>
-
-<p><strong>#include &lt;fcntl.h&gt;</strong>           /* For O_* constants */</p>
-<p class='spacer'>
-
-<p><strong>int shm_open(const char *</strong><em>name</em><strong>, int </strong><em>oflag</em><strong>, mode_t </strong><em>mode</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>int shm_unlink(const char *</strong><em>name</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p>Link with <em>-lrt</em>.</p>
+<p><strong>#include <sys/mman.h></strong></p><p><strong>#include</strong> <strong><sys/stat.h></strong>        /* For mode constants */</p><p><strong>#include</strong> <strong><fcntl.h></strong>           /* For O_* constants */</p><p><strong>int</strong> <strong>shm_open(const</strong> <strong>char</strong> <strong>*</strong><em>name</em><strong>,</strong> <strong>int</strong> <strong></strong><em>oflag</em><strong>,</strong> <strong>mode_t</strong> <strong></strong><em>mode</em><strong>);</strong></p><p><strong>int</strong> <strong>shm_unlink(const</strong> <strong>char</strong> <strong>*</strong><em>name</em><strong>);</strong></p><p>Link with <em>-lrt</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>shm_open</strong>() creates and opens a new, or opens an existing, POSIX shared memory object. A POSIX shared memory object is in effect a handle which can be used by unrelated processes to <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> the same region of shared memory. The <strong>shm_unlink</strong>() function performs the converse operation, removing an object previously created by <strong>shm_open</strong>().</p><p>The operation of <strong>shm_open</strong>() is analogous to that of <a href="../man2/open.2.html"><strong>open</strong>(2)</a>. <em>name</em> specifies the shared memory object to be created or opened. For portable use, a shared memory object should be identified by a name of the form <em>/somename</em>; that is, a null-terminated string of up to <strong>NAME_MAX</strong> (i.e., 255) characters consisting of an initial slash, followed by one or more characters, none of which are slashes.</p><p><em>oflag</em> is a bit mask created by ORing together exactly one of <strong>O_RDONLY</strong> or <strong>O_RDWR</strong> and any of the other flags listed here:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>O_RDONLY</strong></p>
+  </dt>
+  <dd>
+    <p>Open the object for read access. A shared memory object opened in this way can be <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>ed only for read (<strong>PROT_READ</strong>) access.</p>
+  </dd>
+  <dt>
+    <p><strong>O_RDWR</strong></p>
+  </dt>
+  <dd>
+    <p>Open the object for read-write access.</p>
+  </dd>
+  <dt>
+    <p><strong>O_CREAT</strong></p>
+  </dt>
+  <dd>
+    <p>Create the shared memory object if it does not exist. The user and group ownership of the object are taken from the corresponding effective IDs of the calling process, and the object's permission bits are set according to the low-order 9 bits of <em>mode</em>, except that those bits set in the process file mode creation mask (see <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a>) are cleared for the new object. A set of macro constants which can be used to define <em>mode</em> is listed in <a href="../man2/open.2.html"><strong>open</strong>(2)</a>. (Symbolic definitions of these constants can be obtained by including <em><sys/stat.h></em>.)</p><p>A new shared memory object initially has zero length&ndash;the size of the object can be set using <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a>. The newly allocated bytes of a shared memory object are automatically initialized to 0.</p>
+  </dd>
+  <dt>
+    <p><strong>O_EXCL</strong></p>
+  </dt>
+  <dd>
+    <p>If <strong>O_CREAT</strong> was also specified, and a shared memory object with the given <em>name</em> already exists, return an error. The check for the existence of the object, and its creation if it does not exist, are performed atomically.</p>
+  </dd>
+  <dt>
+    <p><strong>O_TRUNC</strong></p>
+  </dt>
+  <dd>
+    <p>If the shared memory object already exists, truncate it to zero bytes.</p>
+  </dd>
 
-<p><strong>shm_open</strong>() creates and opens a new, or opens an existing, POSIX shared memory object. A POSIX shared memory object is in effect a handle which can be used by unrelated processes to <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> the same region of shared memory. The <strong>shm_unlink</strong>() function performs the converse operation, removing an object previously created by <strong>shm_open</strong>().</p>
-<p class='spacer'>
-
-<p>The operation of <strong>shm_open</strong>() is analogous to that of <a href="../man2/open.2.html"><strong>open</strong>(2)</a>. <em>name</em> specifies the shared memory object to be created or opened. For portable use, a shared memory object should be identified by a name of the form <em>/somename</em>; that is, a null-terminated string of up to <strong>NAME_MAX</strong> (i.e., 255) characters consisting of an initial slash, followed by one or more characters, none of which are slashes.</p>
-<p class='spacer'>
-
-  <p><em>oflag</em> is a bit mask created by ORing together exactly one of <strong>O_RDONLY</strong> or <strong>O_RDWR</strong> and any of the other flags listed here:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>O_RDONLY</strong></dt>
-    <dd>
-  <p>Open the object for read access. A shared memory object opened in this way can be <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>ed only for read (<strong>PROT_READ</strong>) access.</p>
-    </dd>
-    <dt><strong>O_RDWR</strong></dt>
-    <dd>
-  <p>Open the object for read-write access.</p>
-    </dd>
-    <dt><strong>O_CREAT</strong></dt>
-    <dd>
-  <p>Create the shared memory object if it does not exist. The user and group ownership of the object are taken from the corresponding effective IDs of the calling process, and the object's permission bits are set according to the low-order 9 bits of <em>mode</em>, except that those bits set in the process file mode creation mask (see <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a>) are cleared for the new object. A set of macro constants which can be used to define <em>mode</em> is listed in <a href="../man2/open.2.html"><strong>open</strong>(2)</a>. (Symbolic definitions of these constants can be obtained by including <em>&lt;sys/stat.h&gt;</em>.)</p>
-<p class='spacer'>
-
-  <p>A new shared memory object initially has zero length&ndash;the size of the object can be set using <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a>. The newly allocated bytes of a shared memory object are automatically initialized to 0.</p>
-    </dd>
-    <dt><strong>O_EXCL</strong></dt>
-    <dd>
-  <p>If <strong>O_CREAT</strong> was also specified, and a shared memory object with the given <em>name</em> already exists, return an error. The check for the existence of the object, and its creation if it does not exist, are performed atomically.</p>
-    </dd>
-    <dt><strong>O_TRUNC</strong></dt>
-    <dd>
-  <p>If the shared memory object already exists, truncate it to zero bytes.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>Definitions of these flag values can be obtained by including <em>&lt;fcntl.h&gt;</em>.</p>
-<p class='spacer'>
-
-<p>On successful completion <strong>shm_open</strong>() returns a new file descriptor referring to the shared memory object. This file descriptor is guaranteed to be the lowest-numbered file descriptor not previously opened within the process. The <strong>FD_CLOEXEC</strong> flag (see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>) is set for the file descriptor.</p>
-<p class='spacer'>
-
-<p>The file descriptor is normally used in subsequent calls to <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a> (for a newly created object) and <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. After a call to <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> the file descriptor may be closed without affecting the memory mapping.</p>
-<p class='spacer'>
-
-<p>The operation of <strong>shm_unlink</strong>() is analogous to <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>: it removes a shared memory object name, and, once all processes have unmapped the object, de-allocates and destroys the contents of the associated memory region. After a successful <strong>shm_unlink</strong>(), attempts to <strong>shm_open</strong>() an object with the same <em>name</em> will fail (unless <strong>O_CREAT</strong> was specified, in which case a new, distinct object is created).</p>
+</dl>
+<p>Definitions of these flag values can be obtained by including <em><fcntl.h></em>.</p><p>On successful completion <strong>shm_open</strong>() returns a new file descriptor referring to the shared memory object. This file descriptor is guaranteed to be the lowest-numbered file descriptor not previously opened within the process. The <strong>FD_CLOEXEC</strong> flag (see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>) is set for the file descriptor.</p><p>The file descriptor is normally used in subsequent calls to <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a> (for a newly created object) and <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. After a call to <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> the file descriptor may be closed without affecting the memory mapping.</p><p>The operation of <strong>shm_unlink</strong>() is analogous to <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>: it removes a shared memory object name, and, once all processes have unmapped the object, de-allocates and destroys the contents of the associated memory region. After a successful <strong>shm_unlink</strong>(), attempts to <strong>shm_open</strong>() an object with the same <em>name</em> will fail (unless <strong>O_CREAT</strong> was specified, in which case a new, distinct object is created).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, <strong>shm_open</strong>() returns a nonnegative file descriptor. On failure, <strong>shm_open</strong>() returns -1. <strong>shm_unlink</strong>() returns 0 on success, or -1 on error.</p>
         </div>
       </section>
@@ -172,53 +145,71 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>On failure, <em>errno</em> is set to indicate the cause of the error. Values which may appear in <em>errno</em> include the following:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>Permission to <strong>shm_unlink</strong>() the shared memory object was denied.</p>
+  </dd>
+  <dt>
+    <p><strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>Permission was denied to <strong>shm_open</strong>() <em>name</em> in the specified <em>mode</em>, or <strong>O_TRUNC</strong> was specified and the caller does not have write permission on the object.</p>
+  </dd>
+  <dt>
+    <p><strong>EEXIST</strong></p>
+  </dt>
+  <dd>
+    <p>Both <strong>O_CREAT</strong> and <strong>O_EXCL</strong> were specified to <strong>shm_open</strong>() and the shared memory object specified by <em>name</em> already exists.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The <em>name</em> argument to <strong>shm_open</strong>() was invalid.</p>
+  </dd>
+  <dt>
+    <p><strong>EMFILE</strong></p>
+  </dt>
+  <dd>
+    <p>The per-process limit on the number of open file descriptors has been reached.</p>
+  </dd>
+  <dt>
+    <p><strong>ENAMETOOLONG</strong></p>
+  </dt>
+  <dd>
+    <p>The length of <em>name</em> exceeds <strong>PATH_MAX</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENFILE</strong></p>
+  </dt>
+  <dd>
+    <p>The system-wide limit on the total number of open files has been reached.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOENT</strong></p>
+  </dt>
+  <dd>
+    <p>An attempt was made to <strong>shm_open</strong>() a <em>name</em> that did not exist, and <strong>O_CREAT</strong> was not specified.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOENT</strong></p>
+  </dt>
+  <dd>
+    <p>An attempt was to made to <strong>shm_unlink</strong>() a <em>name</em> that does not exist.</p>
+  </dd>
 
-  <p>On failure, <em>errno</em> is set to indicate the cause of the error. Values which may appear in <em>errno</em> include the following:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EACCES</strong></dt>
-    <dd>
-  <p>Permission to <strong>shm_unlink</strong>() the shared memory object was denied.</p>
-    </dd>
-    <dt><strong>EACCES</strong></dt>
-    <dd>
-  <p>Permission was denied to <strong>shm_open</strong>() <em>name</em> in the specified <em>mode</em>, or <strong>O_TRUNC</strong> was specified and the caller does not have write permission on the object.</p>
-    </dd>
-    <dt><strong>EEXIST</strong></dt>
-    <dd>
-  <p>Both <strong>O_CREAT</strong> and <strong>O_EXCL</strong> were specified to <strong>shm_open</strong>() and the shared memory object specified by <em>name</em> already exists.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The <em>name</em> argument to <strong>shm_open</strong>() was invalid.</p>
-    </dd>
-    <dt><strong>EMFILE</strong></dt>
-    <dd>
-  <p>The per-process limit on the number of open file descriptors has been reached.</p>
-    </dd>
-    <dt><strong>ENAMETOOLONG</strong></dt>
-    <dd>
-  <p>The length of <em>name</em> exceeds <strong>PATH_MAX</strong>.</p>
-    </dd>
-    <dt><strong>ENFILE</strong></dt>
-    <dd>
-  <p>The system-wide limit on the total number of open files has been reached.</p>
-    </dd>
-    <dt><strong>ENOENT</strong></dt>
-    <dd>
-  <p>An attempt was made to <strong>shm_open</strong>() a <em>name</em> that did not exist, and <strong>O_CREAT</strong> was not specified.</p>
-    </dd>
-    <dt><strong>ENOENT</strong></dt>
-    <dd>
-  <p>An attempt was to made to <strong>shm_unlink</strong>() a <em>name</em> that does not exist.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>These functions are provided in glibc 2.2 and later.</p>
         </div>
       </section>
@@ -226,9 +217,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -239,47 +228,32 @@
 <td>Thread safety</td>
 <td>MT-Safe locale</td></tr>
 </table>
-
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
-<p>POSIX.1-2001, POSIX.1-2008.</p>
-<p class='spacer'>
-
-<p>POSIX.1-2001 says that the group ownership of a newly created shared memory object is set to either the calling process's effective group ID or "a system default group ID". POSIX.1-2008 says that the group ownership may be set to either the calling process's effective group ID or, if the object is visible in the filesystem, the group ID of the parent directory.</p>
+<p>POSIX.1-2001, POSIX.1-2008.</p><p>POSIX.1-2001 says that the group ownership of a newly created shared memory object is set to either the calling process's effective group ID or "a system default group ID". POSIX.1-2008 says that the group ownership may be set to either the calling process's effective group ID or, if the object is visible in the filesystem, the group ID of the parent directory.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>POSIX leaves the behavior of the combination of <strong>O_RDONLY</strong> and <strong>O_TRUNC</strong> unspecified. On Linux, this will successfully truncate an existing shared memory object&ndash;this may not be so on other UNIX systems.</p>
-<p class='spacer'>
-
-<p>The POSIX shared memory object implementation on Linux 2.4 makes use of a dedicated filesystem, which is normally mounted under <em>/dev/shm</em>.</p>
+<p>POSIX leaves the behavior of the combination of <strong>O_RDONLY</strong> and <strong>O_TRUNC</strong> unspecified. On Linux, this will successfully truncate an existing shared memory object&ndash;this may not be so on other UNIX systems.</p><p>The POSIX shared memory object implementation on Linux 2.4 makes use of a dedicated filesystem, which is normally mounted under <em>/dev/shm</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO shm_open&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/close.2.html"><strong>close</strong>(2)</a>, <a href="../man2/fchmod.2.html"><strong>fchmod</strong>(2)</a>, <a href="../man2/fchown.2.html"><strong>fchown</strong>(2)</a>, <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/fstat.2.html"><strong>fstat</strong>(2)</a>, <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a>, <a href="../man2/memfd_create.2.html"><strong>memfd_create</strong>(2)</a>, <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a>, <a href="../man7/shm_overview.7.html"><strong>shm_overview</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="sgetspent_r.3.html"><span aria-hidden="true">&larr;</span> sgetspent_r.3: Get shadow password file entry</a></li>
+   <li class="previous"><a href="shadow.3.html"><span aria-hidden="true">&larr;</span> shadow.3: None</a></li>
    <li class="next"><a href="shm_unlink.3.html">shm_unlink.3: Create/open or unlink posix shared memory objects <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

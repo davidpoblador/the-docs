@@ -90,59 +90,26 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;unistd.h&gt;</strong>    /* on BSD-like systems, and Linux */</p>
-<p class='spacer'>
-
-<p><strong>#include &lt;stdlib.h&gt;</strong>    /* on System V-like systems */</p>
-<p class='spacer'>
-
-<p><strong>int ttyslot(void);</strong></p>
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-  <p><strong>ttyslot</strong>(): Since glibc 2.20:</p>
-<pre>    _BSD_SOURCE ||
-    _XOPEN_SOURCE&nbsp;&&&nbsp;_XOPEN_SOURCE_&nbsp;&lt;&nbsp;500</pre>
-
-<p class='spacer'>
-
-  <p>Glibc 2.19 and earlier:</p>
-<pre>    _DEFAULT_SOURCE ||
-    _XOPEN_SOURCE&nbsp;&&&nbsp;_XOPEN_SOURCE_&nbsp;&lt;&nbsp;500</pre>
-
+<p><strong>#include</strong> <strong><unistd.h></strong>    /* on BSD-like systems, and Linux */</p><p><strong>#include</strong> <strong><stdlib.h></strong>    /* on System V-like systems */</p><p><strong>int ttyslot(void);</strong></p><p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>ttyslot</strong>():</p><p>Since glibc 2.20:     _BSD_SOURCE ||     _XOPEN_SOURCE&nbsp;&&&nbsp;_XOPEN_SOURCE_&nbsp;&lt;&nbsp;500</p><p>Glibc 2.19 and earlier:     _DEFAULT_SOURCE ||     _XOPEN_SOURCE&nbsp;&&&nbsp;_XOPEN_SOURCE_&nbsp;&lt;&nbsp;500</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The legacy function <strong>ttyslot</strong>() returns the index of the current user's entry in some file.</p>
-<p class='spacer'>
-
-<p>Now "What file?" you ask. Well, let's first look at some history.</p>
-  <h3>Ancient history</h3>
-<p>There used to be a file <em>/etc/ttys</em> in UNIX&nbsp;V6, that was read by the <strong>init</strong>(1) program to find out what to do with each terminal line. Each line consisted of three characters. The first character was either &apos;0&apos; or &apos;1&apos;, where &apos;0&apos; meant "ignore". The second character denoted the terminal: &apos;8&apos; stood for "/dev/tty8". The third character was an argument to <strong>getty</strong>(8) indicating the sequence of line speeds to try (&apos;-&apos; was: start trying 110 baud). Thus a typical line was "18-". A hang on some line was solved by changing the &apos;1&apos; to a &apos;0&apos;, signaling init, changing back again, and signaling init again.</p>
-<p class='spacer'>
-
-<p>In UNIX&nbsp;V7 the format was changed: here the second character was the argument to <strong>getty</strong>(8) indicating the sequence of line speeds to try (&apos;0&apos; was: cycle through 300-1200-150-110 baud; &apos;4&apos; was for the on-line console DECwriter) while the rest of the line contained the name of the tty. Thus a typical line was "14console".</p>
-<p class='spacer'>
-
-<p>Later systems have more elaborate syntax. System V-like systems have <em>/etc/inittab</em> instead.</p>
-  <h3>Ancient history (2)</h3>
+<p>The legacy function <strong>ttyslot</strong>() returns the index of the current user's entry in some file.</p><p>Now "What file?" you ask. Well, let's first look at some history.</p><h3>Ancient history</h3>
+<p>There used to be a file <em>/etc/ttys</em> in UNIX&nbsp;V6, that was read by the <strong>init</strong>(1) program to find out what to do with each terminal line. Each line consisted of three characters. The first character was either &apos;0&apos; or &apos;1&apos;, where &apos;0&apos; meant "ignore". The second character denoted the terminal: &apos;8&apos; stood for "/dev/tty8". The third character was an argument to <strong>getty</strong>(8) indicating the sequence of line speeds to try (&apos;-&apos; was: start trying 110 baud). Thus a typical line was "18-". A hang on some line was solved by changing the &apos;1&apos; to a &apos;0&apos;, signaling init, changing back again, and signaling init again.</p><p>In UNIX&nbsp;V7 the format was changed: here the second character was the argument to <strong>getty</strong>(8) indicating the sequence of line speeds to try (&apos;0&apos; was: cycle through 300-1200-150-110 baud; &apos;4&apos; was for the on-line console DECwriter) while the rest of the line contained the name of the tty. Thus a typical line was "14console".</p><p>Later systems have more elaborate syntax. System V-like systems have <em>/etc/inittab</em> instead.</p>
+<h3>Ancient history (2)</h3>
 <p>On the other hand, there is the file <em>/etc/utmp</em> listing the people currently logged in. It is maintained by <a href="../man1/login.1.html"><strong>login</strong>(1)</a>. It has a fixed size, and the appropriate index in the file was determined by <a href="../man1/login.1.html"><strong>login</strong>(1)</a> using the <strong>ttyslot</strong>() call to find the number of the line in <em>/etc/ttys</em> (counting from 1).</p>
-  <h3>The semantics of ttyslot</h3>
+<h3>The semantics of ttyslot</h3>
 <p>Thus, the function <strong>ttyslot</strong>() returns the index of the controlling terminal of the calling process in the file <em>/etc/ttys</em>, and that is (usually) the same as the index of the entry for the current user in the file <em>/etc/utmp</em>. BSD still has the <em>/etc/ttys</em> file, but System V-like systems do not, and hence cannot refer to it. Thus, on such systems the documentation says that <strong>ttyslot</strong>() returns the current user's index in the user accounting data base.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>If successful, this function returns the slot number. On error (e.g., if none of the file descriptors 0, 1 or 2 is associated with a terminal that occurs in this data base) it returns 0 on UNIX&nbsp;V6 and V7 and BSD-like systems, but -1 on System V-like systems.</p>
         </div>
       </section>
@@ -150,9 +117,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -163,14 +128,12 @@
 <td>Thread safety</td>
 <td>MT-Unsafe</td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>SUSv1; marked as LEGACY in SUSv2; removed in POSIX.1-2001. SUSv2 requires -1 on error.</p>
         </div>
       </section>
@@ -178,25 +141,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>The utmp file is found various places on various systems, such as <em>/etc/utmp</em>, <em>/var/adm/utmp</em>, <em>/var/run/utmp</em>.</p>
-<p class='spacer'>
-
-<p>The glibc2 implementation of this function reads the file <strong>_PATH_TTYS</strong>, defined in <em>&lt;ttyent.h&gt;</em> as "/etc/ttys". It returns 0 on error. Since Linux systems do not usually have "/etc/ttys", it will always return 0.</p>
-<p class='spacer'>
-
-<p>Minix also has <em>fttyslot</em>(<em>fd</em>).</p>
+<p>The utmp file is found various places on various systems, such as <em>/etc/utmp</em>, <em>/var/adm/utmp</em>, <em>/var/run/utmp</em>.</p><p>The glibc2 implementation of this function reads the file <strong>_PATH_TTYS</strong>, defined in <em><ttyent.h></em> as "/etc/ttys". It returns 0 on error. Since Linux systems do not usually have "/etc/ttys", it will always return 0.</p><p>Minix also has <em>fttyslot</em>(<em>fd</em>).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO ttyslot&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/getttyent.3.html"><strong>getttyent</strong>(3)</a>, <a href="../man3/ttyname.3.html"><strong>ttyname</strong>(3)</a>, <a href="../man5/utmp.5.html"><strong>utmp</strong>(5)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="ttyname_r.3.html"><span aria-hidden="true">&larr;</span> ttyname_r.3: Return name of a terminal</a></li>

@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p>ETCDIR/slapd.conf</p>
         </div>
       </section>
@@ -98,70 +97,56 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
 <p>The <strong>adremap</strong> overlay to <strong>slapd</strong>(8) remaps some attribute values for compatibility between Microsoft AD and older POSIX systems' PAM/NSS clients. It can be configured to convert values of given attributes to lower case, and it can be configured to generate RFC2307-compliant group memberships based on RFC2307bis groups. All mapping is only performed on entries returned as search responses.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFIGURATION</h2>
         <div class="sectioncontent">
-
 <p>The config directives that are specific to the <strong>adremap</strong> overlay must be prefixed by <strong>adremap-</strong>, to avoid potential conflicts with directives specific to the underlying database or to other stacked overlays.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>overlay adremap</strong></p>
+  </dt>
+  <dd>
+    <p>This directive adds the <strong>adremap</strong> overlay to the current database, see <strong>slapd.conf</strong>(5) for details.</p>
+  </dd>
 
-  <dl class='dl-vertical'>
-    <dt><strong>overlay adremap</strong></dt>
-    <dd>
-  <p>This directive adds the <strong>adremap</strong> overlay to the current database, see <strong>slapd.conf</strong>(5) for details.</p>
-<p class='spacer'>
+</dl>
+<p>These <strong>slapd.conf</strong> configuration options are defined for the adremap overlay. They must appear after the <strong>overlay</strong> directive. They can each be specified multiple times:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>adremap-downcase <attr></strong></p>
+  </dt>
+  <dd>
+    <p>Specify an attributeType whose values will all be mapped to lowercase when returned in search responses.</p>
+  </dd>
+  <dt>
+    <p><strong>adremap-dnmap <dnattr> <targetattr> <newattr> <remoteOC> <localOC> <targetOC> <baseDN></strong></p>
+  </dt>
+  <dd>
+    <p>Specify a DN-valued attributeType whose values will be dereferenced. The <strong><targetattr></strong> of the target entry will be retrieved and its value will be added to the <strong><newattr></strong> in the entry. In addition, searches using a filter of the form <strong>(&(objectClass=<localOC>)(<newattr>=xxx))</strong> will be rewritten into the form <strong>(&(objectClass=<remoteOC>)(<dnattr>=xxx-DN))</strong>. This rewrite will accomplished by performing an additional internal search, with subtree scope, using the specified baseDN and a filter of the form <strong>(&(objectClass=<targetOC>)(<targetattr>=xxx))</strong>.</p>
+  </dd>
 
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
 
-  <p>These <strong>slapd.conf</strong> configuration options are defined for the adremap overlay. They must appear after the <strong>overlay</strong> directive. They can each be specified multiple times:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>adremap-downcase &lt;attr&gt;</strong></dt>
-    <dd>
-  <p>Specify an attributeType whose values will all be mapped to lowercase when returned in search responses.</p>
-    </dd>
-    <dt><strong>adremap-dnmap &lt;dnattr&gt; &lt;targetattr&gt; &lt;newattr&gt; &lt;remoteOC&gt; &lt;localOC&gt; &lt;targetOC&gt; &lt;baseDN&gt;</strong></dt>
-    <dd>
-  <p>Specify a DN-valued attributeType whose values will be dereferenced. The <strong>&lt;targetattr&gt;</strong> of the target entry will be retrieved and its value will be added to the <strong>&lt;newattr&gt;</strong> in the entry. In addition, searches using a filter of the form <strong>(&(objectClass=&lt;localOC&gt;)(&lt;newattr&gt;=xxx))</strong> will be rewritten into the form <strong>(&(objectClass=&lt;remoteOC&gt;)(&lt;dnattr&gt;=xxx-DN))</strong>. This rewrite will accomplished by performing an additional internal search, with subtree scope, using the specified baseDN and a filter of the form <strong>(&(objectClass=&lt;targetOC&gt;)(&lt;targetattr&gt;=xxx))</strong>.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-<p>This example configures the <strong>adremap</strong> overlay to map all <strong>uid</strong> attributes to lowercase, and create <strong>memberUid</strong> values for group entries. The mapping will turn requests for posixGroup entries into requests for groupOfNames entries, and the internal search will use inetOrgPerson entries under the ou=People,dc=example,dc=com subtree.</p>
-<p class='spacer'>
-
-<p>Add the following to <strong>slapd.conf</strong>(5):</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<pre>    database &lt;database&gt;
+<p>This example configures the <strong>adremap</strong> overlay to map all <strong>uid</strong> attributes to lowercase, and create <strong>memberUid</strong> values for group entries. The mapping will turn requests for posixGroup entries into requests for groupOfNames entries, and the internal search will use inetOrgPerson entries under the ou=People,dc=example,dc=com subtree.</p><p>Add the following to <strong>slapd.conf</strong>(5):</p>
+<pre>
+    database &lt;database&gt;
     # ...
 
     overlay adremap
     adremap-downcase uid
-    adremap-dnmap member uid memberUid groupOfNames posixGroup inetOrgPerson ou=people,dc=example,dc=com</pre>
-
-<p class='spacer'>
-
+    adremap-dnmap member uid memberUid groupOfNames posixGroup inetOrgPerson ou=people,dc=example,dc=com
+</pre>
 <p><strong>slapd</strong> must also load <strong>adremap.la,</strong> if compiled as a run-time module;</p>
-<p class='spacer'>
-
         </div>
       </section>
 
@@ -169,33 +154,32 @@
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt>ETCDIR/slapd.conf</dt>
-    <dd>
-  <p>default slapd configuration file</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
+<dl class='dl-vertical'>
+  <dt>
+    <p>ETCDIR/slapd.conf</p>
+  </dt>
+  <dd>
+    <p>default slapd configuration file</p>
+  </dd>
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">ACKNOWLEDGEMENTS</h2>
-        <div class="sectioncontent">
+</dl>
 
-<p class='spacer'>
-
-<p>This module was written in 2015 by Howard Chu.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO slapo-adremap&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>slapd.conf</strong>(5), <strong>slapd</strong>(8). The <a href="../man5/slapo-adremap.5.html"><strong>slapo-adremap</strong>(5)</a> overlay supports dynamic configuration via <strong>back-config.</strong></p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">ACKNOWLEDGEMENTS</h2>
+        <div class="sectioncontent">
+<p>This module was written in 2015 by Howard Chu.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="slapo-accesslog.5.html"><span aria-hidden="true">&larr;</span> slapo-accesslog.5: Access logging overlay to slapd</a></li>

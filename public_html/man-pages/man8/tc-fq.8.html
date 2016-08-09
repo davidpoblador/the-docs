@@ -90,96 +90,61 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p><strong>tc qdisc ... fq</strong> [ <strong>limit</strong> PACKETS ] [ <strong>flow_limit</strong> PACKETS ] [ <strong>quantum</strong> BYTES ] [ <strong>initial_quantum</strong> BYTES ] [ <strong>maxrate</strong> RATE ] [ <strong>buckets</strong> NUMBER ]  [ <strong>pacing</strong> | <strong>nopacing</strong> ]</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>FQ (Fair Queue) is a classless packet scheduler meant to be mostly used for locally generated traffic.  It is designed to achieve per flow pacing. FQ does flow separation, and is able to respect pacing requirements set by TCP stack. All packets belonging to a socket are considered as a 'flow'. For non local packets (router workload), packet rxhash is used as fallback.</p>
-<p class='spacer'>
-
-<p>An application can specify a maximum pacing rate using the <strong>SO_MAX_PACING_RATE</strong> setsockopt call.  This packet scheduler adds delay between packets to respect rate limitation set by TCP stack.</p>
-<p class='spacer'>
-
-<p>Dequeueing happens in a round-robin fashion. A special FIFO queue is reserved for high priority packets ( <strong>TC_PRIO_CONTROL</strong> priority), such packets are always dequeued first.</p>
-<p class='spacer'>
-
-<p>FQ is non-work-conserving.</p>
-<p class='spacer'>
-
-<p>TCP pacing is good for flows having idle times, as the congestion window permits TCP stack to queue a possibly large number of packets. This removes the 'slow start after idle' choice, badly hitting large BDP flows and applications delivering chunks of data such as video streams.</p>
-<p class='spacer'>
-
+<p>FQ (Fair Queue) is a classless packet scheduler meant to be mostly used for locally generated traffic.  It is designed to achieve per flow pacing. FQ does flow separation, and is able to respect pacing requirements set by TCP stack. All packets belonging to a socket are considered as a 'flow'. For non local packets (router workload), packet rxhash is used as fallback.</p><p>An application can specify a maximum pacing rate using the <strong>SO_MAX_PACING_RATE</strong> setsockopt call.  This packet scheduler adds delay between packets to respect rate limitation set by TCP stack.</p><p>Dequeueing happens in a round-robin fashion. A special FIFO queue is reserved for high priority packets ( <strong>TC_PRIO_CONTROL</strong> priority), such packets are always dequeued first.</p><p>FQ is non-work-conserving.</p><p>TCP pacing is good for flows having idle times, as the congestion window permits TCP stack to queue a possibly large number of packets. This removes the 'slow start after idle' choice, badly hitting large BDP flows and applications delivering chunks of data such as video streams.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PARAMETERS</h2>
         <div class="sectioncontent">
-
-  <h3>limit</h3>
+<h3>limit</h3>
 <p>Hard limit on the real queue size. When this limit is reached, new packets are dropped. If the value is lowered, packets are dropped so that the new limit is met. Default is 10000 packets.</p>
-  <h3>flow_limit</h3>
+<h3>flow_limit</h3>
 <p>Hard limit on the maximum number of packets queued per flow. Default value is 100.</p>
-  <h3>quantum</h3>
+<h3>quantum</h3>
 <p>The credit per dequeue RR round, i.e. the amount of bytes a flow is allowed to dequeue at once. A larger value means a longer time period before the next flow will be served. Default is 2 * interface MTU bytes.</p>
-  <h3>initial_quantum</h3>
+<h3>initial_quantum</h3>
 <p>The initial sending rate credit, i.e. the amount of bytes a new flow is allowed to dequeue initially. This is specifically meant to allow using IW10 without added delay. Default is 10 * interface MTU, i.e. 15140 for 'standard' ethernet.</p>
-  <h3>maxrate</h3>
+<h3>maxrate</h3>
 <p>Maximum sending rate of a flow.  Default is unlimited. Application specific setting via <strong>SO_MAX_PACING_RATE</strong> is ignored only if it is larger than this value.</p>
-  <h3>buckets</h3>
+<h3>buckets</h3>
 <p>The size of the hash table used for flow lookups. Each bucket is assigned a red-black tree for efficient collision sorting. Default: 1024.</p>
-  <h3>[no]pacing</h3>
+<h3>[no]pacing</h3>
 <p>Enable or disable flow pacing. Default is enabled.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
         <div class="sectioncontent">
-
-<p>#tc qdisc add dev eth0 root fq</p>
-<p class='spacer'>
-
-<p>#tc -s -d qdisc</p>
-<p class='spacer'>
-
-<p>qdisc fq 8003: dev eth0 root refcnt 2 limit 10000p flow_limit 100p buckets 1024 quantum 3028 initial_quantum 15140</p>
-<pre> Sent 503727981 bytes 1146972 pkt (dropped 0, overlimits 0 requeues 54452)
- backlog 0b 0p requeues 54452
-  1289 flows (1289 inactive, 0 throttled)
-  0 gc, 31 highprio, 27411 throttled</pre>
-
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
-        <div class="sectioncontent">
-
-<p>FQ was written by Eric Dumazet.</p>
+<p>#tc qdisc add dev eth0 root fq</p><p>#tc -s -d qdisc</p><p>qdisc fq 8003: dev eth0 root refcnt 2 limit 10000p flow_limit 100p buckets 1024 quantum 3028 initial_quantum 15140  Sent 503727981 bytes 1146972 pkt (dropped 0, overlimits 0 requeues 54452)  backlog 0b 0p requeues 54452   1289 flows (1289 inactive, 0 throttled)   0 gc, 31 highprio, 27411 throttled</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO tc-fq&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>tc</strong>(8), <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a></p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+<p>FQ was written by Eric Dumazet.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="tc-ematch.8.html"><span aria-hidden="true">&larr;</span> tc-ematch.8: Extended matches for use with "basic" or "flow" filters .</a></li>
+   <li class="previous"><a href="tc-flower.8.html"><span aria-hidden="true">&larr;</span> tc-flower.8: Flow based traffic control filter</a></li>
    <li class="next"><a href="tc-fq_codel.8.html">tc-fq_codel.8: Fair queuing (fq) with controlled delay (codel) <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

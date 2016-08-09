@@ -90,295 +90,195 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>xz</strong> [<em>option</em>]... [<em>file</em>]...</p>
-<p class='spacer'>
-
-<p><strong>unxz</strong> is equivalent to <strong>xz --decompress</strong>.</p>
-<p class='spacer'>
-
-<p><strong>xzcat</strong> is equivalent to <strong>xz --decompress --stdout</strong>.</p>
-<p class='spacer'>
-
-<p><strong>lzma</strong> is equivalent to <strong>xz --format=lzma</strong>.</p>
-<p class='spacer'>
-
-<p><strong>unlzma</strong> is equivalent to <strong>xz --format=lzma --decompress</strong>.</p>
-<p class='spacer'>
-
-<p><strong>lzcat</strong> is equivalent to <strong>xz --format=lzma --decompress --stdout</strong>.</p>
-<p class='spacer'>
-
-<p>When writing scripts that need to decompress files, it is recommended to always use the name <strong>xz</strong> with appropriate arguments (<strong>xz -d</strong> or <strong>xz -dc</strong>) instead of the names <strong>unxz</strong> and <strong>xzcat.</strong></p>
+<p><strong>xz</strong> [<em>option</em>]... [<em>file</em>]...</p><p><strong>unxz</strong> is equivalent to <strong>xz</strong> <strong>--decompress</strong>.</p><p><strong>xzcat</strong> is equivalent to <strong>xz</strong> <strong>--decompress</strong> <strong>--stdout</strong>.</p><p><strong>lzma</strong> is equivalent to <strong>xz</strong> <strong>--format=lzma</strong>.</p><p><strong>unlzma</strong> is equivalent to <strong>xz</strong> <strong>--format=lzma</strong> <strong>--decompress</strong>.</p><p><strong>lzcat</strong> is equivalent to <strong>xz</strong> <strong>--format=lzma</strong> <strong>--decompress</strong> <strong>--stdout</strong>.</p><p>When writing scripts that need to decompress files, it is recommended to always use the name <strong>xz</strong> with appropriate arguments (<strong>xz</strong> <strong>-d</strong> or <strong>xz</strong> <strong>-dc</strong>) instead of the names <strong>unxz</strong> and <strong>xzcat.</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>xz</strong> is a general-purpose data compression tool with command line syntax similar to <strong>gzip</strong>(1) and <strong>bzip2</strong>(1). The native file format is the <strong>.xz</strong> format, but also the legacy <strong>.lzma</strong> format and raw compressed streams with no container format headers are supported.</p><p><strong>xz</strong> compresses or decompresses each <em>file</em> according to the selected operation mode. If no <em>files</em> are given or <em>file</em> is <strong>-</strong>, <strong>xz</strong> reads from standard input and writes the processed data to standard output. <strong>xz</strong> will refuse (display an error and skip the <em>file</em>) to write compressed data to standard output if it is a terminal. Similarly, <strong>xz</strong> will refuse to read compressed data from standard input if it is a terminal.</p><p>Unless <strong>--stdout</strong> is specified, <em>files</em> other than <strong>-</strong> are written to a new file whose name is derived from the source <em>file</em> name:</p><ul>
+<li><p>When compressing, the suffix of the target file format (<strong>.xz</strong> or <strong>.lzma</strong>) is appended to the source filename to get the target filename.</p></li><li><p>When decompressing, the <strong>.xz</strong> or <strong>.lzma</strong> suffix is removed from the filename to get the target filename. <strong>xz</strong> also recognizes the suffixes <strong>.txz</strong> and <strong>.tlz</strong>, and replaces them with the <strong>.tar</strong> suffix.</p></li>
+</ul><p>If the target file already exists, an error is displayed and the <em>file</em> is skipped.</p><p>Unless writing to standard output, <strong>xz</strong> will display a warning and skip the <em>file</em> if any of the following applies:</p><ul>
+<li><p><em>File</em> is not a regular file. Symbolic links are not followed, thus they are never considered to be regular files.</p></li><li><p><em>File</em> has more than one hardlink.</p></li><li><p><em>File</em> has setuid, setgid, or sticky bit set.</p></li><li><p>The operation mode is set to compress, and the <em>file</em> already has a suffix of the target file format (<strong>.xz</strong> or <strong>.txz</strong> when compressing to the <strong>.xz</strong> format, and <strong>.lzma</strong> or <strong>.tlz</strong> when compressing to the <strong>.lzma</strong> format).</p></li><li><p>The operation mode is set to decompress, and the <em>file</em> doesn't have a suffix of any of the supported file formats (<strong>.xz</strong>, <strong>.txz</strong>, <strong>.lzma</strong>, or <strong>.tlz</strong>).</p></li>
+</ul><p>After successfully compressing or decompressing the <em>file</em>, <strong>xz</strong> copies the owner, group, permissions, access time, and modification time from the source <em>file</em> to the target file. If copying the group fails, the permissions are modified so that the target file doesn't become accessible to users who didn't have permission to access the source <em>file</em>. <strong>xz</strong> doesn't support copying other metadata like access control lists or extended attributes yet.</p><p>Once the target file has been successfully closed, the source <em>file</em> is removed unless <strong>--keep</strong> was specified. The source <em>file</em> is never removed if the output is written to standard output.</p><p>Sending <strong>SIGINFO</strong> or <strong>SIGUSR1</strong> to the <strong>xz</strong> process makes it print progress information to standard error. This has only limited use since when standard error is a terminal, using <strong>--verbose</strong> will display an automatically updating progress indicator.</p><h3>Memory usage</h3>
+<p>The memory usage of <strong>xz</strong> varies from a few hundred kilobytes to several gigabytes depending on the compression settings. The settings used when compressing a file affect also the memory usage of the decompressor. Typically the decompressor needs only 5&nbsp;% to 20&nbsp;% of the amount of RAM that the compressor needed when creating the file. Still, the worst-case memory usage of the decompressor is several gigabytes.</p><p>To prevent uncomfortable surprises caused by huge memory usage, <strong>xz</strong> has a built-in memory usage limiter. The default limit is 40 % of total physical RAM. While operating systems provide ways to limit the memory usage of processes, relying on it wasn't deemed to be flexible enough.</p><p>When compressing, if the selected compression settings exceed the memory usage limit, the settings are automatically adjusted downwards and a notice about this is displayed. As an exception, if the memory usage limit is exceeded when compressing with <strong>--format=raw</strong>, an error is displayed and <strong>xz</strong> will exit with exit status <strong>1</strong>.</p><p>If source <em>file</em> cannot be decompressed without exceeding the memory usage limit, an error message is displayed and the file is skipped. Note that compressed files may contain many blocks, which may have been compressed with different settings. Typically all blocks will have roughly the same memory requirements, but it is possible that a block later in the file will exceed the memory usage limit, and an error about too low memory usage limit gets displayed after some data has already been decompressed.</p><p>The absolute value of the active memory usage limit can be seen near the bottom of the output of <strong>--long-help</strong>. The default limit can be overriden with --memory=<em>limit</em>.</p>
 
-<p><strong>xz</strong> is a general-purpose data compression tool with command line syntax similar to <strong>gzip</strong>(1) and <strong>bzip2</strong>(1). The native file format is the <strong>.xz</strong> format, but also the legacy <strong>.lzma</strong> format and raw compressed streams with no container format headers are supported.</p>
-<p class='spacer'>
-
-<p><strong>xz</strong> compresses or decompresses each <em>file</em> according to the selected operation mode. If no <em>files</em> are given or <em>file</em> is <strong>-</strong>, <strong>xz</strong> reads from standard input and writes the processed data to standard output. <strong>xz</strong> will refuse (display an error and skip the <em>file</em>) to write compressed data to standard output if it is a terminal. Similarly, <strong>xz</strong> will refuse to read compressed data from standard input if it is a terminal.</p>
-<p class='spacer'>
-
-  <p>Unless <strong>--stdout</strong> is specified, <em>files</em> other than <strong>-</strong> are written to a new file whose name is derived from the source <em>file</em> name:</p>
-  <dl class='dl-horizontal'>
-    <dt>&bull;</dt>
-    <dd>
-  <p>When compressing, the suffix of the target file format (<strong>.xz</strong> or <strong>.lzma</strong>) is appended to the source filename to get the target filename.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>When decompressing, the <strong>.xz</strong> or <strong>.lzma</strong> suffix is removed from the filename to get the target filename. <strong>xz</strong> also recognizes the suffixes <strong>.txz</strong> and <strong>.tlz</strong>, and replaces them with the <strong>.tar</strong> suffix.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>If the target file already exists, an error is displayed and the <em>file</em> is skipped.</p>
-<p class='spacer'>
-
-  <p>Unless writing to standard output, <strong>xz</strong> will display a warning and skip the <em>file</em> if any of the following applies:</p>
-  <dl class='dl-horizontal'>
-    <dt>&bull;</dt>
-    <dd>
-  <p><em>File</em> is not a regular file. Symbolic links are not followed, thus they are never considered to be regular files.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p><em>File</em> has more than one hardlink.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p><em>File</em> has setuid, setgid, or sticky bit set.</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>The operation mode is set to compress, and the <em>file</em> already has a suffix of the target file format (<strong>.xz</strong> or <strong>.txz</strong> when compressing to the <strong>.xz</strong> format, and <strong>.lzma</strong> or <strong>.tlz</strong> when compressing to the <strong>.lzma</strong> format).</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>The operation mode is set to decompress, and the <em>file</em> doesn't have a suffix of any of the supported file formats (<strong>.xz</strong>, <strong>.txz</strong>, <strong>.lzma</strong>, or <strong>.tlz</strong>).</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>After successfully compressing or decompressing the <em>file</em>, <strong>xz</strong> copies the owner, group, permissions, access time, and modification time from the source <em>file</em> to the target file. If copying the group fails, the permissions are modified so that the target file doesn't become accessible to users who didn't have permission to access the source <em>file</em>. <strong>xz</strong> doesn't support copying other metadata like access control lists or extended attributes yet.</p>
-<p class='spacer'>
-
-<p>Once the target file has been successfully closed, the source <em>file</em> is removed unless <strong>--keep</strong> was specified. The source <em>file</em> is never removed if the output is written to standard output.</p>
-<p class='spacer'>
-
-<p>Sending <strong>SIGINFO</strong> or <strong>SIGUSR1</strong> to the <strong>xz</strong> process makes it print progress information to standard error. This has only limited use since when standard error is a terminal, using <strong>--verbose</strong> will display an automatically updating progress indicator.</p>
-  <h3>Memory usage</h3>
-<p>The memory usage of <strong>xz</strong> varies from a few hundred kilobytes to several gigabytes depending on the compression settings. The settings used when compressing a file affect also the memory usage of the decompressor. Typically the decompressor needs only 5&nbsp;% to 20&nbsp;% of the amount of RAM that the compressor needed when creating the file. Still, the worst-case memory usage of the decompressor is several gigabytes.</p>
-<p class='spacer'>
-
-<p>To prevent uncomfortable surprises caused by huge memory usage, <strong>xz</strong> has a built-in memory usage limiter. The default limit is 40 % of total physical RAM. While operating systems provide ways to limit the memory usage of processes, relying on it wasn't deemed to be flexible enough.</p>
-<p class='spacer'>
-
-<p>When compressing, if the selected compression settings exceed the memory usage limit, the settings are automatically adjusted downwards and a notice about this is displayed. As an exception, if the memory usage limit is exceeded when compressing with <strong>--format=raw</strong>, an error is displayed and <strong>xz</strong> will exit with exit status <strong>1</strong>.</p>
-<p class='spacer'>
-
-<p>If source <em>file</em> cannot be decompressed without exceeding the memory usage limit, an error message is displayed and the file is skipped. Note that compressed files may contain many blocks, which may have been compressed with different settings. Typically all blocks will have roughly the same memory requirements, but it is possible that a block later in the file will exceed the memory usage limit, and an error about too low memory usage limit gets displayed after some data has already been decompressed.</p>
-<p class='spacer'>
-
-<p>The absolute value of the active memory usage limit can be seen near the bottom of the output of <strong>--long-help</strong>. The default limit can be overriden with --memory=<em>limit</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
         <div class="sectioncontent">
+<h3>Integer suffixes and special values</h3>
+<p>In most places where an integer argument is expected, an optional suffix is supported to easily indicate large integers. There must be no space between the integer and the suffix.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>k</strong> or <strong>kB</strong></p>
+  </dt>
+  <dd>
+    <p>The integer is multiplied by 1,000 (10^3). For example, <strong>5k</strong> or <strong>5kB</strong> equals <strong>5000</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>Ki</strong> or <strong>KiB</strong></p>
+  </dt>
+  <dd>
+    <p>The integer is multiplied by 1,024 (2^10).</p>
+  </dd>
+  <dt>
+    <p><strong>M</strong> or <strong>MB</strong></p>
+  </dt>
+  <dd>
+    <p>The integer is multiplied by 1,000,000 (10^6).</p>
+  </dd>
+  <dt>
+    <p><strong>Mi</strong> or <strong>MiB</strong></p>
+  </dt>
+  <dd>
+    <p>The integer is multiplied by 1,048,576 (2^20).</p>
+  </dd>
+  <dt>
+    <p><strong>G</strong> or <strong>GB</strong></p>
+  </dt>
+  <dd>
+    <p>The integer is multiplied by 1,000,000,000 (10^9).</p>
+  </dd>
+  <dt>
+    <p><strong>Gi</strong> or <strong>GiB</strong></p>
+  </dt>
+  <dd>
+    <p>The integer is multiplied by 1,073,741,824 (2^30).</p>
+  </dd>
 
-  <h3>Integer suffixes and special values</h3>
-  <p>In most places where an integer argument is expected, an optional suffix is supported to easily indicate large integers. There must be no space between the integer and the suffix.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>k</strong> or <strong>kB</strong></dt>
-    <dd>
-  <p>The integer is multiplied by 1,000 (10^3). For example, <strong>5k</strong> or <strong>5kB</strong> equals <strong>5000</strong>.</p>
-    </dd>
-    <dt><strong>Ki</strong> or <strong>KiB</strong></dt>
-    <dd>
-  <p>The integer is multiplied by 1,024 (2^10).</p>
-    </dd>
-    <dt><strong>M</strong> or <strong>MB</strong></dt>
-    <dd>
-  <p>The integer is multiplied by 1,000,000 (10^6).</p>
-    </dd>
-    <dt><strong>Mi</strong> or <strong>MiB</strong></dt>
-    <dd>
-  <p>The integer is multiplied by 1,048,576 (2^20).</p>
-    </dd>
-    <dt><strong>G</strong> or <strong>GB</strong></dt>
-    <dd>
-  <p>The integer is multiplied by 1,000,000,000 (10^9).</p>
-    </dd>
-    <dt><strong>Gi</strong> or <strong>GiB</strong></dt>
-    <dd>
-  <p>The integer is multiplied by 1,073,741,824 (2^30).</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>A special value <strong>max</strong> can be used to indicate the maximum integer value supported by the option.</p>
-  <h3>Operation mode</h3>
-  <p>If multiple operation mode options are given, the last one takes effect.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>-z</strong>, <strong>--compress</strong></dt>
-    <dd>
-  <p>Compress. This is the default operation mode when no operation mode option is specified, and no other operation mode is implied from the command name (for example, <strong>unxz</strong> implies <strong>--decompress</strong>).</p>
-    </dd>
-    <dt><strong>-d</strong>, <strong>--decompress</strong>, <strong>--uncompress</strong></dt>
-    <dd>
-  <p>Decompress.</p>
-    </dd>
-    <dt><strong>-t</strong>, <strong>--test</strong></dt>
-    <dd>
-  <p>Test the integrity of compressed <em>files</em>. No files are created or removed. This option is equivalent to <strong>--decompress --stdout</strong> except that the decompressed data is discarded instead of being written to standard output.</p>
-    </dd>
-    <dt><strong>-l</strong>, <strong>--list</strong></dt>
-    <dd>
-  <p>View information about the compressed files. No uncompressed output is produced, and no files are created or removed. In list mode, the program cannot read the compressed data from standard input or from other unseekable sources.</p>
-<p class='spacer'>
+<h3>Operation mode</h3>
+<p>If multiple operation mode options are given, the last one takes effect.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-z</strong>, <strong>--compress</strong></p>
+  </dt>
+  <dd>
+    <p>Compress. This is the default operation mode when no operation mode option is specified, and no other operation mode is implied from the command name (for example, <strong>unxz</strong> implies <strong>--decompress</strong>).</p>
+  </dd>
+  <dt>
+    <p><strong>-d</strong>, <strong>--decompress</strong>, <strong>--uncompress</strong></p>
+  </dt>
+  <dd>
+    <p>Decompress.</p>
+  </dd>
+  <dt>
+    <p><strong>-t</strong>, <strong>--test</strong></p>
+  </dt>
+  <dd>
+    <p>Test the integrity of compressed <em>files</em>. No files are created or removed. This option is equivalent to <strong>--decompress --stdout</strong> except that the decompressed data is discarded instead of being written to standard output.</p>
+  </dd>
+  <dt>
+    <p><strong>-l</strong>, <strong>--list</strong></p>
+  </dt>
+  <dd>
+    <p>View information about the compressed files. No uncompressed output is produced, and no files are created or removed. In list mode, the program cannot read the compressed data from standard input or from other unseekable sources.</p><ul>
+<li><p><strong>This feature has not been implemented yet.</strong></p></li>
+</ul>
+  </dd>
 
-  <p><strong>This feature has not been implemented yet.</strong></p>
-    </dd>
-  </dl>
-  <h3>Operation modifiers</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>-k</strong>, <strong>--keep</strong></dt>
-    <dd>
-  <p>Keep (don't delete) the input files.</p>
-    </dd>
-    <dt><strong>-f</strong>, <strong>--force</strong></dt>
-    <dd>
-      <p>This option has several effects:</p>
-      <dl class='dl-horizontal'>
-        <dt>&bull;</dt>
-        <dd>
-      <p>If the target file already exists, delete it before compressing or decompressing.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p>Compress or decompress even if the input is not a regular file, has more than one hardlink, or has setuid, setgid, or sticky bit set. The setuid, setgid, and sticky bits are not copied to the target file.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p>If combined with <strong>--decompress</strong> <strong>--stdout</strong> and <strong>xz</strong> doesn't recognize the type of the source file, <strong>xz</strong> will copy the source file as is to standard output. This allows using <strong>xzcat</strong> <strong>--force</strong> like <strong>cat</strong>(1) for files that have not been compressed with <strong>xz</strong>. Note that in future, <strong>xz</strong> might support new compressed file formats, which may make <strong>xz</strong> decompress more types of files instead of copying them as is to standard output. <strong>--format=</strong><em>format</em> can be used to restrict <strong>xz</strong> to decompress only a single file format.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p>Allow writing compressed data to a terminal, and reading compressed data from a terminal.</p>
-        </dd>
-      </dl>
-    </dd>
-    <dt><strong>-c</strong>, <strong>--stdout</strong>, <strong>--to-stdout</strong></dt>
-    <dd>
-  <p>Write the compressed or decompressed data to standard output instead of a file. This implies <strong>--keep</strong>.</p>
-    </dd>
-    <dt><strong>-S</strong> <em>.suf</em>, --suffix=.suf</dt>
-    <dd>
-  <p>When compressing, use <em>.suf</em> as the suffix for the target file instead of <strong>.xz</strong> or <strong>.lzma</strong>. If not writing to standard output and the source file already has the suffix <em>.suf</em>, a warning is displayed and the file is skipped.</p>
-<p class='spacer'>
+</dl>
 
-  <p>When decompressing, recognize also files with the suffix <em>.suf</em> in addition to files with the <strong>.xz</strong>, <strong>.txz</strong>, <strong>.lzma</strong>, or <strong>.tlz</strong> suffix. If the source file has the suffix <em>.suf</em>, the suffix is removed to get the target filename.</p>
-<p class='spacer'>
+<h3>Operation modifiers</h3>
 
-  <p>When compressing or decompressing raw streams (<strong>--format=raw</strong>), the suffix must always be specified unless writing to standard output, because there is no default suffix for raw streams.</p>
-    </dd>
-    <dt><strong>--files</strong>[=<em>file</em>]</dt>
-    <dd>
-  <p>Read the filenames to process from <em>file</em>; if <em>file</em> is omitted, filenames are read from standard input. Filenames must be terminated with the newline character. If filenames are given also as command line arguments, they are processed before the filenames read from <em>file</em>.</p>
-    </dd>
-    <dt><strong>--files0</strong>[=<em>file</em>]</dt>
-    <dd>
-  <p>This is identical to <strong>--files</strong>[=<em>file</em>] except that the filenames must be terminated with the null character.</p>
-    </dd>
-  </dl>
-  <h3>Basic file format and compression options</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>-F</strong> <em>format</em>, --format=format</dt>
-    <dd>
-      <p>Specify the file format to compress or decompress:</p>
-      <dl class='dl-horizontal'>
-        <dt>&bull;</dt>
-        <dd>
-      <p><strong>auto</strong>: This is the default. When compressing, <strong>auto</strong> is equivalent to <strong>xz</strong>. When decompressing, the format of the input file is autodetected. Note that raw streams (created with <strong>--format=raw</strong>) cannot be autodetected.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p><strong>xz</strong>: Compress to the <strong>.xz</strong> file format, or accept only <strong>.xz</strong> files when decompressing.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p><strong>lzma</strong> or <strong>alone</strong>: Compress to the legacy <strong>.lzma</strong> file format, or accept only <strong>.lzma</strong> files when decompressing. The alternative name <strong>alone</strong> is provided for backwards compatibility with LZMA Utils.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p><strong>raw</strong>: Compress or uncompress a raw stream (no headers). This is meant for advanced users only. To decode raw streams, you need to set not only <strong>--format=raw</strong> but also specify the filter chain, which would normally be stored in the container format headers.</p>
-        </dd>
-      </dl>
-    </dd>
-    <dt><strong>-C</strong> <em>check</em>, --check=check</dt>
-    <dd>
-  <p>Specify the type of the integrity check, which is calculated from the uncompressed data. This option has an effect only when compressing into the <strong>.xz</strong> format; the <strong>.lzma</strong> format doesn't support integrity checks. The integrity check (if any) is verified when the <strong>.xz</strong> file is decompressed.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-k</strong>, <strong>--keep</strong></p>
+  </dt>
+  <dd>
+    <p>Keep (don't delete) the input files.</p>
+  </dd>
+  <dt>
+    <p><strong>-f</strong>, <strong>--force</strong></p>
+  </dt>
+  <dd>
+    <p>This option has several effects:</p><ul>
+<li><p>If the target file already exists, delete it before compressing or decompressing.</p></li><li><p>Compress or decompress even if the input is not a regular file, has more than one hardlink, or has setuid, setgid, or sticky bit set. The setuid, setgid, and sticky bits are not copied to the target file.</p></li><li><p>If combined with <strong>--decompress</strong> <strong>--stdout</strong> and <strong>xz</strong> doesn't recognize the type of the source file, <strong>xz</strong> will copy the source file as is to standard output. This allows using <strong>xzcat</strong> <strong>--force</strong> like <strong>cat</strong>(1) for files that have not been compressed with <strong>xz</strong>. Note that in future, <strong>xz</strong> might support new compressed file formats, which may make <strong>xz</strong> decompress more types of files instead of copying them as is to standard output. <strong>--format=</strong><em>format</em> can be used to restrict <strong>xz</strong> to decompress only a single file format.</p></li><li><p>Allow writing compressed data to a terminal, and reading compressed data from a terminal.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>-c</strong>, <strong>--stdout</strong>, <strong>--to-stdout</strong></p>
+  </dt>
+  <dd>
+    <p>Write the compressed or decompressed data to standard output instead of a file. This implies <strong>--keep</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>-S</strong> <em>.suf</em>, --suffix=.suf</p>
+  </dt>
+  <dd>
+    <p>When compressing, use <em>.suf</em> as the suffix for the target file instead of <strong>.xz</strong> or <strong>.lzma</strong>. If not writing to standard output and the source file already has the suffix <em>.suf</em>, a warning is displayed and the file is skipped.</p><ul>
+<li><p>When decompressing, recognize also files with the suffix <em>.suf</em> in addition to files with the <strong>.xz</strong>, <strong>.txz</strong>, <strong>.lzma</strong>, or <strong>.tlz</strong> suffix. If the source file has the suffix <em>.suf</em>, the suffix is removed to get the target filename.</p></li><li><p>When compressing or decompressing raw streams (<strong>--format=raw</strong>), the suffix must always be specified unless writing to standard output, because there is no default suffix for raw streams.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>--files</strong>[=<em>file</em>]</p>
+  </dt>
+  <dd>
+    <p>Read the filenames to process from <em>file</em>; if <em>file</em> is omitted, filenames are read from standard input. Filenames must be terminated with the newline character. If filenames are given also as command line arguments, they are processed before the filenames read from <em>file</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>--files0</strong>[=<em>file</em>]</p>
+  </dt>
+  <dd>
+    <p>This is identical to <strong>--files</strong>[=<em>file</em>] except that the filenames must be terminated with the null character.</p>
+  </dd>
 
-      <p>Supported <em>check</em> types:</p>
-      <dl class='dl-horizontal'>
-        <dt>&bull;</dt>
-        <dd>
-      <p><strong>none</strong>: Don't calculate an integrity check at all. This is usually a bad idea. This can be useful when integrity of the data is verified by other means anyway.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p><strong>crc32</strong>: Calculate CRC32 using the polynomial from IEEE-802.3 (Ethernet).</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p><strong>crc64</strong>: Calculate CRC64 using the polynomial from ECMA-182. This is the default, since it is slightly better than CRC32 at detecting damaged files and the speed difference is negligible.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p><strong>sha256</strong>: Calculate SHA-256. This is somewhat slower than CRC32 and CRC64.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
+</dl>
 
-  <p>Integrity of the <strong>.xz</strong> headers is always verified with CRC32. It is not possible to change or disable it.</p>
-    </dd>
-    <dt><strong>-0</strong> ... <strong>-9</strong></dt>
-    <dd>
-  <p>Select compression preset. If a preset level is specified multiple times, the last one takes effect.</p>
-<p class='spacer'>
+<h3>Basic file format and compression options</h3>
 
-      <p>The compression preset levels can be categorised roughly into three categories:</p>
-      <dl class='dl-horizontal'>
-        <dt><strong>-0</strong> ... -2</dt>
-        <dd>
-      <p>Fast presets with relatively low memory usage. <strong>-1</strong> and <strong>-2</strong> should give compression speed and ratios comparable to <strong>bzip2 -1</strong> and <strong>bzip2 -9</strong>, respectively. Currently <strong>-0</strong> is not very good (not much faster than <strong>-1</strong> but much worse compression). In future, <strong>-0</strong> may be indicate some fast algorithm instead of LZMA2.</p>
-        </dd>
-        <dt><strong>-3</strong> ... -5</dt>
-        <dd>
-      <p>Good compression ratio with low to medium memory usage. These are significantly slower than levels 0-2.</p>
-        </dd>
-        <dt><strong>-6</strong> ... -9</dt>
-        <dd>
-      <p>Excellent compression with medium to high memory usage. These are also slower than the lower preset levels. The default is <strong>-6</strong>. Unless you want to maximize the compression ratio, you probably don't want a higher preset level than <strong>-7</strong> due to speed and memory usage.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-F</strong> <em>format</em>, --format=format</p>
+  </dt>
+  <dd>
+    <p>Specify the file format to compress or decompress:</p><ul>
+<li><p><strong>auto</strong>: This is the default. When compressing, <strong>auto</strong> is equivalent to <strong>xz</strong>. When decompressing, the format of the input file is autodetected. Note that raw streams (created with <strong>--format=raw</strong>) cannot be autodetected.</p></li><li><p><strong>xz</strong>: Compress to the <strong>.xz</strong> file format, or accept only <strong>.xz</strong> files when decompressing.</p></li><li><p><strong>lzma</strong> or <strong>alone</strong>: Compress to the legacy <strong>.lzma</strong> file format, or accept only <strong>.lzma</strong> files when decompressing. The alternative name <strong>alone</strong> is provided for backwards compatibility with LZMA Utils.</p></li><li><p><strong>raw</strong>: Compress or uncompress a raw stream (no headers). This is meant for advanced users only. To decode raw streams, you need to set not only <strong>--format=raw</strong> but also specify the filter chain, which would normally be stored in the container format headers.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>-C</strong> <em>check</em>, --check=check</p>
+  </dt>
+  <dd>
+    <p>Specify the type of the integrity check, which is calculated from the uncompressed data. This option has an effect only when compressing into the <strong>.xz</strong> format; the <strong>.lzma</strong> format doesn't support integrity checks. The integrity check (if any) is verified when the <strong>.xz</strong> file is decompressed.</p><ul>
+<li><p>Supported <em>check</em> types:</p><ul>
+<li><p><strong>none</strong>: Don't calculate an integrity check at all. This is usually a bad idea. This can be useful when integrity of the data is verified by other means anyway.</p></li><li><p><strong>crc32</strong>: Calculate CRC32 using the polynomial from IEEE-802.3 (Ethernet).</p></li><li><p><strong>crc64</strong>: Calculate CRC64 using the polynomial from ECMA-182. This is the default, since it is slightly better than CRC32 at detecting damaged files and the speed difference is negligible.</p></li><li><p><strong>sha256</strong>: Calculate SHA-256. This is somewhat slower than CRC32 and CRC64.</p></li>
+</ul></li><li><p>Integrity of the <strong>.xz</strong> headers is always verified with CRC32. It is not possible to change or disable it.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>-0</strong> ... <strong>-9</strong></p>
+  </dt>
+  <dd>
+    <p>Select compression preset. If a preset level is specified multiple times, the last one takes effect.</p><ul>
+<li><p>The compression preset levels can be categorised roughly into three categories:</p>
+<dl class='dl-vertical'>
+  <dt>
+    \fB\-0\fR ... \fB\-2
+  </dt>
+  <dd>
+    <p>Fast presets with relatively low memory usage. <strong>-1</strong> and <strong>-2</strong> should give compression speed and ratios comparable to <strong>bzip2 -1</strong> and <strong>bzip2</strong> <strong>-9</strong>, respectively. Currently <strong>-0</strong> is not very good (not much faster than <strong>-1</strong> but much worse compression). In future, <strong>-0</strong> may be indicate some fast algorithm instead of LZMA2.</p>
+  </dd>
+  <dt>
+    \fB\-3\fR ... \fB\-5
+  </dt>
+  <dd>
+    <p>Good compression ratio with low to medium memory usage. These are significantly slower than levels 0-2.</p>
+  </dd>
+  <dt>
+    \fB\-6\fR ... \fB\-9
+  </dt>
+  <dd>
+    <p>Excellent compression with medium to high memory usage. These are also slower than the lower preset levels. The default is <strong>-6</strong>. Unless you want to maximize the compression ratio, you probably don't want a higher preset level than <strong>-7</strong> due to speed and memory usage.</p>
+  </dd>
 
-  <p>The exact compression settings (filter chain) used by each preset may vary between <strong>xz</strong> versions. The settings may also vary between files being compressed, if <strong>xz</strong> determines that modified settings will probably give better compression ratio without significantly affecting compression time or memory usage.</p>
-<p class='spacer'>
-
-  <p>Because the settings may vary, the memory usage may vary too. The following table lists the maximum memory usage of each preset level, which won't be exceeded even in future versions of <strong>xz</strong>.</p>
-<p class='spacer'>
-
-      <p><strong>FIXME: The table below is just a rough idea.</strong></p>
-<table class="table table-striped">
+</dl>
+</li><li><p>The exact compression settings (filter chain) used by each preset may vary between <strong>xz</strong> versions. The settings may also vary between files being compressed, if <strong>xz</strong> determines that modified settings will probably give better compression ratio without significantly affecting compression time or memory usage.</p></li><li><p>Because the settings may vary, the memory usage may vary too. The following table lists the maximum memory usage of each preset level, which won't be exceeded even in future versions of <strong>xz</strong>.</p></li><li><p><strong>FIXME: The table below is just a rough idea.</strong></p><table class="table table-striped">
 <tr>
 <th>Preset</th>
 <th>Compression</th>
@@ -433,226 +333,191 @@
 <td>-9</td>
 <td>800 MiB</td>
 <td>80 MiB</td></tr>
-</table>
+</table></li><li><p>When compressing, <strong>xz</strong> automatically adjusts the compression settings downwards if the memory usage limit would be exceeded, so it is safe to specify a high preset level even on systems that don't have lots of RAM.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>--fast</strong> and <strong>--best</strong></p>
+  </dt>
+  <dd>
+    <p>These are somewhat misleading aliases for <strong>-0</strong> and <strong>-9</strong>, respectively. These are provided only for backwards compatibility with LZMA Utils. Avoid using these options.</p><ul>
+<li><p>Especially the name of <strong>--best</strong> is misleading, because the definition of best depends on the input data, and that usually people don't want the very best compression ratio anyway, because it would be very slow.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>-e</strong>, <strong>--extreme</strong></p>
+  </dt>
+  <dd>
+    <p>Modify the compression preset (<strong>-0</strong> ... <strong>-9</strong>) so that a little bit better compression ratio can be achieved without increasing memory usage of the compressor or decompressor (exception: compressor memory usage may increase a little with presets <strong>-0</strong> ... <strong>-2</strong>). The downside is that the compression time will increase dramatically (it can easily double).</p>
+  </dd>
+  <dt>
+    <p><strong>-M</strong> <em>limit</em>, --memory=limit</p>
+  </dt>
+  <dd>
+    <p>Set the memory usage limit. If this option is specied multiple times, the last one takes effect. The <em>limit</em> can be specified in multiple ways:</p><ul>
+<li><p>The <em>limit</em> can be an absolute value in bytes. Using an integer suffix like <strong>MiB</strong> can be useful. Example: <strong>--memory=80MiB</strong></p></li><li><p>The <em>limit</em> can be specified as a percentage of physical RAM. Example: <strong>--memory=70%</strong></p></li><li><p>The <em>limit</em> can be reset back to its default value (currently 40 % of physical RAM) by setting it to <strong>0</strong>.</p></li><li><p>The memory usage limiting can be effectively disabled by setting <em>limit</em> to <strong>max</strong>. This isn't recommended. It's usually better to use, for example, <strong>--memory=90%</strong>.</p></li>
+</ul><ul>
+<li><p>The current <em>limit</em> can be seen near the bottom of the output of the <strong>--long-help</strong> option.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>-T</strong> <em>threads</em>, --threads=threads</p>
+  </dt>
+  <dd>
+    <p>Specify the maximum number of worker threads to use. The default is the number of available CPU cores. You can see the current value of <em>threads</em> near the end of the output of the <strong>--long-help</strong> option.</p><ul>
+<li><p>The actual number of worker threads can be less than <em>threads</em> if using more threads would exceed the memory usage limit. In addition to CPU-intensive worker threads, <strong>xz</strong> may use a few auxiliary threads, which don't use a lot of CPU time.</p></li><li><p><strong>Multithreaded compression and decompression are not implemented yet,</strong> <strong>so this option has no effect for now.</strong></p></li>
+</ul>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <p>When compressing, <strong>xz</strong> automatically adjusts the compression settings downwards if the memory usage limit would be exceeded, so it is safe to specify a high preset level even on systems that don't have lots of RAM.</p>
-    </dd>
-    <dt><strong>--fast</strong> and <strong>--best</strong></dt>
-    <dd>
-  <p>These are somewhat misleading aliases for <strong>-0</strong> and <strong>-9</strong>, respectively. These are provided only for backwards compatibility with LZMA Utils. Avoid using these options.</p>
-<p class='spacer'>
+<h3>Custom compressor filter chains</h3>
+<p>A custom filter chain allows specifying the compression settings in detail instead of relying on the settings associated to the preset levels. When a custom filter chain is specified, the compression preset level options (<strong>-0</strong> ... <strong>-9</strong> and <strong>--extreme</strong>) are silently ignored.</p><p>A filter chain is comparable to piping on the UN*X command line. When compressing, the uncompressed input goes to the first filter, whose output goes to the next filter (if any). The output of the last filter gets written to the compressed file. The maximum number of filters in the chain is four, but typically a filter chain has only one or two filters.</p><p>Many filters have limitations where they can be in the filter chain: some filters can work only as the last filter in the chain, some only as a non-last filter, and some work in any position in the chain. Depending on the filter, this limitation is either inherent to the filter design or exists to prevent security issues.</p><p>A custom filter chain is specified by using one or more filter options in the order they are wanted in the filter chain. That is, the order of filter options is significant! When decoding raw streams (<strong>--format=raw</strong>), the filter chain is specified in the same order as it was specified when compressing.</p><p>Filters take filter-specific <em>options</em> as a comma-separated list. Extra commas in <em>options</em> are ignored. Every option has a default value, so you need to specify only those you want to change.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>--lzma1</strong>[<strong>=<em>options</em>], --lzma2</strong>[=<em>options</em>]</p>
+  </dt>
+  <dd>
+    <p>Add LZMA1 or LZMA2 filter to the filter chain. These filter can be used only as the last filter in the chain.</p><ul>
+<li><p>LZMA1 is a legacy filter, which is supported almost solely due to the legacy <strong>.lzma</strong> file format, which supports only LZMA1. LZMA2 is an updated version of LZMA1 to fix some practical issues of LZMA1. The <strong>.xz</strong> format uses LZMA2, and doesn't support LZMA1 at all. Compression speed and ratios of LZMA1 and LZMA2 are practically the same.</p></li><li><p>LZMA1 and LZMA2 share the same set of <em>options</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>preset=</strong><em>preset</em></p>
+  </dt>
+  <dd>
+    <p>Reset all LZMA1 or LZMA2 <em>options</em> to <em>preset</em>. <em>Preset</em> consist of an integer, which may be followed by single-letter preset modifiers. The integer can be from <strong>0</strong> to <strong>9</strong>, matching the command line options <strong>-0</strong> ... <strong>-9</strong>. The only supported modifier is currently <strong>e</strong>, which matches <strong>--extreme</strong>.</p><ul>
+<li><p>The default <em>preset</em> is <strong>6</strong>, from which the default values for the rest of the LZMA1 or LZMA2 <em>options</em> are taken.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>dict=</strong><em>size</em></p>
+  </dt>
+  <dd>
+    <p>Dictionary (history buffer) size indicates how many bytes of the recently processed uncompressed data is kept in memory. One method to reduce size of the uncompressed data is to store distance-length pairs, which indicate what data to repeat from the dictionary buffer. The bigger the dictionary, the better the compression ratio usually is, but dictionaries bigger than the uncompressed data are waste of RAM.</p><ul>
+<li><p>Typical dictionary size is from 64 KiB to 64 MiB. The minimum is 4 KiB. The maximum for compression is currently 1.5 GiB. The decompressor already supports dictionaries up to one byte less than 4 GiB, which is the maximum for LZMA1 and LZMA2 stream formats.</p></li><li><p>Dictionary size has the biggest effect on compression ratio. Dictionary size and match finder together determine the memory usage of the LZMA1 or LZMA2 encoder. The same dictionary size is required for decompressing that was used when compressing, thus the memory usage of the decoder is determined by the dictionary size used when compressing.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>lc=</strong><em>lc</em></p>
+  </dt>
+  <dd>
+    <p>Specify the number of literal context bits. The minimum is <strong>0</strong> and the maximum is <strong>4</strong>; the default is <strong>3</strong>. In addition, the sum of <em>lc</em> and <em>lp</em> must not exceed <strong>4</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>lp=</strong><em>lp</em></p>
+  </dt>
+  <dd>
+    <p>Specify the number of literal position bits. The minimum is <strong>0</strong> and the maximum is <strong>4</strong>; the default is <strong>0</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>pb=</strong><em>pb</em></p>
+  </dt>
+  <dd>
+    <p>Specify the number of position bits. The minimum is <strong>0</strong> and the maximum is <strong>4</strong>; the default is <strong>2</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>mode=</strong><em>mode</em></p>
+  </dt>
+  <dd>
+    <p>Compression <em>mode</em> specifies the function used to analyze the data produced by the match finder. Supported <em>modes</em> are <strong>fast</strong> and <strong>normal</strong>. The default is <strong>fast</strong> for <em>presets</em> <strong>0</strong>-<strong>2</strong> and <strong>normal</strong> for <em>presets</em> <strong>3</strong>-<strong>9</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>mf=</strong><em>mf</em></p>
+  </dt>
+  <dd>
+    <p>Match finder has a major effect on encoder speed, memory usage, and compression ratio. Usually Hash Chain match finders are faster than Binary Tree match finders. Hash Chains are usually used together with <strong>mode=fast</strong> and Binary Trees with <strong>mode=normal</strong>. The memory usage formulas are only rough estimates, which are closest to reality when <em>dict</em> is a power of two.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>hc3</strong></p>
+  </dt>
+  <dd>
+    <p>Hash Chain with 2- and 3-byte hashing</p><p>Minimum value for <em>nice</em>: 3</p><p>Memory usage: <em>dict</em> * 7.5 (if <em>dict</em> &lt;= 16 MiB);</p><p><em>dict</em> * 5.5 + 64 MiB (if <em>dict</em> &gt; 16 MiB)</p>
+  </dd>
+  <dt>
+    <p><strong>hc4</strong></p>
+  </dt>
+  <dd>
+    <p>Hash Chain with 2-, 3-, and 4-byte hashing</p><p>Minimum value for <em>nice</em>: 4</p><p>Memory usage: <em>dict</em> * 7.5</p>
+  </dd>
+  <dt>
+    <p><strong>bt2</strong></p>
+  </dt>
+  <dd>
+    <p>Binary Tree with 2-byte hashing</p><p>Minimum value for <em>nice</em>: 2</p><p>Memory usage: <em>dict</em> * 9.5</p>
+  </dd>
+  <dt>
+    <p><strong>bt3</strong></p>
+  </dt>
+  <dd>
+    <p>Binary Tree with 2- and 3-byte hashing</p><p>Minimum value for <em>nice</em>: 3</p><p>Memory usage: <em>dict</em> * 11.5 (if <em>dict</em> &lt;= 16 MiB);</p><p><em>dict</em> * 9.5 + 64 MiB (if <em>dict</em> &gt; 16 MiB)</p>
+  </dd>
+  <dt>
+    <p><strong>bt4</strong></p>
+  </dt>
+  <dd>
+    <p>Binary Tree with 2-, 3-, and 4-byte hashing</p><p>Minimum value for <em>nice</em>: 4</p><p>Memory usage: <em>dict</em> * 11.5</p>
+  </dd>
 
-  <p>Especially the name of <strong>--best</strong> is misleading, because the definition of best depends on the input data, and that usually people don't want the very best compression ratio anyway, because it would be very slow.</p>
-    </dd>
-    <dt><strong>-e</strong>, <strong>--extreme</strong></dt>
-    <dd>
-  <p>Modify the compression preset (<strong>-0</strong> ... <strong>-9</strong>) so that a little bit better compression ratio can be achieved without increasing memory usage of the compressor or decompressor (exception: compressor memory usage may increase a little with presets <strong>-0</strong> ... <strong>-2</strong>). The downside is that the compression time will increase dramatically (it can easily double).</p>
-    </dd>
-    <dt><strong>-M</strong> <em>limit</em>, --memory=limit</dt>
-    <dd>
-      <p>Set the memory usage limit. If this option is specied multiple times, the last one takes effect. The <em>limit</em> can be specified in multiple ways:</p>
-      <dl class='dl-horizontal'>
-        <dt>&bull;</dt>
-        <dd>
-      <p>The <em>limit</em> can be an absolute value in bytes. Using an integer suffix like <strong>MiB</strong> can be useful. Example: <strong>--memory=80MiB</strong></p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p>The <em>limit</em> can be specified as a percentage of physical RAM. Example: <strong>--memory=70%</strong></p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p>The <em>limit</em> can be reset back to its default value (currently 40 % of physical RAM) by setting it to <strong>0</strong>.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p>The memory usage limiting can be effectively disabled by setting <em>limit</em> to <strong>max</strong>. This isn't recommended. It's usually better to use, for example, <strong>--memory=90%</strong>.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
+</dl>
 
-  <p>The current <em>limit</em> can be seen near the bottom of the output of the <strong>--long-help</strong> option.</p>
-    </dd>
-    <dt><strong>-T</strong> <em>threads</em>, --threads=threads</dt>
-    <dd>
-  <p>Specify the maximum number of worker threads to use. The default is the number of available CPU cores. You can see the current value of <em>threads</em> near the end of the output of the <strong>--long-help</strong> option.</p>
-<p class='spacer'>
+  </dd>
+  <dt>
+    <p><strong>nice=</strong><em>nice</em></p>
+  </dt>
+  <dd>
+    <p>Specify what is considered to be a nice length for a match. Once a match of at least <em>nice</em> bytes is found, the algorithm stops looking for possibly better matches.</p><ul>
+<li><p><em>nice</em> can be 2-273 bytes. Higher values tend to give better compression ratio at expense of speed. The default depends on the <em>preset</em> level.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>depth=</strong><em>depth</em></p>
+  </dt>
+  <dd>
+    <p>Specify the maximum search depth in the match finder. The default is the special value <strong>0</strong>, which makes the compressor determine a reasonable <em>depth</em> from <em>mf</em> and <em>nice</em>.</p><ul>
+<li><p>Using very high values for <em>depth</em> can make the encoder extremely slow with carefully crafted files. Avoid setting the <em>depth</em> over 1000 unless you are prepared to interrupt the compression in case it is taking too long.</p></li>
+</ul>
+  </dd>
 
-  <p>The actual number of worker threads can be less than <em>threads</em> if using more threads would exceed the memory usage limit. In addition to CPU-intensive worker threads, <strong>xz</strong> may use a few auxiliary threads, which don't use a lot of CPU time.</p>
-<p class='spacer'>
-
-  <p><strong>Multithreaded compression and decompression are not implemented yet,</strong> <strong>so this option has no effect for now.</strong></p>
-    </dd>
-  </dl>
-  <h3>Custom compressor filter chains</h3>
-<p>A custom filter chain allows specifying the compression settings in detail instead of relying on the settings associated to the preset levels. When a custom filter chain is specified, the compression preset level options (<strong>-0</strong> ... <strong>-9</strong> and <strong>--extreme</strong>) are silently ignored.</p>
-<p class='spacer'>
-
-<p>A filter chain is comparable to piping on the UN*X command line. When compressing, the uncompressed input goes to the first filter, whose output goes to the next filter (if any). The output of the last filter gets written to the compressed file. The maximum number of filters in the chain is four, but typically a filter chain has only one or two filters.</p>
-<p class='spacer'>
-
-<p>Many filters have limitations where they can be in the filter chain: some filters can work only as the last filter in the chain, some only as a non-last filter, and some work in any position in the chain. Depending on the filter, this limitation is either inherent to the filter design or exists to prevent security issues.</p>
-<p class='spacer'>
-
-<p>A custom filter chain is specified by using one or more filter options in the order they are wanted in the filter chain. That is, the order of filter options is significant! When decoding raw streams (<strong>--format=raw</strong>), the filter chain is specified in the same order as it was specified when compressing.</p>
-<p class='spacer'>
-
-  <p>Filters take filter-specific <em>options</em> as a comma-separated list. Extra commas in <em>options</em> are ignored. Every option has a default value, so you need to specify only those you want to change.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>--lzma1</strong>[<strong>=<em>options</em>], --lzma2</strong>[=<em>options</em>]</dt>
-    <dd>
-  <p>Add LZMA1 or LZMA2 filter to the filter chain. These filter can be used only as the last filter in the chain.</p>
-<p class='spacer'>
-
-  <p>LZMA1 is a legacy filter, which is supported almost solely due to the legacy <strong>.lzma</strong> file format, which supports only LZMA1. LZMA2 is an updated version of LZMA1 to fix some practical issues of LZMA1. The <strong>.xz</strong> format uses LZMA2, and doesn't support LZMA1 at all. Compression speed and ratios of LZMA1 and LZMA2 are practically the same.</p>
-<p class='spacer'>
-
-      <p>LZMA1 and LZMA2 share the same set of <em>options</em>:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>preset=</strong><em>preset</em></dt>
-        <dd>
-      <p>Reset all LZMA1 or LZMA2 <em>options</em> to <em>preset</em>. <em>Preset</em> consist of an integer, which may be followed by single-letter preset modifiers. The integer can be from <strong>0</strong> to <strong>9</strong>, matching the command line options <strong>-0</strong> ... <strong>-9</strong>. The only supported modifier is currently <strong>e</strong>, which matches <strong>--extreme</strong>.</p>
-<p class='spacer'>
-
-      <p>The default <em>preset</em> is <strong>6</strong>, from which the default values for the rest of the LZMA1 or LZMA2 <em>options</em> are taken.</p>
-        </dd>
-        <dt><strong>dict=</strong><em>size</em></dt>
-        <dd>
-      <p>Dictionary (history buffer) size indicates how many bytes of the recently processed uncompressed data is kept in memory. One method to reduce size of the uncompressed data is to store distance-length pairs, which indicate what data to repeat from the dictionary buffer. The bigger the dictionary, the better the compression ratio usually is, but dictionaries bigger than the uncompressed data are waste of RAM.</p>
-<p class='spacer'>
-
-      <p>Typical dictionary size is from 64 KiB to 64 MiB. The minimum is 4 KiB. The maximum for compression is currently 1.5 GiB. The decompressor already supports dictionaries up to one byte less than 4 GiB, which is the maximum for LZMA1 and LZMA2 stream formats.</p>
-<p class='spacer'>
-
-      <p>Dictionary size has the biggest effect on compression ratio. Dictionary size and match finder together determine the memory usage of the LZMA1 or LZMA2 encoder. The same dictionary size is required for decompressing that was used when compressing, thus the memory usage of the decoder is determined by the dictionary size used when compressing.</p>
-        </dd>
-        <dt><strong>lc=</strong><em>lc</em></dt>
-        <dd>
-      <p>Specify the number of literal context bits. The minimum is <strong>0</strong> and the maximum is <strong>4</strong>; the default is <strong>3</strong>. In addition, the sum of <em>lc</em> and <em>lp</em> must not exceed <strong>4</strong>.</p>
-        </dd>
-        <dt><strong>lp=</strong><em>lp</em></dt>
-        <dd>
-      <p>Specify the number of literal position bits. The minimum is <strong>0</strong> and the maximum is <strong>4</strong>; the default is <strong>0</strong>.</p>
-        </dd>
-        <dt><strong>pb=</strong><em>pb</em></dt>
-        <dd>
-      <p>Specify the number of position bits. The minimum is <strong>0</strong> and the maximum is <strong>4</strong>; the default is <strong>2</strong>.</p>
-        </dd>
-        <dt><strong>mode=</strong><em>mode</em></dt>
-        <dd>
-      <p>Compression <em>mode</em> specifies the function used to analyze the data produced by the match finder. Supported <em>modes</em> are <strong>fast</strong> and <strong>normal</strong>. The default is <strong>fast</strong> for <em>presets</em> <strong>0</strong>-<strong>2</strong> and <strong>normal</strong> for <em>presets</em> <strong>3</strong>-<strong>9</strong>.</p>
-        </dd>
-        <dt><strong>mf=</strong><em>mf</em></dt>
-        <dd>
-          <p>Match finder has a major effect on encoder speed, memory usage, and compression ratio. Usually Hash Chain match finders are faster than Binary Tree match finders. Hash Chains are usually used together with <strong>mode=fast</strong> and Binary Trees with <strong>mode=normal</strong>. The memory usage formulas are only rough estimates, which are closest to reality when <em>dict</em> is a power of two.</p>
-          <dl class='dl-vertical'>
-            <dt><strong>hc3</strong></dt>
-            <dd>
-          <p>Hash Chain with 2- and 3-byte hashing</p>
-<p class='spacer'>
-
-          <p>Minimum value for <em>nice</em>: 3</p>
-<p class='spacer'>
-
-          <p>Memory usage: <em>dict</em> * 7.5 (if <em>dict</em> &lt;= 16 MiB);</p>
-<p class='spacer'>
-
-          <p><em>dict</em> * 5.5 + 64 MiB (if <em>dict</em> &gt; 16 MiB)</p>
-            </dd>
-            <dt><strong>hc4</strong></dt>
-            <dd>
-          <p>Hash Chain with 2-, 3-, and 4-byte hashing</p>
-<p class='spacer'>
-
-          <p>Minimum value for <em>nice</em>: 4</p>
-<p class='spacer'>
-
-          <p>Memory usage: <em>dict</em> * 7.5</p>
-            </dd>
-            <dt><strong>bt2</strong></dt>
-            <dd>
-          <p>Binary Tree with 2-byte hashing</p>
-<p class='spacer'>
-
-          <p>Minimum value for <em>nice</em>: 2</p>
-<p class='spacer'>
-
-          <p>Memory usage: <em>dict</em> * 9.5</p>
-            </dd>
-            <dt><strong>bt3</strong></dt>
-            <dd>
-          <p>Binary Tree with 2- and 3-byte hashing</p>
-<p class='spacer'>
-
-          <p>Minimum value for <em>nice</em>: 3</p>
-<p class='spacer'>
-
-          <p>Memory usage: <em>dict</em> * 11.5 (if <em>dict</em> &lt;= 16 MiB);</p>
-<p class='spacer'>
-
-          <p><em>dict</em> * 9.5 + 64 MiB (if <em>dict</em> &gt; 16 MiB)</p>
-            </dd>
-            <dt><strong>bt4</strong></dt>
-            <dd>
-          <p>Binary Tree with 2-, 3-, and 4-byte hashing</p>
-<p class='spacer'>
-
-          <p>Minimum value for <em>nice</em>: 4</p>
-<p class='spacer'>
-
-          <p>Memory usage: <em>dict</em> * 11.5</p>
-            </dd>
-          </dl>
-        </dd>
-        <dt><strong>nice=</strong><em>nice</em></dt>
-        <dd>
-      <p>Specify what is considered to be a nice length for a match. Once a match of at least <em>nice</em> bytes is found, the algorithm stops looking for possibly better matches.</p>
-<p class='spacer'>
-
-      <p><em>nice</em> can be 2-273 bytes. Higher values tend to give better compression ratio at expense of speed. The default depends on the <em>preset</em> level.</p>
-        </dd>
-        <dt><strong>depth=</strong><em>depth</em></dt>
-        <dd>
-      <p>Specify the maximum search depth in the match finder. The default is the special value <strong>0</strong>, which makes the compressor determine a reasonable <em>depth</em> from <em>mf</em> and <em>nice</em>.</p>
-<p class='spacer'>
-
-      <p>Using very high values for <em>depth</em> can make the encoder extremely slow with carefully crafted files. Avoid setting the <em>depth</em> over 1000 unless you are prepared to interrupt the compression in case it is taking too long.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
-
-  <p>When decoding raw streams (<strong>--format=raw</strong>), LZMA2 needs only the value of <strong>dict</strong>. LZMA1 needs also <strong>lc</strong>, <strong>lp</strong>, and <strong>pb.</strong></p>
-    </dd>
-    <dt><strong>--x86</strong>[=<em>options</em>]</dt>
-    <dd>
-    </dd>
-    <dt><strong>--powerpc</strong>[=<em>options</em>]</dt>
-    <dd>
-    </dd>
-    <dt><strong>--ia64</strong>[=<em>options</em>]</dt>
-    <dd>
-    </dd>
-    <dt><strong>--arm</strong>[=<em>options</em>]</dt>
-    <dd>
-    </dd>
-    <dt><strong>--armthumb</strong>[=<em>options</em>]</dt>
-    <dd>
-    </dd>
-    <dt><strong>--sparc</strong>[=<em>options</em>]</dt>
-    <dd>
-  <p>Add a branch/call/jump (BCJ) filter to the filter chain. These filters can be used only as non-last filter in the filter chain.</p>
-<p class='spacer'>
-
-  <p>A BCJ filter converts relative addresses in the machine code to their absolute counterparts. This doesn't change the size of the data, but it increases redundancy, which allows e.g. LZMA2 to get better compression ratio.</p>
-<p class='spacer'>
-
-  <p>The BCJ filters are always reversible, so using a BCJ filter for wrong type of data doesn't cause any data loss. However, applying a BCJ filter for wrong type of data is a bad idea, because it tends to make the compression ratio worse.</p>
-<p class='spacer'>
-
-      <p>Different instruction sets have have different alignment:</p>
-<table class="table table-striped">
+</dl>
+</li><li><p>When decoding raw streams (<strong>--format=raw</strong>), LZMA2 needs only the value of <strong>dict</strong>. LZMA1 needs also <strong>lc</strong>, <strong>lp</strong>, and <strong>pb.</strong></p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>--x86</strong>[=<em>options</em>]</p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>--powerpc</strong>[=<em>options</em>]</p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>--ia64</strong>[=<em>options</em>]</p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>--arm</strong>[=<em>options</em>]</p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>--armthumb</strong>[=<em>options</em>]</p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>--sparc</strong>[=<em>options</em>]</p>
+  </dt>
+  <dd>
+    <p>Add a branch/call/jump (BCJ) filter to the filter chain. These filters can be used only as non-last filter in the filter chain.</p><ul>
+<li><p>A BCJ filter converts relative addresses in the machine code to their absolute counterparts. This doesn't change the size of the data, but it increases redundancy, which allows e.g. LZMA2 to get better compression ratio.</p></li><li><p>The BCJ filters are always reversible, so using a BCJ filter for wrong type of data doesn't cause any data loss. However, applying a BCJ filter for wrong type of data is a bad idea, because it tends to make the compression ratio worse.</p></li><li><p>Different instruction sets have have different alignment:</p><table class="table table-striped">
 <tr>
 <th>Filter</th>
 <th>Alignment</th>
@@ -687,71 +552,87 @@
 <td>SPARC</td>
 <td>4</td>
 <td>Big or little endian</td></tr>
-</table>
+</table></li><li><p>Since the BCJ-filtered data is usually compressed with LZMA2, the compression ratio may be improved slightly if the LZMA2 options are set to match the alignment of the selected BCJ filter. For example, with the IA-64 filter, it's good to set <strong>pb=4</strong> with LZMA2 (2^4=16). The x86 filter is an exception; it's usually good to stick to LZMA2's default four-byte alignment when compressing x86 executables.</p></li><li><p>All BCJ filters support the same <em>options</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>start=</strong><em>offset</em></p>
+  </dt>
+  <dd>
+    <p>Specify the start <em>offset</em> that is used when converting between relative and absolute addresses. The <em>offset</em> must be a multiple of the alignment of the filter (see the table above). The default is zero. In practice, the default is good; specifying a custom <em>offset</em> is almost never useful.</p><ul>
+<li><p>Specifying a non-zero start <em>offset</em> is probably useful only if the executable has multiple sections, and there are many cross-section jumps or calls. Applying a BCJ filter separately for each section with proper start offset and then compressing the result as a single chunk may give some improvement in compression ratio compared to applying the BCJ filter with the default <em>offset</em> for the whole executable.</p></li>
+</ul>
+  </dd>
 
-<p class='spacer'>
+</dl>
+</li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>--delta</strong>[=<em>options</em>]</p>
+  </dt>
+  <dd>
+    <p>Add Delta filter to the filter chain. The Delta filter can be used only as non-last filter in the filter chain.</p><ul>
+<li><p>Currently only simple byte-wise delta calculation is supported. It can be useful when compressing e.g. uncompressed bitmap images or uncompressed PCM audio. However, special purpose algorithms may give significantly better results than Delta + LZMA2. This is true especially with audio, which compresses faster and better e.g. with FLAC.</p></li><li><p>Supported <em>options</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>dist=</strong><em>distance</em></p>
+  </dt>
+  <dd>
+    <p>Specify the <em>distance</em> of the delta calculation as bytes. <em>distance</em> must be 1-256. The default is 1.</p><ul>
+<li><p>For example, with <strong>dist=2</strong> and eight-byte input A1 B1 A2 B3 A3 B5 A4 B7, the output will be A1 B1 01 02 01 02 01 02.</p></li>
+</ul>
+  </dd>
 
-  <p>Since the BCJ-filtered data is usually compressed with LZMA2, the compression ratio may be improved slightly if the LZMA2 options are set to match the alignment of the selected BCJ filter. For example, with the IA-64 filter, it's good to set <strong>pb=4</strong> with LZMA2 (2^4=16). The x86 filter is an exception; it's usually good to stick to LZMA2's default four-byte alignment when compressing x86 executables.</p>
-<p class='spacer'>
+</dl>
+</li>
+</ul>
+  </dd>
 
-      <p>All BCJ filters support the same <em>options</em>:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>start=</strong><em>offset</em></dt>
-        <dd>
-      <p>Specify the start <em>offset</em> that is used when converting between relative and absolute addresses. The <em>offset</em> must be a multiple of the alignment of the filter (see the table above). The default is zero. In practice, the default is good; specifying a custom <em>offset</em> is almost never useful.</p>
-<p class='spacer'>
+</dl>
 
-      <p>Specifying a non-zero start <em>offset</em> is probably useful only if the executable has multiple sections, and there are many cross-section jumps or calls. Applying a BCJ filter separately for each section with proper start offset and then compressing the result as a single chunk may give some improvement in compression ratio compared to applying the BCJ filter with the default <em>offset</em> for the whole executable.</p>
-        </dd>
-      </dl>
-    </dd>
-    <dt><strong>--delta</strong>[=<em>options</em>]</dt>
-    <dd>
-  <p>Add Delta filter to the filter chain. The Delta filter can be used only as non-last filter in the filter chain.</p>
-<p class='spacer'>
+<h3>Other options</h3>
 
-  <p>Currently only simple byte-wise delta calculation is supported. It can be useful when compressing e.g. uncompressed bitmap images or uncompressed PCM audio. However, special purpose algorithms may give significantly better results than Delta + LZMA2. This is true especially with audio, which compresses faster and better e.g. with FLAC.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-q</strong>, <strong>--quiet</strong></p>
+  </dt>
+  <dd>
+    <p>Suppress warnings and notices. Specify this twice to suppress errors too. This option has no effect on the exit status. That is, even if a warning was suppressed, the exit status to indicate a warning is still used.</p>
+  </dd>
+  <dt>
+    <p><strong>-v</strong>, <strong>--verbose</strong></p>
+  </dt>
+  <dd>
+    <p>Be verbose. If standard error is connected to a terminal, <strong>xz</strong> will display a progress indicator. Specifying <strong>--verbose</strong> twice will give even more verbose output (useful mostly for debugging).</p>
+  </dd>
+  <dt>
+    <p><strong>-Q</strong>, <strong>--no-warn</strong></p>
+  </dt>
+  <dd>
+    <p>Don't set the exit status to <strong>2</strong> even if a condition worth a warning was detected. This option doesn't affect the verbosity level, thus both <strong>--quiet</strong> and <strong>--no-warn</strong> have to be used to not display warnings and to not alter the exit status.</p>
+  </dd>
+  <dt>
+    <p><strong>-h</strong>, <strong>--help</strong></p>
+  </dt>
+  <dd>
+    <p>Display a help message describing the most commonly used options, and exit successfully.</p>
+  </dd>
+  <dt>
+    <p><strong>-H</strong>, <strong>--long-help</strong></p>
+  </dt>
+  <dd>
+    <p>Display a help message describing all features of <strong>xz</strong>, and exit successfully</p>
+  </dd>
+  <dt>
+    <p><strong>-V</strong>, <strong>--version</strong></p>
+  </dt>
+  <dd>
+    <p>Display the version number of <strong>xz</strong> and liblzma.</p>
+  </dd>
 
-      <p>Supported <em>options</em>:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>dist=</strong><em>distance</em></dt>
-        <dd>
-      <p>Specify the <em>distance</em> of the delta calculation as bytes. <em>distance</em> must be 1-256. The default is 1.</p>
-<p class='spacer'>
+</dl>
 
-      <p>For example, with <strong>dist=2</strong> and eight-byte input A1 B1 A2 B3 A3 B5 A4 B7, the output will be A1 B1 01 02 01 02 01 02.</p>
-        </dd>
-      </dl>
-    </dd>
-  </dl>
-  <h3>Other options</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>-q</strong>, <strong>--quiet</strong></dt>
-    <dd>
-  <p>Suppress warnings and notices. Specify this twice to suppress errors too. This option has no effect on the exit status. That is, even if a warning was suppressed, the exit status to indicate a warning is still used.</p>
-    </dd>
-    <dt><strong>-v</strong>, <strong>--verbose</strong></dt>
-    <dd>
-  <p>Be verbose. If standard error is connected to a terminal, <strong>xz</strong> will display a progress indicator. Specifying <strong>--verbose</strong> twice will give even more verbose output (useful mostly for debugging).</p>
-    </dd>
-    <dt><strong>-Q</strong>, <strong>--no-warn</strong></dt>
-    <dd>
-  <p>Don't set the exit status to <strong>2</strong> even if a condition worth a warning was detected. This option doesn't affect the verbosity level, thus both <strong>--quiet</strong> and <strong>--no-warn</strong> have to be used to not display warnings and to not alter the exit status.</p>
-    </dd>
-    <dt><strong>-h</strong>, <strong>--help</strong></dt>
-    <dd>
-  <p>Display a help message describing the most commonly used options, and exit successfully.</p>
-    </dd>
-    <dt><strong>-H</strong>, <strong>--long-help</strong></dt>
-    <dd>
-  <p>Display a help message describing all features of <strong>xz</strong>, and exit successfully</p>
-    </dd>
-    <dt><strong>-V</strong>, <strong>--version</strong></dt>
-    <dd>
-  <p>Display the version number of <strong>xz</strong> and liblzma.</p>
-    </dd>
-  </dl>
+
         </div>
       </section>
 
@@ -759,22 +640,27 @@
         <h2 class="font-effect-shadow-multiple">EXIT STATUS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>0</strong></dt>
-    <dd>
-  <p>All is good.</p>
-    </dd>
-    <dt><strong>1</strong></dt>
-    <dd>
-  <p>An error occurred.</p>
-    </dd>
-    <dt><strong>2</strong></dt>
-    <dd>
-  <p>Something worth a warning occurred, but no actual errors occurred.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>0</strong></p>
+  </dt>
+  <dd>
+    <p>All is good.</p>
+  </dd>
+  <dt>
+    <p><strong>1</strong></p>
+  </dt>
+  <dd>
+    <p>An error occurred.</p>
+  </dd>
+  <dt>
+    <p><strong>2</strong></p>
+  </dt>
+  <dd>
+    <p>Something worth a warning occurred, but no actual errors occurred.</p>
+  </dd>
 
+</dl>
 <p>Notices (not warnings or errors) printed on standard error don't affect the exit status.</p>
         </div>
       </section>
@@ -783,23 +669,24 @@
         <h2 class="font-effect-shadow-multiple">ENVIRONMENT</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>XZ_OPT</strong></dt>
-    <dd>
-  <p>A space-separated list of options is parsed from <strong>XZ_OPT</strong> before parsing the options given on the command line. Note that only options are parsed from <strong>XZ_OPT</strong>; all non-options are silently ignored. Parsing is done with <a href="../man3/getopt_long.3.html"><strong>getopt_long</strong>(3)</a> which is used also for the command line arguments.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>XZ_OPT</strong></p>
+  </dt>
+  <dd>
+    <p>A space-separated list of options is parsed from <strong>XZ_OPT</strong> before parsing the options given on the command line. Note that only options are parsed from <strong>XZ_OPT</strong>; all non-options are silently ignored. Parsing is done with <a href="../man3/getopt_long.3.html"><strong>getopt_long</strong>(3)</a> which is used also for the command line arguments.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">LZMA UTILS COMPATIBILITY</h2>
         <div class="sectioncontent">
-
-<p>The command line syntax of <strong>xz</strong> is practically a superset of <strong>lzma</strong>, <strong>unlzma</strong>, and <strong>lzcat</strong> as found from LZMA Utils 4.32.x. In most cases, it is possible to replace LZMA Utils with XZ Utils without breaking existing scripts. There are some incompatibilities though, which may sometimes cause problems.</p>
-  <h3>Compression preset levels</h3>
-  <p>The numbering of the compression level presets is not identical in <strong>xz</strong> and LZMA Utils. The most important difference is how dictionary sizes are mapped to different presets. Dictionary size is roughly equal to the decompressor memory usage.</p>
-<table class="table table-striped">
+<p>The command line syntax of <strong>xz</strong> is practically a superset of <strong>lzma</strong>, <strong>unlzma</strong>, and <strong>lzcat</strong> as found from LZMA Utils 4.32.x. In most cases, it is possible to replace LZMA Utils with XZ Utils without breaking existing scripts. There are some incompatibilities though, which may sometimes cause problems.</p><h3>Compression preset levels</h3>
+<p>The numbering of the compression level presets is not identical in <strong>xz</strong> and LZMA Utils. The most important difference is how dictionary sizes are mapped to different presets. Dictionary size is roughly equal to the decompressor memory usage.</p><table class="table table-striped">
 <tr>
 <th>Level</th>
 <th>xz</th>
@@ -849,12 +736,7 @@
 <td>-9</td>
 <td>64 MiB</td>
 <td>32 MiB</td></tr>
-</table>
-
-<p class='spacer'>
-
-  <p>The dictionary size differences affect the compressor memory usage too, but there are some other differences between LZMA Utils and XZ Utils, which make the difference even bigger:</p>
-<table class="table table-striped">
+</table><p>The dictionary size differences affect the compressor memory usage too, but there are some other differences between LZMA Utils and XZ Utils, which make the difference even bigger:</p><table class="table table-striped">
 <tr>
 <th>Level</th>
 <th>xz</th>
@@ -904,72 +786,34 @@
 <td>-9</td>
 <td>674 MiB</td>
 <td>311 MiB</td></tr>
-</table>
+</table><p>The default preset level in LZMA Utils is <strong>-7</strong> while in XZ Utils it is <strong>-6</strong>, so both use 8 MiB dictionary by default.</p>
+<h3>Streamed vs. non-streamed .lzma files</h3>
+<p>Uncompressed size of the file can be stored in the <strong>.lzma</strong> header. LZMA Utils does that when compressing regular files. The alternative is to mark that uncompressed size is unknown and use end of payload marker to indicate where the decompressor should stop. LZMA Utils uses this method when uncompressed size isn't known, which is the case for example in pipes.</p><p><strong>xz</strong> supports decompressing <strong>.lzma</strong> files with or without end of payload marker, but all <strong>.lzma</strong> files created by <strong>xz</strong> will use end of payload marker and have uncompressed size marked as unknown in the <strong>.lzma</strong> header. This may be a problem in some (uncommon) situations. For example, a <strong>.lzma</strong> decompressor in an embedded device might work only with files that have known uncompressed size. If you hit this problem, you need to use LZMA Utils or LZMA SDK to create <strong>.lzma</strong> files with known uncompressed size.</p>
+<h3>Unsupported .lzma files</h3>
+<p>The <strong>.lzma</strong> format allows <em>lc</em> values up to 8, and <em>lp</em> values up to 4. LZMA Utils can decompress files with any <em>lc</em> and <em>lp</em>, but always creates files with <strong>lc=3</strong> and <strong>lp=0</strong>. Creating files with other <em>lc</em> and <em>lp</em> is possible with <strong>xz</strong> and with LZMA SDK.</p><p>The implementation of the LZMA1 filter in liblzma requires that the sum of <em>lc</em> and <em>lp</em> must not exceed 4. Thus, <strong>.lzma</strong> files which exceed this limitation, cannot be decompressed with <strong>xz</strong>.</p><p>LZMA Utils creates only <strong>.lzma</strong> files which have dictionary size of 2^<em>n</em> (a power of 2), but accepts files with any dictionary size. liblzma accepts only <strong>.lzma</strong> files which have dictionary size of 2^<em>n</em> or 2^<em>n</em> + 2^(<em>n</em>-1). This is to decrease false positives when autodetecting <strong>.lzma</strong> files.</p><p>These limitations shouldn't be a problem in practice, since practically all <strong>.lzma</strong> files have been compressed with settings that liblzma will accept.</p>
+<h3>Trailing garbage</h3>
+<p>When decompressing, LZMA Utils silently ignore everything after the first <strong>.lzma</strong> stream. In most situations, this is a bug. This also means that LZMA Utils don't support decompressing concatenated <strong>.lzma</strong> files.</p><p>If there is data left after the first <strong>.lzma</strong> stream, <strong>xz</strong> considers the file to be corrupt. This may break obscure scripts which have assumed that trailing garbage is ignored.</p>
 
-<p class='spacer'>
-
-<p>The default preset level in LZMA Utils is <strong>-7</strong> while in XZ Utils it is <strong>-6</strong>, so both use 8 MiB dictionary by default.</p>
-  <h3>Streamed vs. non-streamed .lzma files</h3>
-<p>Uncompressed size of the file can be stored in the <strong>.lzma</strong> header. LZMA Utils does that when compressing regular files. The alternative is to mark that uncompressed size is unknown and use end of payload marker to indicate where the decompressor should stop. LZMA Utils uses this method when uncompressed size isn't known, which is the case for example in pipes.</p>
-<p class='spacer'>
-
-<p><strong>xz</strong> supports decompressing <strong>.lzma</strong> files with or without end of payload marker, but all <strong>.lzma</strong> files created by <strong>xz</strong> will use end of payload marker and have uncompressed size marked as unknown in the <strong>.lzma</strong> header. This may be a problem in some (uncommon) situations. For example, a <strong>.lzma</strong> decompressor in an embedded device might work only with files that have known uncompressed size. If you hit this problem, you need to use LZMA Utils or LZMA SDK to create <strong>.lzma</strong> files with known uncompressed size.</p>
-  <h3>Unsupported .lzma files</h3>
-<p>The <strong>.lzma</strong> format allows <em>lc</em> values up to 8, and <em>lp</em> values up to 4. LZMA Utils can decompress files with any <em>lc</em> and <em>lp</em>, but always creates files with <strong>lc=3</strong> and <strong>lp=0</strong>. Creating files with other <em>lc</em> and <em>lp</em> is possible with <strong>xz</strong> and with LZMA SDK.</p>
-<p class='spacer'>
-
-<p>The implementation of the LZMA1 filter in liblzma requires that the sum of <em>lc</em> and <em>lp</em> must not exceed 4. Thus, <strong>.lzma</strong> files which exceed this limitation, cannot be decompressed with <strong>xz</strong>.</p>
-<p class='spacer'>
-
-<p>LZMA Utils creates only <strong>.lzma</strong> files which have dictionary size of 2^<em>n</em> (a power of 2), but accepts files with any dictionary size. liblzma accepts only <strong>.lzma</strong> files which have dictionary size of 2^<em>n</em> or 2^<em>n</em> + 2^(<em>n</em>-1). This is to decrease false positives when autodetecting <strong>.lzma</strong> files.</p>
-<p class='spacer'>
-
-<p>These limitations shouldn't be a problem in practice, since practically all <strong>.lzma</strong> files have been compressed with settings that liblzma will accept.</p>
-  <h3>Trailing garbage</h3>
-<p>When decompressing, LZMA Utils silently ignore everything after the first <strong>.lzma</strong> stream. In most situations, this is a bug. This also means that LZMA Utils don't support decompressing concatenated <strong>.lzma</strong> files.</p>
-<p class='spacer'>
-
-<p>If there is data left after the first <strong>.lzma</strong> stream, <strong>xz</strong> considers the file to be corrupt. This may break obscure scripts which have assumed that trailing garbage is ignored.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
+<h3>Compressed output may vary</h3>
+<p>The exact compressed output produced from the same uncompressed input file may vary between XZ Utils versions even if compression options are identical. This is because the encoder can be improved (faster or better compression) without affecting the file format. The output can vary even between different builds of the same XZ Utils version, if different build options are used or if the endianness of the hardware is different for different builds.</p><p>The above means that implementing <strong>--rsyncable</strong> to create rsyncable <strong>.xz</strong> files is not going to happen without freezing a part of the encoder implementation, which can then be used with <strong>--rsyncable</strong>.</p>
+<h3>Embedded .xz decompressors</h3>
+<p>Embedded <strong>.xz</strong> decompressor implementations like XZ Embedded don't necessarily support files created with <em>check</em> types other than <strong>none</strong> and <strong>crc32</strong>. Since the default is --check=<em>crc64</em>, you must use <strong>--check=none</strong> or <strong>--check=crc32</strong> when creating files for embedded systems.</p><p>Outside embedded systems, all <strong>.xz</strong> format decompressors support all the <em>check</em> types, or at least are able to decompress the file without verifying the integrity check if the particular <em>check</em> is not supported.</p><p>XZ Embedded supports BCJ filters, but only with the default start offset.</p>
 
-  <h3>Compressed output may vary</h3>
-<p>The exact compressed output produced from the same uncompressed input file may vary between XZ Utils versions even if compression options are identical. This is because the encoder can be improved (faster or better compression) without affecting the file format. The output can vary even between different builds of the same XZ Utils version, if different build options are used or if the endianness of the hardware is different for different builds.</p>
-<p class='spacer'>
-
-<p>The above means that implementing <strong>--rsyncable</strong> to create rsyncable <strong>.xz</strong> files is not going to happen without freezing a part of the encoder implementation, which can then be used with <strong>--rsyncable</strong>.</p>
-  <h3>Embedded .xz decompressors</h3>
-<p>Embedded <strong>.xz</strong> decompressor implementations like XZ Embedded don't necessarily support files created with <em>check</em> types other than <strong>none</strong> and <strong>crc32</strong>. Since the default is --check=<em>crc64</em>, you must use <strong>--check=none</strong> or <strong>--check=crc32</strong> when creating files for embedded systems.</p>
-<p class='spacer'>
-
-<p>Outside embedded systems, all <strong>.xz</strong> format decompressors support all the <em>check</em> types, or at least are able to decompress the file without verifying the integrity check if the particular <em>check</em> is not supported.</p>
-<p class='spacer'>
-
-<p>XZ Embedded supports BCJ filters, but only with the default start offset.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO xz&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man1/xzdec.1.html"><strong>xzdec</strong>(1)</a>, <strong>gzip</strong>(1), <strong>bzip2</strong>(1)</p>
-<p class='spacer'>
-
-<p>XZ Utils: &lt;http://tukaani.org/xz/&gt;</p>
-<p class='spacer'>
-
-<p>XZ Embedded: &lt;http://tukaani.org/xz/embedded.html&gt;</p>
-<p class='spacer'>
-
-<p>LZMA SDK: &lt;http://7-zip.org/sdk.html&gt;</p>
+<p><a href="../man1/xzdec.1.html"><strong>xzdec</strong>(1)</a>, <strong>gzip</strong>(1), <strong>bzip2</strong>(1)</p><p>XZ Utils: &lt;http://tukaani.org/xz/&gt;</p><p>XZ Embedded: &lt;http://tukaani.org/xz/embedded.html&gt;</p><p>LZMA SDK: &lt;http://7-zip.org/sdk.html&gt;</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="xargs.1.html"><span aria-hidden="true">&larr;</span> xargs.1: Build and execute command lines from standard input</a></li>

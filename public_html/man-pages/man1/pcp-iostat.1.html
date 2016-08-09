@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p>\f3pcp&nbsp;iostat\f1 [\f3-A\f1 \f2align\f1 \f3--align=\f2TIME\f1] [\f3-a\f1 \f2archive\f1 \f3--archive=\f2FILE\f1] [\f3-G\f1 \f2method\f1 \f3--aggregate=\f2method\f1] [\f3-h\f1 \f2host\f1 \f3--host=\f2HOST\f1] [\f3-O\f1 \f2offset\f1 \f3--origin=\f2TIME\f1] [\f3-S\f1 \f2starttime\f1 \f3--start=\f2TIME\f1] [\f3-s\f1 \f2samples\f1 \f3--samples=\f2N\f1] [\f3-T\f1 \f2endtime\f1 \f3--finish=\f2TIME\f1] [\f3-t\f1 \f2interval\f1 \f3--interval=\f2DELTA\f1] [\f3-P\f1 \f2precision\f1 \f3--precision=\f2N\f1] [\f3-R\f1 \f2pattern\f1 \f3--regex=\f2pattern\f1] [\f3-u\f1 \f3--no-interpolate\f1] [\f3-Z\f1 \f2timezone\f1 \f3--timezone=\f2TZ\f1] [\f3-z\f1 \f3--hostzone\f1] [\f3-?\f1 \f3--help\f1] [\f3-x\f1 [dm][,t][,h][,noidle]\f1]</p>
         </div>
       </section>
@@ -98,138 +97,172 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>pcp-iostat</strong> reports I/O statistics for scsi devices (by default) or device-mapper devices (if the \f3-x dm\f1 option is specified). By default <strong>pcp-iostat</strong> reports live data for the local host but can also report for a remote host (\f3-h) or from a previously captured PCP archive (\f3-a).</p><p>The <strong>-S</strong>, <strong>-T</strong>, <strong>-O</strong> and <strong>-A</strong> options may be used to define a time window to restrict the samples retrieved, set an initial origin within the time window, or specify a ``natural'' alignment of the sample times; refer to <strong>PCPIntro</strong>(1) for a complete description of these options.</p><p>The other options which control the source, timing and layout of the information reported by <strong>pcp-iostat</strong> are as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-a</strong></p>
+  </dt>
+  <dd>
+    <p>Performance metric values are retrieved from the Performance Co-Pilot (PCP) archive log files identified by the argument <em>archive</em>, which is a comma-separated list of names, each of which may be the base name of an archive or the name of a directory containing one or more archives. See also <strong>-u</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>-G</strong></p>
+  </dt>
+  <dd>
+    <p>Specifies that statistics for device names matching the regular expression specified with the <strong>-R</strong> <em>regex</em> option should be aggregated according to <em>method</em>. Note this is aggregation based on matching device names (not temporal aggregation). When <strong>-G</strong> is used, the device name column is reported as <em>method</em>(<em>regex</em>), e.g. if <strong>-G sum</strong> <strong>-R 'sd(a|b)$'</strong> is specified, the device column will be <strong>sum</strong>(<strong>sd(a|b)$)</strong> and summed statistics for <strong>sda</strong> and <strong>sdb</strong> will be reported in the remaining columns. If <strong>-G</strong> is specified but <strong>-R</strong> is not specified, then the default <em>regex</em> is <strong>.*</strong>, i.e. matching all device names. If <em>method</em> is <strong>sum</strong> then the statistics are summed. This includes the <strong>%util</strong> column, which may therefore exceed 100% if more than one device name matches. If <em>method</em> is <strong>avg</strong> then the statistics are summed and then averaged by dividing by the number of matching device names. If <em>method</em> is <strong>min</strong> or <strong>max</strong>, the minimum or maximum statistics for matching devices are reported, respectfully.</p>
+  </dd>
+  <dt>
+    <p><strong>-h</strong></p>
+  </dt>
+  <dd>
+    <p>Current performance metric values are retrieved from the nominated <em>host</em> machine.</p>
+  </dd>
+  <dt>
+    <p><strong>-s</strong></p>
+  </dt>
+  <dd>
+    <p>The argument <em>samples</em> defines the number of samples to be retrieved and reported. If <em>samples</em> is 0 or <strong>-s</strong> is not specified, <strong>pcp-iostat</strong> will sample and report continuously (in real time mode) or until the end of the set of PCP archives (in archive mode).</p>
+  </dd>
+  <dt>
+    <p><strong>-t</strong></p>
+  </dt>
+  <dd>
+    <p>The default update \f2interval\f1 may be set to something other than the default 1 second. The <em>interval</em> argument follows the syntax described in <strong>PCPIntro</strong>(1), and in the simplest form may be an unsigned integer (the implied units in this case are seconds). The \f3-t option is particularly useful when replaying large sets of archives (\f3-a option) that span several hours or even days. In this case specifying a large <em>interval</em> (e.g. 1h for 1 hour) will reduce the volume of data reported and the i/o statistics will be averaged (interpolated) over the reporting interval (unless the <strong>-u</strong> option is specified, see below).</p>
+  </dd>
+  <dt>
+    <p><strong>-R</strong></p>
+  </dt>
+  <dd>
+    <p>This restricts the report to device names matching <em>regex</em>. The <em>regex</em> pattern is searched as a perl style regular expression, and will match any portion of a device name. e.g. '^sd[a-zA-Z]+' will match all device names starting with 'sd' followed by one or more alphabetic characters. e.g. '^sd(a|b)$' will only match 'sda' and 'sdb'. e.g. 'sda$' will match 'sda' but not 'sdab'. See also the <strong>-G</strong> option for aggregation options.</p>
+  </dd>
+  <dt>
+    <p><strong>-P</strong></p>
+  </dt>
+  <dd>
+    <p>This indicates the number of decimals to print. The default precision \f2N\f1 may be set to something other than the default 2 decimals. Note that the <strong>avgrq-sz</strong> and <strong>avgqu-sz</strong> fields are always reported with \f2N\f1+1 decimals of precision. These fields typically have values less than 1.0.</p>
+  </dd>
+  <dt>
+    <p><strong>-u</strong></p>
+  </dt>
+  <dd>
+    <p>When replaying a set of archives, by default values are reported according to the selected sample interval ( .B -t option), not according to the actual record intervals in the set of archives. To this effect PCP interpolates the values to be reported based on the records in the set of archives, and is particularly useful when the <strong>-t</strong> option is used to replay a set of archives with a longer sampling interval than the underlying interval the set of archives was originally recorded with. With the <strong>-u</strong> option, uninterpolated reporting is enabled - every value is reported according to the native recording interval in the set of archives. When the <strong>-u</strong> option is specified, the <strong>-t</strong> option makes no sense and is incompatible because the replay interval is always the same as the recording interval in the set of archive. In addition, <strong>-u</strong> only makes sense when replaying a set of archives, see <strong>-a</strong> above, and so if <strong>-u</strong> is specified then <strong>-a</strong> must also be specified.</p>
+  </dd>
+  <dt>
+    <p><strong>-Z</strong></p>
+  </dt>
+  <dd>
+    <p>By default, <strong>pcp-iostat</strong> reports the time of day according to the local timezone on the system where <strong>pcp-iostat</strong> is run. The <strong>-Z</strong> option changes the timezone to <em>timezone</em> in the format of the environment variable <strong>TZ</strong> as described in <a href="../man7/environ.7.html"><strong>environ</strong>(7)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>-z</strong></p>
+  </dt>
+  <dd>
+    <p>Change the reporting timezone to the local timezone at the host that is the source of the performance metrics, as identified via either the <strong>-h</strong> or <strong>-a</strong> options. When replaying a PCP archive that was captured in a foreign timezone, the <strong>-z</strong> option would almost always be used (the default reporting timezone is the local timezone, which may not be the same as the timezone of the PCP archive).</p>
+  </dd>
+  <dt>
+    <p><strong>-x</strong></p>
+  </dt>
+  <dd>
+    <p>Specifies a comma separated list of one or more extended reporting options as follows:</p><p>\f3dm - report statistics for device-mapper logical devices instead of scsi devices,</p><p>\f3t - prefix every line in the report with a timestamp in \<strong>f2ctime</strong>(3) format,</p><p>\f3h - omit the heading, which is otherwise reported every 24 samples,</p><p>\f3noidle - Do not display statistics for idle devices.</p>
+  </dd>
 
-<p><strong>pcp-iostat</strong> reports I/O statistics for scsi devices (by default) or device-mapper devices (if the \f3-x dm\f1 option is specified). By default <strong>pcp-iostat</strong> reports live data for the local host but can also report for a remote host (\f3-h) or from a previously captured PCP archive (\f3-a).</p>
-<p class='spacer'>
+</dl>
 
-<p>The <strong>-S</strong>, <strong>-T</strong>, <strong>-O</strong> and <strong>-A</strong> options may be used to define a time window to restrict the samples retrieved, set an initial origin within the time window, or specify a ``natural'' alignment of the sample times; refer to <strong>PCPIntro</strong>(1) for a complete description of these options.</p>
-<p class='spacer'>
-
-  <p>The other options which control the source, timing and layout of the information reported by <strong>pcp-iostat</strong> are as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>-a</strong></dt>
-    <dd>
-  <p>Performance metric values are retrieved from the Performance Co-Pilot (PCP) archive log files identified by the argument <em>archive</em>, which is a comma-separated list of names, each of which may be the base name of an archive or the name of a directory containing one or more archives. See also <strong>-u</strong>.</p>
-    </dd>
-    <dt><strong>-G</strong></dt>
-    <dd>
-  <p>Specifies that statistics for device names matching the regular expression specified with the <strong>-R</strong> <em>regex</em> option should be aggregated according to <em>method</em>. Note this is aggregation based on matching device names (not temporal aggregation). When <strong>-G</strong> is used, the device name column is reported as <em>method</em>(<em>regex</em>), e.g. if <strong>-G sum</strong> <strong>-R 'sd(a|b)$'</strong> is specified, the device column will be <strong>sum</strong>(<strong>sd(a|b)$)</strong> and summed statistics for <strong>sda</strong> and <strong>sdb</strong> will be reported in the remaining columns. If <strong>-G</strong> is specified but <strong>-R</strong> is not specified, then the default <em>regex</em> is <strong>.*</strong>, i.e. matching all device names. If <em>method</em> is <strong>sum</strong> then the statistics are summed. This includes the <strong>%util</strong> column, which may therefore exceed 100% if more than one device name matches. If <em>method</em> is <strong>avg</strong> then the statistics are summed and then averaged by dividing by the number of matching device names. If <em>method</em> is <strong>min</strong> or <strong>max</strong>, the minimum or maximum statistics for matching devices are reported, respectfully.</p>
-    </dd>
-    <dt><strong>-h</strong></dt>
-    <dd>
-  <p>Current performance metric values are retrieved from the nominated <em>host</em> machine.</p>
-    </dd>
-    <dt><strong>-s</strong></dt>
-    <dd>
-  <p>The argument <em>samples</em> defines the number of samples to be retrieved and reported. If <em>samples</em> is 0 or <strong>-s</strong> is not specified, <strong>pcp-iostat</strong> will sample and report continuously (in real time mode) or until the end of the set of PCP archives (in archive mode).</p>
-    </dd>
-    <dt><strong>-t</strong></dt>
-    <dd>
-  <p>The default update \f2interval\f1 may be set to something other than the default 1 second. The <em>interval</em> argument follows the syntax described in <strong>PCPIntro</strong>(1), and in the simplest form may be an unsigned integer (the implied units in this case are seconds). The \f3-t option is particularly useful when replaying large sets of archives (\f3-a option) that span several hours or even days. In this case specifying a large <em>interval</em> (e.g. 1h for 1 hour) will reduce the volume of data reported and the i/o statistics will be averaged (interpolated) over the reporting interval (unless the <strong>-u</strong> option is specified, see below).</p>
-    </dd>
-    <dt><strong>-R</strong></dt>
-    <dd>
-  <p>This restricts the report to device names matching <em>regex</em>. The <em>regex</em> pattern is searched as a perl style regular expression, and will match any portion of a device name. e.g. '^sd[a-zA-Z]+' will match all device names starting with 'sd' followed by one or more alphabetic characters. e.g. '^sd(a|b)$' will only match 'sda' and 'sdb'. e.g. 'sda$' will match 'sda' but not 'sdab'. See also the <strong>-G</strong> option for aggregation options.</p>
-    </dd>
-    <dt><strong>-P</strong></dt>
-    <dd>
-  <p>This indicates the number of decimals to print. The default precision \f2N\f1 may be set to something other than the default 2 decimals. Note that the <strong>avgrq-sz</strong> and <strong>avgqu-sz</strong> fields are always reported with \f2N\f1+1 decimals of precision. These fields typically have values less than 1.0.</p>
-    </dd>
-    <dt><strong>-u</strong></dt>
-    <dd>
-  <p>When replaying a set of archives, by default values are reported according to the selected sample interval ( .B -t option), not according to the actual record intervals in the set of archives. To this effect PCP interpolates the values to be reported based on the records in the set of archives, and is particularly useful when the <strong>-t</strong> option is used to replay a set of archives with a longer sampling interval than the underlying interval the set of archives was originally recorded with. With the <strong>-u</strong> option, uninterpolated reporting is enabled - every value is reported according to the native recording interval in the set of archives. When the <strong>-u</strong> option is specified, the <strong>-t</strong> option makes no sense and is incompatible because the replay interval is always the same as the recording interval in the set of archive. In addition, <strong>-u</strong> only makes sense when replaying a set of archives, see <strong>-a</strong> above, and so if <strong>-u</strong> is specified then <strong>-a</strong> must also be specified.</p>
-    </dd>
-    <dt><strong>-Z</strong></dt>
-    <dd>
-  <p>By default, <strong>pcp-iostat</strong> reports the time of day according to the local timezone on the system where <strong>pcp-iostat</strong> is run. The <strong>-Z</strong> option changes the timezone to <em>timezone</em> in the format of the environment variable <strong>TZ</strong> as described in <a href="../man7/environ.7.html"><strong>environ</strong>(7)</a>.</p>
-    </dd>
-    <dt><strong>-z</strong></dt>
-    <dd>
-  <p>Change the reporting timezone to the local timezone at the host that is the source of the performance metrics, as identified via either the <strong>-h</strong> or <strong>-a</strong> options. When replaying a PCP archive that was captured in a foreign timezone, the <strong>-z</strong> option would almost always be used (the default reporting timezone is the local timezone, which may not be the same as the timezone of the PCP archive).</p>
-    </dd>
-    <dt><strong>-x</strong></dt>
-    <dd>
-  <p>Specifies a comma separated list of one or more extended reporting options as follows:</p>
-<p class='spacer'>
-
-  <p>\f3dm - report statistics for device-mapper logical devices instead of scsi devices,</p>
-<p class='spacer'>
-
-  <p>\f3t - prefix every line in the report with a timestamp in \<strong>f2ctime</strong>(3) format,</p>
-<p class='spacer'>
-
-  <p>\f3h - omit the heading, which is otherwise reported every 24 samples,</p>
-<p class='spacer'>
-
-  <p>\f3noidle - Do not display statistics for idle devices.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">REPORT</h2>
         <div class="sectioncontent">
+<p>The columns in the <strong>pcp-iostat</strong> report have the following interpretation :</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>Timestamp</strong></p>
+  </dt>
+  <dd>
+    <p>When the \f3-x t option is specified, this column is the timestamp in \<strong>f3ctime</strong>(3) format.</p>
+  </dd>
+  <dt>
+    <p><strong>Device</strong></p>
+  </dt>
+  <dd>
+    <p>Specifies the scsi device name, or if \f3-x dm is specified, the device-mapper logical device name. When <strong>-G</strong> is specified, this is replaced by the aggregation method and regular expression - see the <strong>-G</strong> and <strong>-R</strong> options above.</p>
+  </dd>
+  <dt>
+    <p><strong>rrqm/s</strong></p>
+  </dt>
+  <dd>
+    <p>The number of read requests expressed as a rate per-second that were merged during the reporting interval by the I/O scheduler.</p>
+  </dd>
+  <dt>
+    <p><strong>wrqm/s</strong></p>
+  </dt>
+  <dd>
+    <p>The number of write requests expressed as a rate per-second that were merged during the reporting interval by the I/O scheduler.</p>
+  </dd>
+  <dt>
+    <p><strong>r/s</strong></p>
+  </dt>
+  <dd>
+    <p>The number of read requests completed by the device (after merges), expressed as a rate per second during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>w/s</strong></p>
+  </dt>
+  <dd>
+    <p>The number of write requests completed by the device (after merges), expressed as a rate per second during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>rkB/s</strong></p>
+  </dt>
+  <dd>
+    <p>The average volume of data read from the device expressed as KBytes/second during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>wkB/s</strong></p>
+  </dt>
+  <dd>
+    <p>The average volume of data written to the device expressed as KBytes/second during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>avgrq-sz</strong></p>
+  </dt>
+  <dd>
+    <p>The average I/O request size for both reads and writes to the device expressed as Kbytes during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>avgqu-sz</strong></p>
+  </dt>
+  <dd>
+    <p>The average queue length of read and write requests to the device during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>await</strong></p>
+  </dt>
+  <dd>
+    <p>The average time in milliseconds that read and write requests were queued (and serviced) to the device during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>r_await</strong></p>
+  </dt>
+  <dd>
+    <p>The average time in milliseconds that read requests were queued (and serviced) to the device during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>w_await</strong></p>
+  </dt>
+  <dd>
+    <p>The average time in milliseconds that write requests were queued (and serviced) to the device during the reporting interval.</p>
+  </dd>
+  <dt>
+    <p><strong>%util</strong></p>
+  </dt>
+  <dd>
+    <p>The percentage of time during the reporting interval that the device was busy processing requests. A value of 100% indicates device saturation.</p>
+  </dd>
 
-  <p>The columns in the <strong>pcp-iostat</strong> report have the following interpretation :</p>
-  <dl class='dl-vertical'>
-    <dt><strong>Timestamp</strong></dt>
-    <dd>
-  <p>When the \f3-x t option is specified, this column is the timestamp in \<strong>f3ctime</strong>(3) format.</p>
-    </dd>
-    <dt><strong>Device</strong></dt>
-    <dd>
-  <p>Specifies the scsi device name, or if \f3-x dm is specified, the device-mapper logical device name. When <strong>-G</strong> is specified, this is replaced by the aggregation method and regular expression - see the <strong>-G</strong> and <strong>-R</strong> options above.</p>
-    </dd>
-    <dt><strong>rrqm/s</strong></dt>
-    <dd>
-  <p>The number of read requests expressed as a rate per-second that were merged during the reporting interval by the I/O scheduler.</p>
-    </dd>
-    <dt><strong>wrqm/s</strong></dt>
-    <dd>
-  <p>The number of write requests expressed as a rate per-second that were merged during the reporting interval by the I/O scheduler.</p>
-    </dd>
-    <dt><strong>r/s</strong></dt>
-    <dd>
-  <p>The number of read requests completed by the device (after merges), expressed as a rate per second during the reporting interval.</p>
-    </dd>
-    <dt><strong>w/s</strong></dt>
-    <dd>
-  <p>The number of write requests completed by the device (after merges), expressed as a rate per second during the reporting interval.</p>
-    </dd>
-    <dt><strong>rkB/s</strong></dt>
-    <dd>
-  <p>The average volume of data read from the device expressed as KBytes/second during the reporting interval.</p>
-    </dd>
-    <dt><strong>wkB/s</strong></dt>
-    <dd>
-  <p>The average volume of data written to the device expressed as KBytes/second during the reporting interval.</p>
-    </dd>
-    <dt><strong>avgrq-sz</strong></dt>
-    <dd>
-  <p>The average I/O request size for both reads and writes to the device expressed as Kbytes during the reporting interval.</p>
-    </dd>
-    <dt><strong>avgqu-sz</strong></dt>
-    <dd>
-  <p>The average queue length of read and write requests to the device during the reporting interval.</p>
-    </dd>
-    <dt><strong>await</strong></dt>
-    <dd>
-  <p>The average time in milliseconds that read and write requests were queued (and serviced) to the device during the reporting interval.</p>
-    </dd>
-    <dt><strong>r_await</strong></dt>
-    <dd>
-  <p>The average time in milliseconds that read requests were queued (and serviced) to the device during the reporting interval.</p>
-    </dd>
-    <dt><strong>w_await</strong></dt>
-    <dd>
-  <p>The average time in milliseconds that write requests were queued (and serviced) to the device during the reporting interval.</p>
-    </dd>
-    <dt><strong>%util</strong></dt>
-    <dd>
-  <p>The percentage of time during the reporting interval that the device was busy processing requests. A value of 100% indicates device saturation.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
@@ -237,39 +270,39 @@
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>$PCP_VAR_DIR/pmns/</strong><em>*</em></dt>
-    <dd>
-  <p>default PMNS specification files</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>$PCP_VAR_DIR/pmns/</strong><em>*</em></p>
+  </dt>
+  <dd>
+    <p>default PMNS specification files</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PCP ENVIRONMENT</h2>
         <div class="sectioncontent">
-
-<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <strong>pcp.conf</strong>(5).</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
-        <div class="sectioncontent">
-
-<p>All are generated on standard error and are intended to be self-explanatory.</p>
+<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pcp-iostat&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man1/pcp.1.html"><strong>pcp</strong>(1)</a>, <strong>PCPIntro</strong>(1), <a href="../man1/iostat2pcp.1.html"><strong>iostat2pcp</strong>(1)</a>, <strong>pmcd</strong>(1), <strong>pmchart</strong>(1), <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>, <strong>pcp.conf</strong>(5) and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
+<p><a href="../man1/pcp.1.html"><strong>pcp</strong>(1)</a>, <strong>PCPIntro</strong>(1), <a href="../man1/iostat2pcp.1.html"><strong>iostat2pcp</strong>(1)</a>, <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>, <a href="../man1/pmchart.1.html"><strong>pmchart</strong>(1)</a>, <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>, <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a> and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+<p>All are generated on standard error and are intended to be self-explanatory.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pcp-free.1.html"><span aria-hidden="true">&larr;</span> pcp-free.1: Report on free and used memory in the system</a></li>

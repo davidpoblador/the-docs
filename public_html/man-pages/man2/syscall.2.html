@@ -91,11 +91,13 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;unistd.h&gt;</strong>
-<strong>#include &lt;sys/syscall.h&gt;   </strong>/* For SYS_xxx definitions */
+<pre>
+<strong>#define</strong> <strong>_GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <unistd.h></strong>
+<strong>#include</strong> <strong><sys/syscall.h></strong> <strong></strong> <strong></strong> <strong></strong>/* For SYS_xxx definitions */
 
-<strong>long syscall(long </strong><em>number</em><strong>, ...);</strong></pre>
+<strong>long</strong> <strong>syscall(long</strong> <strong></strong><em>number</em><strong>,</strong> <strong>...);</strong>
+</pre>
 
         </div>
       </section>
@@ -103,21 +105,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>syscall</strong>() is a small library function that invokes the system call whose assembly language interface has the specified <em>number</em> with the specified arguments. Employing <strong>syscall</strong>() is useful, for example, when invoking a system call that has no wrapper function in the C library.</p>
-<p class='spacer'>
-
-<p><strong>syscall</strong>() saves CPU registers before making the system call, restores the registers upon return from the system call, and stores any error code returned by the system call in <a href="../man3/errno.3.html"><strong>errno</strong>(3)</a> if an error occurs.</p>
-<p class='spacer'>
-
-<p>Symbolic constants for system call numbers can be found in the header file <em>&lt;sys/syscall.h&gt;</em>.</p>
+<p><strong>syscall</strong>() is a small library function that invokes the system call whose assembly language interface has the specified <em>number</em> with the specified arguments. Employing <strong>syscall</strong>() is useful, for example, when invoking a system call that has no wrapper function in the C library.</p><p><strong>syscall</strong>() saves CPU registers before making the system call, restores the registers upon return from the system call, and stores any error code returned by the system call in <a href="../man3/errno.3.html"><strong>errno</strong>(3)</a> if an error occurs.</p><p>Symbolic constants for system call numbers can be found in the header file <em><sys/syscall.h></em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>The return value is defined by the system call being invoked. In general, a 0 return value indicates success. A -1 return value indicates an error, and an error code is stored in <em>errno</em>.</p>
         </div>
       </section>
@@ -125,35 +119,17 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p><strong>syscall</strong>() first appeared in 4BSD.</p>
-  <h3>Architecture-specific requirements</h3>
-<p>Each architecture ABI has its own requirements on how system call arguments are passed to the kernel. For system calls that have a glibc wrapper (e.g., most system calls), glibc handles the details of copying arguments to the right registers in a manner suitable for the architecture. However, when using <strong>syscall</strong>() to make a system call, the caller might need to handle architecture-dependent details; this requirement is most commonly encountered on certain 32-bit architectures.</p>
-<p class='spacer'>
-
-<p>For example, on the ARM architecture Embedded ABI (EABI), a 64-bit value (e.g., <em>long long</em>) must be aligned to an even register pair. Thus, using <strong>syscall</strong>() instead of the wrapper provided by glibc, the <strong>readahead</strong>() system call would be invoked as follows on the ARM architecture with the EABI:</p>
-<p class='spacer'>
-
-<pre>syscall(SYS_readahead, fd, 0,
+<p><strong>syscall</strong>() first appeared in 4BSD.</p><h3>Architecture-specific requirements</h3>
+<p>Each architecture ABI has its own requirements on how system call arguments are passed to the kernel. For system calls that have a glibc wrapper (e.g., most system calls), glibc handles the details of copying arguments to the right registers in a manner suitable for the architecture. However, when using <strong>syscall</strong>() to make a system call, the caller might need to handle architecture-dependent details; this requirement is most commonly encountered on certain 32-bit architectures.</p><p>For example, on the ARM architecture Embedded ABI (EABI), a 64-bit value (e.g., <em>long</em> <em>long</em>) must be aligned to an even register pair. Thus, using <strong>syscall</strong>() instead of the wrapper provided by glibc, the <strong>readahead</strong>() system call would be invoked as follows on the ARM architecture with the EABI:</p>
+<pre>
+syscall(SYS_readahead, fd, 0,
         (unsigned int) (offset &gt;&gt; 32),
         (unsigned int) (offset & 0xFFFFFFFF),
-        count);</pre>
-
-<p class='spacer'>
-
-<p>Since the offset argument is 64 bits, and the first argument (<em>fd</em>) is passed in <em>r0</em>, the caller must manually split and align the 64-bit value so that it is passed in the <em>r2</em>/<em>r3</em> register pair. That means inserting a dummy value into <em>r1</em> (the second argument of 0).</p>
-<p class='spacer'>
-
-<p>Similar issues can occur on MIPS with the O32 ABI, on PowerPC with the 32-bit ABI, and on Xtensa.</p>
-<p class='spacer'>
-
-<p>The affected system calls are <a href="../man2/fadvise64_64.2.html"><strong>fadvise64_64</strong>(2)</a>, <a href="../man2/ftruncate64.2.html"><strong>ftruncate64</strong>(2)</a>, <a href="../man2/posix_fadvise.2.html"><strong>posix_fadvise</strong>(2)</a>, <a href="../man2/pread64.2.html"><strong>pread64</strong>(2)</a>, <a href="../man2/pwrite64.2.html"><strong>pwrite64</strong>(2)</a>, <a href="../man2/readahead.2.html"><strong>readahead</strong>(2)</a>, <a href="../man2/sync_file_range.2.html"><strong>sync_file_range</strong>(2)</a>, and <a href="../man2/truncate64.2.html"><strong>truncate64</strong>(2)</a>.</p>
-  <h3>Architecture calling conventions</h3>
-<p>Every architecture has its own way of invoking and passing arguments to the kernel. The details for various architectures are listed in the two tables below.</p>
-<p class='spacer'>
-
-<p>The first table lists the instruction used to transition to kernel mode (which might not be the fastest or best way to transition to the kernel, so you might have to refer to <a href="../man7/vdso.7.html"><strong>vdso</strong>(7)</a>), the register used to indicate the system call number, the register used to return the system call result, and the register used to signal an error.</p>
-<table class="table table-striped">
+        count);
+</pre>
+<p>Since the offset argument is 64 bits, and the first argument (<em>fd</em>) is passed in <em>r0</em>, the caller must manually split and align the 64-bit value so that it is passed in the <em>r2</em>/<em>r3</em> register pair. That means inserting a dummy value into <em>r1</em> (the second argument of 0).</p><p>Similar issues can occur on MIPS with the O32 ABI, on PowerPC with the 32-bit ABI, and on Xtensa.</p><p>The affected system calls are <a href="../man2/fadvise64_64.2.html"><strong>fadvise64_64</strong>(2)</a>, <a href="../man2/ftruncate64.2.html"><strong>ftruncate64</strong>(2)</a>, <a href="../man2/posix_fadvise.2.html"><strong>posix_fadvise</strong>(2)</a>, <a href="../man2/pread64.2.html"><strong>pread64</strong>(2)</a>, <a href="../man2/pwrite64.2.html"><strong>pwrite64</strong>(2)</a>, <a href="../man2/readahead.2.html"><strong>readahead</strong>(2)</a>, <a href="../man2/sync_file_range.2.html"><strong>sync_file_range</strong>(2)</a>, and <a href="../man2/truncate64.2.html"><strong>truncate64</strong>(2)</a>.</p>
+<h3>Architecture calling conventions</h3>
+<p>Every architecture has its own way of invoking and passing arguments to the kernel. The details for various architectures are listed in the two tables below.</p><p>The first table lists the instruction used to transition to kernel mode (which might not be the fastest or best way to transition to the kernel, so you might have to refer to <a href="../man7/vdso.7.html"><strong>vdso</strong>(7)</a>), the register used to indicate the system call number, the register used to return the system call result, and the register used to signal an error.</p><table class="table table-striped">
 <tr>
 <th>arch/ABI</th></tr>
 
@@ -555,37 +531,41 @@
 
 <tr>
 <td>-</td></tr>
-</table>
-
-<p class='spacer'>
-
-    <p>Notes:</p>
-    <dl class='dl-horizontal'>
-      <dt>[1]</dt>
-      <dd>
+</table><p>Notes:</p>
+<dl class='dl-vertical'>
+  <dt>
+    [1]
+  </dt>
+  <dd>
     <p>On a few architectures, a register is used as a boolean (0 indicating no error, and -1 indicating an error) to signal that the system call failed. The actual error value is still contained in the return register. On sparc, the carry bit (<em>csr</em>) in the processor status register (<em>psr</em>) is used instead of a full register.</p>
-      </dd>
-      <dt>[2]</dt>
-      <dd>
+  </dd>
+  <dt>
+    [2]
+  </dt>
+  <dd>
     <p><em>NR</em> is the system call number.</p>
-      </dd>
-      <dt>[3]</dt>
-      <dd>
+  </dd>
+  <dt>
+    [3]
+  </dt>
+  <dd>
     <p>For s390 and s390x, <em>NR</em> (the system call number) may be passed directly with <em>svc&nbsp;NR</em> if it is less than 256.</p>
-      </dd>
-      <dt>[4]</dt>
-      <dd>
-    <p>On SuperH, the trap number controls the maximum number of arguments passed. A <em>trap&nbsp;#0x10</em> can be used with only 0-argument system calls, a <em>trap&nbsp;#0x11</em> can be used with 0- or 1-argument system calls, and so on up to <em>trap #0x17</em> for 7-argument system calls.</p>
-      </dd>
-      <dt>[5]</dt>
-      <dd>
+  </dd>
+  <dt>
+    [4]
+  </dt>
+  <dd>
+    <p>On SuperH, the trap number controls the maximum number of arguments passed. A <em>trap\</em> <em>#0x10</em> can be used with only 0-argument system calls, a <em>trap\</em> <em>#0x11</em> can be used with 0- or 1-argument system calls, and so on up to <em>trap</em> <em>#0x17</em> for 7-argument system calls.</p>
+  </dd>
+  <dt>
+    [5]
+  </dt>
+  <dd>
     <p>The x32 ABI uses the same instruction as the x86_64 ABI and is used on the same processors. To differentiate between them, the bit mask <em>__X32_SYSCALL_BIT</em> is bitwise-ORed into the system call number for system calls under the x32 ABI. Both system call tables are available though, so setting the bit is not a hard requirement.</p>
-      </dd>
-    </dl>
-<p class='spacer'>
+  </dd>
 
-<p>The second table shows the registers used to pass the system call arguments.</p>
-<table class="table table-striped">
+</dl>
+<p>The second table shows the registers used to pass the system call arguments.</p><table class="table table-striped">
 <tr>
 <th>arch/ABI</th></tr>
 
@@ -1191,20 +1171,18 @@
 
 <tr>
 <td>-</td></tr>
-</table>
-
-<p class='spacer'>
-
-    <p>Notes:</p>
-    <dl class='dl-horizontal'>
-      <dt>[1]</dt>
-      <dd>
+</table><p>Notes:</p>
+<dl class='dl-vertical'>
+  <dt>
+    [1]
+  </dt>
+  <dd>
     <p>The mips/o32 system call convention passes arguments 5 through 8 on the user stack.</p>
-      </dd>
-    </dl>
-<p class='spacer'>
+  </dd>
 
+</dl>
 <p>Note that these tables don't cover the entire calling convention&ndash;some architectures may indiscriminately clobber other registers not listed here.</p>
+
         </div>
       </section>
 
@@ -1212,7 +1190,8 @@
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
 
-<pre>#define _GNU_SOURCE
+<pre>
+#define _GNU_SOURCE
 #include &lt;unistd.h&gt;
 #include &lt;sys/syscall.h&gt;
 #include &lt;sys/types.h&gt;
@@ -1225,7 +1204,8 @@ main(int argc, char *argv[])
 
     tid = syscall(SYS_gettid);
     tid = syscall(SYS_tgkill, getpid(), tid, SIGHUP);
-}</pre>
+}
+</pre>
 
         </div>
       </section>
@@ -1233,11 +1213,9 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO syscall&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/_syscall.2.html"><strong>_syscall</strong>(2)</a>, <a href="../man2/intro.2.html"><strong>intro</strong>(2)</a>, <a href="../man2/syscalls.2.html"><strong>syscalls</strong>(2)</a>, <a href="../man3/errno.3.html"><strong>errno</strong>(3)</a>, <a href="../man7/vdso.7.html"><strong>vdso</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="syncfs.2.html"><span aria-hidden="true">&larr;</span> syncfs.2: Commit filesystem caches to disk</a></li>

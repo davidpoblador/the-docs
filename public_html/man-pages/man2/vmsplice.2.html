@@ -91,12 +91,14 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;fcntl.h&gt;</strong>
-<strong>#include &lt;sys/uio.h&gt;</strong>
+<pre>
+<strong>#define</strong> <strong>_GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <fcntl.h></strong>
+<strong>#include <sys/uio.h></strong>
 
-<strong>ssize_t vmsplice(int </strong><em>fd</em><strong>, const struct iovec *</strong><em>iov</em><strong>,</strong>
-<strong>                 unsigned long </strong><em>nr_segs</em><strong>, unsigned int </strong><em>flags</em><strong>);</strong></pre>
+<strong>ssize_t</strong> <strong>vmsplice(int</strong> <strong></strong><em>fd</em><strong>,</strong> <strong>const</strong> <strong>struct</strong> <strong>iovec</strong> <strong>*</strong><em>iov</em><strong>,</strong>
+<strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong></strong> <strong>unsigned</strong> <strong>long</strong> <strong></strong><em>nr_segs</em><strong>,</strong> <strong>unsigned</strong> <strong>int</strong> <strong></strong><em>flags</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -104,46 +106,48 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The <strong>vmsplice</strong>() system call maps <em>nr_segs</em> ranges of user memory described by <em>iov</em> into a pipe. The file descriptor <em>fd</em> must refer to a pipe.</p>
-<p class='spacer'>
-
-<p>The pointer <em>iov</em> points to an array of <em>iovec</em> structures as defined in <em>&lt;sys/uio.h&gt;</em>:</p>
-<p class='spacer'>
-
-<pre>struct iovec {
+<p>The <strong>vmsplice</strong>() system call maps <em>nr_segs</em> ranges of user memory described by <em>iov</em> into a pipe. The file descriptor <em>fd</em> must refer to a pipe.</p><p>The pointer <em>iov</em> points to an array of <em>iovec</em> structures as defined in <em><sys/uio.h></em>:</p>
+<pre>
+struct iovec {
     void  *iov_base;        /* Starting address */
     size_t iov_len;         /* Number of bytes */
-};</pre>
+};
+</pre>
+<p>The <em>flags</em> argument is a bit mask that is composed by ORing together zero or more of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SPLICE_F_MOVE</strong></p>
+  </dt>
+  <dd>
+    <p>Unused for <strong>vmsplice</strong>(); see <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>SPLICE_F_NONBLOCK</strong></p>
+  </dt>
+  <dd>
+    <p>Do not block on I/O; see <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a> for further details.</p>
+  </dd>
+  <dt>
+    <p><strong>SPLICE_F_MORE</strong></p>
+  </dt>
+  <dd>
+    <p>Currently has no effect for <strong>vmsplice</strong>(), but may be implemented in the future; see <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>SPLICE_F_GIFT</strong></p>
+  </dt>
+  <dd>
+    <p>The user pages are a gift to the kernel. The application may not modify this memory ever, otherwise the page cache and on-disk data may differ. Gifting pages to the kernel means that a subsequent <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a> <strong>SPLICE_F_MOVE</strong> can successfully move the pages; if this flag is not specified, then a subsequent <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a> <strong>SPLICE_F_MOVE</strong> must copy the pages. Data must also be properly page aligned, both in memory and length.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <p>The <em>flags</em> argument is a bit mask that is composed by ORing together zero or more of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SPLICE_F_MOVE</strong></dt>
-    <dd>
-  <p>Unused for <strong>vmsplice</strong>(); see <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a>.</p>
-    </dd>
-    <dt><strong>SPLICE_F_NONBLOCK</strong></dt>
-    <dd>
-  <p>Do not block on I/O; see <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a> for further details.</p>
-    </dd>
-    <dt><strong>SPLICE_F_MORE</strong></dt>
-    <dd>
-  <p>Currently has no effect for <strong>vmsplice</strong>(), but may be implemented in the future; see <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a>.</p>
-    </dd>
-    <dt><strong>SPLICE_F_GIFT</strong></dt>
-    <dd>
-  <p>The user pages are a gift to the kernel. The application may not modify this memory ever, otherwise the page cache and on-disk data may differ. Gifting pages to the kernel means that a subsequent <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a> <strong>SPLICE_F_MOVE</strong> can successfully move the pages; if this flag is not specified, then a subsequent <a href="../man2/splice.2.html"><strong>splice</strong>(2)</a> <strong>SPLICE_F_MOVE</strong> must copy the pages. Data must also be properly page aligned, both in memory and length.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>Upon successful completion, <strong>vmsplice</strong>() returns the number of bytes transferred to the pipe. On error, <strong>vmsplice</strong>() returns -1 and <em>errno</em> is set to indicate the error.</p>
         </div>
       </section>
@@ -152,31 +156,40 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EAGAIN</strong></dt>
-    <dd>
-  <p><strong>SPLICE_F_NONBLOCK</strong> was specified in <em>flags</em>, and the operation would block.</p>
-    </dd>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>fd</em> either not valid, or doesn't refer to a pipe.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>nr_segs</em> is greater than <strong>IOV_MAX</strong>; or memory not aligned if <strong>SPLICE_F_GIFT</strong> set.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Out of memory.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EAGAIN</strong></p>
+  </dt>
+  <dd>
+    <p><strong>SPLICE_F_NONBLOCK</strong> was specified in <em>flags</em>, and the operation would block.</p>
+  </dd>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> either not valid, or doesn't refer to a pipe.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>nr_segs</em> is greater than <strong>IOV_MAX</strong>; or memory not aligned if <strong>SPLICE_F_GIFT</strong> set.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Out of memory.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>vmsplice</strong>() system call first appeared in Linux 2.6.17; library support was added to glibc in version 2.5.</p>
         </div>
       </section>
@@ -184,7 +197,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>This system call is Linux-specific.</p>
         </div>
       </section>
@@ -192,19 +204,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p><strong>vmsplice</strong>() follows the other vectorized read/write type functions when it comes to limitations on the number of segments being passed in. This limit is <strong>IOV_MAX</strong> as defined in <em>&lt;limits.h&gt;</em>. Currently, this limit is 1024.</p>
+<p><strong>vmsplice</strong>() follows the other vectorized read/write type functions when it comes to limitations on the number of segments being passed in. This limit is <strong>IOV_MAX</strong> as defined in <em><limits.h></em>. Currently, this limit is 1024.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO vmsplice&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/splice.2.html"><strong>splice</strong>(2)</a>, <a href="../man2/tee.2.html"><strong>tee</strong>(2)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="vm86old.2.html"><span aria-hidden="true">&larr;</span> vm86old.2: Enter virtual 8086 mode</a></li>

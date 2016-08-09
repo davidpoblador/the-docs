@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>pcredemo: </title>
+  <title>pmconvscale: Rescale a performance metric value</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -25,13 +25,13 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
   <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="">
+  <meta name="description" content="Rescale a performance metric value">
 </head>
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">pcredemo<small> (3)</small></h1>
-        <p class="lead"></p>
+        <h1 class="font-effect-destruction">pmconvscale<small> (3)</small></h1>
+        <p class="lead">Rescale a performance metric value</p>
       </div>
 
     <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
@@ -54,8 +54,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/pcredemo.3.html">
-      <span itemprop="name">pcredemo: </span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/pmconvscale.3.html">
+      <span itemprop="name">pmconvscale: Rescale a performance metric value</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -74,22 +74,67 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/mariadb/">
-      <span itemprop="name">mariadb</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/pcp/">
+      <span itemprop="name">pcp</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/pcredemo.3.html">
-      <span itemprop="name">pcredemo: </span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/pmconvscale.3.html">
+      <span itemprop="name">pmconvscale: Rescale a performance metric value</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
 </ol>
-    <nav>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
+        <div class="sectioncontent">
+<p>#include &lt;pcp/pmapi.h&gt;</p><p>int pmConvScale(int <em>type</em>, const pmAtomValue *<em>ival</em>, const&nbsp;pmUnits&nbsp;*<em>iunit</em>, pmAtomValue&nbsp;*<em>oval</em>, const&nbsp;pmUnits&nbsp;*<em>ounit</em>);</p><p>cc ... -lpcp</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+<p>All performance metric values may be encoded in a union, defined as follows;</p>
+<pre>
+typedef union {
+    __int32_t    l;     /* 32-bit signed */
+    __uint32_t   ul;    /* 32-bit unsigned */
+    __int64_t    ll;    /* 64-bit signed */
+    __uint64_t   ull;   /* 64-bit unsigned */
+    float        f;     /* 32-bit floating point */
+    double       d;     /* 64-bit floating point */
+    char         *cp;   /* char ptr */
+    pmValueBlock *vbp;  /* pmValueBlock ptr */
+} pmAtomValue;
+</pre>
+<p>The encoding of a performance metric's dimensionality and scale uses a structure; see <strong>pmLookupDesc</strong>(3).</p><p>Given a performance metric value pointed to by <em>ival</em> multiply it by a scale factor and return the value in <em>oval</em>. The scaling takes place from the units defined by <em>iunit</em> into the units defined by <em>ounit</em>. Both input and output units must have the same dimensionality.</p><p>The performance metric type for both input and output values is determined by <em>type</em>, the value for which is typically extracted from a structure, following a call to <strong>pmLookupDesc</strong>(3) for a particular performance metric.</p><p><strong>pmConvScale</strong> is most useful when values returned via <strong>pmFetch</strong>(3), (and possibly extracted using <strong>pmExtractValue</strong>(3)) need to be normalized into some canonical scale and units for the purposes of computation.</p><p>As a special case, if all components of the dimension are zero, then this is treated as synonymous with a ``count'' dimension of one, and so the ``count'' scale components determine the relative scaling. This accommodates the case where performance metrics are dimensionless, without special case handling on the part of the caller.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RELATED TO pmconvscale&hellip;</h2>
+        <div class="sectioncontent">
+<p><strong>PMAPI</strong>(3), <strong>pmAtomStr</strong>(3), <strong>pmExtractValue</strong>(3), <strong>pmFetch</strong>(3), <strong>pmLookupDesc</strong>(3), <strong>pmPrintValue</strong>(3), <strong>pmTypeStr</strong>(3) and <strong>pmUnitsStr</strong>(3).</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+<p><strong>PM_ERR_CONV</strong></p><ul>
+<li><p><em>iunit</em> and <em>ounit</em> have different dimensionality, or have inappropriate <em>type</em></p></li>
+</ul><p><strong>PM_ERR_UNIT</strong></p><ul>
+<li><p>Inappropriate <em>iunit</em> or <em>ounit</em> parameter</p></li>
+</ul>
+        </div>
+      </section>
+<nav>
   <ul class="pager">
-   <li class="previous"><a href="pcpintro.3.html"><span aria-hidden="true">&larr;</span> pcpintro.3: Introduction to the performance co-pilot (pcp) libraries</a></li>
-   <li class="next"><a href="perror.3.html">perror.3: Print a system error message <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="pmconverttime.3.html"><span aria-hidden="true">&larr;</span> pmconverttime.3: Convert tm structure to timeval structure</a></li>
+   <li class="next"><a href="pmctime.3.html">pmctime.3: Format the date and time for a reporting timezone <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

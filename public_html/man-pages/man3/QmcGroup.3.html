@@ -90,18 +90,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C++ SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p>#include &lt;QmcGroup.h&gt;</p>
-<p class='spacer'>
-
-<p>CC ... -lqmc -lpcp</p>
+<p>#include &lt;QmcGroup.h&gt;</p><p>CC ... -lqmc -lpcp</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
 <p>A <strong>QmcGroup</strong> object is a container for contexts and metrics that should be fetched at the same time.  The class manages the <a href="../man3/QmcContext.3.html"><strong>QmcContext</strong>(3)</a> objects, timezones and bounds for every context created with <strong>QmcGroup::use</strong> and <strong>QmcGroup::addMetric</strong>.</p>
         </div>
       </section>
@@ -110,155 +105,205 @@
         <h2 class="font-effect-shadow-multiple">CONSTRUCTORS & DESTRUCTOR</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>~QmcGroup();</strong></dt>
-    <dd>
-  <p>Destructor which destroys all metrics and contexts created by this group.</p>
-    </dd>
-    <dt><strong>QmcGroup(bool restrictArchives = false);</strong></dt>
-    <dd>
-  <p>Construct a new fetch group. <em>restrictArchives</em> will restrict the creating of multiple archive contexts created from the same host.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>~QmcGroup();</strong></p>
+  </dt>
+  <dd>
+    <p>Destructor which destroys all metrics and contexts created by this group.</p>
+  </dd>
+  <dt>
+    <p><strong>QmcGroup(bool restrictArchives = false);</strong></p>
+  </dt>
+  <dd>
+    <p>Construct a new fetch group. <em>restrictArchives</em> will restrict the creating of multiple archive contexts created from the same host.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONTEXTS</h2>
         <div class="sectioncontent">
+<p>The default context of the group is defined as the first context created with <strong>QmcGroup::use</strong> before the first call to <strong>QmcGroup::addMetric</strong>. If no context is created before the first metric is added, the localhost is used as the default context.  Therefore, if any metrics specifications contain archive sources, an archive source must have been created with <strong>QmcGroup::use</strong> to avoid an error for mixing context types.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>uint_t numContexts() const;</strong></p>
+  </dt>
+  <dd>
+    <p>The number of valid contexts created in this group.</p>
+  </dd>
+  <dt>
+    <p><strong>QmcContext const& context(uint_t index) const</strong></p>
+  </dt>
+  <dd>
+    <p>Return a handle to a context.</p>
+  </dd>
+  <dt>
+    <p><strong>QmcContext& context(uint_t index);</strong></p>
+  </dt>
+  <dd>
+    <p>Return a modifiable handle to a context.</p>
+  </dd>
+  <dt>
+    <p><strong>int mode() const;</strong></p>
+  </dt>
+  <dd>
+    <p>Return the type of context, either <strong>PM_CONTEXT_LOCAL</strong>, <strong>PM_CONTEXT_HOST</strong> or <strong>PM_CONTEXT_ARCHIVE</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>QmcContext* which() const;</strong></p>
+  </dt>
+  <dd>
+    <p>Return a handle to the current context of this group. This does not call <strong>pmUseContext</strong>(3) so it may not be the current <strong>PMAPI</strong>(3) context.</p>
+  </dd>
+  <dt>
+    <p><strong>uint_t whichIndex() const</strong></p>
+  </dt>
+  <dd>
+    <p>The index to the current group context.</p>
+  </dd>
+  <dt>
+    <p><strong>int use(int type, char const* source);</strong></p>
+  </dt>
+  <dd>
+    <p>Use the context of <em>type</em> from <em>source</em>. If a context to this <em>source</em> already exists in this group, that context will become the current <strong>PMAPI</strong>(3) context.  Otherwise a new context will be created.  The result is the <strong>PMAPI</strong>(3) context handle for the <strong>QmcGroup::context</strong> or a <strong>PMAPI</strong>(3) error code if the context failed.</p>
+  </dd>
+  <dt>
+    <p><strong>bool defaultDefined() const;</strong></p>
+  </dt>
+  <dd>
+    <p>Returns <strong>true</strong> if a default context has been determined.</p>
+  </dd>
+  <dt>
+    <p><strong>int useDefault();</strong></p>
+  </dt>
+  <dd>
+    <p>Use the default context. If a default context has not been created, the context to the local host will be attempted.  A result less than zero indicates that the method failed with the <strong>PMAPI</strong>(3) error encoded in the result.</p>
+  </dd>
+  <dt>
+    <p><strong>void createLocalContext();</strong></p>
+  </dt>
+  <dd>
+    <p>Create and use a context to the local host.  A result less than zero indicates that the method failed with the <strong>PMAPI</strong>(3) error encoded in the result.</p>
+  </dd>
 
-  <p>The default context of the group is defined as the first context created with <strong>QmcGroup::use</strong> before the first call to <strong>QmcGroup::addMetric</strong>. If no context is created before the first metric is added, the localhost is used as the default context.  Therefore, if any metrics specifications contain archive sources, an archive source must have been created with <strong>QmcGroup::use</strong> to avoid an error for mixing context types.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>uint_t numContexts() const;</strong></dt>
-    <dd>
-  <p>The number of valid contexts created in this group.</p>
-    </dd>
-    <dt><strong>QmcContext const& context(uint_t index) const</strong></dt>
-    <dd>
-  <p>Return a handle to a context.</p>
-    </dd>
-    <dt><strong>QmcContext& context(uint_t index);</strong></dt>
-    <dd>
-  <p>Return a modifiable handle to a context.</p>
-    </dd>
-    <dt><strong>int mode() const;</strong></dt>
-    <dd>
-  <p>Return the type of context, either <strong>PM_CONTEXT_LOCAL</strong>, <strong>PM_CONTEXT_HOST</strong> or <strong>PM_CONTEXT_ARCHIVE</strong>.</p>
-    </dd>
-    <dt><strong>QmcContext* which() const;</strong></dt>
-    <dd>
-  <p>Return a handle to the current context of this group. This does not call <strong>pmUseContext</strong>(3) so it may not be the current <strong>PMAPI</strong>(3) context.</p>
-    </dd>
-    <dt><strong>uint_t whichIndex() const</strong></dt>
-    <dd>
-  <p>The index to the current group context.</p>
-    </dd>
-    <dt><strong>int use(int type, char const* source);</strong></dt>
-    <dd>
-  <p>Use the context of <em>type</em> from <em>source</em>. If a context to this <em>source</em> already exists in this group, that context will become the current <strong>PMAPI</strong>(3) context.  Otherwise a new context will be created.  The result is the <strong>PMAPI</strong>(3) context handle for the <strong>QmcGroup::context</strong> or a <strong>PMAPI</strong>(3) error code if the context failed.</p>
-    </dd>
-    <dt><strong>bool defaultDefined() const;</strong></dt>
-    <dd>
-  <p>Returns <strong>true</strong> if a default context has been determined.</p>
-    </dd>
-    <dt><strong>int useDefault();</strong></dt>
-    <dd>
-  <p>Use the default context. If a default context has not been created, the context to the local host will be attempted.  A result less than zero indicates that the method failed with the <strong>PMAPI</strong>(3) error encoded in the result.</p>
-    </dd>
-    <dt><strong>void createLocalContext();</strong></dt>
-    <dd>
-  <p>Create and use a context to the local host.  A result less than zero indicates that the method failed with the <strong>PMAPI</strong>(3) error encoded in the result.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">METRICS</h2>
         <div class="sectioncontent">
+<p>These <strong>addMetric</strong> methods should be used to create new metrics as the <strong>QmcMetric</strong> constructors are private. These methods will always return a pointer to a <strong>QmcMetric</strong> object, however the <strong>QmcMetric::status()</strong> field should be checked to ensure the metric is valid.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>QmcMetric* addMetric(char const* str, double theScale = 0.0,</strong></p>
+  </dt>
+  <dd>
+    <p><strong>bool active = false);</strong></p><p>Add the metric <em>str</em> to the group, with a scaling factor of <em>scale</em>. If <em>active</em> is set the metric will use only active instances (see <a href="../man3/QmcMetric.3.html"><strong>QmcMetric</strong>(3)</a>).</p>
+  </dd>
+  <dt>
+    <p><strong>QmcMetric* addMetric(pmMetricSpec* theMetric, double theScale</strong></p>
+  </dt>
+  <dd>
+    <p><strong>= 0.0, bool active);</strong></p><p>Add the metric <em>theMetric</em> to the group, with a scaling factor of <em>scale</em>. If <em>active</em> is set the metric will use only active instances (see <a href="../man3/QmcMetric.3.html"><strong>QmcMetric</strong>(3)</a>).</p>
+  </dd>
+  <dt>
+    <p><strong>int fetch(bool update = true);</strong></p>
+  </dt>
+  <dd>
+    <p>Fetch all the metrics in all the contexts in this group.  If <em>update</em> is equal to <strong>true</strong>, all counter metrics will be automatically converted to rates (see <a href="../man3/QmcMetric.3.html"><strong>QmcMetric</strong>(3)</a>).</p>
+  </dd>
+  <dt>
+    <p><strong>int setArchiveMode(int mode, const struct timeval *when,</strong></p>
+  </dt>
+  <dd>
+    <p><strong>int interval);</strong></p><p>Set the mode and time to access all archive contexts in this group.  See <strong>pmSetmode</strong>(3) for more details.</p>
+  </dd>
 
-  <p>These <strong>addMetric</strong> methods should be used to create new metrics as the <strong>QmcMetric</strong> constructors are private. These methods will always return a pointer to a <strong>QmcMetric</strong> object, however the <strong>QmcMetric::status()</strong> field should be checked to ensure the metric is valid.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>QmcMetric* addMetric(char const* str, double theScale = 0.0,</strong></dt>
-    <dd>
-  <p><strong>bool active = false);</strong></p>
-<p class='spacer'>
+</dl>
 
-  <p>Add the metric <em>str</em> to the group, with a scaling factor of <em>scale</em>. If <em>active</em> is set the metric will use only active instances (see <a href="../man3/QmcMetric.3.html"><strong>QmcMetric</strong>(3)</a>).</p>
-    </dd>
-    <dt><strong>QmcMetric* addMetric(pmMetricSpec* theMetric, double theScale</strong></dt>
-    <dd>
-  <p><strong>= 0.0, bool active);</strong></p>
-<p class='spacer'>
-
-  <p>Add the metric <em>theMetric</em> to the group, with a scaling factor of <em>scale</em>. If <em>active</em> is set the metric will use only active instances (see <a href="../man3/QmcMetric.3.html"><strong>QmcMetric</strong>(3)</a>).</p>
-    </dd>
-    <dt><strong>int fetch(bool update = true);</strong></dt>
-    <dd>
-  <p>Fetch all the metrics in all the contexts in this group.  If <em>update</em> is equal to <strong>true</strong>, all counter metrics will be automatically converted to rates (see <a href="../man3/QmcMetric.3.html"><strong>QmcMetric</strong>(3)</a>).</p>
-    </dd>
-    <dt><strong>int setArchiveMode(int mode, const struct timeval *when,</strong></dt>
-    <dd>
-  <p><strong>int interval);</strong></p>
-<p class='spacer'>
-
-  <p>Set the mode and time to access all archive contexts in this group.  See <strong>pmSetmode</strong>(3) for more details.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">TIMEZONES</h2>
         <div class="sectioncontent">
+<p>These methods assist in the management of multiple timezones and help to control the current timezone.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>enum TimeZoneFlag { localTZ, userTZ, groupTZ, unknownTZ };</strong></p>
+  </dt>
+  <dd>
+    <p>Enumeration used to describe the origin of the default timezone. <strong>localTZ</strong>, <strong>userTZ</strong> and <strong>groupTZ</strong> indicate that the timezone was set with <strong>QmcGroup::useLocalTZ</strong>, <strong>QmcGroup::useTZ(QString</strong> <strong>const&)</strong> and <strong>QmcGroup::useTZ()</strong> respectively. <strong>unknownTZ</strong> indicates that a timezone has not been set. <strong>userTZ</strong> indicates that the timezone was</p>
+  </dd>
+  <dt>
+    <p><strong>int useTZ();</strong></p>
+  </dt>
+  <dd>
+    <p>Use the timezone of the current group context as the default.</p>
+  </dd>
+  <dt>
+    <p><strong>int useTZ(const QString &tz);</strong></p>
+  </dt>
+  <dd>
+    <p>Add and use <em>tz</em> as the default timezone of this group.</p>
+  </dd>
+  <dt>
+    <p><strong>int useLocalTZ();</strong></p>
+  </dt>
+  <dd>
+    <p>Use the timezone of the localhost as the default for this group.</p>
+  </dd>
+  <dt>
+    <p><strong>void defaultTZ(QString &label, QString &tz);</strong></p>
+  </dt>
+  <dd>
+    <p>Return the <em>label</em> and <em>tz</em> string of the default timezone of this group.</p>
+  </dd>
+  <dt>
+    <p><strong>TimeZoneFlag defaultTZ() const</strong></p>
+  </dt>
+  <dd>
+    <p>Return the origin of the default timezone.</p>
+  </dd>
+  <dt>
+    <p><strong>int useDefaultTZ();</strong></p>
+  </dt>
+  <dd>
+    <p>Set the timezone to be the default timezone as defined in a previous call to <strong>QmcGroup::useTZ</strong> or <strong>QmcGroup::useLocalTZ</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>struct timeval const& logStart() const;</strong></p>
+  </dt>
+  <dd>
+    <p>Return the earliest starting time of any archives in this group.  Assumes that <strong>QmcGroup::updateBounds</strong> has been called.</p>
+  </dd>
+  <dt>
+    <p><strong>struct timeval const& logEnd() const;</strong></p>
+  </dt>
+  <dd>
+    <p>Return the latest finish time of any archives in this group.  Assumes that <strong>QmcGroup::updateBounds</strong> has been called.</p>
+  </dd>
+  <dt>
+    <p><strong>void updateBounds();</strong></p>
+  </dt>
+  <dd>
+    <p>Determine the earliest start and latest finish times of all archives in this group.</p>
+  </dd>
+  <dt>
+    <p><strong>int sendTimezones();</strong></p>
+  </dt>
+  <dd>
+    <p>Send the current timezones to <strong>kmtime (3).</strong></p>
+  </dd>
 
-  <p>These methods assist in the management of multiple timezones and help to control the current timezone.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>enum TimeZoneFlag { localTZ, userTZ, groupTZ, unknownTZ };</strong></dt>
-    <dd>
-  <p>Enumeration used to describe the origin of the default timezone. <strong>localTZ</strong>, <strong>userTZ</strong> and <strong>groupTZ</strong> indicate that the timezone was set with <strong>QmcGroup::useLocalTZ</strong>, <strong>QmcGroup::useTZ(QString const&)</strong> and <strong>QmcGroup::useTZ()</strong> respectively. <strong>unknownTZ</strong> indicates that a timezone has not been set. <strong>userTZ</strong> indicates that the timezone was</p>
-    </dd>
-    <dt><strong>int useTZ();</strong></dt>
-    <dd>
-  <p>Use the timezone of the current group context as the default.</p>
-    </dd>
-    <dt><strong>int useTZ(const QString &tz);</strong></dt>
-    <dd>
-  <p>Add and use <em>tz</em> as the default timezone of this group.</p>
-    </dd>
-    <dt><strong>int useLocalTZ();</strong></dt>
-    <dd>
-  <p>Use the timezone of the localhost as the default for this group.</p>
-    </dd>
-    <dt><strong>void defaultTZ(QString &label, QString &tz);</strong></dt>
-    <dd>
-  <p>Return the <em>label</em> and <em>tz</em> string of the default timezone of this group.</p>
-    </dd>
-    <dt><strong>TimeZoneFlag defaultTZ() const</strong></dt>
-    <dd>
-  <p>Return the origin of the default timezone.</p>
-    </dd>
-    <dt><strong>int useDefaultTZ();</strong></dt>
-    <dd>
-  <p>Set the timezone to be the default timezone as defined in a previous call to <strong>QmcGroup::useTZ</strong> or <strong>QmcGroup::useLocalTZ</strong>.</p>
-    </dd>
-    <dt><strong>struct timeval const& logStart() const;</strong></dt>
-    <dd>
-  <p>Return the earliest starting time of any archives in this group.  Assumes that <strong>QmcGroup::updateBounds</strong> has been called.</p>
-    </dd>
-    <dt><strong>struct timeval const& logEnd() const;</strong></dt>
-    <dd>
-  <p>Return the latest finish time of any archives in this group.  Assumes that <strong>QmcGroup::updateBounds</strong> has been called.</p>
-    </dd>
-    <dt><strong>void updateBounds();</strong></dt>
-    <dd>
-  <p>Determine the earliest start and latest finish times of all archives in this group.</p>
-    </dd>
-    <dt><strong>int sendTimezones();</strong></dt>
-    <dd>
-  <p>Send the current timezones to <strong>kmtime (3).</strong></p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
@@ -266,34 +311,32 @@
         <h2 class="font-effect-shadow-multiple">DEBUGGING</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>void dump(ostream &os);</strong></dt>
-    <dd>
-  <p>Dump state information about this group to <em>os</em>.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>void dump(ostream &os);</strong></p>
+  </dt>
+  <dd>
+    <p>Dump state information about this group to <em>os</em>.</p>
+  </dd>
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
-        <div class="sectioncontent">
+</dl>
 
-<p>Error messages are generated using <a href="../man3/pmprintf.3.html"><strong>pmprintf</strong>(3)</a> but are not flushed. It is the responsibility of the user to call <strong>pmflush</strong>(3) to output any messages.</p>
-<p class='spacer'>
-
-<p>Additional diagnostics may be activated by adding <strong>DBG_TRACE_PMC</strong> to the global <em>pmDebug</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO QmcGroup&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>PMAPI</strong>(3), <a href="../man3/QMC.3.html"><strong>QMC</strong>(3)</a>, <a href="../man3/QmcContext.3.html"><strong>QmcContext</strong>(3)</a>, <a href="../man3/QmcMetric.3.html"><strong>QmcMetric</strong>(3)</a>, <strong>pmflush</strong>(3), <a href="../man3/pmprintf.3.html"><strong>pmprintf</strong>(3)</a> and <strong>pmSetMode</strong>(3).</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+<p>Error messages are generated using <a href="../man3/pmprintf.3.html"><strong>pmprintf</strong>(3)</a> but are not flushed. It is the responsibility of the user to call <strong>pmflush</strong>(3) to output any messages.</p><p>Additional diagnostics may be activated by adding <strong>DBG_TRACE_PMC</strong> to the global <em>pmDebug</em>.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="QmcDesc.3.html"><span aria-hidden="true">&larr;</span> QmcDesc.3: Container for a metric description</a></li>
