@@ -104,31 +104,31 @@
       <section>
         <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
         <div class="sectioncontent">
-<h3>-i <dev|pcap|->, -d <dev|pcap|->, --in <dev|pcap|->, --dev <dev|pcap|-></h3>
+<h3>-i &lt;dev|pcap|-&gt;, -d &lt;dev|pcap|-&gt;, --in &lt;dev|pcap|-&gt;, --dev &lt;dev|pcap|-&gt;</h3>
 <p>Defines an input device. This can either be a networking device, a pcap file or stdin (\[lq]-\[rq]). In case of a pcap file, the pcap type (\[lq]-D\[rq] option) is determined automatically by the pcap file magic. In case of stdin, it is assumed that the input stream is a pcap file. If the pcap link type is Netlink and pcap type is default format (usec or nsec), then each packet will be wrapped with pcap cooked header [2].</p>
-<h3>-o <dev|pcap|dir|cfg|->, --out <dev|pcap|dir|cfg|-></h3>
+<h3>-o &lt;dev|pcap|dir|cfg|-&gt;, --out &lt;dev|pcap|dir|cfg|-&gt;</h3>
 <p>Defines the output device. This can either be a networking device, a pcap file, a folder, a <a href="../man8/trafgen.8.html"><strong>trafgen</strong>(8)</a> configuration file or stdout (\[lq]-\[rq]). In the case of a pcap file that should not have the default pcap type (0xa1b2c3d4), the additional option \[lq]-T\[rq] must be provided. If a directory is given, then, instead of a single pcap file, multiple pcap files are generated with rotation based on maximum file size or a given interval (\[lq]-F\[rq] option). Optionally, sending the SIGHUP signal to the netsniff-ng process causes a premature rotation of the file. A trafgen configuration file can currently only be specified if the input device is a pcap file. To specify a  pcap file as the output device, the file name must have \[lq].pcap\[rq] as its extension. If stdout is given as a device, then a trafgen configuration will be written to stdout if the input device is a pcap file, or a pcap file if the input device is a networking device. In case if the input device is a Netlink monitor device and pcap type is default (usec or nsec) then each packet will be wrapped with pcap cooked header [2] to keep Netlink family number (Kuznetzov's and netsniff-ng pcap types already contain family number in protocol number field).</p>
-<h3>-C <id>, --fanout-group <id></h3>
+<h3>-C &lt;id&gt;, --fanout-group &lt;id&gt;</h3>
 <p>If multiple netsniff-ng instances are being started that all have the same packet fanout group id, then the ingress network traffic being captured is being distributed/load-balanced among these group participants. This gives a much better scaling than running multiple netsniff-ng processes without a fanout group parameter in parallel, but only with a BPF filter attached as a packet would otherwise need to be delivered to all such capturing processes, instead of only once to such a fanout member. Naturally, each fanout member can have its own BPF filters attached.</p>
-<h3>-K <hash|lb|cpu|rnd|roll|qm>, --fanout-type <hash|lb|cpu|rnd|roll|qm></h3>
+<h3>-K &lt;hash|lb|cpu|rnd|roll|qm&gt;, --fanout-type &lt;hash|lb|cpu|rnd|roll|qm&gt;</h3>
 <p>This parameter specifies the fanout discipline, in other words, how the captured network traffic is dispatched to the fanout group members. Options are to distribute traffic by the packet hash (\[lq]hash\[rq]), in a round-robin manner (\[lq]lb\[rq]), by CPU the packet arrived on (\[lq]cpu\[rq]), by random (\[lq]rnd\[rq]), by rolling over sockets (\[lq]roll\[rq]) which means if one socket's queue is full, we move on to the next one, or by NIC hardware queue mapping (\[lq]qm\[rq]).</p>
-<h3>-L <defrag|roll>, --fanout-opts <defrag|roll></h3>
+<h3>-L &lt;defrag|roll&gt;, --fanout-opts &lt;defrag|roll&gt;</h3>
 <p>Defines some auxiliary fanout options to be used in addition to a given fanout type. These options apply to any fanout type. In case of \[lq]defrag\[rq], the kernel is being told to defragment packets before delivering to user space, and \[lq]roll\[rq] provides the same roll-over option as the \[lq]roll\[rq] fanout type, so that on any different fanout type being used (e.g. \[lq]qm\[rq]) the socket may temporarily roll over to the next fanout group member in case the original one's queue is full.</p>
-<h3>-f, --filter <bpf-file|-|expr></h3>
+<h3>-f, --filter &lt;bpf-file|-|expr&gt;</h3>
 <p>Specifies to not dump all traffic, but to filter the network packet haystack. As a filter, either a <a href="../man8/bpfc.8.html"><strong>bpfc</strong>(8)</a> compiled file/stdin can be passed as a parameter or a <strong>tcpdump</strong>(1)-like filter expression in quotes. For details regarding the bpf-file have a look at <a href="../man8/bpfc.8.html"><strong>bpfc</strong>(8)</a>, for details regarding a <strong>tcpdump</strong>(1)-like filter have a look at section \[lq]filter example\[rq] or at <strong>pcap-filter</strong>(7). A filter expression may also be passed to netsniff-ng without option \[lq]-f\[rq] in case there is no subsequent option following after the command-line filter expression.</p>
-<h3>-t, --type <type></h3>
+<h3>-t, --type &lt;type&gt;</h3>
 <p>This defines some sort of filtering mechanisms in terms of addressing. Possible values for type are \[lq]host\[rq] (to us), \[lq]broadcast\[rq] (to all), \[lq]multicast\[rq] (to group), \[lq]others\[rq] (promiscuous mode) or \[lq]outgoing\[rq] (from us).</p>
-<h3>-F, --interval <size|time></h3>
+<h3>-F, --interval &lt;size|time&gt;</h3>
 <p>If the output device is a folder, with \[lq]-F\[rq], it is possible to define the pcap file rotation interval either in terms of size or time. Thus, when the interval limit has been reached, a new pcap file will be started. As size parameter, the following values are accepted \[lq]&lt;num&gt;KiB/MiB/GiB\[rq]; As time parameter, it can be \[lq]&lt;num&gt;s/sec/min/hrs\[rq].</p>
 <h3>-J, --jumbo-support</h3>
 <p>By default, in pcap replay or redirect mode, netsniff-ng's ring buffer frames are a fixed size of 2048 bytes. This means that if you are expecting jumbo frames or even super jumbo frames to pass through your network, then you need to enable support for that by using this option. However, this has the disadvantage of performance degradation and a bigger memory footprint for the ring buffer. Note that this doesn't affect (pcap) capturing mode, since tpacket in version 3 is used!</p>
 <h3>-R, --rfraw</h3>
 <p>In case the input or output networking device is a wireless device, it is possible with netsniff-ng to turn this into monitor mode and create a mon&lt;X&gt; device that netsniff-ng will be listening on instead of wlan&lt;X&gt;, for instance. This enables netsniff-ng to analyze, dump, or even replay raw 802.11 frames.</p>
-<h3>-n <0|uint>, --num <0|uint></h3>
+<h3>-n &lt;0|uint&gt;, --num &lt;0|uint&gt;</h3>
 <p>Process a number of packets and then exit. If the number of packets is 0, then this is equivalent to infinite packets resp. processing until interrupted. Otherwise, a number given as an unsigned integer will limit processing.</p>
-<h3>-P <name>, --prefix <name></h3>
+<h3>-P &lt;name&gt;, --prefix &lt;name&gt;</h3>
 <p>When dumping pcap files into a folder, a file name prefix can be defined with this option. If not otherwise specified, the default prefix is \[lq]dump-\[rq] followed by a Unix timestamp. Use \[lq]--prefex ""\[rq] to set filename as seconds since the Unix Epoch e.g. 1369179203.pcap</p>
-<h3>-T <pcap-magic>, --magic <pcap-magic></h3>
+<h3>-T &lt;pcap-magic&gt;, --magic &lt;pcap-magic&gt;</h3>
 <p>Specify a pcap type for storage. Different pcap types with their various meta data capabilities are shown with option \[lq]-D\[rq]. If not otherwise specified, the pcap-magic 0xa1b2c3d4, also known as a standard tcpdump-capable pcap format, is used. Pcap files with swapped endianness are also supported.</p>
 <h3>-D, --dump-pcap-types</h3>
 <p>Dump all available pcap types with their capabilities and magic numbers that can be used with option \[lq]-T\[rq] to stdout and exit.</p>
@@ -148,13 +148,13 @@
 <p>Use scatter-gather as pcap file I/O. This is the default when capturing pcap files.</p>
 <h3>-c, --clrw</h3>
 <p>Use slower <a href="../man2/read.2.html"><strong>read</strong>(2)</a> and <a href="../man2/write.2.html"><strong>write</strong>(2)</a> I/O. This is not the default case anywhere, but in some situations it could be preferred as it has a lower latency on write-back to disc.</p>
-<h3>-S <size>, --ring-size <size></h3>
+<h3>-S &lt;size&gt;, --ring-size &lt;size&gt;</h3>
 <p>Manually define the RX_RING resp. TX_RING size in \[lq]&lt;num&gt;KiB/MiB/GiB\[rq]. By default, the size is determined based on the network connectivity rate.</p>
-<h3>-k <uint>, --kernel-pull <uint></h3>
+<h3>-k &lt;uint&gt;, --kernel-pull &lt;uint&gt;</h3>
 <p>Manually define the interval in micro-seconds where the kernel should be triggered to batch process the ring buffer frames. By default, it is every 10us, but it can manually be prolonged, for instance.</p>
-<h3>-b <cpu>, --bind-cpu <cpu></h3>
+<h3>-b &lt;cpu&gt;, --bind-cpu &lt;cpu&gt;</h3>
 <p>Pin netsniff-ng to a specific CPU and also pin resp. migrate the NIC's IRQ CPU affinity to this CPU. This option should be preferred in combination with \[lq]-s\[rq] in case a middle to high packet rate is expected.</p>
-<h3>-u <uid>, --user <uid> resp. -g <gid>, --group <gid></h3>
+<h3>-u &lt;uid&gt;, --user &lt;uid&gt; resp. -g &lt;gid&gt;, --group &lt;gid&gt;</h3>
 <p>After ring setup drop privileges to a non-root user/group combination.</p>
 <h3>-H, --prio-high</h3>
 <p>Set this process as a high priority process in order to achieve a higher scheduling rate resp. CPU time. This is however not the default setting, since it could lead to starvation of other processes, for example low priority kernel threads.</p>
@@ -267,11 +267,11 @@
 <p>To select traffic neither sourced from, nor destined for, local hosts. If you have a gateway to another network, this traffic should never make it onto your local network.</p>
 <h3>tcp[tcpflags] & (tcp-syn|tcp-fin) != 0 and not src and dst net localnet</h3>
 <p>To select the start and end packets (the SYN and FIN packets) of each TCP conversation that involve a non-local host.</p>
-<h3>tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)</h3>
+<h3>tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)&lt;&lt;2)) - ((tcp[12]&0xf0)&gt;&gt;2)) != 0)</h3>
 <p>To select all IPv4 HTTP packets to and from port 80, that is to say, print only packets that contain data, not, for example, SYN and FIN packets and ACK-only packets. (IPv6 is left as an exercise for the reader.)</p>
-<h3>gateway snup and ip[2:2] > 576</h3>
+<h3>gateway snup and ip[2:2] &gt; 576</h3>
 <p>To select IP packets longer than 576 bytes sent through gateway snup.</p>
-<h3>ether[0] & 1 = 0 and ip[16] >= 224</h3>
+<h3>ether[0] & 1 = 0 and ip[16] &gt;= 224</h3>
 <p>To select IP broadcast or multicast packets that were not sent via Ethernet broadcast or multicast.</p>
 <h3>icmp[icmptype] != icmp-echo and icmp[icmptype] != icmp-echoreply</h3>
 <p>To select all ICMP packets that are not echo requests or replies (that is to say, not "ping" packets).</p>
