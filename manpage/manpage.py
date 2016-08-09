@@ -41,6 +41,14 @@ def linkify(item):
                                                                 section,
                                                                 out,
                                                                 append, )
+        elif page.lower() in AvailablePages.pages:
+            out = "<strong>%s</strong>(%s)" % (manpage,
+                                               section, )
+            out = "<a href=\"../man%s/%s.%s.html\">%s</a>%s" % (section,
+                                                                manpage.lower(),
+                                                                section,
+                                                                out,
+                                                                append, )
         else:
             out = "<strong>%s</strong>(%s)%s" % (manpage,
                                                  section,
