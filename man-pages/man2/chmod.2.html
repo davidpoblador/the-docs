@@ -91,153 +91,144 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;sys/stat.h&gt;</strong>
+<pre>
+<strong>#include <sys/stat.h></strong>
 
 <strong>int chmod(const char *</strong><em>pathname</em><strong>, mode_t </strong><em>mode</em><strong>);</strong>
 
 <strong>int fchmod(int </strong><em>fd</em><strong>, mode_t </strong><em>mode</em><strong>);</strong>
 
-<strong>#include &lt;fcntl.h&gt;</strong>           /* Definition of AT_* constants */
-<strong>#include &lt;sys/stat.h&gt;</strong>
+<strong>#include <fcntl.h></strong>           /* Definition of AT_* constants */
+<strong>#include <sys/stat.h></strong>
 
-<strong>int fchmodat(int </strong><em>dirfd</em><strong>, const char *</strong><em>pathname</em><strong>, mode_t </strong><em>mode</em><strong>, int </strong><em>flags</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-  <p><strong>fchmod</strong>(): /* Since glibc 2.16: */ _POSIX_C_SOURCE</p>
-<pre>    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE
+<strong>int fchmodat(int </strong><em>dirfd</em><strong>, const char *</strong><em>pathname</em><strong>, mode_t </strong><em>mode</em><strong>, int </strong><em>flags</em><strong>);</strong>
+</pre>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>fchmod</strong>():</p><p>/* Since glibc 2.16: */ _POSIX_C_SOURCE</p>
+<pre>
+    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE
     || /* Glibc versions &lt;= 2.15: */ _XOPEN_SOURCE&nbsp;&gt;=&nbsp;500
-    || /* Glibc 2.12 to 2.15: */ _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</pre>
-
-<p class='spacer'>
-
-    <p><strong>fchmodat</strong>():</p>
-    <dl class='dl-vertical'>
-      <dt>Since glibc 2.10:</dt>
-      <dd>
+    || /* Glibc 2.12 to 2.15: */ _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L
+</pre>
+<p><strong>fchmodat</strong>():</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>Since glibc 2.10:</p>
+  </dt>
+  <dd>
     <p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
-      </dd>
-      <dt>Before glibc 2.10:</dt>
-      <dd>
+  </dd>
+  <dt>
+    <p>Before glibc 2.10:</p>
+  </dt>
+  <dd>
     <p>_ATFILE_SOURCE</p>
-      </dd>
-    </dl>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>chmod</strong>() and <strong>fchmod</strong>() system calls change a files mode bits. (The file mode consists of the file permission bits plus the set-user-ID, set-group-ID, and sticky bits.) These system calls differ only in how the file is specified:</p><ul>
+<li><p><strong>chmod</strong>() changes the mode of the file specified whose pathname is given in <em>pathname</em>, which is dereferenced if it is a symbolic link.</p></li><li><p><strong>fchmod</strong>() changes the mode of the file referred to by the open file descriptor <em>fd</em>.</p></li>
+</ul><p>The new file mode is specified in <em>mode</em>, which is a bit mask created by ORing together zero or more of the following:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>S_ISUID</strong>  (04000)</p>
+  </dt>
+  <dd>
+    <p>set-user-ID (set process effective user ID on <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>)</p>
+  </dd>
+  <dt>
+    <p><strong>S_ISGID</strong>  (02000)</p>
+  </dt>
+  <dd>
+    <p>set-group-ID (set process effective group ID on <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>; mandatory locking, as described in <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>; take a new file's group from parent directory, as described in <a href="../man2/chown.2.html"><strong>chown</strong>(2)</a> and <a href="../man2/mkdir.2.html"><strong>mkdir</strong>(2)</a>)</p>
+  </dd>
+  <dt>
+    <p><strong>S_ISVTX</strong>  (01000)</p>
+  </dt>
+  <dd>
+    <p>sticky bit (restricted deletion flag, as described in <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>)</p>
+  </dd>
+  <dt>
+    <p><strong>S_IRUSR</strong>  (00400)</p>
+  </dt>
+  <dd>
+    <p>read by owner</p>
+  </dd>
+  <dt>
+    <p><strong>S_IWUSR</strong>  (00200)</p>
+  </dt>
+  <dd>
+    <p>write by owner</p>
+  </dd>
+  <dt>
+    <p><strong>S_IXUSR</strong>  (00100)</p>
+  </dt>
+  <dd>
+    <p>execute/search by owner ("search" applies for directories, and means that entries within the directory can be accessed)</p>
+  </dd>
+  <dt>
+    <p><strong>S_IRGRP</strong>  (00040)</p>
+  </dt>
+  <dd>
+    <p>read by group</p>
+  </dd>
+  <dt>
+    <p><strong>S_IWGRP</strong>  (00020)</p>
+  </dt>
+  <dd>
+    <p>write by group</p>
+  </dd>
+  <dt>
+    <p><strong>S_IXGRP</strong>  (00010)</p>
+  </dt>
+  <dd>
+    <p>execute/search by group</p>
+  </dd>
+  <dt>
+    <p><strong>S_IROTH</strong>  (00004)</p>
+  </dt>
+  <dd>
+    <p>read by others</p>
+  </dd>
+  <dt>
+    <p><strong>S_IWOTH</strong>  (00002)</p>
+  </dt>
+  <dd>
+    <p>write by others</p>
+  </dd>
+  <dt>
+    <p><strong>S_IXOTH</strong>  (00001)</p>
+  </dt>
+  <dd>
+    <p>execute/search by others</p>
+  </dd>
 
-  <p>The <strong>chmod</strong>() and <strong>fchmod</strong>() system calls change a files mode bits. (The file mode consists of the file permission bits plus the set-user-ID, set-group-ID, and sticky bits.) These system calls differ only in how the file is specified:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p><strong>chmod</strong>() changes the mode of the file specified whose pathname is given in <em>pathname</em>, which is dereferenced if it is a symbolic link.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p><strong>fchmod</strong>() changes the mode of the file referred to by the open file descriptor <em>fd</em>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+<p>The effective UID of the calling process must match the owner of the file, or the process must be privileged (Linux: it must have the <strong>CAP_FOWNER</strong> capability).</p><p>If the calling process is not privileged (Linux: does not have the <strong>CAP_FSETID</strong> capability), and the group of the file does not match the effective group ID of the process or one of its supplementary group IDs, the <strong>S_ISGID</strong> bit will be turned off, but this will not cause an error to be returned.</p><p>As a security measure, depending on the filesystem, the set-user-ID and set-group-ID execution bits may be turned off if a file is written. (On Linux, this occurs if the writing process does not have the <strong>CAP_FSETID</strong> capability.) On some filesystems, only the superuser can set the sticky bit, which may have a special meaning. For the sticky bit, and for set-user-ID and set-group-ID bits on directories, see <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>.</p><p>On NFS filesystems, restricting the permissions will immediately influence already open files, because the access control is done on the server, but open files are maintained by the client. Widening the permissions may be delayed for other clients if attribute caching is enabled on them.</p><h3>fchmodat()</h3>
+<p>The <strong>fchmodat</strong>() system call operates in exactly the same way as <strong>chmod</strong>(), except for the differences described here.</p><p>If the pathname given in <em>pathname</em> is relative, then it is interpreted relative to the directory referred to by the file descriptor <em>dirfd</em> (rather than relative to the current working directory of the calling process, as is done by <strong>chmod</strong>() for a relative pathname).</p><p>If <em>pathname</em> is relative and <em>dirfd</em> is the special value <strong>AT_FDCWD</strong>, then <em>pathname</em> is interpreted relative to the current working directory of the calling process (like <strong>chmod</strong>()).</p><p>If <em>pathname</em> is absolute, then <em>dirfd</em> is ignored.</p><p><em>flags</em> can either be 0, or include the following flag:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>AT_SYMLINK_NOFOLLOW</strong></p>
+  </dt>
+  <dd>
+    <p>If <em>pathname</em> is a symbolic link, do not dereference it: instead operate on the link itself. This flag is not currently implemented.</p>
+  </dd>
 
-  <p>The new file mode is specified in <em>mode</em>, which is a bit mask created by ORing together zero or more of the following:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>S_ISUID</strong>  (04000)</dt>
-    <dd>
-  <p>set-user-ID (set process effective user ID on <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>)</p>
-    </dd>
-    <dt><strong>S_ISGID</strong>  (02000)</dt>
-    <dd>
-  <p>set-group-ID (set process effective group ID on <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>; mandatory locking, as described in <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>; take a new file's group from parent directory, as described in <a href="../man2/chown.2.html"><strong>chown</strong>(2)</a> and <a href="../man2/mkdir.2.html"><strong>mkdir</strong>(2)</a>)</p>
-    </dd>
-    <dt><strong>S_ISVTX</strong>  (01000)</dt>
-    <dd>
-  <p>sticky bit (restricted deletion flag, as described in <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>)</p>
-    </dd>
-    <dt><strong>S_IRUSR</strong>  (00400)</dt>
-    <dd>
-  <p>read by owner</p>
-    </dd>
-    <dt><strong>S_IWUSR</strong>  (00200)</dt>
-    <dd>
-  <p>write by owner</p>
-    </dd>
-    <dt><strong>S_IXUSR</strong>  (00100)</dt>
-    <dd>
-  <p>execute/search by owner ("search" applies for directories, and means that entries within the directory can be accessed)</p>
-    </dd>
-    <dt><strong>S_IRGRP</strong>  (00040)</dt>
-    <dd>
-  <p>read by group</p>
-    </dd>
-    <dt><strong>S_IWGRP</strong>  (00020)</dt>
-    <dd>
-  <p>write by group</p>
-    </dd>
-    <dt><strong>S_IXGRP</strong>  (00010)</dt>
-    <dd>
-  <p>execute/search by group</p>
-    </dd>
-    <dt><strong>S_IROTH</strong>  (00004)</dt>
-    <dd>
-  <p>read by others</p>
-    </dd>
-    <dt><strong>S_IWOTH</strong>  (00002)</dt>
-    <dd>
-  <p>write by others</p>
-    </dd>
-    <dt><strong>S_IXOTH</strong>  (00001)</dt>
-    <dd>
-  <p>execute/search by others</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The effective UID of the calling process must match the owner of the file, or the process must be privileged (Linux: it must have the <strong>CAP_FOWNER</strong> capability).</p>
-<p class='spacer'>
-
-<p>If the calling process is not privileged (Linux: does not have the <strong>CAP_FSETID</strong> capability), and the group of the file does not match the effective group ID of the process or one of its supplementary group IDs, the <strong>S_ISGID</strong> bit will be turned off, but this will not cause an error to be returned.</p>
-<p class='spacer'>
-
-<p>As a security measure, depending on the filesystem, the set-user-ID and set-group-ID execution bits may be turned off if a file is written. (On Linux, this occurs if the writing process does not have the <strong>CAP_FSETID</strong> capability.) On some filesystems, only the superuser can set the sticky bit, which may have a special meaning. For the sticky bit, and for set-user-ID and set-group-ID bits on directories, see <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>On NFS filesystems, restricting the permissions will immediately influence already open files, because the access control is done on the server, but open files are maintained by the client. Widening the permissions may be delayed for other clients if attribute caching is enabled on them.</p>
-  <h3>fchmodat()</h3>
-<p>The <strong>fchmodat</strong>() system call operates in exactly the same way as <strong>chmod</strong>(), except for the differences described here.</p>
-<p class='spacer'>
-
-<p>If the pathname given in <em>pathname</em> is relative, then it is interpreted relative to the directory referred to by the file descriptor <em>dirfd</em> (rather than relative to the current working directory of the calling process, as is done by <strong>chmod</strong>() for a relative pathname).</p>
-<p class='spacer'>
-
-<p>If <em>pathname</em> is relative and <em>dirfd</em> is the special value <strong>AT_FDCWD</strong>, then <em>pathname</em> is interpreted relative to the current working directory of the calling process (like <strong>chmod</strong>()).</p>
-<p class='spacer'>
-
-<p>If <em>pathname</em> is absolute, then <em>dirfd</em> is ignored.</p>
-<p class='spacer'>
-
-  <p><em>flags</em> can either be 0, or include the following flag:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>AT_SYMLINK_NOFOLLOW</strong></dt>
-    <dd>
-  <p>If <em>pathname</em> is a symbolic link, do not dereference it: instead operate on the link itself. This flag is not currently implemented.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>See <a href="../man2/openat.2.html"><strong>openat</strong>(2)</a> for an explanation of the need for <strong>fchmodat</strong>().</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -245,102 +236,133 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>Depending on the filesystem, errors other than those listed below can be returned.</p><p>The more general errors for <strong>chmod</strong>() are listed below:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>Search permission is denied on a component of the path prefix. (See also <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
+  </dd>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> points outside your accessible address space.</p>
+  </dd>
+  <dt>
+    <p><strong>EIO</strong></p>
+  </dt>
+  <dd>
+    <p>An I/O error occurred.</p>
+  </dd>
+  <dt>
+    <p><strong>ELOOP</strong></p>
+  </dt>
+  <dd>
+    <p>Too many symbolic links were encountered in resolving <em>pathname</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENAMETOOLONG</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> is too long.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOENT</strong></p>
+  </dt>
+  <dd>
+    <p>The file does not exist.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Insufficient kernel memory was available.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTDIR</strong></p>
+  </dt>
+  <dd>
+    <p>A component of the path prefix is not a directory.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>The effective UID does not match the owner of the file, and the process is not privileged (Linux: it does not have the <strong>CAP_FOWNER</strong> capability).</p>
+  </dd>
+  <dt>
+    <p><strong>EROFS</strong></p>
+  </dt>
+  <dd>
+    <p>The named file resides on a read-only filesystem.</p>
+  </dd>
 
-<p>Depending on the filesystem, errors other than those listed below can be returned.</p>
-<p class='spacer'>
+</dl>
+<p>The general errors for <strong>fchmod</strong>() are listed below:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p>The file descriptor <em>fd</em> is not valid.</p>
+  </dd>
+  <dt>
+    <p><strong>EIO</strong></p>
+  </dt>
+  <dd>
+    <p>See above.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>See above.</p>
+  </dd>
+  <dt>
+    <p><strong>EROFS</strong></p>
+  </dt>
+  <dd>
+    <p>See above.</p>
+  </dd>
 
-  <p>The more general errors for <strong>chmod</strong>() are listed below:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EACCES</strong></dt>
-    <dd>
-  <p>Search permission is denied on a component of the path prefix. (See also <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>.)</p>
-    </dd>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p><em>pathname</em> points outside your accessible address space.</p>
-    </dd>
-    <dt><strong>EIO</strong></dt>
-    <dd>
-  <p>An I/O error occurred.</p>
-    </dd>
-    <dt><strong>ELOOP</strong></dt>
-    <dd>
-  <p>Too many symbolic links were encountered in resolving <em>pathname</em>.</p>
-    </dd>
-    <dt><strong>ENAMETOOLONG</strong></dt>
-    <dd>
-  <p><em>pathname</em> is too long.</p>
-    </dd>
-    <dt><strong>ENOENT</strong></dt>
-    <dd>
-  <p>The file does not exist.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Insufficient kernel memory was available.</p>
-    </dd>
-    <dt><strong>ENOTDIR</strong></dt>
-    <dd>
-  <p>A component of the path prefix is not a directory.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>The effective UID does not match the owner of the file, and the process is not privileged (Linux: it does not have the <strong>CAP_FOWNER</strong> capability).</p>
-    </dd>
-    <dt><strong>EROFS</strong></dt>
-    <dd>
-  <p>The named file resides on a read-only filesystem.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+<p>The same errors that occur for <strong>chmod</strong>() can also occur for <strong>fchmodat</strong>(). The following additional errors can occur for <strong>fchmodat</strong>():</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>dirfd</em> is not a valid file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>Invalid flag specified in <em>flags</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTDIR</strong></p>
+  </dt>
+  <dd>
+    <p><em>pathname</em> is relative and <em>dirfd</em> is a file descriptor referring to a file other than a directory.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTSUP</strong></p>
+  </dt>
+  <dd>
+    <p><em>flags</em> specified <strong>AT_SYMLINK_NOFOLLOW</strong>, which is not supported.</p>
+  </dd>
 
-  <p>The general errors for <strong>fchmod</strong>() are listed below:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p>The file descriptor <em>fd</em> is not valid.</p>
-    </dd>
-    <dt><strong>EIO</strong></dt>
-    <dd>
-  <p>See above.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>See above.</p>
-    </dd>
-    <dt><strong>EROFS</strong></dt>
-    <dd>
-  <p>See above.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
 
-  <p>The same errors that occur for <strong>chmod</strong>() can also occur for <strong>fchmodat</strong>(). The following additional errors can occur for <strong>fchmodat</strong>():</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>dirfd</em> is not a valid file descriptor.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>Invalid flag specified in <em>flags</em>.</p>
-    </dd>
-    <dt><strong>ENOTDIR</strong></dt>
-    <dd>
-  <p><em>pathname</em> is relative and <em>dirfd</em> is a file descriptor referring to a file other than a directory.</p>
-    </dd>
-    <dt><strong>ENOTSUP</strong></dt>
-    <dd>
-  <p><em>flags</em> specified <strong>AT_SYMLINK_NOFOLLOW</strong>, which is not supported.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p><strong>fchmodat</strong>() was added to Linux in kernel 2.6.16; library support was added to glibc in version 2.4.</p>
         </div>
       </section>
@@ -348,33 +370,27 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
-<p><strong>chmod</strong>(), <strong>fchmod</strong>(): 4.4BSD, SVr4, POSIX.1-2001i, POSIX.1-2008.</p>
-<p class='spacer'>
-
-<p><strong>fchmodat</strong>(): POSIX.1-2008.</p>
+<p><strong>chmod</strong>(), <strong>fchmod</strong>(): 4.4BSD, SVr4, POSIX.1-2001i, POSIX.1-2008.</p><p><strong>fchmodat</strong>(): POSIX.1-2008.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-  <h3>C library/kernel differences</h3>
+<h3>C library/kernel differences</h3>
 <p>The GNU C library <strong>fchmodat</strong>() wrapper function implements the POSIX-specified interface described in this page. This interface differs from the underlying Linux system call, which does <em>not</em> have a <em>flags</em> argument.</p>
-  <h3>Glibc notes</h3>
+<h3>Glibc notes</h3>
 <p>On older kernels where <strong>fchmodat</strong>() is unavailable, the glibc wrapper function falls back to the use of <strong>chmod</strong>(). When <em>pathname</em> is a relative pathname, glibc constructs a pathname based on the symbolic link in <em>/proc/self/fd</em> that corresponds to the <em>dirfd</em> argument.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO chmod&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/chown.2.html"><strong>chown</strong>(2)</a>, <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a>, <a href="../man7/symlink.7.html"><strong>symlink</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="chdir.2.html"><span aria-hidden="true">&larr;</span> chdir.2: Change working directory</a></li>

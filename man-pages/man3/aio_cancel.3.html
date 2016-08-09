@@ -90,60 +90,49 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;aio.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>int aio_cancel(int </strong><em>fd</em><strong>, struct aiocb *</strong><em>aiocbp</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p>Link with <em>-lrt</em>.</p>
+<p><strong>#include <aio.h></strong></p><p><strong>int aio_cancel(int </strong><em>fd</em><strong>, struct aiocb *</strong><em>aiocbp</em><strong>);</strong></p><p>Link with <em>-lrt</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The <strong>aio_cancel</strong>() function attempts to cancel outstanding asynchronous I/O requests for the file descriptor <em>fd</em>. If <em>aiocbp</em> is NULL, all such requests are canceled. Otherwise, only the request described by the control block pointed to by <em>aiocbp</em> is canceled. (See <a href="../man7/aio.7.html"><strong>aio</strong>(7)</a> for a description of the <em>aiocb</em> structure.)</p>
-<p class='spacer'>
-
-<p>Normal asynchronous notification occurs for canceled requests (see <a href="../man7/aio.7.html"><strong>aio</strong>(7)</a> and <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a>). The request return status (<a href="../man3/aio_return.3.html"><strong>aio_return</strong>(3)</a>) is set to -1, and the request error status (<a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a>) is set to <strong>ECANCELED</strong>. The control block of requests that cannot be canceled is not changed.</p>
-<p class='spacer'>
-
-<p>If the request could not be canceled, then it will terminate in the usual way after performing the I/O operation. (In this case, <a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a> will return the status <strong>EINPROGRESSS</strong>.)</p>
-<p class='spacer'>
-
-<p>If <em>aiocbp</em> is not NULL, and <em>fd</em> differs from the file descriptor with which the asynchronous operation was initiated, unspecified results occur.</p>
-<p class='spacer'>
-
-<p>Which operations are cancelable is implementation-defined.</p>
+<p>The <strong>aio_cancel</strong>() function attempts to cancel outstanding asynchronous I/O requests for the file descriptor <em>fd</em>. If <em>aiocbp</em> is NULL, all such requests are canceled. Otherwise, only the request described by the control block pointed to by <em>aiocbp</em> is canceled. (See <a href="../man7/aio.7.html"><strong>aio</strong>(7)</a> for a description of the <em>aiocb</em> structure.)</p><p>Normal asynchronous notification occurs for canceled requests (see <a href="../man7/aio.7.html"><strong>aio</strong>(7)</a> and <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a>). The request return status (<a href="../man3/aio_return.3.html"><strong>aio_return</strong>(3)</a>) is set to -1, and the request error status (<a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a>) is set to <strong>ECANCELED</strong>. The control block of requests that cannot be canceled is not changed.</p><p>If the request could not be canceled, then it will terminate in the usual way after performing the I/O operation. (In this case, <a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a> will return the status <strong>EINPROGRESSS</strong>.)</p><p>If <em>aiocbp</em> is not NULL, and <em>fd</em> differs from the file descriptor with which the asynchronous operation was initiated, unspecified results occur.</p><p>Which operations are cancelable is implementation-defined.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
+<p>The <strong>aio_cancel</strong>() function returns one of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>AIO_CANCELED</strong></p>
+  </dt>
+  <dd>
+    <p>All requests were successfully canceled.</p>
+  </dd>
+  <dt>
+    <p><strong>AIO_NOTCANCELED</strong></p>
+  </dt>
+  <dd>
+    <p>At least one of the requests specified was not canceled because it was in progress. In this case, one may check the status of individual requests using <a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>AIO_ALLDONE</strong></p>
+  </dt>
+  <dd>
+    <p>All requests had already been completed before the call.</p>
+  </dd>
+  <dt>
+    <p>-1</p>
+  </dt>
+  <dd>
+    <p>An error occurred. The cause of the error can be found by inspecting <em>errno</em>.</p>
+  </dd>
 
-  <p>The <strong>aio_cancel</strong>() function returns one of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>AIO_CANCELED</strong></dt>
-    <dd>
-  <p>All requests were successfully canceled.</p>
-    </dd>
-    <dt><strong>AIO_NOTCANCELED</strong></dt>
-    <dd>
-  <p>At least one of the requests specified was not canceled because it was in progress. In this case, one may check the status of individual requests using <a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a>.</p>
-    </dd>
-    <dt><strong>AIO_ALLDONE</strong></dt>
-    <dd>
-  <p>All requests had already been completed before the call.</p>
-    </dd>
-    <dt>-1</dt>
-    <dd>
-  <p>An error occurred. The cause of the error can be found by inspecting <em>errno</em>.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
@@ -151,23 +140,28 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>fd</em> is not a valid file descriptor.</p>
-    </dd>
-    <dt><strong>ENOSYS</strong></dt>
-    <dd>
-  <p><strong>aio_cancel</strong>() is not implemented.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> is not a valid file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOSYS</strong></p>
+  </dt>
+  <dd>
+    <p><strong>aio_cancel</strong>() is not implemented.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>aio_cancel</strong>() function is available since glibc 2.1.</p>
         </div>
       </section>
@@ -175,9 +169,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -188,14 +180,12 @@
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2001, POSIX.1-2008.</p>
         </div>
       </section>
@@ -203,7 +193,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>See <a href="../man7/aio.7.html"><strong>aio</strong>(7)</a>.</p>
         </div>
       </section>
@@ -211,11 +200,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO aio_cancel&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a>, <a href="../man3/aio_fsync.3.html"><strong>aio_fsync</strong>(3)</a>, <a href="../man3/aio_read.3.html"><strong>aio_read</strong>(3)</a>, <a href="../man3/aio_return.3.html"><strong>aio_return</strong>(3)</a>, <a href="../man3/aio_suspend.3.html"><strong>aio_suspend</strong>(3)</a>, <a href="../man3/aio_write.3.html"><strong>aio_write</strong>(3)</a>, <a href="../man3/lio_listio.3.html"><strong>lio_listio</strong>(3)</a>, <a href="../man7/aio.7.html"><strong>aio</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="adjtime.3.html"><span aria-hidden="true">&larr;</span> adjtime.3: Correct the time to synchronize the system clock</a></li>

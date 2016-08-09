@@ -90,90 +90,22 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;unistd.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>extern char **environ;</strong></p>
-<p class='spacer'>
-
-<p><strong>int execl(const char *</strong><em>path</em><strong>, const char *</strong><em>arg</em><strong>, ...</strong></p>
-<p class='spacer'>
-
-<p><strong>                /* (char  *) NULL */);</strong></p>
-<p class='spacer'>
-
-<p><strong>int execlp(const char *</strong><em>file</em><strong>, const char *</strong><em>arg</em><strong>, ...</strong></p>
-<p class='spacer'>
-
-<p><strong>                /* (char  *) NULL */);</strong></p>
-<p class='spacer'>
-
-<p><strong>int execle(const char *</strong><em>path</em><strong>, const char *</strong><em>arg</em><strong>, ...</strong></p>
-<p class='spacer'>
-
-<p><strong>                /*, (char *) NULL, char * const </strong><em>envp</em><strong>[] */);</strong></p>
-<p class='spacer'>
-
-<p><strong>int execv(const char *</strong><em>path</em><strong>, char *const </strong><em>argv</em><strong>[]);</strong></p>
-<p class='spacer'>
-
-<p><strong>int execvp(const char *</strong><em>file</em><strong>, char *const </strong><em>argv</em><strong>[]);</strong></p>
-<p class='spacer'>
-
-<p><strong>int execvpe(const char *</strong><em>file</em><strong>, char *const </strong><em>argv</em><strong>[],</strong></p>
-<p class='spacer'>
-
-<p><strong>                char *const </strong><em>envp</em><strong>[]);</strong></p>
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-<p><strong>execvpe</strong>(): _GNU_SOURCE</p>
+<p><strong>#include <unistd.h></strong></p><p><strong>extern char **environ;</strong></p><p><strong>int execl(const char *</strong><em>path</em><strong>, const char *</strong><em>arg</em><strong>, ...</strong></p><p><strong>                /* (char  *) NULL */);</strong></p><p><strong>int execlp(const char *</strong><em>file</em><strong>, const char *</strong><em>arg</em><strong>, ...</strong></p><p><strong>                /* (char  *) NULL */);</strong></p><p><strong>int execle(const char *</strong><em>path</em><strong>, const char *</strong><em>arg</em><strong>, ...</strong></p><p><strong>                /*, (char *) NULL, char * const </strong><em>envp</em><strong>[] */);</strong></p><p><strong>int execv(const char *</strong><em>path</em><strong>, char *const </strong><em>argv</em><strong>[]);</strong></p><p><strong>int execvp(const char *</strong><em>file</em><strong>, char *const </strong><em>argv</em><strong>[]);</strong></p><p><strong>int execvpe(const char *</strong><em>file</em><strong>, char *const </strong><em>argv</em><strong>[],</strong></p><p><strong>                char *const </strong><em>envp</em><strong>[]);</strong></p><p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>execvpe</strong>(): _GNU_SOURCE</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>exec</strong>() family of functions replaces the current process image with a new process image. The functions described in this manual page are front-ends for <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>. (See the manual page for <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> for further details about the replacement of the current process image.)</p><p>The initial argument for these functions is the name of a file that is to be executed.</p><p>The <em>const char&nbsp;*arg</em> and subsequent ellipses in the <strong>execl</strong>(), <strong>execlp</strong>(), and <strong>execle</strong>() functions can be thought of as <em>arg0</em>, <em>arg1</em>, ..., <em>argn</em>. Together they describe a list of one or more pointers to null-terminated strings that represent the argument list available to the executed program. The first argument, by convention, should point to the filename associated with the file being executed. The list of arguments <em>must</em> be terminated by a null pointer, and, since these are variadic functions, this pointer must be cast <em>(char&nbsp;*) NULL</em>.</p><p>The <strong>execv</strong>(), <strong>execvp</strong>(), and <strong>execvpe</strong>() functions provide an array of pointers to null-terminated strings that represent the argument list available to the new program. The first argument, by convention, should point to the filename associated with the file being executed. The array of pointers <em>must</em> be terminated by a null pointer.</p><p>The <strong>execle</strong>() and <strong>execvpe</strong>() functions allow the caller to specify the environment of the executed program via the argument <em>envp</em>. The <em>envp</em> argument is an array of pointers to null-terminated strings and <em>must</em> be terminated by a null pointer. The other functions take the environment for the new process image from the external variable <em>environ</em> in the calling process.</p><h3>Special semantics for execlp() and execvp()</h3>
+<p>The <strong>execlp</strong>(), <strong>execvp</strong>(), and <strong>execvpe</strong>() functions duplicate the actions of the shell in searching for an executable file if the specified filename does not contain a slash (/) character. The file is sought in the colon-separated list of directory pathnames specified in the <strong>PATH</strong> environment variable. If this variable isn't defined, the path list defaults to the current directory followed by the list of directories returned by <em>confstr(_CS_PATH)</em>. (This <a href="../man3/confstr.3.html"><strong>confstr</strong>(3)</a> call typically returns the value "/bin:/usr/bin".)</p><p>If the specified filename includes a slash character, then <strong>PATH</strong> is ignored, and the file at the specified pathname is executed.</p><p>In addition, certain errors are treated specially.</p><p>If permission is denied for a file (the attempted <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> failed with the error <strong>EACCES</strong>), these functions will continue searching the rest of the search path. If no other file is found, however, they will return with <em>errno</em> set to <strong>EACCES</strong>.</p><p>If the header of a file isn't recognized (the attempted <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> failed with the error <strong>ENOEXEC</strong>), these functions will execute the shell (<em>/bin/sh</em>) with the path of the file as its first argument. (If this attempt fails, no further searching is done.)</p>
 
-<p>The <strong>exec</strong>() family of functions replaces the current process image with a new process image. The functions described in this manual page are front-ends for <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>. (See the manual page for <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> for further details about the replacement of the current process image.)</p>
-<p class='spacer'>
-
-<p>The initial argument for these functions is the name of a file that is to be executed.</p>
-<p class='spacer'>
-
-<p>The <em>const char&nbsp;*arg</em> and subsequent ellipses in the <strong>execl</strong>(), <strong>execlp</strong>(), and <strong>execle</strong>() functions can be thought of as <em>arg0</em>, <em>arg1</em>, ..., <em>argn</em>. Together they describe a list of one or more pointers to null-terminated strings that represent the argument list available to the executed program. The first argument, by convention, should point to the filename associated with the file being executed. The list of arguments <em>must</em> be terminated by a null pointer, and, since these are variadic functions, this pointer must be cast <em>(char&nbsp;*) NULL</em>.</p>
-<p class='spacer'>
-
-<p>The <strong>execv</strong>(), <strong>execvp</strong>(), and <strong>execvpe</strong>() functions provide an array of pointers to null-terminated strings that represent the argument list available to the new program. The first argument, by convention, should point to the filename associated with the file being executed. The array of pointers <em>must</em> be terminated by a null pointer.</p>
-<p class='spacer'>
-
-<p>The <strong>execle</strong>() and <strong>execvpe</strong>() functions allow the caller to specify the environment of the executed program via the argument <em>envp</em>. The <em>envp</em> argument is an array of pointers to null-terminated strings and <em>must</em> be terminated by a null pointer. The other functions take the environment for the new process image from the external variable <em>environ</em> in the calling process.</p>
-  <h3>Special semantics for execlp() and execvp()</h3>
-<p class='spacer'>
-
-<p>The <strong>execlp</strong>(), <strong>execvp</strong>(), and <strong>execvpe</strong>() functions duplicate the actions of the shell in searching for an executable file if the specified filename does not contain a slash (/) character. The file is sought in the colon-separated list of directory pathnames specified in the <strong>PATH</strong> environment variable. If this variable isn't defined, the path list defaults to the current directory followed by the list of directories returned by <em>confstr(_CS_PATH)</em>. (This <a href="../man3/confstr.3.html"><strong>confstr</strong>(3)</a> call typically returns the value "/bin:/usr/bin".)</p>
-<p class='spacer'>
-
-<p>If the specified filename includes a slash character, then <strong>PATH</strong> is ignored, and the file at the specified pathname is executed.</p>
-<p class='spacer'>
-
-<p>In addition, certain errors are treated specially.</p>
-<p class='spacer'>
-
-<p>If permission is denied for a file (the attempted <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> failed with the error <strong>EACCES</strong>), these functions will continue searching the rest of the search path. If no other file is found, however, they will return with <em>errno</em> set to <strong>EACCES</strong>.</p>
-<p class='spacer'>
-
-<p>If the header of a file isn't recognized (the attempted <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> failed with the error <strong>ENOEXEC</strong>), these functions will execute the shell (<em>/bin/sh</em>) with the path of the file as its first argument. (If this attempt fails, no further searching is done.)</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>The <strong>exec</strong>() functions return only if an error has occurred. The return value is -1, and <em>errno</em> is set to indicate the error.</p>
         </div>
       </section>
@@ -181,7 +113,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
-
 <p>All of these functions may fail and set <em>errno</em> for any of the errors specified for <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p>
         </div>
       </section>
@@ -189,7 +120,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>execvpe</strong>() function first appeared in glibc 2.11.</p>
         </div>
       </section>
@@ -197,9 +127,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -215,43 +143,29 @@
 <td>Thread safety</td>
 <td>MT-Safe env</td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
-<p>POSIX.1-2001, POSIX.1-2008.</p>
-<p class='spacer'>
-
-<p>The <strong>execvpe</strong>() function is a GNU extension.</p>
+<p>POSIX.1-2001, POSIX.1-2008.</p><p>The <strong>execvpe</strong>() function is a GNU extension.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>On some other systems, the default path (used when the environment does not contain the variable <strong>PATH</strong>) has the current working directory listed after <em>/bin</em> and <em>/usr/bin</em>, as an anti-Trojan-horse measure. Linux uses here the traditional "current directory first" default path.</p>
-<p class='spacer'>
-
-<p>The behavior of <strong>execlp</strong>() and <strong>execvp</strong>() when errors occur while attempting to execute the file is historic practice, but has not traditionally been documented and is not specified by the POSIX standard. BSD (and possibly other systems) do an automatic sleep and retry if <strong>ETXTBSY</strong> is encountered. Linux treats it as a hard error and returns immediately.</p>
-<p class='spacer'>
-
-<p>Traditionally, the functions <strong>execlp</strong>() and <strong>execvp</strong>() ignored all errors except for the ones described above and <strong>ENOMEM</strong> and <strong>E2BIG</strong>, upon which they returned. They now return if any error other than the ones described above occurs.</p>
+<p>On some other systems, the default path (used when the environment does not contain the variable <strong>PATH</strong>) has the current working directory listed after <em>/bin</em> and <em>/usr/bin</em>, as an anti-Trojan-horse measure. Linux uses here the traditional "current directory first" default path.</p><p>The behavior of <strong>execlp</strong>() and <strong>execvp</strong>() when errors occur while attempting to execute the file is historic practice, but has not traditionally been documented and is not specified by the POSIX standard. BSD (and possibly other systems) do an automatic sleep and retry if <strong>ETXTBSY</strong> is encountered. Linux treats it as a hard error and returns immediately.</p><p>Traditionally, the functions <strong>execlp</strong>() and <strong>execvp</strong>() ignored all errors except for the ones described above and <strong>ENOMEM</strong> and <strong>E2BIG</strong>, upon which they returned. They now return if any error other than the ones described above occurs.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO exec&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>sh</strong>(1), <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, <a href="../man2/execveat.2.html"><strong>execveat</strong>(2)</a>, <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>, <a href="../man3/fexecve.3.html"><strong>fexecve</strong>(3)</a>, <a href="../man3/system.3.html"><strong>system</strong>(3)</a>, <a href="../man7/environ.7.html"><strong>environ</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="eventfd_write.3.html"><span aria-hidden="true">&larr;</span> eventfd_write.3: Create a file descriptor for event notification</a></li>

@@ -90,83 +90,61 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSYS</h2>
         <div class="sectioncontent">
-
-<p>\f3$PCP_PMDAS_DIR/infiniband/pmdaib\f1 [\f3-c\f1 \f2configFile\f1] [\f3-D\f1 \f2debug\f1] [\f3-d\f1 \f2domain\f1] [\f3-l\f1 \f2logfile\f1] [\f3-w\f1]</p>
+<p><strong>$PCP_PMDAS_DIR/infiniband/pmdaib</strong> [<strong>-c</strong> <em>configFile</em>] [<strong>-D</strong> <em>debug</em>] [<strong>-d</strong> <em>domain</em>] [<strong>-l</strong> <em>logfile</em>] [<strong>-w</strong>]</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>pmdaib</strong> is a Performance Metrics Domain Agent (PMDA) which exports information and performance metrics about local Infiniband HCAs and local or remote Infiniband GUIDs.</p><p>A brief description of the <strong>pmdaib</strong> command line options follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-c</strong></p>
+  </dt>
+  <dd>
+    <p>Location of the config file.  By default, the config file is named <strong>$PCP_PMDAS_DIR/infiniband/config.</strong> See <strong>CONFIG FILE</strong> for more information.</p>
+  </dd>
+  <dt>
+    <p><strong>-D</strong></p>
+  </dt>
+  <dd>
+    <p>A debug values, as specified by <strong>pmdbg (1)</strong></p>
+  </dd>
+  <dt>
+    <p><strong>-d</strong></p>
+  </dt>
+  <dd>
+    <p>Specify an alternate performance metrics <em>domain</em> number.  Almost never necessary.</p>
+  </dd>
+  <dt>
+    <p><strong>-l</strong></p>
+  </dt>
+  <dd>
+    <p>Location of the log file.  By default, a log file named <em>ib.log</em> is written to <strong>$PCP_LOG_DIR/pmcd</strong>. If the log file cannot be created or is not writable, output is written to the standard error instead.</p>
+  </dd>
+  <dt>
+    <p><strong>-w</strong></p>
+  </dt>
+  <dd>
+    <p>Write out the default config file to <strong>$PCP_PMDAS_DIRS/infiniband</strong> and exit immediately.  The written config file will contain the local HCA ports. It will not overwrite an existing file.  This argument should only be used to create the template config file and should never appear in <em>pmcd.conf.</em> See <strong>CONFIG FILE</strong> for more information on the file format and on monitoring remote GUIDs.</p>
+  </dd>
 
-<p><strong>pmdaib</strong> is a Performance Metrics Domain Agent (PMDA) which exports information and performance metrics about local Infiniband HCAs and local or remote Infiniband GUIDs.</p>
-<p class='spacer'>
+</dl>
 
-  <p>A brief description of the <strong>pmdaib</strong> command line options follows:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>-c</strong></dt>
-    <dd>
-  <p>Location of the config file.  By default, the config file is named <strong>$PCP_PMDAS_DIR/infiniband/config.</strong> See <strong>CONFIG FILE</strong> for more information.</p>
-    </dd>
-    <dt><strong>-D</strong></dt>
-    <dd>
-  <p>A debug values, as specified by <strong>pmdbg (1)</strong></p>
-    </dd>
-    <dt><strong>-d</strong></dt>
-    <dd>
-  <p>Specify an alternate performance metrics <em>domain</em> number.  Almost never necessary.</p>
-    </dd>
-    <dt><strong>-l</strong></dt>
-    <dd>
-  <p>Location of the log file.  By default, a log file named <em>ib.log</em> is written to <strong>$PCP_LOG_DIR/pmcd</strong>. If the log file cannot be created or is not writable, output is written to the standard error instead.</p>
-    </dd>
-    <dt><strong>-w</strong></dt>
-    <dd>
-  <p>Write out the default config file to <strong>$PCP_PMDAS_DIRS/infiniband</strong> and exit immediately.  The written config file will contain the local HCA ports. It will not overwrite an existing file.  This argument should only be used to create the template config file and should never appear in <em>pmcd.conf.</em> See <strong>CONFIG FILE</strong> for more information on the file format and on monitoring remote GUIDs.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFIG FILE</h2>
         <div class="sectioncontent">
-
-<p>By default, the PMDA will operate without using a config file.  In this mode of operation the local HCA ports will be monitored.  Note that if a new HCA is added to the machine that instance domain naming may change because it will always be based on the kernel's naming.</p>
-<p class='spacer'>
-
-<p>In cases where this is not acceptable, or in the case where monitoring remote Infiniband ports is required, a config file must be created.  A "template" file can be created by running the <strong>pmdaib</strong> daemon with the <strong>-w</strong> argument.  This will create a config file with the local ports and GUIDs.</p>
-<p class='spacer'>
-
-<p>If the config file is <em>executable</em> then it will be run and the output will be used as the config file.</p>
-<p class='spacer'>
-
-<p>The config file is composed of line-based records.  Blank lines and everything after the <em>hash (#)</em> character are ignored.  Each line has 6 fields:</p>
-<p class='spacer'>
-
-<p>[\f3instName\f1] [\f3portGUID\f1] [\f3portNum\f1] via [\f3localPortName\f1]:[\f3localPortNum\f1]</p>
-<p class='spacer'>
-
-<p>The first field is used to give a static instance name to the Infiniband port that has a specific GUID.  All of the other fields must be properly specified in order to monitor a particular port.</p>
-<p class='spacer'>
-
-<p>For example, to monitor port 1 of the local HCA called 'mthca0' a possible config file line would be:</p>
-<p class='spacer'>
-
-<p>myPort1 0xdeadbeef01234567 1 via mthca0:1</p>
-<p class='spacer'>
-
-<p>Remote ports can be easily monitored by specifying the GUID of the HCA or switch and specifying the remote port number.  The \f3localPortName\f1:\f3localPortNum\f1 tuple specifies which local HCA and port to use as the "first hop" in contacting the remote GUID.  E.g., to monitor port 13 of a remote switch which is connected to the fabric on the first port of the second HCA:</p>
-<p class='spacer'>
-
-<p>switch13 0xfeeffeefabcdabcd 13 via mthca1:1</p>
+<p>By default, the PMDA will operate without using a config file.  In this mode of operation the local HCA ports will be monitored.  Note that if a new HCA is added to the machine that instance domain naming may change because it will always be based on the kernel's naming.</p><p>In cases where this is not acceptable, or in the case where monitoring remote Infiniband ports is required, a config file must be created.  A "template" file can be created by running the <strong>pmdaib</strong> daemon with the <strong>-w</strong> argument.  This will create a config file with the local ports and GUIDs.</p><p>If the config file is <em>executable</em> then it will be run and the output will be used as the config file.</p><p>The config file is composed of line-based records.  Blank lines and everything after the <em>hash (#)</em> character are ignored.  Each line has 6 fields:</p><p>[<strong>instName</strong>] [<strong>portGUID</strong>] [<strong>portNum</strong>] via [<strong>localPortName</strong>]:[<strong>localPortNum</strong>]</p><p>The first field is used to give a static instance name to the Infiniband port that has a specific GUID.  All of the other fields must be properly specified in order to monitor a particular port.</p><p>For example, to monitor port 1 of the local HCA called 'mthca0' a possible config file line would be:</p><p>myPort1 0xdeadbeef01234567 1 via mthca0:1</p><p>Remote ports can be easily monitored by specifying the GUID of the HCA or switch and specifying the remote port number.  The <strong>localPortName</strong>:<strong>localPortNum</strong> tuple specifies which local HCA and port to use as the "first hop" in contacting the remote GUID.  E.g., to monitor port 13 of a remote switch which is connected to the fabric on the first port of the second HCA:</p><p>switch13 0xfeeffeefabcdabcd 13 via mthca1:1</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">LOCAL CONTEXT</h2>
         <div class="sectioncontent">
-
 <p>The Infiniband pmda also supports accessing the metrics via <strong>PM_CONTEXT_LOCAL</strong> when using the PMAPI interface.  In order to use the Infiniband pmda in this way, set the environment variable <strong>PMDA_LOCAL_IB</strong> prior to calling <strong>pmNewContext</strong>(3).</strong></p>
         </div>
       </section>
@@ -174,11 +152,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmdaib&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>pmcd</strong>(1),</strong> <strong>PMAPI</strong>(3),</strong> <strong>pmContextNew</strong>(3),</strong> <strong>ibnetdiscover</strong>(8).</strong></p>
+<p><a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>,</strong> <strong>PMAPI</strong>(3),</strong> <strong>pmContextNew</strong>(3),</strong> <strong>ibnetdiscover</strong>(8).</strong></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmdagpfs.1.html"><span aria-hidden="true">&larr;</span> pmdagpfs.1: Gpfs filesystem statistics performance metrics domain agent (pmda)</a></li>

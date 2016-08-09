@@ -90,19 +90,11 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;unistd.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>int lockf(int </strong><em>fd</em><strong>, int </strong><em>cmd</em><strong>, off_t </strong><em>len</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-  <p><strong>lockf</strong>(): _XOPEN_SOURCE&nbsp;&gt;=&nbsp;500</p>
-<pre>    || /* Glibc since 2.19: */ _DEFAULT_SOURCE
-    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE || _SVID_SOURCE</pre>
+<p><strong>#include <unistd.h></strong></p><p><strong>int lockf(int </strong><em>fd</em><strong>, int </strong><em>cmd</em><strong>, off_t </strong><em>len</em><strong>);</strong></p><p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>lockf</strong>():</p><p>_XOPEN_SOURCE&nbsp;&gt;=&nbsp;500</p>
+<pre>
+    || /* Glibc since 2.19: */ _DEFAULT_SOURCE
+    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE || _SVID_SOURCE
+</pre>
 
         </div>
       </section>
@@ -110,39 +102,41 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>Apply, test or remove a POSIX lock on a section of an open file. The file is specified by <em>fd</em>, a file descriptor open for writing, the action by <em>cmd</em>, and the section consists of byte positions <em>pos</em>..<em>pos</em>+<em>len</em>-1 if <em>len</em> is positive, and <em>pos</em>-<em>len</em>..<em>pos</em>-1 if <em>len</em> is negative, where <em>pos</em> is the current file position, and if <em>len</em> is zero, the section extends from the current file position to infinity, encompassing the present and future end-of-file positions. In all cases, the section may extend past current end-of-file.</p><p>On Linux, <strong>lockf</strong>() is just an interface on top of <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> locking. Many other systems implement <strong>lockf</strong>() in this way, but note that POSIX.1 leaves the relationship between <strong>lockf</strong>() and <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> locks unspecified. A portable application should probably avoid mixing calls to these interfaces.</p><p>Valid operations are given below:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>F_LOCK</strong></p>
+  </dt>
+  <dd>
+    <p>Set an exclusive lock on the specified section of the file. If (part of) this section is already locked, the call blocks until the previous lock is released. If this section overlaps an earlier locked section, both are merged. File locks are released as soon as the process holding the locks closes some file descriptor for the file. A child process does not inherit these locks.</p>
+  </dd>
+  <dt>
+    <p><strong>F_TLOCK</strong></p>
+  </dt>
+  <dd>
+    <p>Same as <strong>F_LOCK</strong> but the call never blocks and returns an error instead if the file is already locked.</p>
+  </dd>
+  <dt>
+    <p><strong>F_ULOCK</strong></p>
+  </dt>
+  <dd>
+    <p>Unlock the indicated section of the file. This may cause a locked section to be split into two locked sections.</p>
+  </dd>
+  <dt>
+    <p><strong>F_TEST</strong></p>
+  </dt>
+  <dd>
+    <p>Test the lock: return 0 if the specified section is unlocked or locked by this process; return -1, set <em>errno</em> to <strong>EAGAIN</strong> (<strong>EACCES</strong> on some other systems), if another process holds a lock.</p>
+  </dd>
 
-<p>Apply, test or remove a POSIX lock on a section of an open file. The file is specified by <em>fd</em>, a file descriptor open for writing, the action by <em>cmd</em>, and the section consists of byte positions <em>pos</em>..<em>pos</em>+<em>len</em>-1 if <em>len</em> is positive, and <em>pos</em>-<em>len</em>..<em>pos</em>-1 if <em>len</em> is negative, where <em>pos</em> is the current file position, and if <em>len</em> is zero, the section extends from the current file position to infinity, encompassing the present and future end-of-file positions. In all cases, the section may extend past current end-of-file.</p>
-<p class='spacer'>
+</dl>
 
-<p>On Linux, <strong>lockf</strong>() is just an interface on top of <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> locking. Many other systems implement <strong>lockf</strong>() in this way, but note that POSIX.1 leaves the relationship between <strong>lockf</strong>() and <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> locks unspecified. A portable application should probably avoid mixing calls to these interfaces.</p>
-<p class='spacer'>
-
-  <p>Valid operations are given below:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>F_LOCK</strong></dt>
-    <dd>
-  <p>Set an exclusive lock on the specified section of the file. If (part of) this section is already locked, the call blocks until the previous lock is released. If this section overlaps an earlier locked section, both are merged. File locks are released as soon as the process holding the locks closes some file descriptor for the file. A child process does not inherit these locks.</p>
-    </dd>
-    <dt><strong>F_TLOCK</strong></dt>
-    <dd>
-  <p>Same as <strong>F_LOCK</strong> but the call never blocks and returns an error instead if the file is already locked.</p>
-    </dd>
-    <dt><strong>F_ULOCK</strong></dt>
-    <dd>
-  <p>Unlock the indicated section of the file. This may cause a locked section to be split into two locked sections.</p>
-    </dd>
-    <dt><strong>F_TEST</strong></dt>
-    <dd>
-  <p>Test the lock: return 0 if the specified section is unlocked or locked by this process; return -1, set <em>errno</em> to <strong>EAGAIN</strong> (<strong>EACCES</strong> on some other systems), if another process holds a lock.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, zero is returned. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -151,37 +145,47 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EACCES</strong> or <strong>EAGAIN</strong></dt>
-    <dd>
-  <p>The file is locked and <strong>F_TLOCK</strong> or <strong>F_TEST</strong> was specified, or the operation is prohibited because the file has been memory-mapped by another process.</p>
-    </dd>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>fd</em> is not an open file descriptor; or <em>cmd</em> is <strong>F_LOCK</strong> or <strong>F_TLOCK</strong> and <em>fd</em> is not a writable file descriptor.</p>
-    </dd>
-    <dt><strong>EDEADLK</strong></dt>
-    <dd>
-  <p>The command was <strong>F_LOCK</strong> and this lock operation would cause a deadlock.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>An invalid operation was specified in <em>cmd</em>.</p>
-    </dd>
-    <dt><strong>ENOLCK</strong></dt>
-    <dd>
-  <p>Too many segment locks open, lock table is full.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EACCES</strong> or <strong>EAGAIN</strong></p>
+  </dt>
+  <dd>
+    <p>The file is locked and <strong>F_TLOCK</strong> or <strong>F_TEST</strong> was specified, or the operation is prohibited because the file has been memory-mapped by another process.</p>
+  </dd>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> is not an open file descriptor; or <em>cmd</em> is <strong>F_LOCK</strong> or <strong>F_TLOCK</strong> and <em>fd</em> is not a writable file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>EDEADLK</strong></p>
+  </dt>
+  <dd>
+    <p>The command was <strong>F_LOCK</strong> and this lock operation would cause a deadlock.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>An invalid operation was specified in <em>cmd</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOLCK</strong></p>
+  </dt>
+  <dd>
+    <p>Too many segment locks open, lock table is full.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -192,14 +196,12 @@
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2001, POSIX.1-2008, SVr4.</p>
         </div>
       </section>
@@ -207,14 +209,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO lockf&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/flock.2.html"><strong>flock</strong>(2)</a></p>
-<p class='spacer'>
-
-<p><em>locks.txt</em> and <em>mandatory-locking.txt</em> in the Linux kernel source directory <em>Documentation/filesystems</em> (on older kernels, these files are directly under the <em>Documentation</em> directory, and <em>mandatory-locking.txt</em> is called <em>mandatory.txt</em>)</p>
+<p><a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/flock.2.html"><strong>flock</strong>(2)</a></p><p><em>locks.txt</em> and <em>mandatory-locking.txt</em> in the Linux kernel source directory <em>Documentation/filesystems</em> (on older kernels, these files are directly under the <em>Documentation</em> directory, and <em>mandatory-locking.txt</em> is called <em>mandatory.txt</em>)</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="localtime_r.3.html"><span aria-hidden="true">&larr;</span> localtime_r.3: Transform date and time to broken-down time or ascii</a></li>

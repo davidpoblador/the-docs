@@ -90,190 +90,160 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>tc qdisc ... dev</strong> dev <strong>( parent</strong> classid <strong>| root) [ handle</strong> major: <strong>] htb [ default</strong> minor-id <strong>]</strong></p>
-<p class='spacer'>
-
-<p><strong>tc class ... dev</strong> dev <strong>parent</strong> major:[minor] <strong>[ classid</strong> major:minor <strong>] htb rate</strong> rate <strong>[ ceil</strong> rate <strong>] burst</strong> bytes <strong>[ cburst</strong> bytes <strong>] [ prio</strong> priority <strong>]</strong></p>
-<p class='spacer'>
-
+<p><strong>tc qdisc ... dev</strong> dev <strong>( parent</strong> classid <strong>| root) [ handle</strong> major: <strong>] htb [ default</strong> minor-id <strong>]</strong></p><p><strong>tc class ... dev</strong> dev <strong>parent</strong> major:[minor] <strong>[ classid</strong> major:minor <strong>] htb rate</strong> rate <strong>[ ceil</strong> rate <strong>] burst</strong> bytes <strong>[ cburst</strong> bytes <strong>] [ prio</strong> priority <strong>]</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>HTB is meant as a more understandable and intuitive replacement for the CBQ qdisc in Linux. Both CBQ and HTB help you to control the use of the outbound bandwidth on a given link. Both allow you to use one physical link to simulate several slower links and to send different kinds of traffic on different simulated links. In both cases, you have to specify how to divide the physical link into simulated links and how to decide which simulated link to use for a given packet to be sent.</p>
-<p class='spacer'>
-
-<p>Unlike CBQ, HTB shapes traffic based on the Token Bucket Filter algorithm which does not depend on interface characteristics and so does not need to know the underlying bandwidth of the outgoing interface.</p>
-<p class='spacer'>
-
+<p>HTB is meant as a more understandable and intuitive replacement for the CBQ qdisc in Linux. Both CBQ and HTB help you to control the use of the outbound bandwidth on a given link. Both allow you to use one physical link to simulate several slower links and to send different kinds of traffic on different simulated links. In both cases, you have to specify how to divide the physical link into simulated links and how to decide which simulated link to use for a given packet to be sent.</p><p>Unlike CBQ, HTB shapes traffic based on the Token Bucket Filter algorithm which does not depend on interface characteristics and so does not need to know the underlying bandwidth of the outgoing interface.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">SHAPING ALGORITHM</h2>
         <div class="sectioncontent">
-
 <p>Shaping works as documented in <strong>tc-tbf (8).</strong></p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CLASSIFICATION</h2>
         <div class="sectioncontent">
+<p>Within the one HTB instance many classes may exist. Each of these classes contains another qdisc, by default <a href="../man8/tc-pfifo.8.html"><strong>tc-pfifo</strong>(8)</a>.</p><p>When enqueueing a packet, HTB starts at the root and uses various methods to determine which class should receive the data.</p><p>In the absence of uncommon configuration options, the process is rather easy. At each node we look for an instruction, and then go to the class the instruction refers us to. If the class found is a barren leaf-node (without children), we enqueue the packet there. If it is not yet a leaf node, we do the whole thing over again starting from that node.</p><p>The following actions are performed, in order at each node we visit, until one sends us to another node, or terminates the process.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>(i)</p>
+  </dt>
+  <dd>
+    <p>Consult filters attached to the class. If sent to a leafnode, we are done. Otherwise, restart.</p>
+  </dd>
+  <dt>
+    <p>(ii)</p>
+  </dt>
+  <dd>
+    <p>If none of the above returned with an instruction, enqueue at this node.</p>
+  </dd>
 
-<p>Within the one HTB instance many classes may exist. Each of these classes contains another qdisc, by default <a href="../man8/tc-pfifo.8.html"><strong>tc-pfifo</strong>(8)</a>.</p>
-<p class='spacer'>
-
-<p>When enqueueing a packet, HTB starts at the root and uses various methods to determine which class should receive the data.</p>
-<p class='spacer'>
-
-<p>In the absence of uncommon configuration options, the process is rather easy. At each node we look for an instruction, and then go to the class the instruction refers us to. If the class found is a barren leaf-node (without children), we enqueue the packet there. If it is not yet a leaf node, we do the whole thing over again starting from that node.</p>
-<p class='spacer'>
-
-  <p>The following actions are performed, in order at each node we visit, until one sends us to another node, or terminates the process.</p>
-  <dl class='dl-horizontal'>
-    <dt>(i)</dt>
-    <dd>
-  <p>Consult filters attached to the class. If sent to a leafnode, we are done. Otherwise, restart.</p>
-    </dd>
-    <dt>(ii)</dt>
-    <dd>
-  <p>If none of the above returned with an instruction, enqueue at this node.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>This algorithm makes sure that a packet always ends up somewhere, even while you are busy building your configuration.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">LINK SHARING ALGORITHM</h2>
         <div class="sectioncontent">
-
 <p>FIXME</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">QDISC</h2>
         <div class="sectioncontent">
-
 <p>The root of a HTB qdisc class tree has the following parameters:</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p>parent major:minor | root</p>
+  </dt>
+  <dd>
+    <p>This mandatory parameter determines the place of the HTB instance, either at the <strong>root</strong> of an interface or within an existing class.</p>
+  </dd>
+  <dt>
+    <p>handle major:</p>
+  </dt>
+  <dd>
+    <p>Like all other qdiscs, the HTB can be assigned a handle. Should consist only of a major number, followed by a colon. Optional, but very useful if classes will be generated within this qdisc.</p>
+  </dd>
+  <dt>
+    <p>default minor-id</p>
+  </dt>
+  <dd>
+    <p>Unclassified traffic gets sent to the class with this minor-id.</p>
+  </dd>
 
-  <dl class='dl-vertical'>
-    <dt>parent major:minor | root</dt>
-    <dd>
-  <p>This mandatory parameter determines the place of the HTB instance, either at the <strong>root</strong> of an interface or within an existing class.</p>
-    </dd>
-    <dt>handle major:</dt>
-    <dd>
-  <p>Like all other qdiscs, the HTB can be assigned a handle. Should consist only of a major number, followed by a colon. Optional, but very useful if classes will be generated within this qdisc.</p>
-    </dd>
-    <dt>default minor-id</dt>
-    <dd>
-  <p>Unclassified traffic gets sent to the class with this minor-id.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CLASSES</h2>
         <div class="sectioncontent">
-
 <p>Classes have a host of parameters to configure their operation.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p>parent major:minor</p>
+  </dt>
+  <dd>
+    <p>Place of this class within the hierarchy. If attached directly to a qdisc and not to another class, minor can be omitted. Mandatory.</p>
+  </dd>
+  <dt>
+    <p>classid major:minor</p>
+  </dt>
+  <dd>
+    <p>Like qdiscs, classes can be named. The major number must be equal to the major number of the qdisc to which it belongs. Optional, but needed if this class is going to have children.</p>
+  </dd>
+  <dt>
+    <p>prio priority</p>
+  </dt>
+  <dd>
+    <p>In the round-robin process, classes with the lowest priority field are tried for packets first. Mandatory.</p>
+  </dd>
+  <dt>
+    <p>rate rate</p>
+  </dt>
+  <dd>
+    <p>Maximum rate this class and all its children are guaranteed. Mandatory.</p>
+  </dd>
+  <dt>
+    <p>ceil rate</p>
+  </dt>
+  <dd>
+    <p>Maximum rate at which a class can send, if its parent has bandwidth to spare. Defaults to the configured rate, which implies no borrowing</p>
+  </dd>
+  <dt>
+    <p>burst bytes</p>
+  </dt>
+  <dd>
+    <p>Amount of bytes that can be burst at <strong>ceil</strong> speed, in excess of the configured <strong>rate.</strong> Should be at least as high as the highest burst of all children.</p>
+  </dd>
+  <dt>
+    <p>cburst bytes</p>
+  </dt>
+  <dd>
+    <p>Amount of bytes that can be burst at 'infinite' speed, in other words, as fast as the interface can transmit them. For perfect evening out, should be equal to at most one average packet. Should be at least as high as the highest cburst of all children.</p>
+  </dd>
 
-  <dl class='dl-vertical'>
-    <dt>parent major:minor</dt>
-    <dd>
-  <p>Place of this class within the hierarchy. If attached directly to a qdisc and not to another class, minor can be omitted. Mandatory.</p>
-    </dd>
-    <dt>classid major:minor</dt>
-    <dd>
-  <p>Like qdiscs, classes can be named. The major number must be equal to the major number of the qdisc to which it belongs. Optional, but needed if this class is going to have children.</p>
-    </dd>
-    <dt>prio priority</dt>
-    <dd>
-  <p>In the round-robin process, classes with the lowest priority field are tried for packets first. Mandatory.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-    <dt>rate rate</dt>
-    <dd>
-  <p>Maximum rate this class and all its children are guaranteed. Mandatory.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>ceil rate</dt>
-    <dd>
-  <p>Maximum rate at which a class can send, if its parent has bandwidth to spare. Defaults to the configured rate, which implies no borrowing</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>burst bytes</dt>
-    <dd>
-  <p>Amount of bytes that can be burst at <strong>ceil</strong> speed, in excess of the configured <strong>rate.</strong> Should be at least as high as the highest burst of all children.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>cburst bytes</dt>
-    <dd>
-  <p>Amount of bytes that can be burst at 'infinite' speed, in other words, as fast as the interface can transmit them. For perfect evening out, should be equal to at most one average packet. Should be at least as high as the highest cburst of all children.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
 <p>Due to Unix timing constraints, the maximum ceil rate is not infinite and may in fact be quite low. On Intel, there are 100 timer events per second, the maximum rate is that rate at which 'burst' bytes are sent each timer tick. From this, the minimum burst size for a specified rate can be calculated. For i386, a 10mbit rate requires a 12 kilobyte burst as 100*12kb*8 equals 10mbit.</p>
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p>Martin Devera &lt;devik@cdi.cz&gt;. This manpage maintained by bert hubert &lt;ahu@ds9a.nl&gt;</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO tc-htb&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>tc</strong>(8)</p>
-<p class='spacer'>
-
-<p>HTB website: http://luxik.cdi.cz/~devik/qos/htb/</p>
+<p><strong>tc</strong>(8)</p><p>HTB website: http://luxik.cdi.cz/~devik/qos/htb/</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>Martin Devera &lt;devik@cdi.cz&gt;. This manpage maintained by bert hubert &lt;ahu@ds9a.nl&gt;</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="tc-hfsc.8.html"><span aria-hidden="true">&larr;</span> tc-hfsc.8: Hierarchical fair service curve's control under linux .</a></li>
-   <li class="next"><a href="tc-mqprio.8.html">tc-mqprio.8: Multiqueue priority qdisc (offloaded hardware qos) <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="tc-hfsc.8.html"><span aria-hidden="true">&larr;</span> tc-hfsc.8: Hierarchical fair service curve's control under linux</a></li>
+   <li class="next"><a href="tc-ife.8.html">tc-ife.8: Encapsulate/decapsulate metadata <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

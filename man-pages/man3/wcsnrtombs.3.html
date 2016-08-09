@@ -91,68 +91,64 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;wchar.h&gt;</strong>
+<pre>
+<strong>#include <wchar.h></strong>
 
 <strong>size_t wcsnrtombs(char *</strong><em>dest</em><strong>, const wchar_t **</strong><em>src</em><strong>, size_t </strong><em>nwc</em><strong>,</strong>
-<strong>                  size_t </strong><em>len</em><strong>, mbstate_t *</strong><em>ps</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-    <p><strong>wcsnrtombs</strong>():</p>
-    <dl class='dl-vertical'>
-      <dt>Since glibc 2.10:</dt>
-      <dd>
+<strong>                  size_t </strong><em>len</em><strong>, mbstate_t *</strong><em>ps</em><strong>);</strong>
+</pre>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>wcsnrtombs</strong>():</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>Since glibc 2.10:</p>
+  </dt>
+  <dd>
     <p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
-      </dd>
-      <dt>Before glibc 2.10:</dt>
-      <dd>
+  </dd>
+  <dt>
+    <p>Before glibc 2.10:</p>
+  </dt>
+  <dd>
     <p>_GNU_SOURCE</p>
-      </dd>
-    </dl>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>wcsnrtombs</strong>() function is like the <a href="../man3/wcsrtombs.3.html"><strong>wcsrtombs</strong>(3)</a> function, except that the number of wide characters to be converted, starting at <em>*src</em>, is limited to <em>nwc</em>.</p><p>If <em>dest</em> is not NULL, the <strong>wcsnrtombs</strong>() function converts at most <em>nwc</em> wide characters from the wide-character string <em>*src</em> to a multibyte string starting at <em>dest</em>. At most <em>len</em> bytes are written to <em>dest</em>. The shift state <em>*ps</em> is updated. The conversion is effectively performed by repeatedly calling <em>wcrtomb(dest, *src, ps)</em>, as long as this call succeeds, and then incrementing <em>dest</em> by the number of bytes written and <em>*src</em> by one. The conversion can stop for three reasons:</p>
+<dl class='dl-vertical'>
+  <dt>
+    1.
+  </dt>
+  <dd>
+    <p>A wide character has been encountered that can not be represented as a multibyte sequence (according to the current locale). In this case, <em>*src</em> is left pointing to the invalid wide character, <em>(size_t)&nbsp;-1</em> is returned, and <em>errno</em> is set to <strong>EILSEQ</strong>.</p>
+  </dd>
+  <dt>
+    2.
+  </dt>
+  <dd>
+    <p><em>nwc</em> wide characters have been converted without encountering a null wide character (L&apos;nbsp;&apos;), or the length limit forces a stop. In this case, <em>*src</em> is left pointing to the next wide character to be converted, and the number of bytes written to <em>dest</em> is returned.</p>
+  </dd>
+  <dt>
+    3.
+  </dt>
+  <dd>
+    <p>The wide-character string has been completely converted, including the terminating null wide character (which has the side effect of bringing back <em>*ps</em> to the initial state). In this case, <em>*src</em> is set to NULL, and the number of bytes written to <em>dest</em>, excluding the terminating null byte (&apos;nbsp;&apos;), is returned.</p>
+  </dd>
 
-<p>The <strong>wcsnrtombs</strong>() function is like the <a href="../man3/wcsrtombs.3.html"><strong>wcsrtombs</strong>(3)</a> function, except that the number of wide characters to be converted, starting at <em>*src</em>, is limited to <em>nwc</em>.</p>
-<p class='spacer'>
-
-  <p>If <em>dest</em> is not NULL, the <strong>wcsnrtombs</strong>() function converts at most <em>nwc</em> wide characters from the wide-character string <em>*src</em> to a multibyte string starting at <em>dest</em>. At most <em>len</em> bytes are written to <em>dest</em>. The shift state <em>*ps</em> is updated. The conversion is effectively performed by repeatedly calling <em>wcrtomb(dest, *src, ps)</em>, as long as this call succeeds, and then incrementing <em>dest</em> by the number of bytes written and <em>*src</em> by one. The conversion can stop for three reasons:</p>
-  <dl class='dl-horizontal'>
-    <dt>1.</dt>
-    <dd>
-  <p>A wide character has been encountered that can not be represented as a multibyte sequence (according to the current locale). In this case, <em>*src</em> is left pointing to the invalid wide character, <em>(size_t)&nbsp;-1</em> is returned, and <em>errno</em> is set to <strong>EILSEQ</strong>.</p>
-    </dd>
-    <dt>2.</dt>
-    <dd>
-  <p><em>nwc</em> wide characters have been converted without encountering a null wide character (L&apos;nbsp;&apos;), or the length limit forces a stop. In this case, <em>*src</em> is left pointing to the next wide character to be converted, and the number of bytes written to <em>dest</em> is returned.</p>
-    </dd>
-    <dt>3.</dt>
-    <dd>
-  <p>The wide-character string has been completely converted, including the terminating null wide character (which has the side effect of bringing back <em>*ps</em> to the initial state). In this case, <em>*src</em> is set to NULL, and the number of bytes written to <em>dest</em>, excluding the terminating null byte (&apos;nbsp;&apos;), is returned.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>If <em>dest</em> is NULL, <em>len</em> is ignored, and the conversion proceeds as above, except that the converted bytes are not written out to memory, and that no destination length limit exists.</p>
-<p class='spacer'>
-
-<p>In both of the above cases, if <em>ps</em> is NULL, a static anonymous state known only to the <strong>wcsnrtombs</strong>() function is used instead.</p>
-<p class='spacer'>
-
-<p>The programmer must ensure that there is room for at least <em>len</em> bytes at <em>dest</em>.</p>
+</dl>
+<p>If <em>dest</em> is NULL, <em>len</em> is ignored, and the conversion proceeds as above, except that the converted bytes are not written out to memory, and that no destination length limit exists.</p><p>In both of the above cases, if <em>ps</em> is NULL, a static anonymous state known only to the <strong>wcsnrtombs</strong>() function is used instead.</p><p>The programmer must ensure that there is room for at least <em>len</em> bytes at <em>dest</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>The <strong>wcsnrtombs</strong>() function returns the number of bytes that make up the converted part of multibyte sequence, not including the terminating null byte. If a wide character was encountered which could not be converted, <em>(size_t)&nbsp;-1</em> is returned, and <em>errno</em> set to <strong>EILSEQ</strong>.</p>
         </div>
       </section>
@@ -160,9 +156,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -173,16 +167,12 @@
 <td>Thread safety</td>
 <td>MT-Unsafe race:wcsnrtombs/!ps</td></tr>
 </table>
-
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2008.</p>
         </div>
       </section>
@@ -190,22 +180,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>The behavior of <strong>wcsnrtombs</strong>() depends on the <strong>LC_CTYPE</strong> category of the current locale.</p>
-<p class='spacer'>
-
-<p>Passing NULL as <em>ps</em> is not multithread safe.</p>
+<p>The behavior of <strong>wcsnrtombs</strong>() depends on the <strong>LC_CTYPE</strong> category of the current locale.</p><p>Passing NULL as <em>ps</em> is not multithread safe.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO wcsnrtombs&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/iconv.3.html"><strong>iconv</strong>(3)</a>, <a href="../man3/mbsinit.3.html"><strong>mbsinit</strong>(3)</a>, <a href="../man3/wcsrtombs.3.html"><strong>wcsrtombs</strong>(3)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="wcsnlen.3.html"><span aria-hidden="true">&larr;</span> wcsnlen.3: Determine the length of a fixed-size wide-character string</a></li>

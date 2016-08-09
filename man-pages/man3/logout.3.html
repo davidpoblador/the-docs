@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>logout: Write utmp and wtmp entries</title>
+  <title>login: Write utmp and wtmp entries</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -30,7 +30,7 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">logout<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">login<small> (3)</small></h1>
         <p class="lead">Write utmp and wtmp entries</p>
       </div>
 
@@ -54,8 +54,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/logout.3.html">
-      <span itemprop="name">logout: Write utmp and wtmp entries</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/login.3.html">
+      <span itemprop="name">login: Write utmp and wtmp entries</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -80,8 +80,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/logout.3.html">
-      <span itemprop="name">logout: Write utmp and wtmp entries</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/login.3.html">
+      <span itemprop="name">login: Write utmp and wtmp entries</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -90,43 +90,22 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;utmp.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>void login(const struct utmp *</strong><em>ut</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>int logout(const char *</strong><em>ut_line</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p>Link with <em>-lutil</em>.</p>
+<p><strong>#include <utmp.h></strong></p><p><strong>void login(const struct utmp *</strong><em>ut</em><strong>);</strong></p><p><strong>int logout(const char *</strong><em>ut_line</em><strong>);</strong></p><p>Link with <em>-lutil</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The utmp file records who is currently using the system. The wtmp file records all logins and logouts. See <a href="../man5/utmp.5.html"><strong>utmp</strong>(5)</a>.</p><p>The function <strong>login</strong>() takes the supplied <em>struct utmp</em>, <em>ut</em>, and writes it to both the utmp and the wtmp file.</p><p>The function <strong>logout</strong>() clears the entry in the utmp file again.</p><h3>GNU details</h3>
+<p>More precisely, <strong>login</strong>() takes the argument <em>ut</em> struct, fills the field <em>ut->ut_type</em> (if there is such a field) with the value <strong>USER_PROCESS</strong>, and fills the field <em>ut->ut_pid</em> (if there is such a field) with the process ID of the calling process. Then it tries to fill the field <em>ut->ut_line</em>. It takes the first of <em>stdin</em>, <em>stdout</em>, <em>stderr</em> that is a terminal, and stores the corresponding pathname minus a possible leading <em>/dev/</em> into this field, and then writes the struct to the utmp file. On the other hand, if no terminal name was found, this field is filled with "???" and the struct is not written to the utmp file. After this, the struct is written to the wtmp file.</p><p>The <strong>logout</strong>() function searches the utmp file for an entry matching the <em>ut_line</em> argument. If a record is found, it is updated by zeroing out the <em>ut_name</em> and <em>ut_host</em> fields, updating the <em>ut_tv</em> timestamp field and setting <em>ut_type</em> (if there is such a field) to <strong>DEAD_PROCESS</strong>.</p>
 
-<p>The utmp file records who is currently using the system. The wtmp file records all logins and logouts. See <a href="../man5/utmp.5.html"><strong>utmp</strong>(5)</a>.</p>
-<p class='spacer'>
-
-<p>The function <strong>login</strong>() takes the supplied <em>struct utmp</em>, <em>ut</em>, and writes it to both the utmp and the wtmp file.</p>
-<p class='spacer'>
-
-<p>The function <strong>logout</strong>() clears the entry in the utmp file again.</p>
-  <h3>GNU details</h3>
-<p>More precisely, <strong>login</strong>() takes the argument <em>ut</em> struct, fills the field <em>ut-&gt;ut_type</em> (if there is such a field) with the value <strong>USER_PROCESS</strong>, and fills the field <em>ut-&gt;ut_pid</em> (if there is such a field) with the process ID of the calling process. Then it tries to fill the field <em>ut-&gt;ut_line</em>. It takes the first of <em>stdin</em>, <em>stdout</em>, <em>stderr</em> that is a terminal, and stores the corresponding pathname minus a possible leading <em>/dev/</em> into this field, and then writes the struct to the utmp file. On the other hand, if no terminal name was found, this field is filled with "???" and the struct is not written to the utmp file. After this, the struct is written to the wtmp file.</p>
-<p class='spacer'>
-
-<p>The <strong>logout</strong>() function searches the utmp file for an entry matching the <em>ut_line</em> argument. If a record is found, it is updated by zeroing out the <em>ut_name</em> and <em>ut_host</em> fields, updating the <em>ut_tv</em> timestamp field and setting <em>ut_type</em> (if there is such a field) to <strong>DEAD_PROCESS</strong>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>The <strong>logout</strong>() function returns 1 if the entry was successfully written to the database, or 0 if an error occurred.</p>
         </div>
       </section>
@@ -135,50 +114,45 @@
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><em>/var/run/utmp</em></dt>
-    <dd>
-  <p>user accounting database, configured through <strong>_PATH_UTMP</strong> in <em>&lt;paths.h&gt;</em></p>
-    </dd>
-    <dt><em>/var/log/wtmp</em></dt>
-    <dd>
-  <p>user accounting log file, configured through <strong>_PATH_WTMP</strong> in <em>&lt;paths.h&gt;</em></p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><em>/var/run/utmp</em></p>
+  </dt>
+  <dd>
+    <p>user accounting database, configured through <strong>_PATH_UTMP</strong> in <em><paths.h></em></p>
+  </dd>
+  <dt>
+    <p><em>/var/log/wtmp</em></p>
+  </dt>
+  <dd>
+    <p>user accounting log file, configured through <strong>_PATH_WTMP</strong> in <em><paths.h></em></p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
 <th>Value</th></tr>
 
 <tr>
-<td><strong>login</strong>(),   <strong>logout</strong>()  </td>
+<td><strong>login</strong>(),      <strong>logout</strong>()  </td>
 <td>Thread safety</td>
-<td>MT-Unsafe race:utent   sig:ALRM timer  </td></tr>
-</table>
-
-<p class='spacer'>
-
-<p>In the above table, <em>utent</em> in <em>race:utent</em> signifies that if any of the functions <a href="../man3/setutent.3.html"><strong>setutent</strong>(3)</a>, <a href="../man3/getutent.3.html"><strong>getutent</strong>(3)</a>, or <a href="../man3/endutent.3.html"><strong>endutent</strong>(3)</a> are used in parallel in different threads of a program, then data races could occur. <a href="../man3/login.3.html"><strong>login</strong>(3)</a> and <a href="../man3/logout.3.html"><strong>logout</strong>(3)</a> calls those functions, so we use race:utent to remind users.</p>
+<td>MT-Unsafe race:utent      sig:ALRM timer  </td></tr>
+</table><p>In the above table, <em>utent</em> in <em>race:utent</em> signifies that if any of the functions <a href="../man3/setutent.3.html"><strong>setutent</strong>(3)</a>, <a href="../man3/getutent.3.html"><strong>getutent</strong>(3)</a>, or <a href="../man3/endutent.3.html"><strong>endutent</strong>(3)</a> are used in parallel in different threads of a program, then data races could occur. <a href="../man3/login.3.html"><strong>login</strong>(3)</a> and <a href="../man3/logout.3.html"><strong>logout</strong>(3)</a> calls those functions, so we use race:utent to remind users.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>Not in POSIX.1. Present on the BSDs.</p>
         </div>
       </section>
@@ -186,19 +160,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>Note that the member <em>ut_user</em> of <em>struct utmp</em> is called <em>ut_name</em> in BSD. Therefore, <em>ut_name</em> is defined as an alias for <em>ut_user</em> in <em>&lt;utmp.h&gt;</em>.</p>
+<p>Note that the member <em>ut_user</em> of <em>struct utmp</em> is called <em>ut_name</em> in BSD. Therefore, <em>ut_name</em> is defined as an alias for <em>ut_user</em> in <em><utmp.h></em>.</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO logout&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO login&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/getutent.3.html"><strong>getutent</strong>(3)</a>, <a href="../man5/utmp.5.html"><strong>utmp</strong>(5)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="logl.3.html"><span aria-hidden="true">&larr;</span> logl.3: Natural logarithmic function</a></li>

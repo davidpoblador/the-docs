@@ -91,10 +91,12 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;fcntl.h&gt;</strong>
+<pre>
+<strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <fcntl.h></strong>
 
-<strong>int fallocate(int </strong><em>fd</em><strong>, int </strong><em>mode</em><strong>, off_t </strong><em>offset</em><strong>, off_t </strong><em>len</em><strong>);</strong></pre>
+<strong>int fallocate(int </strong><em>fd</em><strong>, int </strong><em>mode</em><strong>, off_t </strong><em>offset</em><strong>, off_t </strong><em>len</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -102,108 +104,27 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>This is a nonportable, Linux-specific system call. For the portable, POSIX.1-specified method of ensuring that space is allocated for a file, see <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a>.</p><p><strong>fallocate</strong>() allows the caller to directly manipulate the allocated disk space for the file referred to by <em>fd</em> for the byte range starting at <em>offset</em> and continuing for <em>len</em> bytes.</p><p>The <em>mode</em> argument determines the operation to be performed on the given range. Details of the supported operations are given in the subsections below.</p><h3>Allocating disk space</h3>
+<p>The default operation (i.e., <em>mode</em> is zero) of <strong>fallocate</strong>() allocates the disk space within the range specified by <em>offset</em> and <em>len</em>. The file size (as reported by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>) will be changed if <em>offset</em>+<em>len</em> is greater than the file size. Any subregion within the range specified by <em>offset</em> and <em>len</em> that did not contain data before the call will be initialized to zero. This default behavior closely resembles the behavior of the <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a> library function, and is intended as a method of optimally implementing that function.</p><p>After a successful call, subsequent writes into the range specified by <em>offset</em> and <em>len</em> are guaranteed not to fail because of lack of disk space.</p><p>If the <strong>FALLOC_FL_KEEP_SIZE</strong> flag is specified in <em>mode</em>, the behavior of the call is similar, but the file size will not be changed even if <em>offset</em>+<em>len</em> is greater than the file size. Preallocating zeroed blocks beyond the end of the file in this manner is useful for optimizing append workloads.</p><p>Because allocation is done in block size chunks, <strong>fallocate</strong>() may allocate a larger range of disk space than was specified.</p>
+<h3>Deallocating file space</h3>
+<p>Specifying the <strong>FALLOC_FL_PUNCH_HOLE</strong> flag (available since Linux 2.6.38) in <em>mode</em> deallocates space (i.e., creates a hole) in the byte range starting at <em>offset</em> and continuing for <em>len</em> bytes. Within the specified range, partial filesystem blocks are zeroed, and whole filesystem blocks are removed from the file. After a successful call, subsequent reads from this range will return zeroes.</p><p>The <strong>FALLOC_FL_PUNCH_HOLE</strong> flag must be ORed with <strong>FALLOC_FL_KEEP_SIZE</strong> in <em>mode</em>; in other words, even when punching off the end of the file, the file size (as reported by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>) does not change.</p><p>Not all filesystems support <strong>FALLOC_FL_PUNCH_HOLE</strong>; if a filesystem doesn't support the operation, an error is returned. The operation is supported on at least the following filesystems:</p><ul>
+<li><p>XFS (since Linux 2.6.38)</p></li><li><p>ext4 (since Linux 3.0)</p></li><li><p>Btrfs (since Linux 3.7)</p></li><li><p>tmpfs (since Linux 3.5)</p></li>
+</ul>
+<h3>Collapsing file space</h3>
+<p>Specifying the <strong>FALLOC_FL_COLLAPSE_RANGE</strong> flag (available since Linux 3.15) in <em>mode</em> removes a byte range from a file, without leaving a hole. The byte range to be collapsed starts at <em>offset</em> and continues for <em>len</em> bytes. At the completion of the operation, the contents of the file starting at the location <em>offset+len</em> will be appended at the location <em>offset</em>, and the file will be <em>len</em> bytes smaller.</p><p>A filesystem may place limitations on the granularity of the operation, in order to ensure efficient implementation. Typically, <em>offset</em> and <em>len</em> must be a multiple of the filesystem logical block size, which varies according to the filesystem type and configuration. If a filesystem has such a requirement, <strong>fallocate</strong>() will fail with the error <strong>EINVAL</strong> if this requirement is violated.</p><p>If the region specified by <em>offset</em> plus <em>len</em> reaches or passes the end of file, an error is returned; instead, use <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a> to truncate a file.</p><p>No other flags may be specified in <em>mode</em> in conjunction with <strong>FALLOC_FL_COLLAPSE_RANGE</strong>.</p><p>As at Linux 3.15, <strong>FALLOC_FL_COLLAPSE_RANGE</strong> is supported by ext4 (only for extent-based files) and XFS.</p>
+<h3>Zeroing file space</h3>
+<p>Specifying the <strong>FALLOC_FL_ZERO_RANGE</strong> flag (available since Linux 3.15) in <em>mode</em> zeroes space in the byte range starting at <em>offset</em> and continuing for <em>len</em> bytes. Within the specified range, blocks are preallocated for the regions that span the holes in the file. After a successful call, subsequent reads from this range will return zeroes.</p><p>Zeroing is done within the filesystem preferably by converting the range into unwritten extents. This approach means that the specified range will not be physically zeroed out on the device (except for partial blocks at the either end of the range), and I/O is (otherwise) required only to update metadata.</p><p>If the <strong>FALLOC_FL_KEEP_SIZE</strong> flag is additionally specified in <em>mode</em>, the behavior of the call is similar, but the file size will not be changed even if <em>offset</em>+<em>len</em> is greater than the file size. This behavior is the same as when preallocating space with <strong>FALLOC_FL_KEEP_SIZE</strong> specified.</p><p>Not all filesystems support <strong>FALLOC_FL_ZERO_RANGE</strong>; if a filesystem doesn't support the operation, an error is returned. The operation is supported on at least the following filesystems:</p><ul>
+<li><p>XFS (since Linux 3.15)</p></li><li><p>ext4, for extent-based files (since Linux 3.15)</p></li><li><p>SMB3 (since Linux 3.17)</p></li>
+</ul>
+<h3>Increasing file space</h3>
+<p>Specifying the <strong>FALLOC_FL_INSERT_RANGE</strong> flag (available since Linux 4.1) in <em>mode</em> increases the file space by inserting a hole within the file size without overwriting any existing data. The hole will start at <em>offset</em> and continue for <em>len</em> bytes. When inserting the hole inside file, the contents of the file starting at <em>offset</em> will be shifted upward (i.e., to a higher file offset) by <em>len</em> bytes. Inserting a hole inside a file increases the file size by <em>len</em> bytes.</p><p>This mode has the same limitations as <strong>FALLOC_FL_COLLAPSE_RANGE</strong> regarding the granularity of the operation. If the granularity requirements are not met, <strong>fallocate</strong>() will fail with the error <strong>EINVAL.</strong> If the <em>offset</em> is equal to or greater than the end of file, an error is returned. For such operations (i.e., inserting a hole at the end of file), <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a> should be used.</p><p>No other flags may be specified in <em>mode</em> in conjunction with <strong>FALLOC_FL_INSERT_RANGE</strong>.</p><p><strong>FALLOC_FL_INSERT_RANGE</strong> requires filesystem support. Filesystems that support this operation include XFS (since Linux 4.1) and ext4 (since Linux 4.2).</p>
 
-<p>This is a nonportable, Linux-specific system call. For the portable, POSIX.1-specified method of ensuring that space is allocated for a file, see <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a>.</p>
-<p class='spacer'>
-
-<p><strong>fallocate</strong>() allows the caller to directly manipulate the allocated disk space for the file referred to by <em>fd</em> for the byte range starting at <em>offset</em> and continuing for <em>len</em> bytes.</p>
-<p class='spacer'>
-
-<p>The <em>mode</em> argument determines the operation to be performed on the given range. Details of the supported operations are given in the subsections below.</p>
-  <h3>Allocating disk space</h3>
-<p>The default operation (i.e., <em>mode</em> is zero) of <strong>fallocate</strong>() allocates the disk space within the range specified by <em>offset</em> and <em>len</em>. The file size (as reported by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>) will be changed if <em>offset</em>+<em>len</em> is greater than the file size. Any subregion within the range specified by <em>offset</em> and <em>len</em> that did not contain data before the call will be initialized to zero. This default behavior closely resembles the behavior of the <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a> library function, and is intended as a method of optimally implementing that function.</p>
-<p class='spacer'>
-
-<p>After a successful call, subsequent writes into the range specified by <em>offset</em> and <em>len</em> are guaranteed not to fail because of lack of disk space.</p>
-<p class='spacer'>
-
-<p>If the <strong>FALLOC_FL_KEEP_SIZE</strong> flag is specified in <em>mode</em>, the behavior of the call is similar, but the file size will not be changed even if <em>offset</em>+<em>len</em> is greater than the file size. Preallocating zeroed blocks beyond the end of the file in this manner is useful for optimizing append workloads.</p>
-<p class='spacer'>
-
-<p>Because allocation is done in block size chunks, <strong>fallocate</strong>() may allocate a larger range of disk space than was specified.</p>
-  <h3>Deallocating file space</h3>
-<p>Specifying the <strong>FALLOC_FL_PUNCH_HOLE</strong> flag (available since Linux 2.6.38) in <em>mode</em> deallocates space (i.e., creates a hole) in the byte range starting at <em>offset</em> and continuing for <em>len</em> bytes. Within the specified range, partial filesystem blocks are zeroed, and whole filesystem blocks are removed from the file. After a successful call, subsequent reads from this range will return zeroes.</p>
-<p class='spacer'>
-
-<p>The <strong>FALLOC_FL_PUNCH_HOLE</strong> flag must be ORed with <strong>FALLOC_FL_KEEP_SIZE</strong> in <em>mode</em>; in other words, even when punching off the end of the file, the file size (as reported by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>) does not change.</p>
-<p class='spacer'>
-
-  <p>Not all filesystems support <strong>FALLOC_FL_PUNCH_HOLE</strong>; if a filesystem doesn't support the operation, an error is returned. The operation is supported on at least the following filesystems:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>XFS (since Linux 2.6.38)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>ext4 (since Linux 3.0)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>Btrfs (since Linux 3.7)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>tmpfs (since Linux 3.5)</p>
-    </dd>
-  </dl>
-  <h3>Collapsing file space</h3>
-<p>Specifying the <strong>FALLOC_FL_COLLAPSE_RANGE</strong> flag (available since Linux 3.15) in <em>mode</em> removes a byte range from a file, without leaving a hole. The byte range to be collapsed starts at <em>offset</em> and continues for <em>len</em> bytes. At the completion of the operation, the contents of the file starting at the location <em>offset+len</em> will be appended at the location <em>offset</em>, and the file will be <em>len</em> bytes smaller.</p>
-<p class='spacer'>
-
-<p>A filesystem may place limitations on the granularity of the operation, in order to ensure efficient implementation. Typically, <em>offset</em> and <em>len</em> must be a multiple of the filesystem logical block size, which varies according to the filesystem type and configuration. If a filesystem has such a requirement, <strong>fallocate</strong>() will fail with the error <strong>EINVAL</strong> if this requirement is violated.</p>
-<p class='spacer'>
-
-<p>If the region specified by <em>offset</em> plus <em>len</em> reaches or passes the end of file, an error is returned; instead, use <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a> to truncate a file.</p>
-<p class='spacer'>
-
-<p>No other flags may be specified in <em>mode</em> in conjunction with <strong>FALLOC_FL_COLLAPSE_RANGE</strong>.</p>
-<p class='spacer'>
-
-<p>As at Linux 3.15, <strong>FALLOC_FL_COLLAPSE_RANGE</strong> is supported by ext4 (only for extent-based files) and XFS.</p>
-  <h3>Zeroing file space</h3>
-<p>Specifying the <strong>FALLOC_FL_ZERO_RANGE</strong> flag (available since Linux 3.15) in <em>mode</em> zeroes space in the byte range starting at <em>offset</em> and continuing for <em>len</em> bytes. Within the specified range, blocks are preallocated for the regions that span the holes in the file. After a successful call, subsequent reads from this range will return zeroes.</p>
-<p class='spacer'>
-
-<p>Zeroing is done within the filesystem preferably by converting the range into unwritten extents. This approach means that the specified range will not be physically zeroed out on the device (except for partial blocks at the either end of the range), and I/O is (otherwise) required only to update metadata.</p>
-<p class='spacer'>
-
-<p>If the <strong>FALLOC_FL_KEEP_SIZE</strong> flag is additionally specified in <em>mode</em>, the behavior of the call is similar, but the file size will not be changed even if <em>offset</em>+<em>len</em> is greater than the file size. This behavior is the same as when preallocating space with <strong>FALLOC_FL_KEEP_SIZE</strong> specified.</p>
-<p class='spacer'>
-
-  <p>Not all filesystems support <strong>FALLOC_FL_ZERO_RANGE</strong>; if a filesystem doesn't support the operation, an error is returned. The operation is supported on at least the following filesystems:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>XFS (since Linux 3.15)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>ext4, for extent-based files (since Linux 3.15)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>SMB3 (since Linux 3.17)</p>
-    </dd>
-  </dl>
-  <h3>Increasing file space</h3>
-<p>Specifying the <strong>FALLOC_FL_INSERT_RANGE</strong> flag (available since Linux 4.1) in <em>mode</em> increases the file space by inserting a hole within the file size without overwriting any existing data. The hole will start at <em>offset</em> and continue for <em>len</em> bytes. When inserting the hole inside file, the contents of the file starting at <em>offset</em> will be shifted upward (i.e., to a higher file offset) by <em>len</em> bytes. Inserting a hole inside a file increases the file size by <em>len</em> bytes.</p>
-<p class='spacer'>
-
-<p>This mode has the same limitations as <strong>FALLOC_FL_COLLAPSE_RANGE</strong> regarding the granularity of the operation. If the granularity requirements are not met, <strong>fallocate</strong>() will fail with the error <strong>EINVAL.</strong> If the <em>offset</em> is equal to or greater than the end of file, an error is returned. For such operations (i.e., inserting a hole at the end of file), <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a> should be used.</p>
-<p class='spacer'>
-
-<p>No other flags may be specified in <em>mode</em> in conjunction with <strong>FALLOC_FL_INSERT_RANGE</strong>.</p>
-<p class='spacer'>
-
-<p><strong>FALLOC_FL_INSERT_RANGE</strong> requires filesystem support. Filesystems that support this operation include XFS (since Linux 4.1) and ext4 (since Linux 4.2).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, <strong>fallocate</strong>() returns zero. On error, -1 is returned and <em>errno</em> is set to indicate the error.</p>
         </div>
       </section>
@@ -212,95 +133,136 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>fd</em> is not a valid file descriptor, or is not opened for writing.</p>
-    </dd>
-    <dt><strong>EFBIG</strong></dt>
-    <dd>
-  <p><em>offset</em>+<em>len</em> exceeds the maximum file size.</p>
-    </dd>
-    <dt><strong>EFBIG</strong></dt>
-    <dd>
-  <p><em>mode</em> is <strong>FALLOC_FL_INSERT_RANGE</strong>, and the current file size+<em>len</em> exceeds the maximum file size.</p>
-    </dd>
-    <dt><strong>EINTR</strong></dt>
-    <dd>
-  <p>A signal was caught during execution; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>offset</em> was less than 0, or <em>len</em> was less than or equal to 0.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>mode</em> is <strong>FALLOC_FL_COLLAPSE_RANGE</strong> and the range specified by <em>offset</em> plus <em>len</em> reaches or passes the end of the file.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>mode</em> is <strong>FALLOC_FL_INSERT_RANGE</strong> and the range specified by <em>offset</em> reaches or passes the end of the file.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>mode</em> is <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong>, but either <em>offset</em> or <em>len</em> is not a multiple of the filesystem block size.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>mode</em> contains one of <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong> and also other flags; no other flags are permitted with <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong>.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>mode</em> is <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_ZERO_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong>, but the file referred to by <em>fd</em> is not a regular file.</p>
-    </dd>
-    <dt><strong>EIO</strong></dt>
-    <dd>
-  <p>An I/O error occurred while reading from or writing to a filesystem.</p>
-    </dd>
-    <dt><strong>ENODEV</strong></dt>
-    <dd>
-  <p><em>fd</em> does not refer to a regular file or a directory. (If <em>fd</em> is a pipe or FIFO, a different error results.)</p>
-    </dd>
-    <dt><strong>ENOSPC</strong></dt>
-    <dd>
-  <p>There is not enough space left on the device containing the file referred to by <em>fd</em>.</p>
-    </dd>
-    <dt><strong>ENOSYS</strong></dt>
-    <dd>
-  <p>This kernel does not implement <strong>fallocate</strong>().</p>
-    </dd>
-    <dt><strong>EOPNOTSUPP</strong></dt>
-    <dd>
-  <p>The filesystem containing the file referred to by <em>fd</em> does not support this operation; or the <em>mode</em> is not supported by the filesystem containing the file referred to by <em>fd</em>.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>The file referred to by <em>fd</em> is marked immutable (see <strong>chattr</strong>(1)).</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p><em>mode</em> specifies <strong>FALLOC_FL_PUNCH_HOLE</strong> or <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong> and the file referred to by <em>fd</em> is marked append-only (see <strong>chattr</strong>(1)).</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>The operation was prevented by a file seal; see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>.</p>
-    </dd>
-    <dt><strong>ESPIPE</strong></dt>
-    <dd>
-  <p><em>fd</em> refers to a pipe or FIFO.</p>
-    </dd>
-    <dt><strong>ETXTBSY</strong></dt>
-    <dd>
-  <p><em>mode</em> specifies <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong>, but the file referred to by <em>fd</em> is currently being executed.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> is not a valid file descriptor, or is not opened for writing.</p>
+  </dd>
+  <dt>
+    <p><strong>EFBIG</strong></p>
+  </dt>
+  <dd>
+    <p><em>offset</em>+<em>len</em> exceeds the maximum file size.</p>
+  </dd>
+  <dt>
+    <p><strong>EFBIG</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> is <strong>FALLOC_FL_INSERT_RANGE</strong>, and the current file size+<em>len</em> exceeds the maximum file size.</p>
+  </dd>
+  <dt>
+    <p><strong>EINTR</strong></p>
+  </dt>
+  <dd>
+    <p>A signal was caught during execution; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>offset</em> was less than 0, or <em>len</em> was less than or equal to 0.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> is <strong>FALLOC_FL_COLLAPSE_RANGE</strong> and the range specified by <em>offset</em> plus <em>len</em> reaches or passes the end of the file.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> is <strong>FALLOC_FL_INSERT_RANGE</strong> and the range specified by <em>offset</em> reaches or passes the end of the file.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> is <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong>, but either <em>offset</em> or <em>len</em> is not a multiple of the filesystem block size.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> contains one of <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong> and also other flags; no other flags are permitted with <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> is <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_ZERO_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong>, but the file referred to by <em>fd</em> is not a regular file.</p>
+  </dd>
+  <dt>
+    <p><strong>EIO</strong></p>
+  </dt>
+  <dd>
+    <p>An I/O error occurred while reading from or writing to a filesystem.</p>
+  </dd>
+  <dt>
+    <p><strong>ENODEV</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> does not refer to a regular file or a directory. (If <em>fd</em> is a pipe or FIFO, a different error results.)</p>
+  </dd>
+  <dt>
+    <p><strong>ENOSPC</strong></p>
+  </dt>
+  <dd>
+    <p>There is not enough space left on the device containing the file referred to by <em>fd</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOSYS</strong></p>
+  </dt>
+  <dd>
+    <p>This kernel does not implement <strong>fallocate</strong>().</p>
+  </dd>
+  <dt>
+    <p><strong>EOPNOTSUPP</strong></p>
+  </dt>
+  <dd>
+    <p>The filesystem containing the file referred to by <em>fd</em> does not support this operation; or the <em>mode</em> is not supported by the filesystem containing the file referred to by <em>fd</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>The file referred to by <em>fd</em> is marked immutable (see <strong>chattr</strong>(1)).</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> specifies <strong>FALLOC_FL_PUNCH_HOLE</strong> or <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong> and the file referred to by <em>fd</em> is marked append-only (see <strong>chattr</strong>(1)).</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>The operation was prevented by a file seal; see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>ESPIPE</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> refers to a pipe or FIFO.</p>
+  </dd>
+  <dt>
+    <p><strong>ETXTBSY</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> specifies <strong>FALLOC_FL_COLLAPSE_RANGE</strong> or <strong>FALLOC_FL_INSERT_RANGE</strong>, but the file referred to by <em>fd</em> is currently being executed.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p><strong>fallocate</strong>() is available on Linux since kernel 2.6.23. Support is provided by glibc since version 2.10. The <strong>FALLOC_FL_*</strong> flags are defined in glibc headers only since version 2.18.</p>
         </div>
       </section>
@@ -308,7 +270,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p><strong>fallocate</strong>() is Linux-specific.</p>
         </div>
       </section>
@@ -316,11 +277,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO fallocate&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man1/fallocate.1.html"><strong>fallocate</strong>(1)</a>, <a href="../man2/ftruncate.2.html"><strong>ftruncate</strong>(2)</a>, <strong>posix_fadvise</strong>(3), <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="fadvise64_64.2.html"><span aria-hidden="true">&larr;</span> fadvise64_64.2: Predeclare an access pattern for file data</a></li>

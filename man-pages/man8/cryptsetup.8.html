@@ -90,32 +90,20 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>cryptsetup &lt;options&gt; &lt;action&gt; &lt;action args&gt;</strong></p>
+<p><strong>cryptsetup <options> <action> <action args></strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>cryptsetup is used to conveniently setup dm-crypt managed device-mapper mappings. These include plain dm-crypt volumes and LUKS volumes. The difference is that LUKS uses a metadata header and can hence offer more features than plain dm-crypt. On the other hand, the header is visible and vulnerable to damage.</p>
-<p class='spacer'>
-
-<p>In addition, cryptsetup provides limited support for the use of historic loopaes volumes and for TrueCrypt compatible volumes.</p>
-<p class='spacer'>
-
+<p>cryptsetup is used to conveniently setup dm-crypt managed device-mapper mappings. These include plain dm-crypt volumes and LUKS volumes. The difference is that LUKS uses a metadata header and can hence offer more features than plain dm-crypt. On the other hand, the header is visible and vulnerable to damage.</p><p>In addition, cryptsetup provides limited support for the use of historic loopaes volumes and for TrueCrypt compatible volumes.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PLAIN DM-CRYPT OR LUKS?</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
 <p>Unless you understand the cryptographic background well, use LUKS. With plain dm-crypt there are a number of possible user errors that massively decrease security. While LUKS cannot fix them all, it can lessen the impact for many of them.</p>
         </div>
       </section>
@@ -123,485 +111,97 @@
       <section>
         <h2 class="font-effect-shadow-multiple">WARNINGS</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>A lot of good information on the risks of using encrypted storage, on handling problems and on security aspects can be found in the <em>Cryptsetup FAQ</em>. Read it. Nonetheless, some risks deserve to be mentioned here.</p>
-<p class='spacer'>
-
-<p><strong>Backup:</strong> Storage media die. Encryption has no influence on that. Backup is mandatory for encrypted data as well, if the data has any worth. See the Cryptsetup FAQ for advice on how to do backup of an encrypted volume.</p>
-<p class='spacer'>
-
-<p><strong>Character encoding:</strong> If you enter a passphrase with special symbols, the passphrase can change depending character encoding. Keyboard settings can also change, which can make blind input hard or impossible. For example, switching from some ASCII 8-bit variant to UTF-8 can lead to a different binary encoding and hence different passphrase seen by cryptsetup, even if what you see on the terminal is exactly the same. It is therefore highly recommended to select passphrase characters only from 7-bit ASCII, as the encoding for 7-bit ASCII stays the same for all ASCII variants and UTF-8.</p>
-<p class='spacer'>
-
-<p><strong>LUKS header:</strong> If the header of a LUKS volume gets damaged, all data is permanently lost unless you have a header-backup. If a key-slot is damaged, it can only be restored from a header-backup or if another active key-slot with known passphrase is undamaged. Damaging the LUKS header is something people manage to do with surprising frequency. This risk is the result of a trade-off between security and safety, as LUKS is designed for fast and secure wiping by just overwriting header and key-slot area.</p>
-<p class='spacer'>
-
-<p><strong>Previously used partitions:</strong> If a partition was previously used, it is a very good idea to wipe filesystem signatures, data, etc. before creating a LUKS or plain dm-crypt container on it. For a quick removal of filesystem signatures, use "wipefs". Take care though that this may not remove everything. In particular md (RAID) signatures at the end of a device may survive. It also does not remove data. For a full wipe, overwrite the whole partition before container creation. If you do not know how to to that, the cryptsetup FAQ describes several options.</p>
-<p class='spacer'>
-
+<p>A lot of good information on the risks of using encrypted storage, on handling problems and on security aspects can be found in the <em>Cryptsetup FAQ</em>. Read it. Nonetheless, some risks deserve to be mentioned here.</p><p><strong>Backup:</strong> Storage media die. Encryption has no influence on that. Backup is mandatory for encrypted data as well, if the data has any worth. See the Cryptsetup FAQ for advice on how to do backup of an encrypted volume.</p><p><strong>Character encoding:</strong> If you enter a passphrase with special symbols, the passphrase can change depending character encoding. Keyboard settings can also change, which can make blind input hard or impossible. For example, switching from some ASCII 8-bit variant to UTF-8 can lead to a different binary encoding and hence different passphrase seen by cryptsetup, even if what you see on the terminal is exactly the same. It is therefore highly recommended to select passphrase characters only from 7-bit ASCII, as the encoding for 7-bit ASCII stays the same for all ASCII variants and UTF-8.</p><p><strong>LUKS header:</strong> If the header of a LUKS volume gets damaged, all data is permanently lost unless you have a header-backup. If a key-slot is damaged, it can only be restored from a header-backup or if another active key-slot with known passphrase is undamaged. Damaging the LUKS header is something people manage to do with surprising frequency. This risk is the result of a trade-off between security and safety, as LUKS is designed for fast and secure wiping by just overwriting header and key-slot area.</p><p><strong>Previously used partitions:</strong> If a partition was previously used, it is a very good idea to wipe filesystem signatures, data, etc. before creating a LUKS or plain dm-crypt container on it. For a quick removal of filesystem signatures, use "wipefs". Take care though that this may not remove everything. In particular md (RAID) signatures at the end of a device may survive. It also does not remove data. For a full wipe, overwrite the whole partition before container creation. If you do not know how to to that, the cryptsetup FAQ describes several options.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BASIC COMMANDS</h2>
         <div class="sectioncontent">
-
-<p>The following are valid actions for all supported device types.</p>
-<p class='spacer'>
-
-<p><em>open</em> &lt;device&gt; &lt;name&gt; --type &lt;device_type&gt;</p>
-<p class='spacer'>
-
-<p>Opens (creates a mapping with) &lt;name&gt; backed by device &lt;device&gt;.</p>
-<p class='spacer'>
-
-<p>Device type can be <em>plain</em>, <em>luks</em> (default), <em>loopaes</em> or <em>tcrypt</em>.</p>
-<p class='spacer'>
-
-<p>For backward compatibility there are <strong>open</strong> command aliases:</p>
-<p class='spacer'>
-
-<p><strong>create</strong> (argument-order &lt;name&gt; &lt;device&gt;): open --type plain</p>
-<p class='spacer'>
-
-<p><strong>plainOpen</strong>: open --type plain</p>
-<p class='spacer'>
-
-<p><strong>luksOpen</strong>: open --type luks</p>
-<p class='spacer'>
-
-<p><strong>loopaesOpen</strong>: open --type loopaes</p>
-<p class='spacer'>
-
-<p><strong>tcryptOpen</strong>: open --type tcrypt</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> are type specific and are described below for individual device types. For <strong>create</strong>, the order of the &lt;name&gt; and &lt;device&gt; options is inverted for historical reasons, all other aliases use the standard <strong>&lt;device&gt; &lt;name&gt;</strong> order.</p>
-<p class='spacer'>
-
-<p><em>close</em> &lt;name&gt;</p>
-<p class='spacer'>
-
-<p>Removes the existing mapping &lt;name&gt; and wipes the key from kernel memory.</p>
-<p class='spacer'>
-
-<p>For backward compatibility there are <strong>close</strong> command aliases: <strong>remove</strong>, <strong>plainClose</strong>, <strong>luksClose</strong>, <strong>loopaesClose</strong>, <strong>tcryptClose</strong> (all behaves exactly the same, device type is determined automatically from active device).</p>
-<p class='spacer'>
-
-<p><em>status</em> &lt;name&gt;</p>
-<p class='spacer'>
-
-<p>Reports the status for the mapping &lt;name&gt;.</p>
-<p class='spacer'>
-
-<p><em>resize</em> &lt;name&gt;</p>
-<p class='spacer'>
-
-<p>Resizes an active mapping &lt;name&gt;.</p>
-<p class='spacer'>
-
-<p>If --size (in sectors) is not specified, the size of the underlying block device is used. Note that this does not change the raw device geometry, it just changes how many sectors of the raw device are represented in the mapped device.</p>
+<p>The following are valid actions for all supported device types.</p><p><em>open</em> &lt;device&gt; &lt;name&gt; --type &lt;device_type&gt;</p><ul>
+<li><p>Opens (creates a mapping with) &lt;name&gt; backed by device &lt;device&gt;.</p><p>Device type can be <em>plain</em>, <em>luks</em> (default), <em>loopaes</em> or <em>tcrypt</em>.</p><p>For backward compatibility there are <strong>open</strong> command aliases:</p><p><strong>create</strong> (argument-order &lt;name&gt; &lt;device&gt;): open --type plain</p><p><strong>plainOpen</strong>: open --type plain</p><p><strong>luksOpen</strong>: open --type luks</p><p><strong>loopaesOpen</strong>: open --type loopaes</p><p><strong>tcryptOpen</strong>: open --type tcrypt</p><p><strong>&lt;options&gt;</strong> are type specific and are described below for individual device types. For <strong>create</strong>, the order of the &lt;name&gt; and &lt;device&gt; options is inverted for historical reasons, all other aliases use the standard <strong>&lt;device&gt; &lt;name&gt;</strong> order.</p></li>
+</ul><p><em>close</em> &lt;name&gt;</p><ul>
+<li><p>Removes the existing mapping &lt;name&gt; and wipes the key from kernel memory.</p><p>For backward compatibility there are <strong>close</strong> command aliases: <strong>remove</strong>, <strong>plainClose</strong>, <strong>luksClose</strong>, <strong>loopaesClose</strong>, <strong>tcryptClose</strong> (all behaves exactly the same, device type is determined automatically from active device).</p></li>
+</ul><p><em>status</em> &lt;name&gt;</p><ul>
+<li><p>Reports the status for the mapping &lt;name&gt;.</p></li>
+</ul><p><em>resize</em> &lt;name&gt;</p><ul>
+<li><p>Resizes an active mapping &lt;name&gt;.</p><p>If --size (in sectors) is not specified, the size of the underlying block device is used. Note that this does not change the raw device geometry, it just changes how many sectors of the raw device are represented in the mapped device.</p></li>
+</ul>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PLAIN MODE</h2>
         <div class="sectioncontent">
-
-<p>Plain dm-crypt encrypts the device sector-by-sector with a single, non-salted hash of the passphrase. No checks are performed, no metadata is used. There is no formatting operation. When the raw device is mapped (opened), the usual device operations can be used on the mapped device, including filesystem creation. Mapped devices usually reside in /dev/mapper/&lt;name&gt;.</p>
-<p class='spacer'>
-
-<p>The following are valid plain device type actions:</p>
-<p class='spacer'>
-
-<p><em>open</em> --type plain &lt;device&gt; &lt;name&gt;</p>
-<p class='spacer'>
-
-<p><em>create</em> &lt;name&gt; &lt;device&gt; (<strong>OBSOLETE syntax</strong>)</p>
-<p class='spacer'>
-
-<p>Opens (creates a mapping with) &lt;name&gt; backed by device &lt;device&gt;.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--hash, --cipher, --verify-passphrase, --key-file, --keyfile-offset, --key-size, --offset, --skip, --size, --readonly, --shared, --allow-discards]</p>
-<p class='spacer'>
-
-<p>Example: 'cryptsetup open --type plain /dev/sda10 e1' maps the raw encrypted device /dev/sda10 to the mapped (decrypted) device /dev/mapper/e1, which can then be mounted, fsck-ed or have a filesystem created on it.</p>
+<p>Plain dm-crypt encrypts the device sector-by-sector with a single, non-salted hash of the passphrase. No checks are performed, no metadata is used. There is no formatting operation. When the raw device is mapped (opened), the usual device operations can be used on the mapped device, including filesystem creation. Mapped devices usually reside in /dev/mapper/&lt;name&gt;.</p><p>The following are valid plain device type actions:</p><p><em>open</em> --type plain &lt;device&gt; &lt;name&gt;</p><p><em>create</em> &lt;name&gt; &lt;device&gt; (<strong>OBSOLETE syntax</strong>)</p><ul>
+<li><p>Opens (creates a mapping with) &lt;name&gt; backed by device &lt;device&gt;.</p><p><strong>&lt;options&gt;</strong> can be [--hash, --cipher, --verify-passphrase, --key-file, --keyfile-offset, --key-size, --offset, --skip, --size, --readonly, --shared, --allow-discards]</p><p>Example: 'cryptsetup open --type plain /dev/sda10 e1' maps the raw encrypted device /dev/sda10 to the mapped (decrypted) device /dev/mapper/e1, which can then be mounted, fsck-ed or have a filesystem created on it.</p></li>
+</ul>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">LUKS EXTENSION</h2>
         <div class="sectioncontent">
-
-<p>LUKS, the Linux Unified Key Setup, is a standard for disk encryption. It adds a standardized header at the start of the device, a key-slot area directly behind the header and the bulk data area behind that. The whole set is called a 'LUKS container'. The device that a LUKS container resides on is called a 'LUKS device'. For most purposes both terms can be used interchangeably. But note that when the LUKS header is at a nonzero offset in a device, then the device is not a LUKS device anymore, but has a LUKS container stored in it at an offset.</p>
-<p class='spacer'>
-
-<p>LUKS can manage multiple passphrases that can be individually revoked or changed and that can be securely scrubbed from persistent media due to the use of anti-forensic stripes. Passphrases are protected against brute-force and dictionary attacks by PBKDF2, which implements hash iteration and salting in one function.</p>
-<p class='spacer'>
-
-<p>Each passphrase, also called a <strong>key</strong> in this document, is associated with one of 8 key-slots. Key operations that do not specify a slot affect the first slot that matches the supplied passphrase or the first empty slot if a new passphrase is added.</p>
-<p class='spacer'>
-
-<p>The <strong>&lt;device&gt;</strong> parameter can be also specified by a LUKS UUID in the format UUID=&lt;uuid&gt;. Translation to real device name uses symlinks in /dev/disk/by-uuid directory.</p>
-<p class='spacer'>
-
-<p>To specify a detached header, the <strong>--header</strong> parameter can be used in all LUKS commands and always takes precedence over positional <strong>&lt;device&gt;</strong> parameter.</p>
-<p class='spacer'>
-
-<p>The following are valid LUKS actions:</p>
-<p class='spacer'>
-
-<p><em>luksFormat</em> &lt;device&gt; [&lt;key file&gt;]</p>
-<p class='spacer'>
-
-<p>Initializes a LUKS partition and sets the initial passphrase (for key-slot 0), either via prompting or via &lt;key file&gt;. Note that if the second argument is present, then the passphrase is taken from the file given there, without the need to use the --key-file option. Also note that for both forms of reading the passphrase from file you can give '-' as file name, which results in the passphrase being read from stdin and the safety-question being skipped.</p>
-<p class='spacer'>
-
-<p>You can only call luksFormat on a LUKS device that is not mapped.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--hash, --cipher, --verify-passphrase, --key-size, --key-slot, --key-file (takes precedence over optional second argument), --keyfile-offset, --keyfile-size, --use-random | --use-urandom, --uuid, --master-key-file, --iter-time, --header, --force-password].</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> Doing a luksFormat on an existing LUKS container will make all data the old container permanently irretrievable, unless you have a header backup.</p>
-<p class='spacer'>
-
-<p><em>open</em> --type luks &lt;device&gt; &lt;name&gt;</p>
-<p class='spacer'>
-
-<p><em>luksOpen</em> &lt;device&gt; &lt;name&gt; (<strong>old syntax</strong>)</p>
-<p class='spacer'>
-
-<p>Opens the LUKS device &lt;device&gt; and sets up a mapping &lt;name&gt; after successful verification of the supplied passphrase. If the passphrase is not supplied via --key-file, the command prompts for it interactively.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --readonly, --test-passphrase, --allow-discards, --header, --key-slot, --master-key-file].</p>
-<p class='spacer'>
-
-<p><em>luksSuspend</em> &lt;name&gt;</p>
-<p class='spacer'>
-
-<p>Suspends an active device (all IO operations will blocked and accesses to the device will wait indefinitely) and wipes the encryption key from kernel memory. Needs kernel 2.6.19 or later.</p>
-<p class='spacer'>
-
-<p>After this operation you have to use <em>luksResume</em> to reinstate the encryption key and unblock the device or <em>close</em> to remove the mapped device.</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> never suspend the device on which the cryptsetup binary resides.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--header].</p>
-<p class='spacer'>
-
-<p><em>luksResume</em> &lt;name&gt;</p>
-<p class='spacer'>
-
-<p>Resumes a suspended device and reinstates the encryption key. Prompts interactively for a passphrase if --key-file is not given.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-size, --header]</p>
-<p class='spacer'>
-
-<p><em>luksAddKey</em> &lt;device&gt; [&lt;key file with new key&gt;]</p>
-<p class='spacer'>
-
-<p>adds a new passphrase. An existing passphrase must be supplied interactively or via --key-file. The new passphrase to be added can be specified interactively or read from the file given as positional argument.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --new-keyfile-offset, --new-keyfile-size, --key-slot, --master-key-file, --iter-time, --force-password, --header].</p>
-<p class='spacer'>
-
-<p><em>luksRemoveKey</em> &lt;device&gt; [&lt;key file with passphrase to be removed&gt;]</p>
-<p class='spacer'>
-
-<p>Removes the supplied passphrase from the LUKS device. The passphrase to be removed can be specified interactively, as positional argument or via --key-file.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --header]</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> If you read the passphrase from stdin (without further argument or with '-' as argument to --key-file), batch-mode (-q) will be implicitely switched on and no warning will be given when you remove the last remaining passphrase from a LUKS container. Removing the last passphrase makes the LUKS container permanently inaccessible.</p>
-<p class='spacer'>
-
-<p><em>luksChangeKey</em> &lt;device&gt; [&lt;new key file&gt;]</p>
-<p class='spacer'>
-
-<p>Changes an existing passphrase. The passphrase to be changed must be supplied interactively or via --key-file. The new passphrase can be supplied interactively or in a file given as positional argument.</p>
-<p class='spacer'>
-
-<p>If a key-slot is specified (via --key-slot), the passphrase for that key-slot must be given and the new passphrase will overwrite the specified key-slot. If no key-slot is specified and there is still a free key-slot, then the new passphrase will be put into a free key-slot before the key-slot containing the old passphrase is purged. If there is no free key-slot, then the key-slot with the old passphrase is overwritten directly.</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> If a key-slot is overwritten, a media failure during this operation can cause the overwrite to fail after the old passphrase has been wiped and make the LUKS container inaccessible.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --new-keyfile-offset, --new-keyfile-size, --key-slot, --force-password, --header].</p>
-<p class='spacer'>
-
-<p><em>luksKillSlot</em> &lt;device&gt; &lt;key slot number&gt;</p>
-<p class='spacer'>
-
-<p>Wipe the key-slot number &lt;key slot&gt; from the LUKS device. Except running in batch-mode (-q) a remaining passphrase must be supplied, either interactively or via --key-file. This command can remove the last remaining key-slot, but requires an interactive confirmation when doing so. Removing the last passphrase makes a LUKS container permanently inaccessible.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --header].</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> If you read the passphrase from stdin (without further argument or with '-' as argument to --key-file), batch-mode (-q) will be implicitly switched on and no warning will be given when you remove the last remaining passphrase from a LUKS container. Removing the last passphrase makes the LUKS container permanently inaccessible.</p>
-<p class='spacer'>
-
-<p><strong>NOTE:</strong> If there is no passphrase provided (on stdin or through --key-file argument) and batch-mode (-q) is active, the key-slot is removed without any other warning.</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p><em>erase</em> &lt;device&gt;</p>
-<p class='spacer'>
-
-<p><em>luksErase</em> &lt;device&gt;</p>
-<p class='spacer'>
-
-<p>Erase all keyslots and make the LUKS container permanently inaccessible. You do not need to provide any password for this operation.</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> This operation is irreversible.</p>
-<p class='spacer'>
-
-<p><em>luksUUID</em> &lt;device&gt;</p>
-<p class='spacer'>
-
-<p>Print the UUID of a LUKS device.</p>
-<p class='spacer'>
-
-<p>Set new UUID if <em>--uuid</em> option is specified.</p>
-<p class='spacer'>
-
-<p><em>isLuks</em> &lt;device&gt;</p>
-<p class='spacer'>
-
-<p>Returns true, if &lt;device&gt; is a LUKS device, false otherwise. Use option -v to get human-readable feedback. 'Command successful.' means the device is a LUKS device.</p>
-<p class='spacer'>
-
-<p><em>luksDump</em> &lt;device&gt;</p>
-<p class='spacer'>
-
-<p>Dump the header information of a LUKS device.</p>
-<p class='spacer'>
-
-<p>If the --dump-master-key option is used, the LUKS device master key is dumped instead of the keyslot info. Beware that the master key cannot be changed and can be used to decrypt the data stored in the LUKS container without a passphrase and even without the LUKS header. This means that if the master key is compromised, the whole device has to be erased to prevent further access. Use this option carefully.</p>
-<p class='spacer'>
-
-<p>In order to dump the master key, a passphrase has to be supplied, either interactively or via --key-file.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--dump-master-key, --key-file, --keyfile-offset, --keyfile-size, --header].</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> If --dump-master-key is used with --key-file and the argument to --key-file is '-', no validation question will be asked and no warning given.</p>
-<p class='spacer'>
-
-<p><em>luksHeaderBackup</em> &lt;device&gt; --header-backup-file &lt;file&gt;</p>
-<p class='spacer'>
-
-<p>Stores a binary backup of the LUKS header and keyslot area.</p>
-<p class='spacer'>
-
-<p>Note: Using '-' as filename writes the header backup to a file named '-'.</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> This backup file and a passphrase valid at the time of backup allows decryption of the LUKS data area, even if the passphrase was later changed or removed from the LUKS device. Also note that with a header backup you lose the ability to securely wipe the LUKS device by just overwriting the header and key-slots. You either need to securely erase all header backups in addition or overwrite the encrypted data area as well. The second option is less secure, as some sectors can survive, e.g. due to defect management.</p>
-<p class='spacer'>
-
-<p><em>luksHeaderRestore</em> &lt;device&gt; --header-backup-file &lt;file&gt;</p>
-<p class='spacer'>
-
-<p>Restores a binary backup of the LUKS header and keyslot area from the specified file.</p>
-<p class='spacer'>
-
-<p>Note: Using '-' as filename reads the header backup from a file named '-'.</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> Header and keyslots will be replaced, only the passphrases from the backup will work afterwards.</p>
-<p class='spacer'>
-
-<p>This command requires that the master key size and data offset of the LUKS header already on the device and of the header backup match. Alternatively, if there is no LUKS header on the device, the backup will also be written to it.</p>
+<p>LUKS, the Linux Unified Key Setup, is a standard for disk encryption. It adds a standardized header at the start of the device, a key-slot area directly behind the header and the bulk data area behind that. The whole set is called a 'LUKS container'. The device that a LUKS container resides on is called a 'LUKS device'. For most purposes both terms can be used interchangeably. But note that when the LUKS header is at a nonzero offset in a device, then the device is not a LUKS device anymore, but has a LUKS container stored in it at an offset.</p><p>LUKS can manage multiple passphrases that can be individually revoked or changed and that can be securely scrubbed from persistent media due to the use of anti-forensic stripes. Passphrases are protected against brute-force and dictionary attacks by PBKDF2, which implements hash iteration and salting in one function.</p><p>Each passphrase, also called a <strong>key</strong> in this document, is associated with one of 8 key-slots. Key operations that do not specify a slot affect the first slot that matches the supplied passphrase or the first empty slot if a new passphrase is added.</p><p>The <strong>&lt;device&gt;</strong> parameter can be also specified by a LUKS UUID in the format UUID=&lt;uuid&gt;. Translation to real device name uses symlinks in /dev/disk/by-uuid directory.</p><p>To specify a detached header, the <strong>--header</strong> parameter can be used in all LUKS commands and always takes precedence over positional <strong>&lt;device&gt;</strong> parameter.</p><p>The following are valid LUKS actions:</p><p><em>luksFormat</em> &lt;device&gt; [&lt;key file&gt;]</p><ul>
+<li><p>Initializes a LUKS partition and sets the initial passphrase (for key-slot 0), either via prompting or via &lt;key file&gt;. Note that if the second argument is present, then the passphrase is taken from the file given there, without the need to use the --key-file option. Also note that for both forms of reading the passphrase from file you can give '-' as file name, which results in the passphrase being read from stdin and the safety-question being skipped.</p><p>You can only call luksFormat on a LUKS device that is not mapped.</p><p><strong>&lt;options&gt;</strong> can be [--hash, --cipher, --verify-passphrase, --key-size, --key-slot, --key-file (takes precedence over optional second argument), --keyfile-offset, --keyfile-size, --use-random | --use-urandom, --uuid, --master-key-file, --iter-time, --header, --force-password].</p><p><strong>WARNING:</strong> Doing a luksFormat on an existing LUKS container will make all data the old container permanently irretrievable, unless you have a header backup.</p></li>
+</ul><p><em>open</em> --type luks &lt;device&gt; &lt;name&gt;</p><p><em>luksOpen</em> &lt;device&gt; &lt;name&gt; (<strong>old syntax</strong>)</p><ul>
+<li><p>Opens the LUKS device &lt;device&gt; and sets up a mapping &lt;name&gt; after successful verification of the supplied passphrase. If the passphrase is not supplied via --key-file, the command prompts for it interactively.</p><p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --readonly, --test-passphrase, --allow-discards, --header, --key-slot, --master-key-file].</p></li>
+</ul><p><em>luksSuspend</em> &lt;name&gt;</p><ul>
+<li><p>Suspends an active device (all IO operations will blocked and accesses to the device will wait indefinitely) and wipes the encryption key from kernel memory. Needs kernel 2.6.19 or later.</p><p>After this operation you have to use <em>luksResume</em> to reinstate the encryption key and unblock the device or <em>close</em> to remove the mapped device.</p><p><strong>WARNING:</strong> never suspend the device on which the cryptsetup binary resides.</p><p><strong>&lt;options&gt;</strong> can be [--header].</p></li>
+</ul><p><em>luksResume</em> &lt;name&gt;</p><ul>
+<li><p>Resumes a suspended device and reinstates the encryption key. Prompts interactively for a passphrase if --key-file is not given.</p><p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-size, --header]</p></li>
+</ul><p><em>luksAddKey</em> &lt;device&gt; [&lt;key file with new key&gt;]</p><ul>
+<li><p>adds a new passphrase. An existing passphrase must be supplied interactively or via --key-file. The new passphrase to be added can be specified interactively or read from the file given as positional argument.</p><p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --new-keyfile-offset, --new-keyfile-size, --key-slot, --master-key-file, --iter-time, --force-password, --header].</p></li>
+</ul><p><em>luksRemoveKey</em> &lt;device&gt; [&lt;key file with passphrase to be removed&gt;]</p><ul>
+<li><p>Removes the supplied passphrase from the LUKS device. The passphrase to be removed can be specified interactively, as positional argument or via --key-file.</p><p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --header]</p><p><strong>WARNING:</strong> If you read the passphrase from stdin (without further argument or with '-' as argument to --key-file), batch-mode (-q) will be implicitely switched on and no warning will be given when you remove the last remaining passphrase from a LUKS container. Removing the last passphrase makes the LUKS container permanently inaccessible.</p></li>
+</ul><p><em>luksChangeKey</em> &lt;device&gt; [&lt;new key file&gt;]</p><ul>
+<li><p>Changes an existing passphrase. The passphrase to be changed must be supplied interactively or via --key-file. The new passphrase can be supplied interactively or in a file given as positional argument.</p><p>If a key-slot is specified (via --key-slot), the passphrase for that key-slot must be given and the new passphrase will overwrite the specified key-slot. If no key-slot is specified and there is still a free key-slot, then the new passphrase will be put into a free key-slot before the key-slot containing the old passphrase is purged. If there is no free key-slot, then the key-slot with the old passphrase is overwritten directly.</p><p><strong>WARNING:</strong> If a key-slot is overwritten, a media failure during this operation can cause the overwrite to fail after the old passphrase has been wiped and make the LUKS container inaccessible.</p><p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --new-keyfile-offset, --new-keyfile-size, --key-slot, --force-password, --header].</p></li>
+</ul><p><em>luksKillSlot</em> &lt;device&gt; &lt;key slot number&gt;</p><ul>
+<li><p>Wipe the key-slot number &lt;key slot&gt; from the LUKS device. Except running in batch-mode (-q) a remaining passphrase must be supplied, either interactively or via --key-file. This command can remove the last remaining key-slot, but requires an interactive confirmation when doing so. Removing the last passphrase makes a LUKS container permanently inaccessible.</p><p><strong>&lt;options&gt;</strong> can be [--key-file, --keyfile-offset, --keyfile-size, --header].</p><p><strong>WARNING:</strong> If you read the passphrase from stdin (without further argument or with '-' as argument to --key-file), batch-mode (-q) will be implicitly switched on and no warning will be given when you remove the last remaining passphrase from a LUKS container. Removing the last passphrase makes the LUKS container permanently inaccessible.</p><p><strong>NOTE:</strong> If there is no passphrase provided (on stdin or through --key-file argument) and batch-mode (-q) is active, the key-slot is removed without any other warning.</p></li>
+</ul><p><em>erase</em> &lt;device&gt;</p><p><em>luksErase</em> &lt;device&gt;</p><ul>
+<li><p>Erase all keyslots and make the LUKS container permanently inaccessible. You do not need to provide any password for this operation.</p><p><strong>WARNING:</strong> This operation is irreversible.</p></li>
+</ul><p><em>luksUUID</em> &lt;device&gt;</p><ul>
+<li><p>Print the UUID of a LUKS device.</p><p>Set new UUID if <em>--uuid</em> option is specified.</p></li>
+</ul><p><em>isLuks</em> &lt;device&gt;</p><ul>
+<li><p>Returns true, if &lt;device&gt; is a LUKS device, false otherwise. Use option -v to get human-readable feedback. 'Command successful.' means the device is a LUKS device.</p></li>
+</ul><p><em>luksDump</em> &lt;device&gt;</p><ul>
+<li><p>Dump the header information of a LUKS device.</p><p>If the --dump-master-key option is used, the LUKS device master key is dumped instead of the keyslot info. Beware that the master key cannot be changed and can be used to decrypt the data stored in the LUKS container without a passphrase and even without the LUKS header. This means that if the master key is compromised, the whole device has to be erased to prevent further access. Use this option carefully.</p><p>In order to dump the master key, a passphrase has to be supplied, either interactively or via --key-file.</p><p><strong>&lt;options&gt;</strong> can be [--dump-master-key, --key-file, --keyfile-offset, --keyfile-size, --header].</p><p><strong>WARNING:</strong> If --dump-master-key is used with --key-file and the argument to --key-file is '-', no validation question will be asked and no warning given.</p></li>
+</ul><p><em>luksHeaderBackup</em> &lt;device&gt; --header-backup-file &lt;file&gt;</p><ul>
+<li><p>Stores a binary backup of the LUKS header and keyslot area.</p><p>Note: Using '-' as filename writes the header backup to a file named '-'.</p><p><strong>WARNING:</strong> This backup file and a passphrase valid at the time of backup allows decryption of the LUKS data area, even if the passphrase was later changed or removed from the LUKS device. Also note that with a header backup you lose the ability to securely wipe the LUKS device by just overwriting the header and key-slots. You either need to securely erase all header backups in addition or overwrite the encrypted data area as well. The second option is less secure, as some sectors can survive, e.g. due to defect management.</p></li>
+</ul><p><em>luksHeaderRestore</em> &lt;device&gt; --header-backup-file &lt;file&gt;</p><ul>
+<li><p>Restores a binary backup of the LUKS header and keyslot area from the specified file.</p><p>Note: Using '-' as filename reads the header backup from a file named '-'.</p><p><strong>WARNING:</strong> Header and keyslots will be replaced, only the passphrases from the backup will work afterwards.</p><p>This command requires that the master key size and data offset of the LUKS header already on the device and of the header backup match. Alternatively, if there is no LUKS header on the device, the backup will also be written to it.</p></li>
+</ul>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">loop-AES EXTENSION</h2>
         <div class="sectioncontent">
-
-<p>cryptsetup supports mapping loop-AES encrypted partition using a compatibility mode.</p>
-<p class='spacer'>
-
-<p><em>open</em> --type loopaes &lt;device&gt; &lt;name&gt; --key-file &lt;keyfile&gt;</p>
-<p class='spacer'>
-
-<p><em>loopaesOpen</em> &lt;device&gt; &lt;name&gt; --key-file &lt;keyfile&gt;  (<strong>old syntax</strong>)</p>
-<p class='spacer'>
-
-<p>Opens the loop-AES &lt;device&gt; and sets up a mapping &lt;name&gt;.</p>
-<p class='spacer'>
-
-<p>If the key file is encrypted with GnuPG, then you have to use --key-file=- and decrypt it before use, e.g. like this:</p>
-<p class='spacer'>
-
-<p>gpg --decrypt &lt;keyfile&gt; | cryptsetup loopaesOpen --key-file=- &lt;device&gt; &lt;name&gt;</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> The loop-AES extension cannot use direct input of key file on real terminal because the keys are separated by end-of-line and only part of the multi-key file would be read.</p>
-<p class='spacer'>
-
-<p>If you need it in script, just use the pipe redirection:</p>
-<p class='spacer'>
-
-<p>echo $keyfile | cryptsetup loopaesOpen --key-file=- &lt;device&gt; &lt;name&gt;</p>
-<p class='spacer'>
-
-<p>Use <strong>--keyfile-size</strong> to specify the proper key length if needed.</p>
-<p class='spacer'>
-
-<p>Use <strong>--offset</strong> to specify device offset. Note that the units need to be specified in number of 512 byte sectors.</p>
-<p class='spacer'>
-
-<p>Use <strong>--skip</strong> to specify the IV offset. If the original device used an offset and but did not use it in IV sector calculations, you have to explicitly use <strong>--skip 0</strong> in addition to the offset parameter.</p>
-<p class='spacer'>
-
-<p>Use <strong>--hash</strong> to override the default hash function for passphrase hashing (otherwise it is detected according to key size).</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--key-file, --key-size, --offset, --skip, --hash, --readonly, --allow-discards].</p>
-<p class='spacer'>
-
-<p>See also section 7 of the FAQ and <strong>http://loop-aes.sourceforge.net</strong> for more information regarding loop-AES.</p>
+<p>cryptsetup supports mapping loop-AES encrypted partition using a compatibility mode.</p><p><em>open</em> --type loopaes &lt;device&gt; &lt;name&gt; --key-file &lt;keyfile&gt;</p><p><em>loopaesOpen</em> &lt;device&gt; &lt;name&gt; --key-file &lt;keyfile&gt;  (<strong>old syntax</strong>)</p><ul>
+<li><p>Opens the loop-AES &lt;device&gt; and sets up a mapping &lt;name&gt;.</p><p>If the key file is encrypted with GnuPG, then you have to use --key-file=- and decrypt it before use, e.g. like this:</p><p>gpg --decrypt &lt;keyfile&gt; | cryptsetup loopaesOpen --key-file=- &lt;device&gt; &lt;name&gt;</p><p><strong>WARNING:</strong> The loop-AES extension cannot use direct input of key file on real terminal because the keys are separated by end-of-line and only part of the multi-key file would be read.</p><p>If you need it in script, just use the pipe redirection:</p><p>echo $keyfile | cryptsetup loopaesOpen --key-file=- &lt;device&gt; &lt;name&gt;</p><p>Use <strong>--keyfile-size</strong> to specify the proper key length if needed.</p><p>Use <strong>--offset</strong> to specify device offset. Note that the units need to be specified in number of 512 byte sectors.</p><p>Use <strong>--skip</strong> to specify the IV offset. If the original device used an offset and but did not use it in IV sector calculations, you have to explicitly use <strong>--skip 0</strong> in addition to the offset parameter.</p><p>Use <strong>--hash</strong> to override the default hash function for passphrase hashing (otherwise it is detected according to key size).</p><p><strong>&lt;options&gt;</strong> can be [--key-file, --key-size, --offset, --skip, --hash, --readonly, --allow-discards].</p></li>
+</ul><p>See also section 7 of the FAQ and <strong>http://loop-aes.sourceforge.net</strong> for more information regarding loop-AES.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">TCRYPT (TrueCrypt-compatible and VeraCrypt) EXTENSION</h2>
         <div class="sectioncontent">
-
-<p>cryptsetup supports mapping of TrueCrypt, tcplay or VeraCrypt (with <strong>--veracrypt</strong> option) encrypted partition using a native Linux kernel API. Header formatting and TCRYPT header change is not supported, cryptsetup never changes TCRYPT header on-device.</p>
-<p class='spacer'>
-
-<p>TCRYPT extension requires kernel userspace crypto API to be available (introduced in Linux kernel 2.6.38). If you are configuring kernel yourself, enable "User-space interface for symmetric key cipher algorithms" in "Cryptographic API" section (CRYPTO_USER_API_SKCIPHER .config option).</p>
-<p class='spacer'>
-
-<p>Because TCRYPT header is encrypted, you have to always provide valid passphrase and keyfiles.</p>
-<p class='spacer'>
-
-<p>Cryptsetup should recognize all header variants, except legacy cipher chains using LRW encryption mode with 64 bits encryption block (namely Blowfish in LRW mode is not recognized, this is limitation of kernel crypto API).</p>
-<p class='spacer'>
-
-<p>To recognize VeraCrypt device  use <strong>--veracrypt</strong> option. VeraCrypt is just extension of TrueCrypt header with increased iteration count so unlocking can take quite a lot of time (in comparison with TCRYPT device).</p>
-<p class='spacer'>
-
-<p><strong>NOTE:</strong> Activation with <strong>tcryptOpen</strong> is supported only for cipher chains using LRW or XTS encryption modes.</p>
-<p class='spacer'>
-
-<p>The <strong>tcryptDump</strong> command should work for all recognized TCRYPT devices and doesn't require superuser privilege.</p>
-<p class='spacer'>
-
-<p>To map system device (device with boot loader where the whole encrypted system resides) use <strong>--tcrypt-system</strong> option. You can use partition device as the parameter (parameter must be real partition device, not image in file), then only this partition is mapped.</p>
-<p class='spacer'>
-
-<p>If you have whole TCRYPT device as a file image and you want to map multiple partition encrypted with system encryption, please create loopback mapping with partitions first (<strong>losetup -P</strong>, see <a href="../man8/losetup.8.html"><strong>losetup</strong>(8)</a> man page for more info), and use loop partition as the device parameter.</p>
-<p class='spacer'>
-
-<p>If you use whole base device as parameter, one device for the whole system encryption is mapped. This mode is available only for backward compatibility with older cryptsetup versions which mapped TCRYPT system encryption using whole device.</p>
-<p class='spacer'>
-
-<p>To use hidden header (and map hidden device, if available), use <strong>--tcrypt-hidden</strong> option.</p>
-<p class='spacer'>
-
-<p>To explicitly use backup (secondary) header, use <strong>--tcrypt-backup</strong> option.</p>
-<p class='spacer'>
-
-<p><strong>NOTE:</strong> There is no protection for a hidden volume if the outer volume is mounted. The reason is that if there were any protection, it would require some metadata describing what to protect in the outer volume and the hidden volume would become detectable.</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p><em>open</em> --type tcrypt &lt;device&gt; &lt;name&gt;</p>
-<p class='spacer'>
-
-<p><em>tcryptOpen</em> &lt;device&gt; &lt;name&gt;  (<strong>old syntax</strong>)</p>
-<p class='spacer'>
-
-<p>Opens the TCRYPT (a TrueCrypt-compatible) &lt;device&gt; and sets up a mapping &lt;name&gt;.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--key-file, --tcrypt-hidden, --tcrypt-system, --tcrypt-backup, --readonly, --test-passphrase, --allow-discards].</p>
-<p class='spacer'>
-
-<p>The keyfile parameter allows combination of file content with the passphrase and can be repeated. Note that using keyfiles is compatible with TCRYPT and is different from LUKS keyfile logic.</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> Option <strong>--allow-discards</strong> cannot be combined with option <strong>--tcrypt-hidden</strong>. For normal mapping it can cause <strong>destruction of hidden volume</strong> (hidden volume appears as unused space for outer volume so this space can be discarded).</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p><em>tcryptDump</em> &lt;device&gt;</p>
-<p class='spacer'>
-
-<p>Dump the header information of a TCRYPT device.</p>
-<p class='spacer'>
-
-<p>If the --dump-master-key option is used, the TCRYPT device master key is dumped instead of TCRYPT header info. Beware that the master key (or concatenated master keys if cipher chain is used) can be used to decrypt the data stored in the TCRYPT container without a passphrase. This means that if the master key is compromised, the whole device has to be erased to prevent further access. Use this option carefully.</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--dump-master-key, --key-file, --tcrypt-hidden, --tcrypt-system, --tcrypt-backup].</p>
-<p class='spacer'>
-
-<p>The keyfile parameter allows combination of file content with the passphrase and can be repeated.</p>
-<p class='spacer'>
-
-<p>See also <strong>http://www.truecrypt.org</strong> for more information regarding TrueCrypt.</p>
-<p class='spacer'>
-
-<p>Please note that cryptsetup does not use TrueCrypt code, please report all problems related to this compatibility extension to cryptsetup project.</p>
+<p>cryptsetup supports mapping of TrueCrypt, tcplay or VeraCrypt (with <strong>--veracrypt</strong> option) encrypted partition using a native Linux kernel API. Header formatting and TCRYPT header change is not supported, cryptsetup never changes TCRYPT header on-device.</p><p>TCRYPT extension requires kernel userspace crypto API to be available (introduced in Linux kernel 2.6.38). If you are configuring kernel yourself, enable "User-space interface for symmetric key cipher algorithms" in "Cryptographic API" section (CRYPTO_USER_API_SKCIPHER .config option).</p><p>Because TCRYPT header is encrypted, you have to always provide valid passphrase and keyfiles.</p><p>Cryptsetup should recognize all header variants, except legacy cipher chains using LRW encryption mode with 64 bits encryption block (namely Blowfish in LRW mode is not recognized, this is limitation of kernel crypto API).</p><p>To recognize VeraCrypt device  use <strong>--veracrypt</strong> option. VeraCrypt is just extension of TrueCrypt header with increased iteration count so unlocking can take quite a lot of time (in comparison with TCRYPT device).</p><p><strong>NOTE:</strong> Activation with <strong>tcryptOpen</strong> is supported only for cipher chains using LRW or XTS encryption modes.</p><p>The <strong>tcryptDump</strong> command should work for all recognized TCRYPT devices and doesn't require superuser privilege.</p><p>To map system device (device with boot loader where the whole encrypted system resides) use <strong>--tcrypt-system</strong> option. You can use partition device as the parameter (parameter must be real partition device, not image in file), then only this partition is mapped.</p><p>If you have whole TCRYPT device as a file image and you want to map multiple partition encrypted with system encryption, please create loopback mapping with partitions first (<strong>losetup -P</strong>, see <a href="../man8/losetup.8.html"><strong>losetup</strong>(8)</a></strong> man page for more info), and use loop partition as the device parameter.</p><p>If you use whole base device as parameter, one device for the whole system encryption is mapped. This mode is available only for backward compatibility with older cryptsetup versions which mapped TCRYPT system encryption using whole device.</p><p>To use hidden header (and map hidden device, if available), use <strong>--tcrypt-hidden</strong> option.</p><p>To explicitly use backup (secondary) header, use <strong>--tcrypt-backup</strong> option.</p><p><strong>NOTE:</strong> There is no protection for a hidden volume if the outer volume is mounted. The reason is that if there were any protection, it would require some metadata describing what to protect in the outer volume and the hidden volume would become detectable.</p><p><em>open</em> --type tcrypt &lt;device&gt; &lt;name&gt;</p><p><em>tcryptOpen</em> &lt;device&gt; &lt;name&gt;  (<strong>old syntax</strong>)</p><ul>
+<li><p>Opens the TCRYPT (a TrueCrypt-compatible) &lt;device&gt; and sets up a mapping &lt;name&gt;.</p><p><strong>&lt;options&gt;</strong> can be [--key-file, --tcrypt-hidden, --tcrypt-system, --tcrypt-backup, --readonly, --test-passphrase, --allow-discards].</p><p>The keyfile parameter allows combination of file content with the passphrase and can be repeated. Note that using keyfiles is compatible with TCRYPT and is different from LUKS keyfile logic.</p><p><strong>WARNING:</strong> Option <strong>--allow-discards</strong> cannot be combined with option <strong>--tcrypt-hidden</strong>. For normal mapping it can cause <strong>destruction of hidden volume</strong> (hidden volume appears as unused space for outer volume so this space can be discarded).</p></li>
+</ul><p><em>tcryptDump</em> &lt;device&gt;</p><ul>
+<li><p>Dump the header information of a TCRYPT device.</p><p>If the --dump-master-key option is used, the TCRYPT device master key is dumped instead of TCRYPT header info. Beware that the master key (or concatenated master keys if cipher chain is used) can be used to decrypt the data stored in the TCRYPT container without a passphrase. This means that if the master key is compromised, the whole device has to be erased to prevent further access. Use this option carefully.</p><p><strong>&lt;options&gt;</strong> can be [--dump-master-key, --key-file, --tcrypt-hidden, --tcrypt-system, --tcrypt-backup].</p><p>The keyfile parameter allows combination of file content with the passphrase and can be repeated.</p></li>
+</ul><p>See also <strong>http://www.truecrypt.org</strong> for more information regarding TrueCrypt.</p><p>Please note that cryptsetup does not use TrueCrypt code, please report all problems related to this compatibility extension to cryptsetup project.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">MISCELLANEOUS</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p><em>repair</em> &lt;device&gt;</p>
-<p class='spacer'>
-
-<p>Tries to repair the device metadata if possible. Currently supported only for LUKS device type.</p>
-<p class='spacer'>
-
-<p>This command is useful to fix some known benign LUKS metadata header corruptions. Only basic corruptions of unused keyslot are fixable. This command will only change the LUKS header, not any key-slot data.</p>
-<p class='spacer'>
-
-<p><strong>WARNING:</strong> Always create a binary backup of the original header before calling this command.</p>
-<p class='spacer'>
-
-<p><em>benchmark</em> &lt;options&gt;</p>
-<p class='spacer'>
-
-<p>Benchmarks ciphers and KDF (key derivation function). Without parameters it tries to measure few common configurations.</p>
-<p class='spacer'>
-
-<p>To benchmark other ciphers or modes, you need to specify <strong>--cipher</strong> and <strong>--key-size</strong> options or <strong>--hash</strong> for KDF test.</p>
-<p class='spacer'>
-
-<p><strong>NOTE:</strong> This benchmark is using memory only and is only informative. You cannot directly predict real storage encryption speed from it.</p>
-<p class='spacer'>
-
-<p>For testing block ciphers, this benchmark requires kernel userspace crypto API to be available (introduced in Linux kernel 2.6.38). If you are configuring kernel yourself, enable "User-space interface for symmetric key cipher algorithms" in "Cryptographic API" section (CRYPTO_USER_API_SKCIPHER .config option).</p>
-<p class='spacer'>
-
-<p><strong>&lt;options&gt;</strong> can be [--cipher, --key-size, --hash].</p>
+<p><em>repair</em> &lt;device&gt;</p><ul>
+<li><p>Tries to repair the device metadata if possible. Currently supported only for LUKS device type.</p><p>This command is useful to fix some known benign LUKS metadata header corruptions. Only basic corruptions of unused keyslot are fixable. This command will only change the LUKS header, not any key-slot data.</p><p><strong>WARNING:</strong> Always create a binary backup of the original header before calling this command.</p></li>
+</ul><p><em>benchmark</em> &lt;options&gt;</p><ul>
+<li><p>Benchmarks ciphers and KDF (key derivation function). Without parameters it tries to measure few common configurations.</p><p>To benchmark other ciphers or modes, you need to specify <strong>--cipher</strong> and <strong>--key-size</strong> options or <strong>--hash</strong> for KDF test.</p><p><strong>NOTE:</strong> This benchmark is using memory only and is only informative. You cannot directly predict real storage encryption speed from it.</p><p>For testing block ciphers, this benchmark requires kernel userspace crypto API to be available (introduced in Linux kernel 2.6.38). If you are configuring kernel yourself, enable "User-space interface for symmetric key cipher algorithms" in "Cryptographic API" section (CRYPTO_USER_API_SKCIPHER .config option).</p><p><strong>&lt;options&gt;</strong> can be [--cipher, --key-size, --hash].</p></li>
+</ul>
         </div>
       </section>
 
@@ -609,343 +209,253 @@
         <h2 class="font-effect-shadow-multiple">OPTIONS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>--verbose, -v</strong></dt>
-    <dd>
-  <p>Print more information on command execution.</p>
-    </dd>
-    <dt><strong>--debug</strong></dt>
-    <dd>
-  <p>Run in debug mode with full diagnostic logs. Debug output lines are always prefixed by '#'.</p>
-    </dd>
-    <dt><strong>--hash, -h <em>&lt;hash-spec&gt;</em></strong></dt>
-    <dd>
-  <p>Specifies the passphrase hash for <em>open</em> (for plain and loopaes device types).</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>--verbose, -v</strong></p>
+  </dt>
+  <dd>
+    <p>Print more information on command execution.</p>
+  </dd>
+  <dt>
+    <p><strong>--debug</strong></p>
+  </dt>
+  <dd>
+    <p>Run in debug mode with full diagnostic logs. Debug output lines are always prefixed by '#'.</p>
+  </dd>
+  <dt>
+    <p><strong>--hash, -h </strong><em><hash-spec></em></p>
+  </dt>
+  <dd>
+    <p>Specifies the passphrase hash for <em>open</em> (for plain and loopaes device types).</p><p>Specifies the hash used in the LUKS key setup scheme and volume key digest for <em>luksFormat</em>. The specified hash is used as hash-parameter for PBKDF2 and for the AF splitter.</p><p>The specified hash name is passed to the compiled-in crypto backend. Different backends may support different hashes. For <em>luksFormat</em>, the hash algorithm must provide at least 160 bits of output, which excludes, e.g., MD5. Do not use a non-crypto hash like <strong>"crc32"</strong> as this breaks security.</p><p>Values compatible with old version of cryptsetup are <strong>"ripemd160"</strong> for <em>open --type plain</em> and <strong>"sha1"</strong> for <em>luksFormat</em>.</p><p>Use <em>cryptsetup --help</em> to show the defaults.</p>
+  </dd>
+  <dt>
+    <p><strong>--cipher, -c </strong><em><cipher-spec></em></p>
+  </dt>
+  <dd>
+    <p>Set the cipher specification string.</p><p><em>cryptsetup --help</em> shows the compiled-in defaults. The current default in the distributed sources is "aes-cbc-essiv:sha256" for plain dm-crypt and "aes-xts-plain64" for LUKS.</p><p>If a hash is part of the cipher specification, then it is used as part of the IV generation. For example, ESSIV needs a hash function, while "plain64" does not and hence none is specified.</p><p>For XTS mode you can optionally set a key size of 512 bits with the -s option. Key size for XTS mode is twice that for other modes for the same security level.</p><p>XTS mode requires kernel 2.6.24 or later and plain64 requires kernel 2.6.33 or later. More information can be found in the FAQ.</p>
+  </dd>
+  <dt>
+    <p><strong>--verify-passphrase, -y</strong></p>
+  </dt>
+  <dd>
+    <p>When interactively asking for a passphrase, ask for it twice and complain if both inputs do not match. Advised when creating a regular mapping for the first time, or when running <em>luksFormat</em>. Ignored on input from file or stdin.</p>
+  </dd>
+  <dt>
+    <p><strong>--key-file, -d </strong><em>name</em></p>
+  </dt>
+  <dd>
+    <p>Read the passphrase from file.</p><p>If the name given is "-", then the passphrase will be read from stdin. In this case, reading will not stop at newline characters.</p><p>With LUKS, passphrases supplied via --key-file are always the existing passphrases requested by a command, except in the case of <em>luksFormat</em> where --key-file is equivalent to the positional key file argument.</p><p>If you want to set a new passphrase via key file, you have to use a positional argument to <em>luksAddKey</em>.</p><p>See section <strong>NOTES ON PASSPHRASE PROCESSING</strong> for more information.</p>
+  </dd>
+  <dt>
+    <p><strong>--keyfile-offset </strong><em>value</em></p>
+  </dt>
+  <dd>
+    <p>Skip <em>value</em> bytes at the beginning of the key file. Works with all commands that accepts key files.</p>
+  </dd>
+  <dt>
+    <p><strong>--keyfile-size, -l </strong><em>value</em></p>
+  </dt>
+  <dd>
+    <p>Read a maximum of <em>value</em> bytes from the key file. Default is to read the whole file up to the compiled-in maximum that can be queried with --help. Supplying more data than the compiled-in maximum aborts the operation.</p><p>This option is useful to cut trailing newlines, for example. If --keyfile-offset is also given, the size count starts after the offset. Works with all commands that accepts key files.</p>
+  </dd>
+  <dt>
+    <p><strong>--new-keyfile-offset </strong><em>value</em></p>
+  </dt>
+  <dd>
+    <p>Skip <em>value</em> bytes at the start when adding a new passphrase from key file with <em>luksAddKey</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>--new-keyfile-size  </strong><em>value</em></p>
+  </dt>
+  <dd>
+    <p>Read a maximum of <em>value</em> bytes when adding a new passphrase from key file with <em>luksAddKey</em>. Default is to read the whole file up to the compiled-in maximum length that can be queried with --help. Supplying more than the compiled in maximum aborts the operation. When --new-keyfile-offset is also given, reading starts after the offset.</p>
+  </dd>
+  <dt>
+    <p><strong>--master-key-file</strong></p>
+  </dt>
+  <dd>
+    <p>Use a master key stored in a file.</p><p>For <em>luksFormat</em> this allows creating a LUKS header with this specific master key. If the master key was taken from an existing LUKS header and all other parameters are the same, then the new header decrypts the data encrypted with the header the master key was taken from.</p><p><strong>WARNING:</strong> If you create your own master key, you need to make sure to do it right. Otherwise you can end up with a low-entropy or otherwise partially predictable master key which will compromise security.</p><p>For <em>luksAddKey</em> this allows adding a new passphrase without having to know an exiting one.</p><p>For <em>open</em> this allows one to open the LUKS device without giving a passphrase.</p>
+  </dd>
+  <dt>
+    <p><strong>--dump-master-key</strong></p>
+  </dt>
+  <dd>
+    <p>For <em>luksDump</em> this option includes the master key in the displayed information. Use with care, as the master key can be used to bypass the passphrases, see also option --master-key-file.</p>
+  </dd>
+  <dt>
+    <p><strong>--use-random</strong></p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>--use-urandom</strong></p>
+  </dt>
+  <dd>
+    <p>For <em>luksFormat</em> these options define which kernel random number generator will be used to create the master key (which is a long-term key).</p><p>See <strong>NOTES ON RANDOM NUMBER GENERATORS</strong> for more information. Use <em>cryptsetup --help</em> to show the compiled-in default random number generator.</p><p><strong>WARNING:</strong> In a low-entropy situation (e.g. in an embedded system), both selections are problematic. Using /dev/urandom can lead to weak keys. Using /dev/random can block a long time, potentially forever, if not enough entropy can be harvested by the kernel.</p>
+  </dd>
+  <dt>
+    <p><strong>--key-slot, -S <0-7></strong></p>
+  </dt>
+  <dd>
+    <p>For LUKS operations that add key material, this options allows you to specify which key slot is selected for the new key. This option can be used for <em>luksFormat</em>, and <em>luksAddKey</em>.</p><p>In addition, for <em>open</em>, this option selects a specific key-slot to compare the passphrase against. If the given passphrase would only match a different key-slot, the operation fails.</p>
+  </dd>
+  <dt>
+    <p><strong>--key-size, -s <bits></strong></p>
+  </dt>
+  <dd>
+    <p>Sets key size in bits. The argument has to be a multiple of 8. The possible key-sizes are limited by the cipher and mode used.</p><p>See /proc/crypto for more information. Note that key-size in /proc/crypto is stated in bytes.</p><p>This option can be used for <em>open --type plain</em> or <em>luksFormat</em>. All other LUKS actions will use the key-size specified in the LUKS header. Use <em>cryptsetup --help</em> to show the compiled-in defaults.</p>
+  </dd>
+  <dt>
+    <p><strong>--size, -b <number of 512 byte sectors></strong></p>
+  </dt>
+  <dd>
+    <p>Force the size of the underlying device in sectors of 512 bytes. This option is only relevant for the <em>open</em> and <em>resize</em> actions.</p>
+  </dd>
+  <dt>
+    <p><strong>--offset, -o <number of 512 byte sectors></strong></p>
+  </dt>
+  <dd>
+    <p>Start offset in the backend device in 512-byte sectors. This option is only relevant for the <em>open</em> action with plain or loopaes device types.</p>
+  </dd>
+  <dt>
+    <p><strong>--skip, -p <number of 512 byte sectors></strong></p>
+  </dt>
+  <dd>
+    <p>Start offset used in IV calculation in 512-byte sectors (how many sectors of the encrypted data to skip at the beginning). This option is only relevant for the <em>open</em> action with plain or loopaes device types.</p><p>Hence, if --offset <em>n</em>, and --skip <em>s</em>, sector <em>n</em> (the first sector of encrypted device) will get a sector number of <em>s</em> for the IV calculation.</p>
+  </dd>
+  <dt>
+    <p><strong>--readonly, -r</strong></p>
+  </dt>
+  <dd>
+    <p>set up a read-only mapping.</p>
+  </dd>
+  <dt>
+    <p><strong>--shared</strong></p>
+  </dt>
+  <dd>
+    <p>Creates an additional mapping for one common ciphertext device. Arbitrary mappings are supported. This option is only relevant for the <em>open --type plain</em> action. Use --offset, --size and --skip to specify the mapped area.</p>
+  </dd>
+  <dt>
+    <p><strong>--iter-time, -i <number of milliseconds></strong></p>
+  </dt>
+  <dd>
+    <p>The number of milliseconds to spend with PBKDF2 passphrase processing. This option is only relevant for LUKS operations that set or change passphrases, such as <em>luksFormat</em> or <em>luksAddKey</em>. Specifying 0 as parameter selects the compiled-in default.</p>
+  </dd>
+  <dt>
+    <p><strong>--batch-mode, -q</strong></p>
+  </dt>
+  <dd>
+    <p>Suppresses all confirmation questions. Use with care!</p><p>If the -y option is not specified, this option also switches off the passphrase verification for <em>luksFormat</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>--timeout, -t <number of seconds></strong></p>
+  </dt>
+  <dd>
+    <p>The number of seconds to wait before timeout on passphrase input via terminal. It is relevant every time a passphrase is asked, for example for <em>open</em>, <em>luksFormat</em> or <em>luksAddKey</em>. It has no effect if used in conjunction with --key-file.</p><p>This option is useful when the system should not stall if the user does not input a passphrase, e.g. during boot. The default is a value of 0 seconds, which means to wait forever.</p>
+  </dd>
+  <dt>
+    <p><strong>--tries, -T</strong></p>
+  </dt>
+  <dd>
+    <p>How often the input of the passphrase shall be retried. This option is relevant every time a passphrase is asked, for example for <em>open</em>, <em>luksFormat</em> or <em>luksAddKey</em>. The default is 3 tries.</p>
+  </dd>
+  <dt>
+    <p><strong>--align-payload <number of 512 byte sectors></strong></p>
+  </dt>
+  <dd>
+    <p>Align payload at a boundary of <em>value</em> 512-byte sectors. This option is relevant for <em>luksFormat</em>.</p><p>If not specified, cryptsetup tries to use the topology info provided by kernel for the underlying device to get optimal alignment. If not available (or the calculated value is a multiple of the default) data is by default aligned to a 1MiB boundary (i.e. 2048 512-byte sectors).</p><p>For a detached LUKS header this option specifies the offset on the data device. See also the --header option.</p>
+  </dd>
+  <dt>
+    <p><strong>--uuid=</strong><em>UUID</em></p>
+  </dt>
+  <dd>
+    <p>Use the provided <em>UUID</em> for the <em>luksFormat</em> command instead of generating new one. Changes the existing UUID when used with the <em>luksUUID</em> command.</p><p>The UUID must be provided in the standard UUID format, e.g. 12345678-1234-1234-1234-123456789abc.</p>
+  </dd>
+  <dt>
+    <p><strong>--allow-discards</strong></p>
+  </dt>
+  <dd>
+    <p>Allow the use of discard (TRIM) requests for device. This option is only relevant for <em>open</em> action.</p><p><strong>WARNING:</strong> This command can have a negative security impact because it can make filesystem-level operations visible on the physical device. For example, information leaking filesystem type, used space, etc. may be extractable from the physical device if the discarded blocks can be located later. If in doubt, do not use it.</p><p>A kernel version of 3.1 or later is needed. For earlier kernels this option is ignored.</p>
+  </dd>
+  <dt>
+    <p><strong>--perf-same_cpu_crypt</strong></p>
+  </dt>
+  <dd>
+    <p>Perform encryption using the same cpu that IO was submitted on. The default is to use an unbound workqueue so that encryption work is automatically balanced between available CPUs. This option is only relevant for <em>open</em> action.</p><p><strong>NOTE:</strong> This option is available only for low-level dm-crypt performance tuning, use only if you need a change to default dm-crypt behaviour. Needs kernel 4.0 or later.</p>
+  </dd>
+  <dt>
+    <p><strong>--perf-submit_from_crypt_cpus</strong></p>
+  </dt>
+  <dd>
+    <p>Disable offloading writes to a separate thread after encryption. There are some situations where offloading write bios from the encryption threads to a single thread degrades performance significantly.  The default is to offload write bios to the same thread. This option is only relevant for <em>open</em> action.</p><p><strong>NOTE:</strong> This option is available only for low-level dm-crypt performance tuning, use only if you need a change to default dm-crypt behaviour. Needs kernel 4.0 or later.</p>
+  </dd>
+  <dt>
+    <p><strong>--test-passphrase</strong></p>
+  </dt>
+  <dd>
+    <p>Do not activate device, just verify passphrase. This option is only relevant for <em>open</em> action (the device mapping name is not mandatory if this option is used).</p>
+  </dd>
+  <dt>
+    <p><strong>--header</strong> <device or file storing the LUKS header></p>
+  </dt>
+  <dd>
+    <p>Use a detached (separated) metadata device or file where the LUKS header is stored. This options allows one to store ciphertext and LUKS header on different devices.</p><p>This option is only relevant for LUKS devices and can be used with the <em>luksFormat</em>, <em>open</em>, <em>luksSuspend</em>, <em>luksResume</em>, <em>status</em> and <em>resize</em> commands.</p><p>For <em>luksFormat</em> with a file name as argument to --header, it has to exist and be large enough to contain the LUKS header. See the cryptsetup FAQ for header size calculation.</p><p>For other commands that change the LUKS header (e.g. <em>luksAddKey</em>), specify the device or file with the LUKS header directly as the LUKS device.</p><p>If used with <em>luksFormat</em>, the --align-payload option is taken as absolute sector alignment on ciphertext device and can be zero.</p><p><strong>WARNING:</strong> There is no check whether the ciphertext device specified actually belongs to the header given. In fact you can specify an arbitrary device as the ciphertext device for <em>open</em> with the --header option. Use with care.</p>
+  </dd>
+  <dt>
+    <p><strong>--force-password</strong></p>
+  </dt>
+  <dd>
+    <p>Do not use password quality checking for new LUKS passwords.</p><p>This option applies only to <em>luksFormat</em>, <em>luksAddKey</em> and <em>luksChangeKey</em> and is ignored if cryptsetup is built without password quality checking support.</p><p>For more info about password quality check, see manual page for <strong>pwquality.conf</strong>(5)</strong> and <strong>passwdqc.conf</strong>(5)</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>--version</strong></p>
+  </dt>
+  <dd>
+    <p>Show the program version.</p>
+  </dd>
+  <dt>
+    <p><strong>--usage</strong></p>
+  </dt>
+  <dd>
+    <p>Show short option help.</p>
+  </dd>
+  <dt>
+    <p><strong>--help, -?</strong></p>
+  </dt>
+  <dd>
+    <p>Show help text and default parameters.</p>
+  </dd>
 
-  <p>Specifies the hash used in the LUKS key setup scheme and volume key digest for <em>luksFormat</em>. The specified hash is used as hash-parameter for PBKDF2 and for the AF splitter.</p>
-<p class='spacer'>
+</dl>
 
-  <p>The specified hash name is passed to the compiled-in crypto backend. Different backends may support different hashes. For <em>luksFormat</em>, the hash algorithm must provide at least 160 bits of output, which excludes, e.g., MD5. Do not use a non-crypto hash like <strong>"crc32"</strong> as this breaks security.</p>
-<p class='spacer'>
-
-  <p>Values compatible with old version of cryptsetup are <strong>"ripemd160"</strong> for <em>open --type plain</em> and <strong>"sha1"</strong> for <em>luksFormat</em>.</p>
-<p class='spacer'>
-
-  <p>Use <em>cryptsetup --help</em> to show the defaults.</p>
-    </dd>
-    <dt><strong>--cipher, -c <em>&lt;cipher-spec&gt;</em></strong></dt>
-    <dd>
-  <p>Set the cipher specification string.</p>
-<p class='spacer'>
-
-  <p><em>cryptsetup --help</em> shows the compiled-in defaults. The current default in the distributed sources is "aes-cbc-essiv:sha256" for plain dm-crypt and "aes-xts-plain64" for LUKS.</p>
-<p class='spacer'>
-
-  <p>If a hash is part of the cipher specification, then it is used as part of the IV generation. For example, ESSIV needs a hash function, while "plain64" does not and hence none is specified.</p>
-<p class='spacer'>
-
-  <p>For XTS mode you can optionally set a key size of 512 bits with the -s option. Key size for XTS mode is twice that for other modes for the same security level.</p>
-<p class='spacer'>
-
-  <p>XTS mode requires kernel 2.6.24 or later and plain64 requires kernel 2.6.33 or later. More information can be found in the FAQ.</p>
-    </dd>
-    <dt><strong>--verify-passphrase, -y</strong></dt>
-    <dd>
-  <p>When interactively asking for a passphrase, ask for it twice and complain if both inputs do not match. Advised when creating a regular mapping for the first time, or when running <em>luksFormat</em>. Ignored on input from file or stdin.</p>
-    </dd>
-    <dt><strong>--key-file, -d <em>name</em></strong></dt>
-    <dd>
-  <p>Read the passphrase from file.</p>
-<p class='spacer'>
-
-  <p>If the name given is "-", then the passphrase will be read from stdin. In this case, reading will not stop at newline characters.</p>
-<p class='spacer'>
-
-  <p>With LUKS, passphrases supplied via --key-file are always the existing passphrases requested by a command, except in the case of <em>luksFormat</em> where --key-file is equivalent to the positional key file argument.</p>
-<p class='spacer'>
-
-  <p>If you want to set a new passphrase via key file, you have to use a positional argument to <em>luksAddKey</em>.</p>
-<p class='spacer'>
-
-  <p>See section <strong>NOTES ON PASSPHRASE PROCESSING</strong> for more information.</p>
-    </dd>
-    <dt><strong>--keyfile-offset <em>value</em></strong></dt>
-    <dd>
-  <p>Skip <em>value</em> bytes at the beginning of the key file. Works with all commands that accepts key files.</p>
-    </dd>
-    <dt><strong>--keyfile-size, -l <em>value</em></strong></dt>
-    <dd>
-  <p>Read a maximum of <em>value</em> bytes from the key file. Default is to read the whole file up to the compiled-in maximum that can be queried with --help. Supplying more data than the compiled-in maximum aborts the operation.</p>
-<p class='spacer'>
-
-  <p>This option is useful to cut trailing newlines, for example. If --keyfile-offset is also given, the size count starts after the offset. Works with all commands that accepts key files.</p>
-    </dd>
-    <dt><strong>--new-keyfile-offset <em>value</em></strong></dt>
-    <dd>
-  <p>Skip <em>value</em> bytes at the start when adding a new passphrase from key file with <em>luksAddKey</em>.</p>
-    </dd>
-    <dt><strong>--new-keyfile-size  <em>value</em></strong></dt>
-    <dd>
-  <p>Read a maximum of <em>value</em> bytes when adding a new passphrase from key file with <em>luksAddKey</em>. Default is to read the whole file up to the compiled-in maximum length that can be queried with --help. Supplying more than the compiled in maximum aborts the operation. When --new-keyfile-offset is also given, reading starts after the offset.</p>
-    </dd>
-    <dt><strong>--master-key-file</strong></dt>
-    <dd>
-  <p>Use a master key stored in a file.</p>
-<p class='spacer'>
-
-  <p>For <em>luksFormat</em> this allows creating a LUKS header with this specific master key. If the master key was taken from an existing LUKS header and all other parameters are the same, then the new header decrypts the data encrypted with the header the master key was taken from.</p>
-<p class='spacer'>
-
-  <p><strong>WARNING:</strong> If you create your own master key, you need to make sure to do it right. Otherwise you can end up with a low-entropy or otherwise partially predictable master key which will compromise security.</p>
-<p class='spacer'>
-
-  <p>For <em>luksAddKey</em> this allows adding a new passphrase without having to know an exiting one.</p>
-<p class='spacer'>
-
-  <p>For <em>open</em> this allows one to open the LUKS device without giving a passphrase.</p>
-    </dd>
-    <dt><strong>--dump-master-key</strong></dt>
-    <dd>
-  <p>For <em>luksDump</em> this option includes the master key in the displayed information. Use with care, as the master key can be used to bypass the passphrases, see also option --master-key-file.</p>
-    </dd>
-    <dt><strong>--use-random</strong></dt>
-    <dd>
-    </dd>
-    <dt><strong>--use-urandom</strong></dt>
-    <dd>
-  <p>For <em>luksFormat</em> these options define which kernel random number generator will be used to create the master key (which is a long-term key).</p>
-<p class='spacer'>
-
-  <p>See <strong>NOTES ON RANDOM NUMBER GENERATORS</strong> for more information. Use <em>cryptsetup --help</em> to show the compiled-in default random number generator.</p>
-<p class='spacer'>
-
-  <p><strong>WARNING:</strong> In a low-entropy situation (e.g. in an embedded system), both selections are problematic. Using /dev/urandom can lead to weak keys. Using /dev/random can block a long time, potentially forever, if not enough entropy can be harvested by the kernel.</p>
-    </dd>
-    <dt><strong>--key-slot, -S &lt;0-7&gt;</strong></dt>
-    <dd>
-  <p>For LUKS operations that add key material, this options allows you to specify which key slot is selected for the new key. This option can be used for <em>luksFormat</em>, and <em>luksAddKey</em>.</p>
-<p class='spacer'>
-
-  <p>In addition, for <em>open</em>, this option selects a specific key-slot to compare the passphrase against. If the given passphrase would only match a different key-slot, the operation fails.</p>
-    </dd>
-    <dt><strong>--key-size, -s &lt;bits&gt;</strong></dt>
-    <dd>
-  <p>Sets key size in bits. The argument has to be a multiple of 8. The possible key-sizes are limited by the cipher and mode used.</p>
-<p class='spacer'>
-
-  <p>See /proc/crypto for more information. Note that key-size in /proc/crypto is stated in bytes.</p>
-<p class='spacer'>
-
-  <p>This option can be used for <em>open --type plain</em> or <em>luksFormat</em>. All other LUKS actions will use the key-size specified in the LUKS header. Use <em>cryptsetup --help</em> to show the compiled-in defaults.</p>
-    </dd>
-    <dt><strong>--size, -b &lt;number of 512 byte sectors&gt;</strong></dt>
-    <dd>
-  <p>Force the size of the underlying device in sectors of 512 bytes. This option is only relevant for the <em>open</em> and <em>resize</em> actions.</p>
-    </dd>
-    <dt><strong>--offset, -o &lt;number of 512 byte sectors&gt;</strong></dt>
-    <dd>
-  <p>Start offset in the backend device in 512-byte sectors. This option is only relevant for the <em>open</em> action with plain or loopaes device types.</p>
-    </dd>
-    <dt><strong>--skip, -p &lt;number of 512 byte sectors&gt;</strong></dt>
-    <dd>
-  <p>Start offset used in IV calculation in 512-byte sectors (how many sectors of the encrypted data to skip at the beginning). This option is only relevant for the <em>open</em> action with plain or loopaes device types.</p>
-<p class='spacer'>
-
-  <p>Hence, if --offset <em>n</em>, and --skip <em>s</em>, sector <em>n</em> (the first sector of encrypted device) will get a sector number of <em>s</em> for the IV calculation.</p>
-    </dd>
-    <dt><strong>--readonly, -r</strong></dt>
-    <dd>
-  <p>set up a read-only mapping.</p>
-    </dd>
-    <dt><strong>--shared</strong></dt>
-    <dd>
-  <p>Creates an additional mapping for one common ciphertext device. Arbitrary mappings are supported. This option is only relevant for the <em>open --type plain</em> action. Use --offset, --size and --skip to specify the mapped area.</p>
-    </dd>
-    <dt><strong>--iter-time, -i &lt;number of milliseconds&gt;</strong></dt>
-    <dd>
-  <p>The number of milliseconds to spend with PBKDF2 passphrase processing. This option is only relevant for LUKS operations that set or change passphrases, such as <em>luksFormat</em> or <em>luksAddKey</em>. Specifying 0 as parameter selects the compiled-in default.</p>
-    </dd>
-    <dt><strong>--batch-mode, -q</strong></dt>
-    <dd>
-  <p>Suppresses all confirmation questions. Use with care!</p>
-<p class='spacer'>
-
-  <p>If the -y option is not specified, this option also switches off the passphrase verification for <em>luksFormat</em>.</p>
-    </dd>
-    <dt><strong>--timeout, -t &lt;number of seconds&gt;</strong></dt>
-    <dd>
-  <p>The number of seconds to wait before timeout on passphrase input via terminal. It is relevant every time a passphrase is asked, for example for <em>open</em>, <em>luksFormat</em> or <em>luksAddKey</em>. It has no effect if used in conjunction with --key-file.</p>
-<p class='spacer'>
-
-  <p>This option is useful when the system should not stall if the user does not input a passphrase, e.g. during boot. The default is a value of 0 seconds, which means to wait forever.</p>
-    </dd>
-    <dt><strong>--tries, -T</strong></dt>
-    <dd>
-  <p>How often the input of the passphrase shall be retried. This option is relevant every time a passphrase is asked, for example for <em>open</em>, <em>luksFormat</em> or <em>luksAddKey</em>. The default is 3 tries.</p>
-    </dd>
-    <dt><strong>--align-payload &lt;number of 512 byte sectors&gt;</strong></dt>
-    <dd>
-  <p>Align payload at a boundary of <em>value</em> 512-byte sectors. This option is relevant for <em>luksFormat</em>.</p>
-<p class='spacer'>
-
-  <p>If not specified, cryptsetup tries to use the topology info provided by kernel for the underlying device to get optimal alignment. If not available (or the calculated value is a multiple of the default) data is by default aligned to a 1MiB boundary (i.e. 2048 512-byte sectors).</p>
-<p class='spacer'>
-
-  <p>For a detached LUKS header this option specifies the offset on the data device. See also the --header option.</p>
-    </dd>
-    <dt><strong>--uuid=<em>UUID</em></strong></dt>
-    <dd>
-  <p>Use the provided <em>UUID</em> for the <em>luksFormat</em> command instead of generating new one. Changes the existing UUID when used with the <em>luksUUID</em> command.</p>
-<p class='spacer'>
-
-  <p>The UUID must be provided in the standard UUID format, e.g. 12345678-1234-1234-1234-123456789abc.</p>
-    </dd>
-    <dt><strong>--allow-discards</strong></dt>
-    <dd>
-  <p>Allow the use of discard (TRIM) requests for device. This option is only relevant for <em>open</em> action.</p>
-<p class='spacer'>
-
-  <p><strong>WARNING:</strong> This command can have a negative security impact because it can make filesystem-level operations visible on the physical device. For example, information leaking filesystem type, used space, etc. may be extractable from the physical device if the discarded blocks can be located later. If in doubt, do not use it.</p>
-<p class='spacer'>
-
-  <p>A kernel version of 3.1 or later is needed. For earlier kernels this option is ignored.</p>
-    </dd>
-    <dt><strong>--perf-same_cpu_crypt</strong></dt>
-    <dd>
-  <p>Perform encryption using the same cpu that IO was submitted on. The default is to use an unbound workqueue so that encryption work is automatically balanced between available CPUs. This option is only relevant for <em>open</em> action.</p>
-<p class='spacer'>
-
-  <p><strong>NOTE:</strong> This option is available only for low-level dm-crypt performance tuning, use only if you need a change to default dm-crypt behaviour. Needs kernel 4.0 or later.</p>
-    </dd>
-    <dt><strong>--perf-submit_from_crypt_cpus</strong></dt>
-    <dd>
-  <p>Disable offloading writes to a separate thread after encryption. There are some situations where offloading write bios from the encryption threads to a single thread degrades performance significantly.  The default is to offload write bios to the same thread. This option is only relevant for <em>open</em> action.</p>
-<p class='spacer'>
-
-  <p><strong>NOTE:</strong> This option is available only for low-level dm-crypt performance tuning, use only if you need a change to default dm-crypt behaviour. Needs kernel 4.0 or later.</p>
-    </dd>
-    <dt><strong>--test-passphrase</strong></dt>
-    <dd>
-  <p>Do not activate device, just verify passphrase. This option is only relevant for <em>open</em> action (the device mapping name is not mandatory if this option is used).</p>
-    </dd>
-    <dt><strong>--header &lt;device or file storing the LUKS header&gt;</strong></dt>
-    <dd>
-  <p>Use a detached (separated) metadata device or file where the LUKS header is stored. This options allows one to store ciphertext and LUKS header on different devices.</p>
-<p class='spacer'>
-
-  <p>This option is only relevant for LUKS devices and can be used with the <em>luksFormat</em>, <em>open</em>, <em>luksSuspend</em>, <em>luksResume</em>, <em>status</em> and <em>resize</em> commands.</p>
-<p class='spacer'>
-
-  <p>For <em>luksFormat</em> with a file name as argument to --header, it has to exist and be large enough to contain the LUKS header. See the cryptsetup FAQ for header size calculation.</p>
-<p class='spacer'>
-
-  <p>For other commands that change the LUKS header (e.g. <em>luksAddKey</em>), specify the device or file with the LUKS header directly as the LUKS device.</p>
-<p class='spacer'>
-
-  <p>If used with <em>luksFormat</em>, the --align-payload option is taken as absolute sector alignment on ciphertext device and can be zero.</p>
-<p class='spacer'>
-
-  <p><strong>WARNING:</strong> There is no check whether the ciphertext device specified actually belongs to the header given. In fact you can specify an arbitrary device as the ciphertext device for <em>open</em> with the --header option. Use with care.</p>
-    </dd>
-    <dt><strong>--force-password</strong></dt>
-    <dd>
-  <p>Do not use password quality checking for new LUKS passwords.</p>
-<p class='spacer'>
-
-  <p>This option applies only to <em>luksFormat</em>, <em>luksAddKey</em> and <em>luksChangeKey</em> and is ignored if cryptsetup is built without password quality checking support.</p>
-<p class='spacer'>
-
-  <p>For more info about password quality check, see manual page for <strong>pwquality.conf</strong>(5)</strong> and <strong>passwdqc.conf</strong>(5)</strong>.</p>
-    </dd>
-    <dt><strong>--version</strong></dt>
-    <dd>
-  <p>Show the program version.</p>
-    </dd>
-    <dt><strong>--usage</strong></dt>
-    <dd>
-  <p>Show short option help.</p>
-    </dd>
-    <dt><strong>--help, -?</strong></dt>
-    <dd>
-  <p>Show help text and default parameters.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN CODES</h2>
         <div class="sectioncontent">
-
-<p>Cryptsetup returns 0 on success and a non-zero value on error.</p>
-<p class='spacer'>
-
-<p>Error codes are: 1 wrong parameters, 2 no permission (bad passphrase), 3 out of memory, 4 wrong device specified, 5 device already exists or device is busy.</p>
+<p>Cryptsetup returns 0 on success and a non-zero value on error.</p><p>Error codes are: 1 wrong parameters, 2 no permission (bad passphrase), 3 out of memory, 4 wrong device specified, 5 device already exists or device is busy.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES ON PASSPHRASE PROCESSING FOR PLAIN MODE</h2>
         <div class="sectioncontent">
-
-<p>Note that no iterated hashing or salting is done in plain mode. If hashing is done, it is a single direct hash. This means that low-entropy passphrases are easy to attack in plain mode.</p>
-<p class='spacer'>
-
-<p><strong>From a terminal</strong>: The passphrase is read until the first newline, i.e. '&#92;n'. The input without the newline character is processed with the default hash or the hash specified with --hash. The hash result will be truncated to the key size of the used cipher, or the size specified with -s.</p>
-<p class='spacer'>
-
-<p><strong>From stdin</strong>: Reading will continue until a newline (or until the maximum input size is reached), with the trailing newline stripped. The maximum input size is defined by the same compiled-in default as for the maximum key file size and can be overwritten using --keyfile-size option.</p>
-<p class='spacer'>
-
-<p>The data read will be hashed with the default hash or the hash specified with --hash. The hash result will be truncated to the key size of the used cipher, or the size specified with -s.</p>
-<p class='spacer'>
-
-<p>Note that if --key-file=- is used for reading the key from stdin, trailing newlines are not stripped from the input.</p>
-<p class='spacer'>
-
-<p>If "plain" is used as argument to --hash, the input data will not be hashed. Instead, it will be zero padded (if shorter than the key size) or truncated (if longer than the key size) and used directly as the binary key. This is useful for directly specifying a binary key. No warning will be given if the amount of data read from stdin is less than the key size.</p>
-<p class='spacer'>
-
-<p><strong>From a key file</strong>: It will be truncated to the key size of the used cipher or the size given by -s and directly used as binary key.</p>
-<p class='spacer'>
-
-<p><strong>WARNING</strong>: The --hash argument is being ignored. The --hash option is usable only for stdin input in plain mode.</p>
-<p class='spacer'>
-
-<p>If the key file is shorter than the key, cryptsetup will quit with an error. The maximum input size is defined by the same compiled-in default as for the maximum key file size and can be overwritten using --keyfile-size option.</p>
-<p class='spacer'>
-
+<p>Note that no iterated hashing or salting is done in plain mode. If hashing is done, it is a single direct hash. This means that low-entropy passphrases are easy to attack in plain mode.</p><p><strong>From a terminal</strong>: The passphrase is read until the first newline, i.e. '&#92;n'. The input without the newline character is processed with the default hash or the hash specified with --hash. The hash result will be truncated to the key size of the used cipher, or the size specified with -s.</p><p><strong>From stdin</strong>: Reading will continue until a newline (or until the maximum input size is reached), with the trailing newline stripped. The maximum input size is defined by the same compiled-in default as for the maximum key file size and can be overwritten using --keyfile-size option.</p><p>The data read will be hashed with the default hash or the hash specified with --hash. The hash result will be truncated to the key size of the used cipher, or the size specified with -s.</p><p>Note that if --key-file=- is used for reading the key from stdin, trailing newlines are not stripped from the input.</p><p>If "plain" is used as argument to --hash, the input data will not be hashed. Instead, it will be zero padded (if shorter than the key size) or truncated (if longer than the key size) and used directly as the binary key. This is useful for directly specifying a binary key. No warning will be given if the amount of data read from stdin is less than the key size.</p><p><strong>From a key file</strong>: It will be truncated to the key size of the used cipher or the size given by -s and directly used as binary key.</p><p><strong>WARNING</strong>: The --hash argument is being ignored. The --hash option is usable only for stdin input in plain mode.</p><p>If the key file is shorter than the key, cryptsetup will quit with an error. The maximum input size is defined by the same compiled-in default as for the maximum key file size and can be overwritten using --keyfile-size option.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES ON PASSPHRASE PROCESSING FOR LUKS</h2>
         <div class="sectioncontent">
-
-<p>LUKS uses PBKDF2 to protect against dictionary attacks and to give some protection to low-entropy passphrases (see RFC 2898 and the cryptsetup FAQ).</p>
-<p class='spacer'>
-
-<p><strong>From a terminal</strong>: The passphrase is read until the first newline and then processed by PBKDF2 without the newline character.</p>
-<p class='spacer'>
-
-<p><strong>From stdin</strong>: LUKS will read passphrases from stdin up to the first newline character or the compiled-in maximum key file length. If --keyfile-size is given, it is ignored.</p>
-<p class='spacer'>
-
-<p><strong>From key file</strong>: The complete keyfile is read up to the compiled-in maximum size. Newline characters do not terminate the input. The --keyfile-size option can be used to limit what is read.</p>
-<p class='spacer'>
-
-<p><strong>Passphrase processing</strong>: Whenever a passphrase is added to a LUKS header (luksAddKey, luksFormat), the user may specify how much the time the passphrase processing should consume. The time is used to determine the iteration count for PBKDF2 and higher times will offer better protection for low-entropy passphrases, but open will take longer to complete. For passphrases that have entropy higher than the used key length, higher iteration times will not increase security.</p>
-<p class='spacer'>
-
-<p>The default setting of one second is sufficient for most practical cases. The only exception is a low-entropy passphrase used on a device with a slow CPU, as this will result in a low iteration count. On a slow device it may be advisable to increase the iteration time using the --iter-time option in order to obtain a higher iteration count. This does slow down all later luksOpen operations accordingly.</p>
+<p>LUKS uses PBKDF2 to protect against dictionary attacks and to give some protection to low-entropy passphrases (see RFC 2898 and the cryptsetup FAQ).</p><p><strong>From a terminal</strong>: The passphrase is read until the first newline and then processed by PBKDF2 without the newline character.</p><p><strong>From stdin</strong>: LUKS will read passphrases from stdin up to the first newline character or the compiled-in maximum key file length. If --keyfile-size is given, it is ignored.</p><p><strong>From key file</strong>: The complete keyfile is read up to the compiled-in maximum size. Newline characters do not terminate the input. The --keyfile-size option can be used to limit what is read.</p><p><strong>Passphrase processing</strong>: Whenever a passphrase is added to a LUKS header (luksAddKey, luksFormat), the user may specify how much the time the passphrase processing should consume. The time is used to determine the iteration count for PBKDF2 and higher times will offer better protection for low-entropy passphrases, but open will take longer to complete. For passphrases that have entropy higher than the used key length, higher iteration times will not increase security.</p><p>The default setting of one second is sufficient for most practical cases. The only exception is a low-entropy passphrase used on a device with a slow CPU, as this will result in a low iteration count. On a slow device it may be advisable to increase the iteration time using the --iter-time option in order to obtain a higher iteration count. This does slow down all later luksOpen operations accordingly.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">INCOHERENT BEHAVIOR FOR INVALID PASSPHRASES/KEYS</h2>
         <div class="sectioncontent">
-
 <p>LUKS checks for a valid passphrase when an encrypted partition is unlocked. The behavior of plain dm-crypt is different. It will always decrypt with the passphrase given. If the given passphrase is wrong, the device mapped by plain dm-crypt will essentially still contain encrypted data and will be unreadable.</p>
         </div>
       </section>
@@ -953,18 +463,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES ON SUPPORTED CIPHERS, MODES, HASHES AND KEY SIZES</h2>
         <div class="sectioncontent">
-
-<p>The available combinations of ciphers, modes, hashes and key sizes depend on kernel support. See /proc/crypto for a list of available options. You might need to load additional kernel crypto modules in order to get more options.</p>
-<p class='spacer'>
-
-<p>For the --hash option, if the crypto backend is libgcrypt, then all algorithms supported by the gcrypt library are available. For other crypto backends some algorithms may be missing.</p>
+<p>The available combinations of ciphers, modes, hashes and key sizes depend on kernel support. See /proc/crypto for a list of available options. You might need to load additional kernel crypto modules in order to get more options.</p><p>For the --hash option, if the crypto backend is libgcrypt, then all algorithms supported by the gcrypt library are available. For other crypto backends some algorithms may be missing.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES ON PASSPHRASES</h2>
         <div class="sectioncontent">
-
 <p>Mathematics can't be bribed. Make sure you keep your passphrases safe. There are a few nice tricks for constructing a fallback, when suddenly out of the blue, your brain refuses to cooperate. These fallbacks need LUKS, as it's only possible with LUKS to have multiple passphrases. Still, if your attacker model does not prevent it, storing your passphrase in a sealed envelope somewhere may be a good idea as well.</p>
         </div>
       </section>
@@ -972,47 +477,27 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES ON RANDOM NUMBER GENERATORS</h2>
         <div class="sectioncontent">
-
-<p>Random Number Generators (RNG) used in cryptsetup are always the kernel RNGs without any modifications or additions to data stream produced.</p>
-<p class='spacer'>
-
-<p>There are two types of randomness cryptsetup/LUKS needs. One type (which always uses /dev/urandom) is used for salts, the AF splitter and for wiping deleted keyslots.</p>
-<p class='spacer'>
-
-<p>The second type is used for the volume (master) key. You can switch between using /dev/random and /dev/urandom  here, see --use-random and --use-urandom options. Using /dev/random on a system without enough entropy sources can cause luksFormat to block until the requested amount of random data is gathered. In a low-entropy situation (embedded system), this can take a very long time and potentially forever. At the same time, using /dev/urandom in a low-entropy situation will produce low-quality keys. This is a serious problem, but solving it is out of scope for a mere man-page. See <a href="../man4/urandom.4.html"><strong>urandom</strong>(4)</a> for more information.</p>
+<p>Random Number Generators (RNG) used in cryptsetup are always the kernel RNGs without any modifications or additions to data stream produced.</p><p>There are two types of randomness cryptsetup/LUKS needs. One type (which always uses /dev/urandom) is used for salts, the AF splitter and for wiping deleted keyslots.</p><p>The second type is used for the volume (master) key. You can switch between using /dev/random and /dev/urandom  here, see --use-random and --use-urandom options. Using /dev/random on a system without enough entropy sources can cause luksFormat to block until the requested amount of random data is gathered. In a low-entropy situation (embedded system), this can take a very long time and potentially forever. At the same time, using /dev/urandom in a low-entropy situation will produce low-quality keys. This is a serious problem, but solving it is out of scope for a mere man-page. See <a href="../man4/urandom.4.html"><strong>urandom</strong>(4)</a> for more information.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES ON LOOPBACK DEVICE USE</h2>
         <div class="sectioncontent">
-
-<p>Cryptsetup is usually used directly on a block device (disk partition or LVM volume). However, if the device argument is a file, cryptsetup tries to allocate a loopback device and map it into this file. This mode requires Linux kernel 2.6.25 or more recent which supports the loop autoclear flag (loop device is cleared on last close automatically). Of course, you can always map a file to a loop-device manually. See the cryptsetup FAQ for an example.</p>
-<p class='spacer'>
-
-<p>When device mapping is active, you can see the loop backing file in the status command output. Also see <a href="../man8/losetup.8.html"><strong>losetup</strong>(8)</a>.</p>
+<p>Cryptsetup is usually used directly on a block device (disk partition or LVM volume). However, if the device argument is a file, cryptsetup tries to allocate a loopback device and map it into this file. This mode requires Linux kernel 2.6.25 or more recent which supports the loop autoclear flag (loop device is cleared on last close automatically). Of course, you can always map a file to a loop-device manually. See the cryptsetup FAQ for an example.</p><p>When device mapping is active, you can see the loop backing file in the status command output. Also see <a href="../man8/losetup.8.html"><strong>losetup</strong>(8)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DEPRECATED ACTIONS</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>The <em>reload</em> action is no longer supported. Please use <strong>dmsetup</strong>(8)</em> if you need to directly manipulate with the device mapping table.</p>
-<p class='spacer'>
-
-<p>The <em>luksDelKey</em> was replaced with <em>luksKillSlot</em>.</p>
-<p class='spacer'>
-
+<p>The <em>reload</em> action is no longer supported. Please use <strong>dmsetup</strong>(8)</em> if you need to directly manipulate with the device mapping table.</p><p>The <em>luksDelKey</em> was replaced with <em>luksKillSlot</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">REPORTING BUGS</h2>
         <div class="sectioncontent">
-
 <p>Report bugs, including ones in the documentation, on the cryptsetup mailing list at &lt;dm-crypt@saout.de&gt; or in the 'Issues' section on LUKS website. Please attach the output of the failed command with the --debug option added.</p>
         </div>
       </section>
@@ -1020,60 +505,23 @@
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
-
-<p>cryptsetup originally written by Jana Saout &lt;jana@saout.de&gt;</p>
-<p class='spacer'>
-
-<p>The LUKS extensions and original man page were written by Clemens Fruhwirth &lt;clemens@endorphin.org&gt;.</p>
-<p class='spacer'>
-
-<p>Man page extensions by Milan Broz &lt;gmazyland@gmail.com&gt;.</p>
-<p class='spacer'>
-
-<p>Man page rewrite and extension by Arno Wagner &lt;arno@wagner.name&gt;.</p>
+<p>cryptsetup originally written by Jana Saout &lt;jana@saout.de&gt;</p><p>The LUKS extensions and original man page were written by Clemens Fruhwirth &lt;clemens@endorphin.org&gt;.</p><p>Man page extensions by Milan Broz &lt;gmazyland@gmail.com&gt;.</p><p>Man page rewrite and extension by Arno Wagner &lt;arno@wagner.name&gt;.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">COPYRIGHT</h2>
         <div class="sectioncontent">
-
-<p>Copyright &copy; 2004 Jana Saout</p>
-<p class='spacer'>
-
-<p>Copyright &copy; 2004-2006 Clemens Fruhwirth</p>
-<p class='spacer'>
-
-<p>Copyright &copy; 2009-2015 Red Hat, Inc.</p>
-<p class='spacer'>
-
-<p>Copyright &copy; 2009-2015 Milan Broz</p>
-<p class='spacer'>
-
-<p>Copyright &copy; 2012-2014 Arno Wagner</p>
-<p class='spacer'>
-
-<p>This is free software; see the source for copying conditions.  There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</p>
+<p>Copyright &copy; 2004 Jana Saout</p><p>Copyright &copy; 2004-2006 Clemens Fruhwirth</p><p>Copyright &copy; 2009-2015 Red Hat, Inc.</p><p>Copyright &copy; 2009-2015 Milan Broz</p><p>Copyright &copy; 2012-2014 Arno Wagner</p><p>This is free software; see the source for copying conditions.  There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO cryptsetup&hellip;</h2>
         <div class="sectioncontent">
-
-<p>The LUKS website at <strong>https://gitlab.com/cryptsetup/cryptsetup/</strong></p>
-<p class='spacer'>
-
-<p>The cryptsetup FAQ, contained in the distribution package and online at <strong>https://gitlab.com/cryptsetup/cryptsetup/wikis/FrequentlyAskedQuestions</strong></p>
-<p class='spacer'>
-
-<p>The cryptsetup mailing list and list archive, see FAQ entry 1.6.</p>
-<p class='spacer'>
-
-<p>The LUKS on-disk format specification available at <strong>https://gitlab.com/cryptsetup/cryptsetup/wikis/Specification</strong></p>
+<p>The LUKS website at <strong>https://gitlab.com/cryptsetup/cryptsetup/</strong></p><p>The cryptsetup FAQ, contained in the distribution package and online at <strong>https://gitlab.com/cryptsetup/cryptsetup/wikis/FrequentlyAskedQuestions</strong></p><p>The cryptsetup mailing list and list archive, see FAQ entry 1.6.</p><p>The LUKS on-disk format specification available at <strong>https://gitlab.com/cryptsetup/cryptsetup/wikis/Specification</strong></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="crond.8.html"><span aria-hidden="true">&larr;</span> crond.8: Daemon to execute scheduled commands</a></li>

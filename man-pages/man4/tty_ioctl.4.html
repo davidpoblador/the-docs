@@ -90,304 +90,341 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;termios.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>int ioctl(int </strong><em>fd</em><strong>, int </strong><em>cmd</em><strong>, ...);</strong></p>
+<p><strong>#include <termios.h></strong></p><p><strong>int ioctl(int </strong><em>fd</em><strong>, int </strong><em>cmd</em><strong>, ...);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> call for terminals and serial ports accepts many possible command arguments. Most require a third argument, of varying type, here called <em>argp</em> or <em>arg</em>.</p><p>Use of <em>ioctl</em> makes for nonportable programs. Use the POSIX interface described in <a href="../man3/termios.3.html"><strong>termios</strong>(3)</a> whenever possible.</p><h3>Get and set terminal attributes</h3>
 
-<p>The <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> call for terminals and serial ports accepts many possible command arguments. Most require a third argument, of varying type, here called <em>argp</em> or <em>arg</em>.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TCGETS	struct termios *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <em>tcgetattr(fd, argp)</em>.</p><p>Get the current serial port settings.</p>
+  </dd>
+  <dt>
+    <p><strong>TCSETS	const struct termios *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <em>tcsetattr(fd, TCSANOW, argp)</em>.</p><p>Set the current serial port settings.</p>
+  </dd>
+  <dt>
+    <p><strong>TCSETSW	const struct termios *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <em>tcsetattr(fd, TCSADRAIN, argp)</em>.</p><p>Allow the output buffer to drain, and set the current serial port settings.</p>
+  </dd>
+  <dt>
+    <p><strong>TCSETSF	const struct termios *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <em>tcsetattr(fd, TCSAFLUSH, argp)</em>.</p><p>Allow the output buffer to drain, discard pending input, and set the current serial port settings.</p>
+  </dd>
 
-<p>Use of <em>ioctl</em> makes for nonportable programs. Use the POSIX interface described in <a href="../man3/termios.3.html"><strong>termios</strong>(3)</a> whenever possible.</p>
-  <h3>Get and set terminal attributes</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TCGETS	struct termios *</strong><em>argp</em></dt>
-    <dd>
-  <p>Equivalent to <em>tcgetattr(fd, argp)</em>.</p>
-<p class='spacer'>
+</dl>
+<p>The following four ioctls are just like <strong>TCGETS</strong>, <strong>TCSETS</strong>, <strong>TCSETSW</strong>, <strong>TCSETSF</strong>, except that they take a <em>struct termio&nbsp;*</em> instead of a <em>struct termios&nbsp;*</em>.</p><ul>
+<li><p><strong>TCGETA	struct termio *</strong><em>argp</em></p></li><li><p><strong>TCSETA	const struct termio *</strong><em>argp</em></p></li><li><p><strong>TCSETAW	const struct termio *</strong><em>argp</em></p></li><li><p><strong>TCSETAF	const struct termio *</strong><em>argp</em></p></li>
+</ul>
+<h3>Locking the termios structure</h3>
+<p>The <em>termios</em> structure of a terminal can be locked. The lock is itself a <em>termios</em> structure, with nonzero bits or fields indicating a locked value.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCGLCKTRMIOS	struct termios *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Gets the locking status of the <em>termios</em> structure of the terminal.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCSLCKTRMIOS	const struct termios *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Sets the locking status of the <em>termios</em> structure of the terminal. Only a process with the <strong>CAP_SYS_ADMIN</strong> capability can do this.</p>
+  </dd>
 
-  <p>Get the current serial port settings.</p>
-    </dd>
-    <dt><strong>TCSETS	const struct termios *</strong><em>argp</em></dt>
-    <dd>
-  <p>Equivalent to <em>tcsetattr(fd, TCSANOW, argp)</em>.</p>
-<p class='spacer'>
+</dl>
 
-  <p>Set the current serial port settings.</p>
-    </dd>
-    <dt><strong>TCSETSW	const struct termios *</strong><em>argp</em></dt>
-    <dd>
-  <p>Equivalent to <em>tcsetattr(fd, TCSADRAIN, argp)</em>.</p>
-<p class='spacer'>
+<h3>Get and set window size</h3>
+<p>Window sizes are kept in the kernel, but not used by the kernel (except in the case of virtual consoles, where the kernel will update the window size when the size of the virtual console changes, for example, by loading a new font).</p><p>The following constants and structure are defined in <em><sys/ioctl.h></em>.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCGWINSZ	struct winsize *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Get window size.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCSWINSZ	const struct winsize *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Set window size.</p>
+  </dd>
 
-  <p>Allow the output buffer to drain, and set the current serial port settings.</p>
-    </dd>
-    <dt><strong>TCSETSF	const struct termios *</strong><em>argp</em></dt>
-    <dd>
-  <p>Equivalent to <em>tcsetattr(fd, TCSAFLUSH, argp)</em>.</p>
-<p class='spacer'>
-
-  <p>Allow the output buffer to drain, discard pending input, and set the current serial port settings.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The following four ioctls are just like <strong>TCGETS</strong>, <strong>TCSETS</strong>, <strong>TCSETSW</strong>, <strong>TCSETSF</strong>, except that they take a <em>struct termio&nbsp;*</em> instead of a <em>struct termios&nbsp;*</em>.</p>
-<p class='spacer'>
-
-<p><strong>TCGETA	struct termio *</strong><em>argp</em></p>
-<p class='spacer'>
-
-<p><strong>TCSETA	const struct termio *</strong><em>argp</em></p>
-<p class='spacer'>
-
-<p><strong>TCSETAW	const struct termio *</strong><em>argp</em></p>
-<p class='spacer'>
-
-<p><strong>TCSETAF	const struct termio *</strong><em>argp</em></p>
-  <h3>Locking the termios structure</h3>
-  <p>The <em>termios</em> structure of a terminal can be locked. The lock is itself a <em>termios</em> structure, with nonzero bits or fields indicating a locked value.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCGLCKTRMIOS	struct termios *</strong><em>argp</em></dt>
-    <dd>
-  <p>Gets the locking status of the <em>termios</em> structure of the terminal.</p>
-    </dd>
-    <dt><strong>TIOCSLCKTRMIOS	const struct termios *</strong><em>argp</em></dt>
-    <dd>
-  <p>Sets the locking status of the <em>termios</em> structure of the terminal. Only a process with the <strong>CAP_SYS_ADMIN</strong> capability can do this.</p>
-    </dd>
-  </dl>
-  <h3>Get and set window size</h3>
-<p>Window sizes are kept in the kernel, but not used by the kernel (except in the case of virtual consoles, where the kernel will update the window size when the size of the virtual console changes, for example, by loading a new font).</p>
-<p class='spacer'>
-
-  <p>The following constants and structure are defined in <em>&lt;sys/ioctl.h&gt;</em>.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCGWINSZ	struct winsize *</strong><em>argp</em></dt>
-    <dd>
-  <p>Get window size.</p>
-    </dd>
-    <dt><strong>TIOCSWINSZ	const struct winsize *</strong><em>argp</em></dt>
-    <dd>
-  <p>Set window size.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The struct used by these ioctls is defined as</p>
-<p class='spacer'>
-
-<pre>struct winsize {
+<pre>
+struct winsize {
     unsigned short ws_row;
     unsigned short ws_col;
     unsigned short ws_xpixel;   /* unused */
     unsigned short ws_ypixel;   /* unused */
-};</pre>
-
-<p class='spacer'>
-
+};
+</pre>
 <p>When the window size changes, a <strong>SIGWINCH</strong> signal is sent to the foreground process group.</p>
-  <h3>Sending a break</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TCSBRK	int </strong><em>arg</em></dt>
-    <dd>
-  <p>Equivalent to <em>tcsendbreak(fd, arg)</em>.</p>
-<p class='spacer'>
+<h3>Sending a break</h3>
 
-  <p>If the terminal is using asynchronous serial data transmission, and <em>arg</em> is zero, then send a break (a stream of zero bits) for between 0.25 and 0.5 seconds. If the terminal is not using asynchronous serial data transmission, then either a break is sent, or the function returns without doing anything. When <em>arg</em> is nonzero, nobody knows what will happen.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TCSBRK	int </strong><em>arg</em></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <em>tcsendbreak(fd, arg)</em>.</p><p>If the terminal is using asynchronous serial data transmission, and <em>arg</em> is zero, then send a break (a stream of zero bits) for between 0.25 and 0.5 seconds. If the terminal is not using asynchronous serial data transmission, then either a break is sent, or the function returns without doing anything. When <em>arg</em> is nonzero, nobody knows what will happen.</p><p>(SVr4, UnixWare, Solaris, Linux treat <em>tcsendbreak(fd,arg)</em> with nonzero <em>arg</em> like <em>tcdrain(fd)</em>. SunOS treats <em>arg</em> as a multiplier, and sends a stream of bits <em>arg</em> times as long as done for zero <em>arg</em>. DG/UX and AIX treat <em>arg</em> (when nonzero) as a time interval measured in milliseconds. HP-UX ignores <em>arg</em>.)</p>
+  </dd>
+  <dt>
+    <p><strong>TCSBRKP	int </strong><em>arg</em></p>
+  </dt>
+  <dd>
+    <p>So-called "POSIX version" of <strong>TCSBRK</strong>. It treats nonzero <em>arg</em> as a timeinterval measured in deciseconds, and does nothing when the driver does not support breaks.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCSBRK	void</strong></p>
+  </dt>
+  <dd>
+    <p>Turn break on, that is, start sending zero bits.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCCBRK	void</strong></p>
+  </dt>
+  <dd>
+    <p>Turn break off, that is, stop sending zero bits.</p>
+  </dd>
 
-  <p>(SVr4, UnixWare, Solaris, Linux treat <em>tcsendbreak(fd,arg)</em> with nonzero <em>arg</em> like <em>tcdrain(fd)</em>. SunOS treats <em>arg</em> as a multiplier, and sends a stream of bits <em>arg</em> times as long as done for zero <em>arg</em>. DG/UX and AIX treat <em>arg</em> (when nonzero) as a time interval measured in milliseconds. HP-UX ignores <em>arg</em>.)</p>
-    </dd>
-    <dt><strong>TCSBRKP	int </strong><em>arg</em></dt>
-    <dd>
-  <p>So-called "POSIX version" of <strong>TCSBRK</strong>. It treats nonzero <em>arg</em> as a timeinterval measured in deciseconds, and does nothing when the driver does not support breaks.</p>
-    </dd>
-    <dt><strong>TIOCSBRK	void</strong></dt>
-    <dd>
-  <p>Turn break on, that is, start sending zero bits.</p>
-    </dd>
-    <dt><strong>TIOCCBRK	void</strong></dt>
-    <dd>
-  <p>Turn break off, that is, stop sending zero bits.</p>
-    </dd>
-  </dl>
-  <h3>Software flow control</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TCXONC	int </strong><em>arg</em></dt>
-    <dd>
-  <p>Equivalent to <em>tcflow(fd, arg)</em>.</p>
-<p class='spacer'>
+</dl>
 
-  <p>See <a href="../man3/tcflow.3.html"><strong>tcflow</strong>(3)</a> for the argument values <strong>TCOOFF</strong>, <strong>TCOON</strong>, <strong>TCIOFF</strong>, <strong>TCION</strong>.</p>
-    </dd>
-  </dl>
-  <h3>Buffer count and flushing</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>FIONREAD	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Get the number of bytes in the input buffer.</p>
-    </dd>
-    <dt><strong>TIOCINQ	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Same as <strong>FIONREAD</strong>.</p>
-    </dd>
-    <dt><strong>TIOCOUTQ	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Get the number of bytes in the output buffer.</p>
-    </dd>
-    <dt><strong>TCFLSH	int </strong><em>arg</em></dt>
-    <dd>
-  <p>Equivalent to <em>tcflush(fd, arg)</em>.</p>
-<p class='spacer'>
+<h3>Software flow control</h3>
 
-  <p>See <a href="../man3/tcflush.3.html"><strong>tcflush</strong>(3)</a> for the argument values <strong>TCIFLUSH</strong>, <strong>TCOFLUSH</strong>, <strong>TCIOFLUSH</strong>.</p>
-    </dd>
-  </dl>
-  <h3>Faking input</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCSTI	const char *</strong><em>argp</em></dt>
-    <dd>
-  <p>Insert the given byte in the input queue.</p>
-    </dd>
-  </dl>
-  <h3>Redirecting console output</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCCONS	void</strong></dt>
-    <dd>
-  <p>Redirect output that would have gone to <em>/dev/console</em> or <em>/dev/tty0</em> to the given terminal. If that was a pseudoterminal master, send it to the slave. In Linux before version 2.6.10, anybody can do this as long as the output was not redirected yet; since version 2.6.10, only a process with the <strong>CAP_SYS_ADMIN</strong> capability may do this. If output was redirected already <strong>EBUSY</strong> is returned, but redirection can be stopped by using this ioctl with <em>fd</em> pointing at <em>/dev/console</em> or <em>/dev/tty0</em>.</p>
-    </dd>
-  </dl>
-  <h3>Controlling terminal</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCSCTTY	int </strong><em>arg</em></dt>
-    <dd>
-  <p>Make the given terminal the controlling terminal of the calling process. The calling process must be a session leader and not have a controlling terminal already. For this case, <em>arg</em> should be specified as zero.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TCXONC	int </strong><em>arg</em></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <em>tcflow(fd, arg)</em>.</p><p>See <a href="../man3/tcflow.3.html"><strong>tcflow</strong>(3)</a> for the argument values <strong>TCOOFF</strong>, <strong>TCOON</strong>, <strong>TCIOFF</strong>, <strong>TCION</strong>.</p>
+  </dd>
 
-  <p>If this terminal is already the controlling terminal of a different session group, then the ioctl fails with <strong>EPERM</strong>, unless the caller has the <strong>CAP_SYS_ADMIN</strong> capability and <em>arg</em> equals 1, in which case the terminal is stolen, and all processes that had it as controlling terminal lose it.</p>
-    </dd>
-    <dt><strong>TIOCNOTTY	void</strong></dt>
-    <dd>
-  <p>If the given terminal was the controlling terminal of the calling process, give up this controlling terminal. If the process was session leader, then send <strong>SIGHUP</strong> and <strong>SIGCONT</strong> to the foreground process group and all processes in the current session lose their controlling terminal.</p>
-    </dd>
-  </dl>
-  <h3>Process group and session ID</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCGPGRP	pid_t *</strong><em>argp</em></dt>
-    <dd>
-  <p>When successful, equivalent to <em>*argp = tcgetpgrp(fd)</em>.</p>
-<p class='spacer'>
+</dl>
 
-  <p>Get the process group ID of the foreground process group on this terminal.</p>
-    </dd>
-    <dt><strong>TIOCSPGRP	const pid_t *</strong><em>argp</em></dt>
-    <dd>
-  <p>Equivalent to <em>tcsetpgrp(fd, *argp)</em>.</p>
-<p class='spacer'>
+<h3>Buffer count and flushing</h3>
 
-  <p>Set the foreground process group ID of this terminal.</p>
-    </dd>
-    <dt><strong>TIOCGSID	pid_t *</strong><em>argp</em></dt>
-    <dd>
-  <p>Get the session ID of the given terminal. This will fail with <strong>ENOTTY</strong> in case the terminal is not a master pseudoterminal and not our controlling terminal. Strange.</p>
-    </dd>
-  </dl>
-  <h3>Exclusive mode</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCEXCL	void</strong></dt>
-    <dd>
-  <p>Put the terminal into exclusive mode. No further <a href="../man2/open.2.html"><strong>open</strong>(2)</a> operations on the terminal are permitted. (They will fail with <strong>EBUSY</strong>, except for a process with the <strong>CAP_SYS_ADMIN</strong> capability.)</p>
-    </dd>
-    <dt><strong>TIOCGEXCL	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>If the terminal is currently in exclusive mode, place a nonzero value in the location pointed to by <em>argp</em>; otherwise, place zero in <em>*argp</em> (since Linux 3.8).</p>
-    </dd>
-    <dt><strong>TIOCNXCL	void</strong></dt>
-    <dd>
-  <p>Disable exclusive mode.</p>
-    </dd>
-  </dl>
-  <h3>Line discipline</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCGETD	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Get the line discipline of the terminal.</p>
-    </dd>
-    <dt><strong>TIOCSETD	const int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Set the line discipline of the terminal.</p>
-    </dd>
-  </dl>
-  <h3>Pseudoterminal ioctls</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCPKT	const int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Enable (when *<em>argp</em> is nonzero) or disable packet mode. Can be applied to the master side of a pseudoterminal only (and will return <strong>ENOTTY</strong> otherwise). In packet mode, each subsequent <a href="../man2/read.2.html"><strong>read</strong>(2)</a> will return a packet that either contains a single nonzero control byte, or has a single byte containing zero (&apos;&nbsp;&apos;) followed by data written on the slave side of the pseudoterminal. If the first byte is not <strong>TIOCPKT_DATA</strong> (0), it is an OR of one or more of the following bits:</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>FIONREAD	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Get the number of bytes in the input buffer.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCINQ	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Same as <strong>FIONREAD</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCOUTQ	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Get the number of bytes in the output buffer.</p>
+  </dd>
+  <dt>
+    <p><strong>TCFLSH	int </strong><em>arg</em></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <em>tcflush(fd, arg)</em>.</p><p>See <a href="../man3/tcflush.3.html"><strong>tcflush</strong>(3)</a> for the argument values <strong>TCIFLUSH</strong>, <strong>TCOFLUSH</strong>, <strong>TCIOFLUSH</strong>.</p>
+  </dd>
 
-<pre>TIOCPKT_FLUSHREAD   The read queue for the terminal is flushed.
+</dl>
+
+<h3>Faking input</h3>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCSTI	const char *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Insert the given byte in the input queue.</p>
+  </dd>
+
+</dl>
+
+<h3>Redirecting console output</h3>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCCONS	void</strong></p>
+  </dt>
+  <dd>
+    <p>Redirect output that would have gone to <em>/dev/console</em> or <em>/dev/tty0</em> to the given terminal. If that was a pseudoterminal master, send it to the slave. In Linux before version 2.6.10, anybody can do this as long as the output was not redirected yet; since version 2.6.10, only a process with the <strong>CAP_SYS_ADMIN</strong> capability may do this. If output was redirected already <strong>EBUSY</strong> is returned, but redirection can be stopped by using this ioctl with <em>fd</em> pointing at <em>/dev/console</em> or <em>/dev/tty0</em>.</p>
+  </dd>
+
+</dl>
+
+<h3>Controlling terminal</h3>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCSCTTY	int </strong><em>arg</em></p>
+  </dt>
+  <dd>
+    <p>Make the given terminal the controlling terminal of the calling process. The calling process must be a session leader and not have a controlling terminal already. For this case, <em>arg</em> should be specified as zero.</p><p>If this terminal is already the controlling terminal of a different session group, then the ioctl fails with <strong>EPERM</strong>, unless the caller has the <strong>CAP_SYS_ADMIN</strong> capability and <em>arg</em> equals 1, in which case the terminal is stolen, and all processes that had it as controlling terminal lose it.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCNOTTY	void</strong></p>
+  </dt>
+  <dd>
+    <p>If the given terminal was the controlling terminal of the calling process, give up this controlling terminal. If the process was session leader, then send <strong>SIGHUP</strong> and <strong>SIGCONT</strong> to the foreground process group and all processes in the current session lose their controlling terminal.</p>
+  </dd>
+
+</dl>
+
+<h3>Process group and session ID</h3>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCGPGRP	pid_t *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>When successful, equivalent to <em>*argp = tcgetpgrp(fd)</em>.</p><p>Get the process group ID of the foreground process group on this terminal.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCSPGRP	const pid_t *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Equivalent to <em>tcsetpgrp(fd, *argp)</em>.</p><p>Set the foreground process group ID of this terminal.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCGSID	pid_t *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Get the session ID of the given terminal. This will fail with <strong>ENOTTY</strong> in case the terminal is not a master pseudoterminal and not our controlling terminal. Strange.</p>
+  </dd>
+
+</dl>
+
+<h3>Exclusive mode</h3>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCEXCL	void</strong></p>
+  </dt>
+  <dd>
+    <p>Put the terminal into exclusive mode. No further <a href="../man2/open.2.html"><strong>open</strong>(2)</a> operations on the terminal are permitted. (They will fail with <strong>EBUSY</strong>, except for a process with the <strong>CAP_SYS_ADMIN</strong> capability.)</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCGEXCL	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>If the terminal is currently in exclusive mode, place a nonzero value in the location pointed to by <em>argp</em>; otherwise, place zero in <em>*argp</em> (since Linux 3.8).</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCNXCL	void</strong></p>
+  </dt>
+  <dd>
+    <p>Disable exclusive mode.</p>
+  </dd>
+
+</dl>
+
+<h3>Line discipline</h3>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCGETD	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Get the line discipline of the terminal.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCSETD	const int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Set the line discipline of the terminal.</p>
+  </dd>
+
+</dl>
+
+<h3>Pseudoterminal ioctls</h3>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCPKT	const int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Enable (when *<em>argp</em> is nonzero) or disable packet mode. Can be applied to the master side of a pseudoterminal only (and will return <strong>ENOTTY</strong> otherwise). In packet mode, each subsequent <a href="../man2/read.2.html"><strong>read</strong>(2)</a> will return a packet that either contains a single nonzero control byte, or has a single byte containing zero (&apos;&nbsp;&apos;) followed by data written on the slave side of the pseudoterminal. If the first byte is not <strong>TIOCPKT_DATA</strong> (0), it is an OR of one or more of the following bits:</p>
+<pre>
+TIOCPKT_FLUSHREAD   The read queue for the terminal is flushed.
 TIOCPKT_FLUSHWRITE  The write queue for the terminal is flushed.
 TIOCPKT_STOP        Output to the terminal is stopped.
 TIOCPKT_START       Output to the terminal is restarted.
 TIOCPKT_DOSTOP      The start and stop characters are <strong>^S</strong>/<strong>^Q</strong>.
-TIOCPKT_NOSTOP      The start and stop characters are not <strong>^S</strong>/<strong>^Q</strong>.</pre>
+TIOCPKT_NOSTOP      The start and stop characters are not <strong>^S</strong>/<strong>^Q</strong>.
+</pre>
+<p>While this mode is in use, the presence of control status information to be read from the master side may be detected by a <a href="../man2/select.2.html"><strong>select</strong>(2)</a> for exceptional conditions.</p><p>This mode is used by <strong>rlogin</strong>(1) and <strong>rlogind</strong>(8) to implement a remote-echoed, locally <strong>^S</strong>/<strong>^Q</strong> flow-controlled remote login.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOGCPKT	const int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Return the current packet mode setting in the integer pointed to by <em>argp</em> (since Linux 3.8).</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCSPTLCK	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Set (if <em>*argp</em> is nonzero) or remove (if <em>*argp</em> is zero) the pseudoterminal slave device. (See also <a href="../man3/unlockpt.3.html"><strong>unlockpt</strong>(3)</a>.)</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCGPTLCK	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Place the current lock state of the pseudoterminal slave device in the location pointed to by <em>argp</em> (since Linux 3.8).</p>
+  </dd>
 
-<p class='spacer'>
-
-  <p>While this mode is in use, the presence of control status information to be read from the master side may be detected by a <a href="../man2/select.2.html"><strong>select</strong>(2)</a> for exceptional conditions.</p>
-<p class='spacer'>
-
-  <p>This mode is used by <strong>rlogin</strong>(1) and <strong>rlogind</strong>(8) to implement a remote-echoed, locally <strong>^S</strong>/<strong>^Q</strong> flow-controlled remote login.</p>
-    </dd>
-    <dt><strong>TIOGCPKT	const int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Return the current packet mode setting in the integer pointed to by <em>argp</em> (since Linux 3.8).</p>
-    </dd>
-    <dt><strong>TIOCSPTLCK	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Set (if <em>*argp</em> is nonzero) or remove (if <em>*argp</em> is zero) the pseudoterminal slave device. (See also <a href="../man3/unlockpt.3.html"><strong>unlockpt</strong>(3)</a>.)</p>
-    </dd>
-    <dt><strong>TIOCGPTLCK	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Place the current lock state of the pseudoterminal slave device in the location pointed to by <em>argp</em> (since Linux 3.8).</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The BSD ioctls <strong>TIOCSTOP</strong>, <strong>TIOCSTART</strong>, <strong>TIOCUCNTL</strong>, <strong>TIOCREMOTE</strong> have not been implemented under Linux.</p>
-  <h3>Modem control</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCMGET	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Get the status of modem bits.</p>
-    </dd>
-    <dt><strong>TIOCMSET	const int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Set the status of modem bits.</p>
-    </dd>
-    <dt><strong>TIOCMBIC	const int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Clear the indicated modem bits.</p>
-    </dd>
-    <dt><strong>TIOCMBIS	const int *</strong><em>argp</em></dt>
-    <dd>
-  <p>Set the indicated modem bits.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+<h3>Modem control</h3>
 
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCMGET	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Get the status of modem bits.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCMSET	const int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Set the status of modem bits.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCMBIC	const int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Clear the indicated modem bits.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCMBIS	const int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Set the indicated modem bits.</p>
+  </dd>
+
+</dl>
 <p>The following bits are used by the above ioctls:</p>
-<p class='spacer'>
-
-<pre>TIOCM_LE        DSR (data set ready/line enable)
+<pre>
+TIOCM_LE        DSR (data set ready/line enable)
 TIOCM_DTR       DTR (data terminal ready)
 TIOCM_RTS       RTS (request to send)
 TIOCM_ST        Secondary TXD (transmit)
@@ -397,52 +434,64 @@ TIOCM_CAR       DCD (data carrier detect)
 TIOCM_CD         see TIOCM_CAR
 TIOCM_RNG       RNG (ring)
 TIOCM_RI         see TIOCM_RNG
-TIOCM_DSR       DSR (data set ready)</pre>
+TIOCM_DSR       DSR (data set ready)
+</pre>
 
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCMIWAIT	int </strong><em>arg</em></dt>
-    <dd>
-  <p>Wait for any of the 4 modem bits (DCD, RI, DSR, CTS) to change. The bits of interest are specified as a bit mask in <em>arg</em>, by ORing together any of the bit values, <strong>TIOCM_RNG</strong>, <strong>TIOCM_DSR</strong>, <strong>TIOCM_CD</strong>, and <strong>TIOCM_CTS</strong>. The caller should use <strong>TIOCGICOUNT</strong> to see which bit has changed.</p>
-    </dd>
-    <dt><strong>TIOCGICOUNT	struct serial_icounter_struct *</strong><em>argp</em></dt>
-    <dd>
-  <p>Get counts of input serial line interrupts (DCD, RI, DSR, CTS). The counts are written to the <em>serial_icounter_struct</em> structure pointed to by <em>argp</em>.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCMIWAIT	int </strong><em>arg</em></p>
+  </dt>
+  <dd>
+    <p>Wait for any of the 4 modem bits (DCD, RI, DSR, CTS) to change. The bits of interest are specified as a bit mask in <em>arg</em>, by ORing together any of the bit values, <strong>TIOCM_RNG</strong>, <strong>TIOCM_DSR</strong>, <strong>TIOCM_CD</strong>, and <strong>TIOCM_CTS</strong>. The caller should use <strong>TIOCGICOUNT</strong> to see which bit has changed.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCGICOUNT	struct serial_icounter_struct *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Get counts of input serial line interrupts (DCD, RI, DSR, CTS). The counts are written to the <em>serial_icounter_struct</em> structure pointed to by <em>argp</em>.</p><p>Note: both 1-&gt;0 and 0-&gt;1 transitions are counted, except for RI, where only 0-&gt;1 transitions are counted.</p>
+  </dd>
 
-  <p>Note: both 1-&gt;0 and 0-&gt;1 transitions are counted, except for RI, where only 0-&gt;1 transitions are counted.</p>
-    </dd>
-  </dl>
-  <h3>Marking a line as local</h3>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCGSOFTCAR	int *</strong><em>argp</em></dt>
-    <dd>
-  <p>("Get software carrier flag") Get the status of the CLOCAL flag in the c_cflag field of the <em>termios</em> structure.</p>
-    </dd>
-    <dt><strong>TIOCSSOFTCAR	const int *</strong><em>argp</em></dt>
-    <dd>
-  <p>("Set software carrier flag") Set the CLOCAL flag in the <em>termios</em> structure when *<em>argp</em> is nonzero, and clear it otherwise.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
 
+<h3>Marking a line as local</h3>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCGSOFTCAR	int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>("Get software carrier flag") Get the status of the CLOCAL flag in the c_cflag field of the <em>termios</em> structure.</p>
+  </dd>
+  <dt>
+    <p><strong>TIOCSSOFTCAR	const int *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>("Set software carrier flag") Set the CLOCAL flag in the <em>termios</em> structure when *<em>argp</em> is nonzero, and clear it otherwise.</p>
+  </dd>
+
+</dl>
 <p>If the <strong>CLOCAL</strong> flag for a line is off, the hardware carrier detect (DCD) signal is significant, and an <a href="../man2/open.2.html"><strong>open</strong>(2)</a> of the corresponding terminal will block until DCD is asserted, unless the <strong>O_NONBLOCK</strong> flag is given. If <strong>CLOCAL</strong> is set, the line behaves as if DCD is always asserted. The software carrier flag is usually turned on for local devices, and is off for lines with modems.</p>
-  <h3>Linux-specific</h3>
+<h3>Linux-specific</h3>
 <p>For the <strong>TIOCLINUX</strong> ioctl, see <a href="../man4/console_ioctl.4.html"><strong>console_ioctl</strong>(4)</a>.</p>
-  <h3>Kernel debugging</h3>
-  <p><strong>#include &lt;linux/tty.h&gt;</strong></p>
-  <dl class='dl-vertical'>
-    <dt><strong>TIOCTTYGSTRUCT	struct tty_struct *</strong><em>argp</em></dt>
-    <dd>
-  <p>Get the <em>tty_struct</em> corresponding to <em>fd</em>. This command was removed in Linux 2.5.67.</p>
-    </dd>
-  </dl>
+<h3>Kernel debugging</h3>
+<p><strong>#include <linux/tty.h></strong></p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>TIOCTTYGSTRUCT	struct tty_struct *</strong><em>argp</em></p>
+  </dt>
+  <dd>
+    <p>Get the <em>tty_struct</em> corresponding to <em>fd</em>. This command was removed in Linux 2.5.67.</p>
+  </dd>
+
+</dl>
+
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>The <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> system call returns 0 on success. On error, it returns -1 and sets <em>errno</em> appropriately.</p>
         </div>
       </section>
@@ -451,35 +500,43 @@ TIOCM_DSR       DSR (data set ready)</pre>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>Invalid command parameter.</p>
-    </dd>
-    <dt><strong>ENOIOCTLCMD</strong></dt>
-    <dd>
-  <p>Unknown command.</p>
-    </dd>
-    <dt><strong>ENOTTY</strong></dt>
-    <dd>
-  <p>Inappropriate <em>fd</em>.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>Insufficient permission.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>Invalid command parameter.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOIOCTLCMD</strong></p>
+  </dt>
+  <dd>
+    <p>Unknown command.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTTY</strong></p>
+  </dt>
+  <dd>
+    <p>Inappropriate <em>fd</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>Insufficient permission.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>Check the condition of DTR on the serial port.</p>
-<p class='spacer'>
-
-<pre>#include &lt;termios.h&gt;
+<pre>
+#include &lt;termios.h&gt;
 #include &lt;fcntl.h&gt;
 #include &lt;sys/ioctl.h&gt;
 
@@ -495,7 +552,8 @@ main(void)
     else
         puts("TIOCM_DTR is not set");
     close(fd);
-}</pre>
+}
+</pre>
 
         </div>
       </section>
@@ -503,11 +561,9 @@ main(void)
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO tty_ioctl&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>ldattach</strong>(1), <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a>, <a href="../man3/termios.3.html"><strong>termios</strong>(3)</a>, <a href="../man4/console_ioctl.4.html"><strong>console_ioctl</strong>(4)</a>, <a href="../man7/pty.7.html"><strong>pty</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="ttyS.4.html"><span aria-hidden="true">&larr;</span> ttyS.4: Serial terminal lines</a></li>

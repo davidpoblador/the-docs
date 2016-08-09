@@ -91,13 +91,15 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;sys/socket.h&gt;</strong>
+<pre>
+<strong>#include <sys/socket.h></strong>
 
-<strong>#include &lt;linux/if_packet.h&gt;</strong>
+<strong>#include <linux/if_packet.h></strong>
 
-<strong>#include &lt;net/ethernet.h&gt; /* the L2 protocols */</strong>
+<strong>#include <net/ethernet.h> /* the L2 protocols */</strong>
 
-<strong>packet_socket = socket(AF_PACKET, int </strong><em>socket_type</em><strong>, int protocol</strong><em>);</em></pre>
+<strong>packet_socket = socket(AF_PACKET, int </strong><em>socket_type</em><strong>, int </strong><em>protocol</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -105,34 +107,10 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>Packet sockets are used to receive or send raw packets at the device driver (OSI Layer 2) level. They allow the user to implement protocol modules in user space on top of the physical layer.</p>
-<p class='spacer'>
-
-<p>The <em>socket_type</em> is either <strong>SOCK_RAW</strong> for raw packets including the link-level header or <strong>SOCK_DGRAM</strong> for cooked packets with the link-level header removed. The link-level header information is available in a common format in a <em>sockaddr_ll</em> structure. <em>protocol</em> is the IEEE 802.3 protocol number in network byte order. See the <em>&lt;linux/if_ether.h&gt;</em> include file for a list of allowed protocols. When protocol is set to <strong>htons(ETH_P_ALL)</strong>, then all protocols are received. All incoming packets of that protocol type will be passed to the packet socket before they are passed to the protocols implemented in the kernel.</p>
-<p class='spacer'>
-
-<p>Only processes with the <strong>CAP_NET_RAW</strong> capability may open packet sockets.</p>
-<p class='spacer'>
-
-<p><strong>SOCK_RAW</strong> packets are passed to and from the device driver without any changes in the packet data. When receiving a packet, the address is still parsed and passed in a standard <em>sockaddr_ll</em> address structure. When transmitting a packet, the user-supplied buffer should contain the physical-layer header. That packet is then queued unmodified to the network driver of the interface defined by the destination address. Some device drivers always add other headers. <strong>SOCK_RAW</strong> is similar to but not compatible with the obsolete <strong>AF_INET/SOCK_PACKET</strong> of Linux 2.0.</p>
-<p class='spacer'>
-
-<p><strong>SOCK_DGRAM</strong> operates on a slightly higher level. The physical header is removed before the packet is passed to the user. Packets sent through a <strong>SOCK_DGRAM</strong> packet socket get a suitable physical-layer header based on the information in the <em>sockaddr_ll</em> destination address before they are queued.</p>
-<p class='spacer'>
-
-<p>By default, all packets of the specified protocol type are passed to a packet socket. To get packets only from a specific interface use <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a> specifying an address in a <em>struct sockaddr_ll</em> to bind the packet socket to an interface. Fields used for binding are <em>sll_family</em> (should be <strong>AF_PACKET</strong>), <em>sll_protocol</em>, and <em>sll_ifindex</em>.</p>
-<p class='spacer'>
-
-<p>The <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> operation is not supported on packet sockets.</p>
-<p class='spacer'>
-
-<p>When the <strong>MSG_TRUNC</strong> flag is passed to <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, or <a href="../man2/recvfrom.2.html"><strong>recvfrom</strong>(2)</a>, the real length of the packet on the wire is always returned, even when it is longer than the buffer.</p>
-  <h3>Address types</h3>
+<p>Packet sockets are used to receive or send raw packets at the device driver (OSI Layer 2) level. They allow the user to implement protocol modules in user space on top of the physical layer.</p><p>The <em>socket_type</em> is either <strong>SOCK_RAW</strong> for raw packets including the link-level header or <strong>SOCK_DGRAM</strong> for cooked packets with the link-level header removed. The link-level header information is available in a common format in a <em>sockaddr_ll</em> structure. <em>protocol</em> is the IEEE 802.3 protocol number in network byte order. See the <em><linux/if_ether.h></em> include file for a list of allowed protocols. When protocol is set to <strong>htons(ETH_P_ALL)</strong>, then all protocols are received. All incoming packets of that protocol type will be passed to the packet socket before they are passed to the protocols implemented in the kernel.</p><p>Only processes with the <strong>CAP_NET_RAW</strong> capability may open packet sockets.</p><p><strong>SOCK_RAW</strong> packets are passed to and from the device driver without any changes in the packet data. When receiving a packet, the address is still parsed and passed in a standard <em>sockaddr_ll</em> address structure. When transmitting a packet, the user-supplied buffer should contain the physical-layer header. That packet is then queued unmodified to the network driver of the interface defined by the destination address. Some device drivers always add other headers. <strong>SOCK_RAW</strong> is similar to but not compatible with the obsolete <strong>AF_INET/SOCK_PACKET</strong> of Linux 2.0.</p><p><strong>SOCK_DGRAM</strong> operates on a slightly higher level. The physical header is removed before the packet is passed to the user. Packets sent through a <strong>SOCK_DGRAM</strong> packet socket get a suitable physical-layer header based on the information in the <em>sockaddr_ll</em> destination address before they are queued.</p><p>By default, all packets of the specified protocol type are passed to a packet socket. To get packets only from a specific interface use <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a> specifying an address in a <em>struct sockaddr_ll</em> to bind the packet socket to an interface. Fields used for binding are <em>sll_family</em> (should be <strong>AF_PACKET</strong>), <em>sll_protocol</em>, and <em>sll_ifindex</em>.</p><p>The <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> operation is not supported on packet sockets.</p><p>When the <strong>MSG_TRUNC</strong> flag is passed to <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, or <a href="../man2/recvfrom.2.html"><strong>recvfrom</strong>(2)</a>, the real length of the packet on the wire is always returned, even when it is longer than the buffer.</p><h3>Address types</h3>
 <p>The <em>sockaddr_ll</em> structure is a device-independent physical-layer address.</p>
-<p class='spacer'>
-
-<pre>struct sockaddr_ll {
+<pre>
+struct sockaddr_ll {
     unsigned short sll_family;   /* Always AF_PACKET */
     unsigned short sll_protocol; /* Physical-layer protocol */
     int            sll_ifindex;  /* Interface number */
@@ -140,63 +118,42 @@
     unsigned char  sll_pkttype;  /* Packet type */
     unsigned char  sll_halen;    /* Length of address */
     unsigned char  sll_addr[8];  /* Physical-layer address */
-};</pre>
-
-<p class='spacer'>
-
-  <p>The fields of this structure are as follows:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p><em>sll_protocol</em> is the standard ethernet protocol type in network byte order as defined in the <em>&lt;linux/if_ether.h&gt;</em> include file. It defaults to the socket's protocol.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p><em>sll_ifindex</em> is the interface index of the interface (see <a href="../man7/netdevice.7.html"><strong>netdevice</strong>(7)</a>); 0 matches any interface (only permitted for binding). <em>sll_hatype</em> is an ARP type as defined in the <em>&lt;linux/if_arp.h&gt;</em> include file.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p><em>sll_pkttype</em> contains the packet type. Valid types are <strong>PACKET_HOST</strong> for a packet addressed to the local host, <strong>PACKET_BROADCAST</strong> for a physical-layer broadcast packet, <strong>PACKET_MULTICAST</strong> for a packet sent to a physical-layer multicast address, <strong>PACKET_OTHERHOST</strong> for a packet to some other host that has been caught by a device driver in promiscuous mode, and <strong>PACKET_OUTGOING</strong> for a packet originating from the local host that is looped back to a packet socket. These types make sense only for receiving.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p><em>sll_addr</em> and <em>sll_halen</em> contain the physical-layer (e.g., IEEE 802.3) address and its length. The exact interpretation depends on the device.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>When you send packets, it is enough to specify <em>sll_family</em>, <em>sll_addr</em>, <em>sll_halen</em>, <em>sll_ifindex</em>, and <em>sll_protocol</em>. The other fields should be 0. <em>sll_hatype</em> and <em>sll_pkttype</em> are set on received packets for your information.</p>
-  <h3>Socket options</h3>
-  <p>Packet socket options are configured by calling <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> with level <strong>SOL_PACKET</strong>.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>PACKET_ADD_MEMBERSHIP</strong></dt>
-    <dd>
-    </dd>
-    <dt><strong>PACKET_DROP_MEMBERSHIP</strong></dt>
-    <dd>
-  <p>Packet sockets can be used to configure physical-layer multicasting and promiscuous mode. <strong>PACKET_ADD_MEMBERSHIP</strong> adds a binding and <strong>PACKET_DROP_MEMBERSHIP</strong> drops it. They both expect a <em>packet_mreq</em> structure as argument:</p>
-<p class='spacer'>
-
-<pre>struct packet_mreq {
+};
+</pre>
+<p>The fields of this structure are as follows:</p><ul>
+<li><p><em>sll_protocol</em> is the standard ethernet protocol type in network byte order as defined in the <em><linux/if_ether.h></em> include file. It defaults to the socket's protocol.</p></li><li><p><em>sll_ifindex</em> is the interface index of the interface (see <a href="../man7/netdevice.7.html"><strong>netdevice</strong>(7)</a>); 0 matches any interface (only permitted for binding). <em>sll_hatype</em> is an ARP type as defined in the <em><linux/if_arp.h></em> include file.</p></li><li><p><em>sll_pkttype</em> contains the packet type. Valid types are <strong>PACKET_HOST</strong> for a packet addressed to the local host, <strong>PACKET_BROADCAST</strong> for a physical-layer broadcast packet, <strong>PACKET_MULTICAST</strong> for a packet sent to a physical-layer multicast address, <strong>PACKET_OTHERHOST</strong> for a packet to some other host that has been caught by a device driver in promiscuous mode, and <strong>PACKET_OUTGOING</strong> for a packet originating from the local host that is looped back to a packet socket. These types make sense only for receiving.</p></li><li><p><em>sll_addr</em> and <em>sll_halen</em> contain the physical-layer (e.g., IEEE 802.3) address and its length. The exact interpretation depends on the device.</p></li>
+</ul><p>When you send packets, it is enough to specify <em>sll_family</em>, <em>sll_addr</em>, <em>sll_halen</em>, <em>sll_ifindex</em>, and <em>sll_protocol</em>. The other fields should be 0. <em>sll_hatype</em> and <em>sll_pkttype</em> are set on received packets for your information.</p>
+<h3>Socket options</h3>
+<p>Packet socket options are configured by calling <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> with level <strong>SOL_PACKET</strong>.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PACKET_ADD_MEMBERSHIP</strong></p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p><strong>PACKET_DROP_MEMBERSHIP</strong></p>
+  </dt>
+  <dd>
+    <p>Packet sockets can be used to configure physical-layer multicasting and promiscuous mode. <strong>PACKET_ADD_MEMBERSHIP</strong> adds a binding and <strong>PACKET_DROP_MEMBERSHIP</strong> drops it. They both expect a <em>packet_mreq</em> structure as argument:</p>
+<pre>
+struct packet_mreq {
     int            mr_ifindex;    /* interface index */
     unsigned short mr_type;       /* action */
     unsigned short mr_alen;       /* address length */
     unsigned char  mr_address[8]; /* physical-layer address */
-};</pre>
-
-<p class='spacer'>
-
-  <p><em>mr_ifindex</em> contains the interface index for the interface whose status should be changed. The <em>mr_type</em> field specifies which action to perform. <strong>PACKET_MR_PROMISC</strong> enables receiving all packets on a shared medium (often known as "promiscuous mode"), <strong>PACKET_MR_MULTICAST</strong> binds the socket to the physical-layer multicast group specified in <em>mr_address</em> and <em>mr_alen</em>, and <strong>PACKET_MR_ALLMULTI</strong> sets the socket up to receive all multicast packets arriving at the interface.</p>
-<p class='spacer'>
-
-  <p>In addition, the traditional ioctls <strong>SIOCSIFFLAGS</strong>, <strong>SIOCADDMULTI</strong>, <strong>SIOCDELMULTI</strong> can be used for the same purpose.</p>
-    </dd>
-    <dt><strong>PACKET_AUXDATA</strong> (since Linux 2.6.21)</dt>
-    <dd>
-  <p>If this binary option is enabled, the packet socket passes a metadata structure along with each packet in the <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> control field. The structure can be read with <a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>. It is defined as</p>
-<p class='spacer'>
-
-<pre>struct tpacket_auxdata {
+};
+</pre>
+<p><em>mr_ifindex</em> contains the interface index for the interface whose status should be changed. The <em>mr_type</em> field specifies which action to perform. <strong>PACKET_MR_PROMISC</strong> enables receiving all packets on a shared medium (often known as "promiscuous mode"), <strong>PACKET_MR_MULTICAST</strong> binds the socket to the physical-layer multicast group specified in <em>mr_address</em> and <em>mr_alen</em>, and <strong>PACKET_MR_ALLMULTI</strong> sets the socket up to receive all multicast packets arriving at the interface.</p><p>In addition, the traditional ioctls <strong>SIOCSIFFLAGS</strong>, <strong>SIOCADDMULTI</strong>, <strong>SIOCDELMULTI</strong> can be used for the same purpose.</p>
+  </dd>
+  <dt>
+    <p><strong>PACKET_AUXDATA</strong> (since Linux 2.6.21)</p>
+  </dt>
+  <dd>
+    <p>If this binary option is enabled, the packet socket passes a metadata structure along with each packet in the <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> control field. The structure can be read with <a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>. It is defined as</p>
+<pre>
+struct tpacket_auxdata {
     __u32 tp_status;
     __u32 tp_len;      /* packet length */
     __u32 tp_snaplen;  /* captured length */
@@ -204,98 +161,83 @@
     __u16 tp_net;
     __u16 tp_vlan_tci;
     __u16 tp_padding;
-};</pre>
+};
+</pre>
 
-    </dd>
-    <dt><strong>PACKET_FANOUT</strong> (since Linux 3.1)</dt>
-    <dd>
-  <p>To scale processing across threads, packet sockets can form a fanout group. In this mode, each matching packet is enqueued onto only one socket in the group. A socket joins a fanout group by calling <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> with level <strong>SOL_PACKET</strong> and option <strong>PACKET_FANOUT</strong>. Each network namespace can have up to 65536 independent groups. A socket selects a group by encoding the ID in the first 16 bits of the integer option value. The first packet socket to join a group implicitly creates it. To successfully join an existing group, subsequent packet sockets must have the same protocol, device settings, fanout mode and flags (see below). Packet sockets can leave a fanout group only by closing the socket. The group is deleted when the last socket is closed.</p>
-<p class='spacer'>
-
-      <p>Fanout supports multiple algorithms to spread traffic between sockets, as follows:</p>
-      <dl class='dl-horizontal'>
-        <dt>*</dt>
-        <dd>
-      <p>The default mode, <strong>PACKET_FANOUT_HASH</strong>, sends packets from the same flow to the same socket to maintain per-flow ordering. For each packet, it chooses a socket by taking the packet flow hash modulo the number of sockets in the group, where a flow hash is a hash over network-layer address and optional transport-layer port fields.</p>
-        </dd>
-        <dt>*</dt>
-        <dd>
-      <p>The load-balance mode <strong>PACKET_FANOUT_LB</strong> implements a round-robin algorithm.</p>
-        </dd>
-        <dt>*</dt>
-        <dd>
-      <p><strong>PACKET_FANOUT_CPU</strong> selects the socket based on the CPU that the packet arrived on.</p>
-        </dd>
-        <dt>*</dt>
-        <dd>
-      <p><strong>PACKET_FANOUT_ROLLOVER</strong> processes all data on a single socket, moving to the next when one becomes backlogged.</p>
-        </dd>
-        <dt>*</dt>
-        <dd>
-      <p><strong>PACKET_FANOUT_RND</strong> selects the socket using a pseudo-random number generator.</p>
-        </dd>
-        <dt>*</dt>
-        <dd>
-      <p><strong>PACKET_FANOUT_QM</strong> (available since Linux 3.14) selects the socket using the recorded queue_mapping of the received skb.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
-
-  <p>Fanout modes can take additional options. IP fragmentation causes packets from the same flow to have different flow hashes. The flag <strong>PACKET_FANOUT_FLAG_DEFRAG</strong>, if set, causes packets to be defragmented before fanout is applied, to preserve order even in this case. Fanout mode and options are communicated in the second 16 bits of the integer option value. The flag <strong>PACKET_FANOUT_FLAG_ROLLOVER</strong> enables the roll over mechanism as a backup strategy: if the original fanout algorithm selects a backlogged socket, the packet rolls over to the next available one.</p>
-    </dd>
-    <dt><strong>PACKET_LOSS</strong> (with <strong>PACKET_TX_RING</strong>)</dt>
-    <dd>
-  <p>When a malformed packet is encountered on a transmit ring, the default is to reset its <em>tp_status</em> to <strong>TP_STATUS_WRONG_FORMAT</strong> and abort the transmission immediately. The malformed packet blocks itself and subsequently enqueued packets from being sent. The format error must be fixed, the associated <em>tp_status</em> reset to <strong>TP_STATUS_SEND_REQUEST</strong>, and the transmission process restarted via <a href="../man2/send.2.html"><strong>send</strong>(2)</a>. However, if <strong>PACKET_LOSS</strong> is set, any malformed packet will be skipped, its <em>tp_status</em> reset to <strong>TP_STATUS_AVAILABLE</strong>, and the transmission process continued.</p>
-    </dd>
-    <dt><strong>PACKET_RESERVE</strong> (with <strong>PACKET_RX_RING</strong>)</dt>
-    <dd>
-  <p>By default, a packet receive ring writes packets immediately following the metadata structure and alignment padding. This integer option reserves additional headroom.</p>
-    </dd>
-    <dt><strong>PACKET_RX_RING</strong></dt>
-    <dd>
-  <p>Create a memory-mapped ring buffer for asynchronous packet reception. The packet socket reserves a contiguous region of application address space, lays it out into an array of packet slots and copies packets (up to <em>tp_snaplen</em>) into subsequent slots. Each packet is preceded by a metadata structure similar to <em>tpacket_auxdata</em>. The protocol fields encode the offset to the data from the start of the metadata header. <em>tp_net</em> stores the offset to the network layer. If the packet socket is of type <strong>SOCK_DGRAM</strong>, then <em>tp_mac</em> is the same. If it is of type <strong>SOCK_RAW</strong>, then that field stores the offset to the link-layer frame. Packet socket and application communicate the head and tail of the ring through the <em>tp_status</em> field. The packet socket owns all slots with <em>tp_status</em> equal to <strong>TP_STATUS_KERNEL</strong>. After filling a slot, it changes the status of the slot to transfer ownership to the application. During normal operation, the new <em>tp_status</em> value has at least the <strong>TP_STATUS_USER</strong> bit set to signal that a received packet has been stored. When the application has finished processing a packet, it transfers ownership of the slot back to the socket by setting <em>tp_status</em> equal to <strong>TP_STATUS_KERNEL</strong>.</p>
-<p class='spacer'>
-
-  <p>Packet sockets implement multiple variants of the packet ring. The implementation details are described in <em>Documentation/networking/packet_mmap.txt</em> in the Linux kernel source tree.</p>
-    </dd>
-    <dt><strong>PACKET_STATISTICS</strong></dt>
-    <dd>
-  <p>Retrieve packet socket statistics in the form of a structure</p>
-<p class='spacer'>
-
-<pre>struct tpacket_stats {
+  </dd>
+  <dt>
+    <p><strong>PACKET_FANOUT</strong> (since Linux 3.1)</p>
+  </dt>
+  <dd>
+    <p>To scale processing across threads, packet sockets can form a fanout group. In this mode, each matching packet is enqueued onto only one socket in the group. A socket joins a fanout group by calling <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> with level <strong>SOL_PACKET</strong> and option <strong>PACKET_FANOUT</strong>. Each network namespace can have up to 65536 independent groups. A socket selects a group by encoding the ID in the first 16 bits of the integer option value. The first packet socket to join a group implicitly creates it. To successfully join an existing group, subsequent packet sockets must have the same protocol, device settings, fanout mode and flags (see below). Packet sockets can leave a fanout group only by closing the socket. The group is deleted when the last socket is closed.</p><p>Fanout supports multiple algorithms to spread traffic between sockets, as follows:</p><ul>
+<li><p>The default mode, <strong>PACKET_FANOUT_HASH</strong>, sends packets from the same flow to the same socket to maintain per-flow ordering. For each packet, it chooses a socket by taking the packet flow hash modulo the number of sockets in the group, where a flow hash is a hash over network-layer address and optional transport-layer port fields.</p></li><li><p>The load-balance mode <strong>PACKET_FANOUT_LB</strong> implements a round-robin algorithm.</p></li><li><p><strong>PACKET_FANOUT_CPU</strong> selects the socket based on the CPU that the packet arrived on.</p></li><li><p><strong>PACKET_FANOUT_ROLLOVER</strong> processes all data on a single socket, moving to the next when one becomes backlogged.</p></li><li><p><strong>PACKET_FANOUT_RND</strong> selects the socket using a pseudo-random number generator.</p></li><li><p><strong>PACKET_FANOUT_QM</strong> (available since Linux 3.14) selects the socket using the recorded queue_mapping of the received skb.</p></li>
+</ul><ul>
+<li><p>Fanout modes can take additional options. IP fragmentation causes packets from the same flow to have different flow hashes. The flag <strong>PACKET_FANOUT_FLAG_DEFRAG</strong>, if set, causes packets to be defragmented before fanout is applied, to preserve order even in this case. Fanout mode and options are communicated in the second 16 bits of the integer option value. The flag <strong>PACKET_FANOUT_FLAG_ROLLOVER</strong> enables the roll over mechanism as a backup strategy: if the original fanout algorithm selects a backlogged socket, the packet rolls over to the next available one.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>PACKET_LOSS</strong> (with <strong>PACKET_TX_RING</strong>)</p>
+  </dt>
+  <dd>
+    <p>When a malformed packet is encountered on a transmit ring, the default is to reset its <em>tp_status</em> to <strong>TP_STATUS_WRONG_FORMAT</strong> and abort the transmission immediately. The malformed packet blocks itself and subsequently enqueued packets from being sent. The format error must be fixed, the associated <em>tp_status</em> reset to <strong>TP_STATUS_SEND_REQUEST</strong>, and the transmission process restarted via <a href="../man2/send.2.html"><strong>send</strong>(2)</a>. However, if <strong>PACKET_LOSS</strong> is set, any malformed packet will be skipped, its <em>tp_status</em> reset to <strong>TP_STATUS_AVAILABLE</strong>, and the transmission process continued.</p>
+  </dd>
+  <dt>
+    <p><strong>PACKET_RESERVE</strong> (with <strong>PACKET_RX_RING</strong>)</p>
+  </dt>
+  <dd>
+    <p>By default, a packet receive ring writes packets immediately following the metadata structure and alignment padding. This integer option reserves additional headroom.</p>
+  </dd>
+  <dt>
+    <p><strong>PACKET_RX_RING</strong></p>
+  </dt>
+  <dd>
+    <p>Create a memory-mapped ring buffer for asynchronous packet reception. The packet socket reserves a contiguous region of application address space, lays it out into an array of packet slots and copies packets (up to <em>tp_snaplen</em>) into subsequent slots. Each packet is preceded by a metadata structure similar to <em>tpacket_auxdata</em>. The protocol fields encode the offset to the data from the start of the metadata header. <em>tp_net</em> stores the offset to the network layer. If the packet socket is of type <strong>SOCK_DGRAM</strong>, then <em>tp_mac</em> is the same. If it is of type <strong>SOCK_RAW</strong>, then that field stores the offset to the link-layer frame. Packet socket and application communicate the head and tail of the ring through the <em>tp_status</em> field. The packet socket owns all slots with <em>tp_status</em> equal to <strong>TP_STATUS_KERNEL</strong>. After filling a slot, it changes the status of the slot to transfer ownership to the application. During normal operation, the new <em>tp_status</em> value has at least the <strong>TP_STATUS_USER</strong> bit set to signal that a received packet has been stored. When the application has finished processing a packet, it transfers ownership of the slot back to the socket by setting <em>tp_status</em> equal to <strong>TP_STATUS_KERNEL</strong>.</p><p>Packet sockets implement multiple variants of the packet ring. The implementation details are described in <em>Documentation/networking/packet_mmap.txt</em> in the Linux kernel source tree.</p>
+  </dd>
+  <dt>
+    <p><strong>PACKET_STATISTICS</strong></p>
+  </dt>
+  <dd>
+    <p>Retrieve packet socket statistics in the form of a structure</p>
+<pre>
+struct tpacket_stats {
     unsigned int tp_packets;  /* Total packet count */
     unsigned int tp_drops;    /* Dropped packet count */
-};</pre>
+};
+</pre>
+<p>Receiving statistics resets the internal counters. The statistics structure differs when using a ring of variant <strong>TPACKET_V3</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>PACKET_TIMESTAMP</strong> (with <strong>PACKET_RX_RING</strong>; since Linux 2.6.36)</p>
+  </dt>
+  <dd>
+    <p>The packet receive ring always stores a timestamp in the metadata header. By default, this is a software generated timestamp generated when the packet is copied into the ring. This integer option selects the type of timestamp. Besides the default, it support the two hardware formats described in <em>Documentation/networking/timestamping.txt</em> in the Linux kernel source tree.</p>
+  </dd>
+  <dt>
+    <p><strong>PACKET_TX_RING</strong> (since Linux 2.6.31)</p>
+  </dt>
+  <dd>
+    <p>Create a memory-mapped ring buffer for packet transmission. This option is similar to <strong>PACKET_RX_RING</strong> and takes the same arguments. The application writes packets into slots with <em>tp_status</em> equal to <strong>TP_STATUS_AVAILABLE</strong> and schedules them for transmission by changing <em>tp_status</em> to <strong>TP_STATUS_SEND_REQUEST</strong>. When packets are ready to be transmitted, the application calls <a href="../man2/send.2.html"><strong>send</strong>(2)</a> or a variant thereof. The <em>buf</em> and <em>len</em> fields of this call are ignored. If an address is passed using <a href="../man2/sendto.2.html"><strong>sendto</strong>(2)</a> or <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a>, then that overrides the socket default. On successful transmission, the socket resets <em>tp_status</em> to <strong>TP_STATUS_AVAILABLE</strong>. It immediately aborts the transmission on error unless <strong>PACKET_LOSS</strong> is set.</p>
+  </dd>
+  <dt>
+    <p><strong>PACKET_VERSION</strong> (with <strong>PACKET_RX_RING</strong>; since Linux 2.6.27)</p>
+  </dt>
+  <dd>
+    <p>By default, <strong>PACKET_RX_RING</strong> creates a packet receive ring of variant <strong>TPACKET_V1</strong>. To create another variant, configure the desired variant by setting this integer option before creating the ring.</p>
+  </dd>
+  <dt>
+    <p><strong>PACKET_QDISC_BYPASS</strong> (since Linux 3.14)</p>
+  </dt>
+  <dd>
+    <p>By default, packets sent through packet sockets pass through the kernel's qdisc (traffic control) layer, which is fine for the vast majority of use cases. For traffic generator appliances using packet sockets that intend to brute-force flood the network&ndash;for example, to test devices under load in a similar fashion to pktgen&ndash;this layer can be bypassed by setting this integer option to 1. A side effect is that packet buffering in the qdisc layer is avoided, which will lead to increased drops when network device transmit queues are busy; therefore, use at your own risk.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <p>Receiving statistics resets the internal counters. The statistics structure differs when using a ring of variant <strong>TPACKET_V3</strong>.</p>
-    </dd>
-    <dt><strong>PACKET_TIMESTAMP</strong> (with <strong>PACKET_RX_RING</strong>; since Linux 2.6.36)</dt>
-    <dd>
-  <p>The packet receive ring always stores a timestamp in the metadata header. By default, this is a software generated timestamp generated when the packet is copied into the ring. This integer option selects the type of timestamp. Besides the default, it support the two hardware formats described in <em>Documentation/networking/timestamping.txt</em> in the Linux kernel source tree.</p>
-    </dd>
-    <dt><strong>PACKET_TX_RING</strong> (since Linux 2.6.31)</dt>
-    <dd>
-  <p>Create a memory-mapped ring buffer for packet transmission. This option is similar to <strong>PACKET_RX_RING</strong> and takes the same arguments. The application writes packets into slots with <em>tp_status</em> equal to <strong>TP_STATUS_AVAILABLE</strong> and schedules them for transmission by changing <em>tp_status</em> to <strong>TP_STATUS_SEND_REQUEST</strong>. When packets are ready to be transmitted, the application calls <a href="../man2/send.2.html"><strong>send</strong>(2)</a> or a variant thereof. The <em>buf</em> and <em>len</em> fields of this call are ignored. If an address is passed using <a href="../man2/sendto.2.html"><strong>sendto</strong>(2)</a> or <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a>, then that overrides the socket default. On successful transmission, the socket resets <em>tp_status</em> to <strong>TP_STATUS_AVAILABLE</strong>. It immediately aborts the transmission on error unless <strong>PACKET_LOSS</strong> is set.</p>
-    </dd>
-    <dt><strong>PACKET_VERSION</strong> (with <strong>PACKET_RX_RING</strong>; since Linux 2.6.27)</dt>
-    <dd>
-  <p>By default, <strong>PACKET_RX_RING</strong> creates a packet receive ring of variant <strong>TPACKET_V1</strong>. To create another variant, configure the desired variant by setting this integer option before creating the ring.</p>
-    </dd>
-    <dt><strong>PACKET_QDISC_BYPASS</strong> (since Linux 3.14)</dt>
-    <dd>
-  <p>By default, packets sent through packet sockets pass through the kernel's qdisc (traffic control) layer, which is fine for the vast majority of use cases. For traffic generator appliances using packet sockets that intend to brute-force flood the network&ndash;for example, to test devices under load in a similar fashion to pktgen&ndash;this layer can be bypassed by setting this integer option to 1. A side effect is that packet buffering in the qdisc layer is avoided, which will lead to increased drops when network device transmit queues are busy; therefore, use at your own risk.</p>
-    </dd>
-  </dl>
-  <h3>Ioctls</h3>
-<p><strong>SIOCGSTAMP</strong> can be used to receive the timestamp of the last received packet. Argument is a <em>struct timeval</em> variable.</p>
-<p class='spacer'>
-
-<p>In addition, all standard ioctls defined in <a href="../man7/netdevice.7.html"><strong>netdevice</strong>(7)</a> and <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a> are valid on packet sockets.</p>
-  <h3>Error handling</h3>
+<h3>Ioctls</h3>
+<p><strong>SIOCGSTAMP</strong> can be used to receive the timestamp of the last received packet. Argument is a <em>struct timeval</em> variable.</p><p>In addition, all standard ioctls defined in <a href="../man7/netdevice.7.html"><strong>netdevice</strong>(7)</a> and <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a> are valid on packet sockets.</p>
+<h3>Error handling</h3>
 <p>Packet sockets do no error handling other than errors occurred while passing the packet to the device driver. They don't have the concept of a pending error.</p>
+
         </div>
       </section>
 
@@ -303,54 +245,75 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EADDRNOTAVAIL</strong></dt>
-    <dd>
-  <p>Unknown multicast group address passed.</p>
-    </dd>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p>User passed invalid memory address.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>Invalid argument.</p>
-    </dd>
-    <dt><strong>EMSGSIZE</strong></dt>
-    <dd>
-  <p>Packet is bigger than interface MTU.</p>
-    </dd>
-    <dt><strong>ENETDOWN</strong></dt>
-    <dd>
-  <p>Interface is not up.</p>
-    </dd>
-    <dt><strong>ENOBUFS</strong></dt>
-    <dd>
-  <p>Not enough memory to allocate the packet.</p>
-    </dd>
-    <dt><strong>ENODEV</strong></dt>
-    <dd>
-  <p>Unknown device name or interface index specified in interface address.</p>
-    </dd>
-    <dt><strong>ENOENT</strong></dt>
-    <dd>
-  <p>No packet received.</p>
-    </dd>
-    <dt><strong>ENOTCONN</strong></dt>
-    <dd>
-  <p>No interface address passed.</p>
-    </dd>
-    <dt><strong>ENXIO</strong></dt>
-    <dd>
-  <p>Interface address contained an invalid interface index.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>User has insufficient privileges to carry out this operation.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EADDRNOTAVAIL</strong></p>
+  </dt>
+  <dd>
+    <p>Unknown multicast group address passed.</p>
+  </dd>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p>User passed invalid memory address.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>Invalid argument.</p>
+  </dd>
+  <dt>
+    <p><strong>EMSGSIZE</strong></p>
+  </dt>
+  <dd>
+    <p>Packet is bigger than interface MTU.</p>
+  </dd>
+  <dt>
+    <p><strong>ENETDOWN</strong></p>
+  </dt>
+  <dd>
+    <p>Interface is not up.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOBUFS</strong></p>
+  </dt>
+  <dd>
+    <p>Not enough memory to allocate the packet.</p>
+  </dd>
+  <dt>
+    <p><strong>ENODEV</strong></p>
+  </dt>
+  <dd>
+    <p>Unknown device name or interface index specified in interface address.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOENT</strong></p>
+  </dt>
+  <dd>
+    <p>No packet received.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTCONN</strong></p>
+  </dt>
+  <dd>
+    <p>No interface address passed.</p>
+  </dd>
+  <dt>
+    <p><strong>ENXIO</strong></p>
+  </dt>
+  <dd>
+    <p>Interface address contained an invalid interface index.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>User has insufficient privileges to carry out this operation.</p>
+  </dd>
 
+</dl>
 <p>In addition, other errors may be generated by the low-level driver.</p>
         </div>
       </section>
@@ -358,81 +321,44 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p><strong>AF_PACKET</strong> is a new feature in Linux 2.2. Earlier Linux versions supported only <strong>SOCK_PACKET</strong>.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>For portable programs it is suggested to use <strong>AF_PACKET</strong> via <strong>pcap</strong>(3); although this covers only a subset of the <strong>AF_PACKET</strong> features.</p>
-<p class='spacer'>
-
-<p>The <strong>SOCK_DGRAM</strong> packet sockets make no attempt to create or parse the IEEE 802.2 LLC header for a IEEE 802.3 frame. When <strong>ETH_P_802_3</strong> is specified as protocol for sending the kernel creates the 802.3 frame and fills out the length field; the user has to supply the LLC header to get a fully conforming packet. Incoming 802.3 packets are not multiplexed on the DSAP/SSAP protocol fields; instead they are supplied to the user as protocol <strong>ETH_P_802_2</strong> with the LLC header prefixed. It is thus not possible to bind to <strong>ETH_P_802_3</strong>; bind to <strong>ETH_P_802_2</strong> instead and do the protocol multiplex yourself. The default for sending is the standard Ethernet DIX encapsulation with the protocol filled in.</p>
-<p class='spacer'>
-
-<p>Packet sockets are not subject to the input or output firewall chains.</p>
-  <h3>Compatibility</h3>
+<p>For portable programs it is suggested to use <strong>AF_PACKET</strong> via <strong>pcap</strong>(3); although this covers only a subset of the <strong>AF_PACKET</strong> features.</p><p>The <strong>SOCK_DGRAM</strong> packet sockets make no attempt to create or parse the IEEE 802.2 LLC header for a IEEE 802.3 frame. When <strong>ETH_P_802_3</strong> is specified as protocol for sending the kernel creates the 802.3 frame and fills out the length field; the user has to supply the LLC header to get a fully conforming packet. Incoming 802.3 packets are not multiplexed on the DSAP/SSAP protocol fields; instead they are supplied to the user as protocol <strong>ETH_P_802_2</strong> with the LLC header prefixed. It is thus not possible to bind to <strong>ETH_P_802_3</strong>; bind to <strong>ETH_P_802_2</strong> instead and do the protocol multiplex yourself. The default for sending is the standard Ethernet DIX encapsulation with the protocol filled in.</p><p>Packet sockets are not subject to the input or output firewall chains.</p><h3>Compatibility</h3>
 <p>In Linux 2.0, the only way to get a packet socket was with the call:</p>
-<p class='spacer'>
-
-<pre>    socket(AF_INET, SOCK_PACKET, protocol)</pre>
-
-<p class='spacer'>
-
+<pre>
+    socket(AF_INET, SOCK_PACKET, protocol)
+</pre>
 <p>This is still supported, but deprecated and strongly discouraged. The main difference between the two methods is that <strong>SOCK_PACKET</strong> uses the old <em>struct sockaddr_pkt</em> to specify an interface, which doesn't provide physical-layer independence.</p>
-<p class='spacer'>
-
-<pre>struct sockaddr_pkt {
+<pre>
+struct sockaddr_pkt {
     unsigned short spkt_family;
     unsigned char  spkt_device[14];
     unsigned short spkt_protocol;
-};</pre>
+};
+</pre>
+<p><em>spkt_family</em> contains the device type, <em>spkt_protocol</em> is the IEEE 802.3 protocol type as defined in <em><sys/if_ether.h></em> and <em>spkt_device</em> is the device name as a null-terminated string, for example, eth0.</p><p>This structure is obsolete and should not be used in new code.</p>
 
-<p class='spacer'>
-
-<p><em>spkt_family</em> contains the device type, <em>spkt_protocol</em> is the IEEE 802.3 protocol type as defined in <em>&lt;sys/if_ether.h&gt;</em> and <em>spkt_device</em> is the device name as a null-terminated string, for example, eth0.</p>
-<p class='spacer'>
-
-<p>This structure is obsolete and should not be used in new code.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
-<p>The IEEE 802.2/803.3 LLC handling could be considered as a bug.</p>
-<p class='spacer'>
-
-<p>Socket filters are not documented.</p>
-<p class='spacer'>
-
-<p>The <strong>MSG_TRUNC</strong> <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> extension is an ugly hack and should be replaced by a control message. There is currently no way to get the original destination address of packets via <strong>SOCK_DGRAM</strong>.</p>
+<p>The IEEE 802.2/803.3 LLC handling could be considered as a bug.</p><p>Socket filters are not documented.</p><p>The <strong>MSG_TRUNC</strong> <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> extension is an ugly hack and should be replaced by a control message. There is currently no way to get the original destination address of packets via <strong>SOCK_DGRAM</strong>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO packet&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <strong>pcap</strong>(3), <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <strong>ip</strong>(7), <a href="../man7/raw.7.html"><strong>raw</strong>(7)</a>, <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a></p>
-<p class='spacer'>
-
-<p>RFC&nbsp;894 for the standard IP Ethernet encapsulation. RFC&nbsp;1700 for the IEEE 802.3 IP encapsulation.</p>
-<p class='spacer'>
-
-<p>The <em>&lt;linux/if_ether.h&gt;</em> include file for physical-layer protocols.</p>
-<p class='spacer'>
-
-<p>The Linux kernel source tree. <em>/Documentation/networking/filter.txt</em> describes how to apply Berkeley Packet Filters to packet sockets. <em>/tools/testing/selftests/net/psock_tpacket.c</em> contains example source code for all available versions of <strong>PACKET_RX_RING</strong> and <strong>PACKET_TX_RING</strong>.</p>
+<p><a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <strong>pcap</strong>(3), <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <strong>ip</strong>(7), <a href="../man7/raw.7.html"><strong>raw</strong>(7)</a>, <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a></p><p>RFC&nbsp;894 for the standard IP Ethernet encapsulation. RFC&nbsp;1700 for the IEEE 802.3 IP encapsulation.</p><p>The <em><linux/if_ether.h></em> include file for physical-layer protocols.</p><p>The Linux kernel source tree. <em>/Documentation/networking/filter.txt</em> describes how to apply Berkeley Packet Filters to packet sockets. <em>/tools/testing/selftests/net/psock_tpacket.c</em> contains example source code for all available versions of <strong>PACKET_RX_RING</strong> and <strong>PACKET_TX_RING</strong>.</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="operator.7.html"><span aria-hidden="true">&larr;</span> operator.7: C operator precedence and order of evaluation</a></li>

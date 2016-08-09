@@ -91,7 +91,8 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre>#include &lt;asm/types.h&gt;
+<pre>
+#include &lt;asm/types.h&gt;
 
 #include &lt;libnetlink.h&gt;
 
@@ -135,7 +136,8 @@ int addattr_l(struct nlmsghdr *n, int maxlen, int type, void *data, int alen)
 
 int rta_addattr32(struct rtattr *rta, int maxlen, int type, __u32 data)
 
-int rta_addattr_l(struct rtattr *rta, int maxlen, int type, void *data, int alen)</pre>
+int rta_addattr_l(struct rtattr *rta, int maxlen, int type, void *data, int alen)
+</pre>
 
         </div>
       </section>
@@ -143,122 +145,108 @@ int rta_addattr_l(struct rtattr *rta, int maxlen, int type, void *data, int alen
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>libnetlink provides a higher level interface to <a href="../man7/rtnetlink.7.html"><strong>rtnetlink</strong>(7)</a>.</strong> The read functions return 0 on success and a negative errno on failure. The send functions return the amount of data sent, or -1 on error.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>rtnl_open</p>
+  </dt>
+  <dd>
+    <p>Open a rtnetlink socket and save the state into the <strong>rth</strong> handle. This handle is passed to all subsequent calls. <strong>subscriptions</strong> is a bitmap of the rtnetlink multicast groups the socket will be a member of.</p>
+  </dd>
+  <dt>
+    <p>rtnl_wilddump_request</p>
+  </dt>
+  <dd>
+    <p>Request a full dump of the <strong>type</strong> database for <strong>family</strong> addresses. <strong>type</strong> is a rtnetlink message type.</p>
+  </dd>
+  <dt>
+    <p>rtnl_dump_request</p>
+  </dt>
+  <dd>
+    <p>Request a full dump of the <strong>type</strong> data buffer into <strong>buf</strong> with maximum length of <strong>len.</strong> <strong>type</strong> is a rtnetlink message type.</p>
+  </dd>
+  <dt>
+    <p>rtnl_dump_filter</p>
+  </dt>
+  <dd>
+    <p>Receive netlink data after a request and filter it. The <strong>filter</strong> callback checks if the received message is wanted. It gets the source address of the message, the message itself and <strong>arg1</strong> as arguments. 0 as return means that the filter passed, a negative value is returned by <em>rtnl_dump_filter</em> in case of error. NULL for <em>filter</em> means to not use a filter. <strong>junk</strong> is used to filter messages not destined to the local socket. Only one message bundle is received. If there is a message pending, this function does not block.</p>
+  </dd>
+  <dt>
+    <p>rtnl_listen</p>
+  </dt>
+  <dd>
+    <p>Receive netlink data after a request and pass it to <em>handler.</em> <strong>handler</strong> is a callback that gets the message source address, anscillary data, the message itself, and the <strong>jarg</strong> cookie as arguments. It will get called for all received messages. Only one message bundle is received. If there is a message pending this function does not block.</p>
+  </dd>
+  <dt>
+    <p>rtnl_from_file</p>
+  </dt>
+  <dd>
+    <p>Works like <em>rtnl_listen,</em> but reads a netlink message bundle from the file <strong>file</strong> and passes the messages to <strong>handler</strong> for parsing. The file should contain raw data as received from a rtnetlink socket.</p>
+  </dd>
 
-  <p>libnetlink provides a higher level interface to <a href="../man7/rtnetlink.7.html"><strong>rtnetlink</strong>(7)</a>.</strong> The read functions return 0 on success and a negative errno on failure. The send functions return the amount of data sent, or -1 on error.</p>
-  <dl class='dl-vertical'>
-    <dt>rtnl_open</dt>
-    <dd>
-  <p>Open a rtnetlink socket and save the state into the <strong>rth</strong> handle. This handle is passed to all subsequent calls. <strong>subscriptions</strong> is a bitmap of the rtnetlink multicast groups the socket will be a member of.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>rtnl_wilddump_request</dt>
-    <dd>
-  <p>Request a full dump of the <strong>type</strong> database for <strong>family</strong> addresses. <strong>type</strong> is a rtnetlink message type.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>rtnl_dump_request</dt>
-    <dd>
-  <p>Request a full dump of the <strong>type</strong> data buffer into <strong>buf</strong> with maximum length of <strong>len.</strong> <strong>type</strong> is a rtnetlink message type.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>rtnl_dump_filter</dt>
-    <dd>
-  <p>Receive netlink data after a request and filter it. The <strong>filter</strong> callback checks if the received message is wanted. It gets the source address of the message, the message itself and <strong>arg1</strong> as arguments. 0 as return means that the filter passed, a negative value is returned by <em>rtnl_dump_filter</em> in case of error. NULL for <em>filter</em> means to not use a filter. <strong>junk</strong> is used to filter messages not destined to the local socket. Only one message bundle is received. If there is a message pending, this function does not block.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>rtnl_listen</dt>
-    <dd>
-  <p>Receive netlink data after a request and pass it to <em>handler.</em> <strong>handler</strong> is a callback that gets the message source address, anscillary data, the message itself, and the <strong>jarg</strong> cookie as arguments. It will get called for all received messages. Only one message bundle is received. If there is a message pending this function does not block.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>rtnl_from_file</dt>
-    <dd>
-  <p>Works like <em>rtnl_listen,</em> but reads a netlink message bundle from the file <strong>file</strong> and passes the messages to <strong>handler</strong> for parsing. The file should contain raw data as received from a rtnetlink socket.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The following functions are useful to construct custom rtnetlink messages. For simple database dumping with filtering it is better to use the higher level functions above. See <a href="../man3/rtnetlink.3.html"><strong>rtnetlink</strong>(3)</a></strong> and <a href="../man3/netlink.3.html"><strong>netlink</strong>(3)</a></strong> on how to generate a rtnetlink message. The following utility functions require a continuous buffer that already contains a netlink message header and a rtnetlink request.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p>rtnl_send</p>
+  </dt>
+  <dd>
+    <p>Send the rtnetlink message in <strong>buf</strong> of length <strong>len</strong> to handle <strong>rth.</strong></p>
+  </dd>
+  <dt>
+    <p>addattr32</p>
+  </dt>
+  <dd>
+    <p>Add a __u32 attribute of type <strong>type</strong> and with value <strong>data</strong> to netlink message <strong>n,</strong> which is part of a buffer of length <strong>maxlen.</strong></p>
+  </dd>
+  <dt>
+    <p>addattr_l</p>
+  </dt>
+  <dd>
+    <p>Add a variable length attribute of type <strong>type</strong> and with value <strong>data</strong> and <strong>alen</strong> length to netlink message <strong>n,</strong> which is part of a buffer of length <strong>maxlen.</strong> <strong>data</strong> is copied.</p>
+  </dd>
+  <dt>
+    <p>rta_addattr32</p>
+  </dt>
+  <dd>
+    <p>Initialize the rtnetlink attribute <strong>rta</strong> with a __u32 data value.</p>
+  </dd>
+  <dt>
+    <p>rta_addattr32</p>
+  </dt>
+  <dd>
+    <p>Initialize the rtnetlink attribute <strong>rta</strong> with a variable length data value.</p>
+  </dd>
 
-  <dl class='dl-vertical'>
-    <dt>rtnl_send</dt>
-    <dd>
-  <p>Send the rtnetlink message in <strong>buf</strong> of length <strong>len</strong> to handle <strong>rth.</strong></p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-    <dt>addattr32</dt>
-    <dd>
-  <p>Add a __u32 attribute of type <strong>type</strong> and with value <strong>data</strong> to netlink message <strong>n,</strong> which is part of a buffer of length <strong>maxlen.</strong></p>
-<p class='spacer'>
-
-    </dd>
-    <dt>addattr_l</dt>
-    <dd>
-  <p>Add a variable length attribute of type <strong>type</strong> and with value <strong>data</strong> and <strong>alen</strong> length to netlink message <strong>n,</strong> which is part of a buffer of length <strong>maxlen.</strong> <strong>data</strong> is copied.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>rta_addattr32</dt>
-    <dd>
-  <p>Initialize the rtnetlink attribute <strong>rta</strong> with a __u32 data value.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>rta_addattr32</dt>
-    <dd>
-  <p>Initialize the rtnetlink attribute <strong>rta</strong> with a variable length data value.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
-<p>This library is meant for internal use, use libmnl for new programs.</p>
-<p class='spacer'>
-
-<p>The functions sometimes use fprintf and exit when a fatal error occurs. This library should be named librtnetlink.</p>
-<p class='spacer'>
-
+<p>This library is meant for internal use, use libmnl for new programs.</p><p>The functions sometimes use fprintf and exit when a fatal error occurs. This library should be named librtnetlink.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
-
 <p>netlink/rtnetlink was designed and written by Alexey Kuznetsov. Andi Kleen wrote the man page.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO libnetlink&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man7/netlink.7.html"><strong>netlink</strong>(7)</a>,</strong> <a href="../man7/rtnetlink.7.html"><strong>rtnetlink</strong>(7)</a></strong></p>
-<p class='spacer'>
-
-<p>/usr/include/linux/rtnetlink.h</p>
+<p><a href="../man7/netlink.7.html"><strong>netlink</strong>(7)</a>,</strong> <a href="../man7/rtnetlink.7.html"><strong>rtnetlink</strong>(7)</a></strong></p><p>/usr/include/linux/rtnetlink.h</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="libcap.3.html"><span aria-hidden="true">&larr;</span> libcap.3: Capability data object manipulation</a></li>
-   <li class="next"><a href="libpfm_amd64.3.html">libpfm_amd64.3: Support for amd64 processors <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="libpfm.3.html">libpfm.3: A helper library to develop monitoring tools <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

@@ -91,8 +91,10 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;linux/hdreg.h&gt;        </strong>/* for HDIO_GETGEO */
-<strong>#include &lt;linux/fs.h&gt;           </strong>/* for BLKGETSIZE and BLKRRPART */</pre>
+<pre>
+<strong>#include <linux/hdreg.h>        </strong>/* for HDIO_GETGEO */
+<strong>#include <linux/fs.h>           </strong>/* for BLKGETSIZE and BLKRRPART */
+</pre>
 
         </div>
       </section>
@@ -100,76 +102,53 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFIGURATION</h2>
         <div class="sectioncontent">
-
-<p>The block device name has the following form: <strong>sd</strong><em>lp,</em> where <em>l</em> is a letter denoting the physical drive, and <em>p</em> is a number denoting the partition on that physical drive. Often, the partition number, <em>p</em>, will be left off when the device corresponds to the whole drive.</p>
-<p class='spacer'>
-
-<p>SCSI disks have a major device number of 8, and a minor device number of the form (16 * <em>drive_number</em>) + <em>partition_number</em>, where <em>drive_number</em> is the number of the physical drive in order of detection, and <em>partition_number</em> is as follows:</p>
-<p class='spacer'>
-
-<p>partition 0 is the whole drive</p>
-<p class='spacer'>
-
-<p>partitions 1-4 are the DOS "primary" partitions</p>
-<p class='spacer'>
-
-<p>partitions 5-8 are the DOS "extended" (or "logical") partitions</p>
-<p class='spacer'>
-
-<p>For example, <em>/dev/sda</em> will have major 8, minor 0, and will refer to all of the first SCSI drive in the system; and <em>/dev/sdb3</em> will have major 8, minor 19, and will refer to the third DOS "primary" partition on the second SCSI drive in the system.</p>
-<p class='spacer'>
-
-<p>At this time, only block devices are provided. Raw devices have not yet been implemented.</p>
+<p>The block device name has the following form: <strong>sd</strong><em>lp,</em> where <em>l</em> is a letter denoting the physical drive, and <em>p</em> is a number denoting the partition on that physical drive. Often, the partition number, <em>p</em>, will be left off when the device corresponds to the whole drive.</p><p>SCSI disks have a major device number of 8, and a minor device number of the form (16 * <em>drive_number</em>) + <em>partition_number</em>, where <em>drive_number</em> is the number of the physical drive in order of detection, and <em>partition_number</em> is as follows:</p><p>partition 0 is the whole drive</p><p>partitions 1-4 are the DOS "primary" partitions</p><p>partitions 5-8 are the DOS "extended" (or "logical") partitions</p><p>For example, <em>/dev/sda</em> will have major 8, minor 0, and will refer to all of the first SCSI drive in the system; and <em>/dev/sdb3</em> will have major 8, minor 19, and will refer to the third DOS "primary" partition on the second SCSI drive in the system.</p><p>At this time, only block devices are provided. Raw devices have not yet been implemented.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-  <p>The following <em>ioctl</em>s are provided:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>HDIO_GETGEO</strong></dt>
-    <dd>
-      <p>Returns the BIOS disk parameters in the following structure:</p>
+<p>The following <em>ioctl</em>s are provided:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>HDIO_GETGEO</strong></p>
+  </dt>
+  <dd>
+    <p>Returns the BIOS disk parameters in the following structure:</p>
 <pre>
+
 struct hd_geometry {
     unsigned char  heads;
     unsigned char  sectors;
     unsigned short cylinders;
     unsigned long  start;
-};</pre>
+};
+</pre>
+<p>A pointer to this structure is passed as the <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> parameter.</p><p>The information returned in the parameter is the disk geometry of the drive <em>as understood by DOS!</em> This geometry is <em>not</em> the physical geometry of the drive. It is used when constructing the drive's partition table, however, and is needed for convenient operation of <strong>fdisk</strong>(1), <strong>efdisk</strong>(1), and <strong>lilo</strong>(1). If the geometry information is not available, zero will be returned for all of the parameters.</p>
+  </dd>
+  <dt>
+    <p><strong>BLKGETSIZE</strong></p>
+  </dt>
+  <dd>
+    <p>Returns the device size in sectors. The <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> parameter should be a pointer to a <em>long</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>BLKRRPART</strong></p>
+  </dt>
+  <dd>
+    <p>Forces a reread of the SCSI disk partition tables. No parameter is needed.</p><p>The SCSI <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> operations are also supported. If the <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> parameter is required, and it is NULL, then <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> will fail with the error <strong>EINVAL</strong>.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-    <p>A pointer to this structure is passed as the <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> parameter.</p>
-<p class='spacer'>
-
-  <p>The information returned in the parameter is the disk geometry of the drive <em>as understood by DOS!</em> This geometry is <em>not</em> the physical geometry of the drive. It is used when constructing the drive's partition table, however, and is needed for convenient operation of <strong>fdisk</strong>(1), <strong>efdisk</strong>(1), and <strong>lilo</strong>(1). If the geometry information is not available, zero will be returned for all of the parameters.</p>
-    </dd>
-    <dt><strong>BLKGETSIZE</strong></dt>
-    <dd>
-  <p>Returns the device size in sectors. The <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> parameter should be a pointer to a <em>long</em>.</p>
-    </dd>
-    <dt><strong>BLKRRPART</strong></dt>
-    <dd>
-  <p>Forces a reread of the SCSI disk partition tables. No parameter is needed.</p>
-<p class='spacer'>
-
-  <p>The SCSI <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> operations are also supported. If the <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> parameter is required, and it is NULL, then <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> will fail with the error <strong>EINVAL</strong>.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
-
-<p>/dev/sd[a-h]: the whole device</p>
-<p class='spacer'>
-
-<p>/dev/sd[a-h][0-8]: individual block partitions</p>
+<p>/dev/sd[a-h]: the whole device</p><p>/dev/sd[a-h][0-8]: individual block partitions</p>
         </div>
       </section>
 <nav>

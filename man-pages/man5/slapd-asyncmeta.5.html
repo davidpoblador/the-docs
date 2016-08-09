@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p>ETCDIR/slapd.conf</p>
         </div>
       </section>
@@ -98,320 +97,262 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The <strong>asyncmeta</strong> backend to <strong>slapd</strong>(8) performs basic LDAP proxying with respect to a set of remote LDAP servers, called "targets". The information contained in these servers can be presented as belonging to a single Directory Information Tree (DIT).</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>A good knowledge of the functionality of the <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> backend  is recommended.   This  backend has been designed as an asynchronous version of the <strong>meta</strong> backend. Unlike <strong>meta</strong> , the operation handling threads are no longer pending on the response from the remote server, thus decreasing the number of threads necessary to handle the same load. While <strong>asyncmeta</strong> maintains the functionality of <strong>meta</strong> and has a largely similar codebase, some changes in operation and some new configuration directives have been added. Some configuration options, such as <strong>conn-ttl,</strong> <strong>single-conn</strong> and <strong>use-temporary-conn</strong> have been removed, as they are no longer relevant.</p>
-<p class='spacer'>
-
-<p><strong>New connection handling:</strong></p>
-<p class='spacer'>
-
-<p>Unlike <strong>meta,</strong> which caches bound connections, the <strong>asyncmeta</strong> works with a configured maximum number of connections per target. For each request redirected to a target, a different connection is selected. Each connection has a queue, to which the request is added before it is sent to the remote server, and is removed after the last response for that request is received.</p>
-<pre> For each new request, the connection with the smallest number of pending requests</pre>
-
-<p>is selected, or using round-robin if the numbers are equal.</p>
-<p class='spacer'>
-
-<p><strong>Overlays:</strong></p>
-<p class='spacer'>
-
-<p>Due to implementation specifics, there is no guarantee that any of the existing OpenLDAP overlays will work with <strong>asyncmeta</strong> backend.</p>
-<p class='spacer'>
-
+<p>The <strong>asyncmeta</strong> backend to <strong>slapd</strong>(8) performs basic LDAP proxying with respect to a set of remote LDAP servers, called "targets". The information contained in these servers can be presented as belonging to a single Directory Information Tree (DIT).</p><p>A good knowledge of the functionality of the <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> backend  is recommended.   This  backend has been designed as an asynchronous version of the <strong>meta</strong> backend. Unlike <strong>meta</strong> , the operation handling threads are no longer pending on the response from the remote server, thus decreasing the number of threads necessary to handle the same load. While <strong>asyncmeta</strong> maintains the functionality of <strong>meta</strong> and has a largely similar codebase, some changes in operation and some new configuration directives have been added. Some configuration options, such as <strong>conn-ttl,</strong> <strong>single-conn</strong> and <strong>use-temporary-conn</strong> have been removed, as they are no longer relevant.</p><p><strong>New connection handling:</strong></p><p>Unlike <strong>meta,</strong> which caches bound connections, the <strong>asyncmeta</strong> works with a configured maximum number of connections per target. For each request redirected to a target, a different connection is selected. Each connection has a queue, to which the request is added before it is sent to the remote server, and is removed after the last response for that request is received.  For each new request, the connection with the smallest number of pending requests is selected, or using round-robin if the numbers are equal.</p><p><strong>Overlays:</strong></p><p>Due to implementation specifics, there is no guarantee that any of the existing OpenLDAP overlays will work with <strong>asyncmeta</strong> backend.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
         <div class="sectioncontent">
-
 <p>Refer to <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for configuration examples.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFIGURATION</h2>
         <div class="sectioncontent">
-
 <p>These <strong>slapd.conf</strong> options apply to the ASYNCMETA backend database. That is, they must follow a "database asyncmeta" line and come before any subsequent "backend" or "database" lines. Other database options are described in the <strong>slapd.conf</strong>(5) manual page.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">SPECIAL CONFIGURATION DIRECTIVES</h2>
         <div class="sectioncontent">
-
 <p>Target configuration starts with the "uri" directive. All the configuration directives that are not specific to targets should be defined first for clarity, including those that are common to all backends. They are:</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>default-target none</strong></p>
+  </dt>
+  <dd>
+    <p>This directive forces the backend to reject all those operations that must resolve to a single target in case none or multiple targets are selected. They include: add, delete, modify, modrdn; compare is not included, as well as bind since, as they don't alter entries, in case of multiple matches an attempt is made to perform the operation on any candidate target, with the constraint that at most one must succeed. This directive can also be used when processing targets to mark a specific target as default.</p>
+  </dd>
+  <dt>
+    <p><strong>dncache-ttl {DISABLED|forever|<ttl>}</strong></p>
+  </dt>
+  <dd>
+    <p>This directive sets the time-to-live of the DN cache. This caches the target that holds a given DN to speed up target selection in case multiple targets would result from an uncached search; forever means cache never expires; disabled means no DN caching; otherwise a valid ( &gt; 0 ) ttl is required, in the format illustrated for the <strong>idle-timeout</strong> directive.</p>
+  </dd>
+  <dt>
+    <p><strong>onerr {CONTINUE|report|stop}</strong></p>
+  </dt>
+  <dd>
+    <p>This directive allows to select the behavior in case an error is returned by one target during a search. The default, <strong>continue</strong>, consists in continuing the operation, trying to return as much data as possible. If the value is set to <strong>stop</strong>, the search is terminated as soon as an error is returned by one target, and the error is immediately propagated to the client. If the value is set to <strong>report</strong>, the search is continuated to the end but, in case at least one target returned an error code, the first non-success error code is returned.</p>
+  </dd>
+  <dt>
+    <p><strong>max-timeout-ops <number></strong></p>
+  </dt>
+  <dd>
+    <p>Specify the number of consecutive timed out requests, after which the connection will be considered faulty and dropped.</p>
+  </dd>
+  <dt>
+    <p><strong>max-pending-ops <number></strong></p>
+  </dt>
+  <dd>
+    <p>The maximum number of pending requests stored in a connection's queue. The default is 128. When this number is exceeded, <strong>LDAP_BUSY</strong> will be returned to the client.</p>
+  </dd>
+  <dt>
+    <p><strong>max-target-conns <number></strong></p>
+  </dt>
+  <dd>
+    <p>The maximum number of connections per target. Unlike <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>,</strong> no new connections will be created once this number is reached. The default value is 255.</p>
+  </dd>
+  <dt>
+    <p><strong>norefs <NO|yes></strong></p>
+  </dt>
+  <dd>
+    <p>If <strong>yes</strong>, do not return search reference responses. By default, they are returned unless request is LDAPv2. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
+  <dt>
+    <p><strong>noundeffilter <NO|yes></strong></p>
+  </dt>
+  <dd>
+    <p>If <strong>yes</strong>, return success instead of searching if a filter is undefined or contains undefined portions. By default, the search is propagated after replacing undefined portions with <strong>(!(objectClass=*))</strong>, which corresponds to the empty result set. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
+  <dt>
+    <p><strong>protocol-version {0,2,3}</strong></p>
+  </dt>
+  <dd>
+    <p>This directive indicates what protocol version must be used to contact the remote server. If set to 0 (the default), the proxy uses the same protocol version used by the client, otherwise the requested protocol is used. The proxy returns <em>unwillingToPerform</em> if an operation that is incompatible with the requested protocol is attempted. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
+  <dt>
+    <p><strong>pseudoroot-bind-defer {YES|no}</strong></p>
+  </dt>
+  <dd>
+    <p>This directive, when set to <strong>yes</strong>, causes the authentication to the remote servers with the pseudo-root identity (the identity defined in each <strong>idassert-bind</strong> directive) to be deferred until actually needed by subsequent operations. Otherwise, all binds as the rootdn are propagated to the targets.</p>
+  </dd>
+  <dt>
+    <p><strong>quarantine <interval>,<num>[;<interval>,<num>[...]]</strong></p>
+  </dt>
+  <dd>
+    <p>Turns on quarantine of URIs that returned <em>LDAP_UNAVAILABLE</em>, so that an attempt to reconnect only occurs at given intervals instead of any time a client requests an operation. The pattern is: retry only after at least <em>interval</em> seconds elapsed since last attempt, for exactly <em>num</em> times; then use the next pattern. If <em>num</em> for the last pattern is "<strong>+</strong>", it retries forever; otherwise, no more retries occur. This directive must appear before any target specification; it affects all targets with the same pattern.</p>
+  </dd>
+  <dt>
+    <p><strong>rebind-as-user {NO|yes}</strong></p>
+  </dt>
+  <dd>
+    <p>If this option is given, the client's bind credentials are remembered for rebinds, when trying to re-establish a broken connection, or when chasing a referral, if <strong>chase-referrals</strong> is set to <em>yes</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>session-tracking-request {NO|yes}</strong></p>
+  </dt>
+  <dd>
+    <p>Adds session tracking control for all requests. The client's IP and hostname, and the identity associated to each request, if known, are sent to the remote server for informational purposes. This directive is incompatible with setting <em>protocol-version</em> to 2. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
 
-  <dl class='dl-vertical'>
-    <dt><strong>default-target none</strong></dt>
-    <dd>
-  <p>This directive forces the backend to reject all those operations that must resolve to a single target in case none or multiple targets are selected. They include: add, delete, modify, modrdn; compare is not included, as well as bind since, as they don't alter entries, in case of multiple matches an attempt is made to perform the operation on any candidate target, with the constraint that at most one must succeed. This directive can also be used when processing targets to mark a specific target as default.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-    <dt><strong>dncache-ttl {DISABLED|forever|&lt;ttl&gt;}</strong></dt>
-    <dd>
-  <p>This directive sets the time-to-live of the DN cache. This caches the target that holds a given DN to speed up target selection in case multiple targets would result from an uncached search; forever means cache never expires; disabled means no DN caching; otherwise a valid ( &gt; 0 ) ttl is required, in the format illustrated for the <strong>idle-timeout</strong> directive.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>onerr {CONTINUE|report|stop}</strong></dt>
-    <dd>
-  <p>This directive allows to select the behavior in case an error is returned by one target during a search. The default, <strong>continue</strong>, consists in continuing the operation, trying to return as much data as possible. If the value is set to <strong>stop</strong>, the search is terminated as soon as an error is returned by one target, and the error is immediately propagated to the client. If the value is set to <strong>report</strong>, the search is continuated to the end but, in case at least one target returned an error code, the first non-success error code is returned.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>max-timeout-ops &lt;number&gt;</strong></dt>
-    <dd>
-  <p>Specify the number of consecutive timed out requests, after which the connection will be considered faulty and dropped.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>max-pending-ops &lt;number&gt;</strong></dt>
-    <dd>
-  <p>The maximum number of pending requests stored in a connection's queue. The default is 128. When this number is exceeded, <strong>LDAP_BUSY</strong> will be returned to the client.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>max-target-conns &lt;number&gt;</strong></dt>
-    <dd>
-  <p>The maximum number of connections per target. Unlike <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>,</strong> no new connections will be created once this number is reached. The default value is 255.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>norefs &lt;NO|yes&gt;</strong></dt>
-    <dd>
-  <p>If <strong>yes</strong>, do not return search reference responses. By default, they are returned unless request is LDAPv2. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>noundeffilter &lt;NO|yes&gt;</strong></dt>
-    <dd>
-  <p>If <strong>yes</strong>, return success instead of searching if a filter is undefined or contains undefined portions. By default, the search is propagated after replacing undefined portions with <strong>(!(objectClass=*))</strong>, which corresponds to the empty result set. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>protocol-version {0,2,3}</strong></dt>
-    <dd>
-  <p>This directive indicates what protocol version must be used to contact the remote server. If set to 0 (the default), the proxy uses the same protocol version used by the client, otherwise the requested protocol is used. The proxy returns <em>unwillingToPerform</em> if an operation that is incompatible with the requested protocol is attempted. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>pseudoroot-bind-defer {YES|no}</strong></dt>
-    <dd>
-  <p>This directive, when set to <strong>yes</strong>, causes the authentication to the remote servers with the pseudo-root identity (the identity defined in each <strong>idassert-bind</strong> directive) to be deferred until actually needed by subsequent operations. Otherwise, all binds as the rootdn are propagated to the targets.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>quarantine &lt;interval&gt;,&lt;num&gt;[;&lt;interval&gt;,&lt;num&gt;[...]]</strong></dt>
-    <dd>
-  <p>Turns on quarantine of URIs that returned <em>LDAP_UNAVAILABLE</em>, so that an attempt to reconnect only occurs at given intervals instead of any time a client requests an operation. The pattern is: retry only after at least <em>interval</em> seconds elapsed since last attempt, for exactly <em>num</em> times; then use the next pattern. If <em>num</em> for the last pattern is "<strong>+</strong>", it retries forever; otherwise, no more retries occur. This directive must appear before any target specification; it affects all targets with the same pattern.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>rebind-as-user {NO|yes}</strong></dt>
-    <dd>
-  <p>If this option is given, the client's bind credentials are remembered for rebinds, when trying to re-establish a broken connection, or when chasing a referral, if <strong>chase-referrals</strong> is set to <em>yes</em>.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>session-tracking-request {NO|yes}</strong></dt>
-    <dd>
-  <p>Adds session tracking control for all requests. The client's IP and hostname, and the identity associated to each request, if known, are sent to the remote server for informational purposes. This directive is incompatible with setting <em>protocol-version</em> to 2. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">TARGET SPECIFICATION</h2>
         <div class="sectioncontent">
-
 <p>Target specification starts with a "uri" directive:</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>uri <protocol>://[<host>]/<naming context> [...]</strong></p>
+  </dt>
+  <dd>
+    <p>Identical to <strong>meta.</strong> See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
+  </dd>
+  <dt>
+    <p><strong>acl-authcDN <administrative DN for access control purposes></strong></p>
+  </dt>
+  <dd>
+    <p>DN which is used to query the target server for acl checking, as in the LDAP backend; it is supposed to have read access on the target server to attributes used on the proxy for acl checking. There is no risk of giving away such values; they are only used to check permissions. <strong>The acl-authcDN identity is by no means implicitly used by the proxy</strong> <strong>when the client connects anonymously.</strong></p>
+  </dd>
+  <dt>
+    <p><strong>acl-passwd <password></strong></p>
+  </dt>
+  <dd>
+    <p>Password used with the <strong></strong> acl-authcDN above.</p>
+  </dd>
+  <dt>
+    <p><strong>bind-timeout <microseconds></strong></p>
+  </dt>
+  <dd>
+    <p>This directive defines the timeout, in microseconds, used when polling for response after an asynchronous bind connection. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
+  </dd>
+  <dt>
+    <p><strong>chase-referrals {YES|no}</strong></p>
+  </dt>
+  <dd>
+    <p>enable/disable automatic referral chasing, which is delegated to the underlying libldap, with rebinding eventually performed if the <strong>rebind-as-user</strong> directive is used.  The default is to chase referrals. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
+  <dt>
+    <p><strong>client-pr {accept-unsolicited|DISABLE|<size>}</strong></p>
+  </dt>
+  <dd>
+    <p>This feature allows to use RFC 2696 Paged Results control when performing search operations with a specific target, irrespective of the client's request. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
+  </dd>
+  <dt>
+    <p><strong>default-target [<target>]</strong></p>
+  </dt>
+  <dd>
+    <p>The "default-target" directive can also be used during target specification. With no arguments it marks the current target as the default. The optional number marks target &lt;target&gt; as the default one, starting from 1. Target &lt;target&gt; must be defined.</p>
+  </dd>
+  <dt>
+    <p><strong>filter <pattern></strong></p>
+  </dt>
+  <dd>
+    <p>This directive allows specifying a <strong>regex</strong>(5) pattern to indicate what search filter terms are actually served by a target.</p><p>In a search request, if the search filter matches the <em>pattern</em> the target is considered while fulfilling the request; otherwise the target is ignored. There may be multiple occurrences of the <strong>filter</strong> directive for each target.</p>
+  </dd>
+  <dt>
+    <p><strong>idassert-authzFrom <authz-regexp></strong></p>
+  </dt>
+  <dd>
+    <p>if defined, selects what <em>local</em> identities are authorized to exploit the identity assertion feature. The string <strong><authz-regexp></strong> follows the rules defined for the <em>authzFrom</em> attribute. See <strong>slapd.conf</strong>(5), section related to <strong>authz-policy</strong>, for details on the syntax of this field.</p><p><strong>idassert-bind</strong> <strong>bindmethod=none|simple|sasl [binddn=<simple DN>] [credentials=<simple password>]</strong> <strong>[saslmech=<SASL mech>] [secprops=<properties>] [realm=<realm>]</strong> <strong>[authcId=<authentication ID>] [authzId=<authorization ID>]</strong> <strong>[authz={native|proxyauthz}] [mode=<mode>] [flags=<flags>]</strong> <strong>[starttls=no|yes|critical]</strong> <strong>[tls_cert=<file>]</strong> <strong>[tls_key=<file>]</strong> <strong>[tls_cacert=<file>]</strong> <strong>[tls_cacertdir=<path>]</strong> <strong>[tls_reqcert=never|allow|try|demand]</strong> <strong>[tls_cipher_suite=<ciphers>]</strong> <strong>[tls_protocol_min=<major>[.<minor>]]</strong> <strong>[tls_crlcheck=none|peer|all]</strong> Allows to define the parameters of the authentication method that is internally used by the proxy to authorize connections that are authenticated by other databases. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
+  </dd>
+  <dt>
+    <p><strong>idle-timeout <time></strong></p>
+  </dt>
+  <dd>
+    <p>This directive causes a a persistent connection  to  be  dropped after it  has been idle for the specified time. The connection will be re-created the next time it is selected for use. A connection is considered idle if no attempts have been made by the backend to use it to send a request to the backend server. If there are still pending requests in its queue, the connection will be dropped after the last request one has either received a result or has timed out.</p><p>[&lt;d&gt;d][&lt;h&gt;h][&lt;m&gt;m][&lt;s&gt;[s]]</p><p>where &lt;d&gt;, &lt;h&gt;, &lt;m&gt; and &lt;s&gt; are respectively treated as days, hours, minutes and seconds. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
+  <dt>
+    <p><strong>keepalive <idle>:<probes>:<interval></strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>keepalive</strong> parameter sets the values of <em>idle</em>, <em>probes</em>, and <em>interval</em> used to check whether a socket is alive; <em>idle</em> is the number of seconds a connection needs to remain idle before TCP starts sending keepalive probes; <em>probes</em> is the maximum number of keepalive probes TCP should send before dropping the connection; <em>interval</em> is interval in seconds between individual keepalive probes. Only some systems support the customization of these values; the <strong>keepalive</strong> parameter is ignored otherwise, and system-wide settings are used.</p>
+  </dd>
+  <dt>
+    <p><strong>map {attribute|objectclass} [<local name>|*] {<foreign name>|*}</strong></p>
+  </dt>
+  <dd>
+    <p>This maps object classes and attributes as in the LDAP backend. See <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>network-timeout <time></strong></p>
+  </dt>
+  <dd>
+    <p>Sets the network timeout value after which <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>/<a href="../man2/select.2.html"><strong>select</strong>(2)</a> following a <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> returns in case of no activity. The value is in seconds, and it can be specified as for <strong>idle-timeout</strong>. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
+  <dt>
+    <p><strong>nretries {forever|never|<nretries>}</strong></p>
+  </dt>
+  <dd>
+    <p>This directive defines how many times a bind should be retried in case of temporary failure in contacting a target.  If defined before any target specification, it applies to all targets (by default, <strong>3</strong> times); the global value can be overridden by redefinitions inside each target specification.</p>
+  </dd>
+  <dt>
+    <p><strong>rewrite* ...</strong></p>
+  </dt>
+  <dd>
+    <p>The rewrite options are identical to the <strong>meta</strong> backend. See the <strong>REWRITING</strong> section of <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>.</strong></p>
+  </dd>
+  <dt>
+    <p><strong>subtree-{exclude|include} <rule></strong></p>
+  </dt>
+  <dd>
+    <p>This directive allows to indicate what subtrees are actually served by a target. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
+  </dd>
+  <dt>
+    <p><strong>suffixmassage <virtual naming context> <real naming context></strong></p>
+  </dt>
+  <dd>
+    <p>All the directives starting with "rewrite" refer to the rewrite engine that has been added to slapd. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
+  </dd>
+  <dt>
+    <p><strong>t-f-support {NO|yes|discover}</strong></p>
+  </dt>
+  <dd>
+    <p>enable if the remote server supports absolute filters (see <em>RFC 4526</em> for details). If set to <strong>discover</strong>, support is detected by reading the remote server's root DSE. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
+  <dt>
+    <p><strong>timeout [<op>=]<val> [...]</strong></p>
+  </dt>
+  <dd>
+    <p>This directive allows to set per-operation timeouts. Operations can be</p><p><strong>&lt;op&gt; ::= bind, add, delete, modrdn, modify, compare, search</strong></p><p>See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
+  </dd>
+  <dt>
+    <p><strong>tls {[try-]start|[try-]propagate}</strong></p>
+  </dt>
+  <dd>
+    <p>execute the StartTLS extended operation when the connection is initialized; only works if the URI directive protocol scheme is not <strong>ldaps://</strong>. <strong>propagate</strong> issues the StartTLS operation only if the original connection did. The <strong>try-</strong> prefix instructs the proxy to continue operations if the StartTLS operation failed; its use is highly deprecated. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
+  </dd>
 
-  <dl class='dl-vertical'>
-    <dt><strong>uri &lt;protocol&gt;://[&lt;host&gt;]/&lt;naming context&gt; [...]</strong></dt>
-    <dd>
-  <p>Identical to <strong>meta.</strong> See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-    <dt><strong>acl-authcDN &lt;administrative DN for access control purposes&gt;</strong></dt>
-    <dd>
-  <p>DN which is used to query the target server for acl checking, as in the LDAP backend; it is supposed to have read access on the target server to attributes used on the proxy for acl checking. There is no risk of giving away such values; they are only used to check permissions. <strong>The acl-authcDN identity is by no means implicitly used by the proxy</strong> <strong>when the client connects anonymously.</strong></p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>acl-passwd &lt;password&gt;</strong></dt>
-    <dd>
-  <p>Password used with the acl-authcDN above.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>bind-timeout &lt;microseconds&gt;</strong></dt>
-    <dd>
-  <p>This directive defines the timeout, in microseconds, used when polling for response after an asynchronous bind connection. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>chase-referrals {YES|no}</strong></dt>
-    <dd>
-  <p>enable/disable automatic referral chasing, which is delegated to the underlying libldap, with rebinding eventually performed if the <strong>rebind-as-user</strong> directive is used.  The default is to chase referrals. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>client-pr {accept-unsolicited|DISABLE|&lt;size&gt;}</strong></dt>
-    <dd>
-  <p>This feature allows to use RFC 2696 Paged Results control when performing search operations with a specific target, irrespective of the client's request. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>default-target [&lt;target&gt;]</strong></dt>
-    <dd>
-  <p>The "default-target" directive can also be used during target specification. With no arguments it marks the current target as the default. The optional number marks target &lt;target&gt; as the default one, starting from 1. Target &lt;target&gt; must be defined.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>filter &lt;pattern&gt;</strong></dt>
-    <dd>
-  <p>This directive allows specifying a <strong>regex</strong>(5) pattern to indicate what search filter terms are actually served by a target.</p>
-<p class='spacer'>
-
-  <p>In a search request, if the search filter matches the <em>pattern</em> the target is considered while fulfilling the request; otherwise the target is ignored. There may be multiple occurrences of the <strong>filter</strong> directive for each target.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>idassert-authzFrom &lt;authz-regexp&gt;</strong></dt>
-    <dd>
-  <p>if defined, selects what <em>local</em> identities are authorized to exploit the identity assertion feature. The string <strong>&lt;authz-regexp&gt;</strong> follows the rules defined for the <em>authzFrom</em> attribute. See <strong>slapd.conf</strong>(5), section related to <strong>authz-policy</strong>, for details on the syntax of this field.</p>
-<p class='spacer'>
-
-  <p><strong>idassert-bind</strong> <strong>bindmethod=none|simple|sasl [binddn=&lt;simple DN&gt;] [credentials=&lt;simple password&gt;]</strong> <strong>[saslmech=&lt;SASL mech&gt;] [secprops=&lt;properties&gt;] [realm=&lt;realm&gt;]</strong> <strong>[authcId=&lt;authentication ID&gt;] [authzId=&lt;authorization ID&gt;]</strong> <strong>[authz={native|proxyauthz}] [mode=&lt;mode&gt;] [flags=&lt;flags&gt;]</strong> <strong>[starttls=no|yes|critical]</strong> <strong>[tls_cert=&lt;file&gt;]</strong> <strong>[tls_key=&lt;file&gt;]</strong> <strong>[tls_cacert=&lt;file&gt;]</strong> <strong>[tls_cacertdir=&lt;path&gt;]</strong> <strong>[tls_reqcert=never|allow|try|demand]</strong> <strong>[tls_cipher_suite=&lt;ciphers&gt;]</strong> <strong>[tls_protocol_min=&lt;major&gt;[.&lt;minor&gt;]]</strong> <strong>[tls_crlcheck=none|peer|all]</strong> Allows to define the parameters of the authentication method that is internally used by the proxy to authorize connections that are authenticated by other databases. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>idle-timeout &lt;time&gt;</strong></dt>
-    <dd>
-  <p>This directive causes a a persistent connection  to  be  dropped after it  has been idle for the specified time. The connection will be re-created the next time it is selected for use. A connection is considered idle if no attempts have been made by the backend to use it to send a request to the backend server. If there are still pending requests in its queue, the connection will be dropped after the last request one has either received a result or has timed out.</p>
-<p class='spacer'>
-
-  <p>[&lt;d&gt;d][&lt;h&gt;h][&lt;m&gt;m][&lt;s&gt;[s]]</p>
-<p class='spacer'>
-
-  <p>where &lt;d&gt;, &lt;h&gt;, &lt;m&gt; and &lt;s&gt; are respectively treated as days, hours, minutes and seconds. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>keepalive &lt;idle&gt;:&lt;probes&gt;:&lt;interval&gt;</strong></dt>
-    <dd>
-  <p>The <strong>keepalive</strong> parameter sets the values of <em>idle</em>, <em>probes</em>, and <em>interval</em> used to check whether a socket is alive; <em>idle</em> is the number of seconds a connection needs to remain idle before TCP starts sending keepalive probes; <em>probes</em> is the maximum number of keepalive probes TCP should send before dropping the connection; <em>interval</em> is interval in seconds between individual keepalive probes. Only some systems support the customization of these values; the <strong>keepalive</strong> parameter is ignored otherwise, and system-wide settings are used.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>map {attribute|objectclass} [&lt;local name&gt;|*] {&lt;foreign name&gt;|*}</strong></dt>
-    <dd>
-  <p>This maps object classes and attributes as in the LDAP backend. See <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>network-timeout &lt;time&gt;</strong></dt>
-    <dd>
-  <p>Sets the network timeout value after which <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>/<a href="../man2/select.2.html"><strong>select</strong>(2)</a> following a <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> returns in case of no activity. The value is in seconds, and it can be specified as for <strong>idle-timeout</strong>. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>nretries {forever|never|&lt;nretries&gt;}</strong></dt>
-    <dd>
-  <p>This directive defines how many times a bind should be retried in case of temporary failure in contacting a target.  If defined before any target specification, it applies to all targets (by default, <strong>3</strong> times); the global value can be overridden by redefinitions inside each target specification.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>rewrite* ...</strong></dt>
-    <dd>
-  <p>The rewrite options are identical to the <strong>meta</strong> backend. See the <strong>REWRITING</strong> section of <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>.</strong></p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>subtree-{exclude|include} &lt;rule&gt;</strong></dt>
-    <dd>
-  <p>This directive allows to indicate what subtrees are actually served by a target. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>suffixmassage &lt;virtual naming context&gt; &lt;real naming context&gt;</strong></dt>
-    <dd>
-  <p>All the directives starting with "rewrite" refer to the rewrite engine that has been added to slapd. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>t-f-support {NO|yes|discover}</strong></dt>
-    <dd>
-  <p>enable if the remote server supports absolute filters (see <em>RFC 4526</em> for details). If set to <strong>discover</strong>, support is detected by reading the remote server's root DSE. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>timeout [&lt;op&gt;=]&lt;val&gt; [...]</strong></dt>
-    <dd>
-  <p>This directive allows to set per-operation timeouts. Operations can be</p>
-<p class='spacer'>
-
-  <p><strong>&lt;op&gt; ::= bind, add, delete, modrdn, modify, compare, search</strong></p>
-<p class='spacer'>
-
-  <p>See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for details.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>tls {[try-]start|[try-]propagate}</strong></dt>
-    <dd>
-  <p>execute the StartTLS extended operation when the connection is initialized; only works if the URI directive protocol scheme is not <strong>ldaps://</strong>. <strong>propagate</strong> issues the StartTLS operation only if the original connection did. The <strong>try-</strong> prefix instructs the proxy to continue operations if the StartTLS operation failed; its use is highly deprecated. If set before any target specification, it affects all targets, unless overridden by any per-target directive.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">SCENARIOS</h2>
         <div class="sectioncontent">
-
 <p>See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a></strong> for configuration scenarios.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ACLs</h2>
         <div class="sectioncontent">
-
 <p>ACL behavior is identical to meta. See <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>.</strong></p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ACCESS CONTROL</h2>
         <div class="sectioncontent">
-
 <p>The <strong>asyncmeta</strong> backend does not honor all ACL semantics as described in <strong>slapd.access</strong>(5). In general, access checking is delegated to the remote server(s). Only <strong>read (=r)</strong> access to the <strong>entry</strong> pseudo-attribute and to the other attribute values of the entries returned by the <strong>search</strong> operation is honored, which is performed by the frontend.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
@@ -419,31 +360,32 @@
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt>ETCDIR/slapd.conf</dt>
-    <dd>
-  <p>default slapd configuration file</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
+<dl class='dl-vertical'>
+  <dt>
+    <p>ETCDIR/slapd.conf</p>
+  </dt>
+  <dd>
+    <p>default slapd configuration file</p>
+  </dd>
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
+</dl>
 
-<p>Nadezhda Ivanova, based on back-meta by Pierangelo Masarati.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO slapd-asyncmeta&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>slapd.conf</strong>(5), <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>, <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, <a href="../man5/slapo-pcache.5.html"><strong>slapo-pcache</strong>(5)</a>, <strong>slapd</strong>(8), <a href="../man7/regex.7.html"><strong>regex</strong>(7)</a>, <strong>re_format</strong>(7).</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>Nadezhda Ivanova, based on back-meta by Pierangelo Masarati.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="slabinfo.5.html"><span aria-hidden="true">&larr;</span> slabinfo.5: Kernel slab allocator statistics</a></li>

@@ -90,110 +90,50 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>\f3pmdaoracle\f1 is a Performance Co-Pilot \s-1PMDA\s0 which extracts live performance data from a running Oracle database.</p>
+<p><strong>pmdaoracle</strong> is a Performance Co-Pilot \s-1PMDA\s0 which extracts live performance data from a running Oracle database.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">INSTALLATION</h2>
         <div class="sectioncontent">
+<p><strong>pmdaoracle</strong> uses a configuration file from (in this order):</p><ul>
+<li><p>/etc/pcpdbi.conf</p></li><li><p>$PCP_PMDAS_DIR/oracle/oracle.conf</p></li><li><p>./oracle.conf</p></li>
+</ul><p>This file can contain overridden values (Perl code) for the settings listed at the start of pmdaoracle.pl, for example:</p><ul>
+<li><p>$username - username to connect to the database [default: 'SYSTEM']</p></li><li><p>$password - password to connect to the database [default: 'manager']</p></li><li><p>$host - host the database is running on [default: 'localhost']</p></li><li><p>$port - port the database is listening on [default: '1521']</p></li><li><p>$os_user - operating system username (PMDA will run with the corresponding user id) [default: oracle]</p></li><li><p>@sids - an array of $ORACLE_SID database identifiers [default: ('master')]</p></li>
+</ul><p>In order to test your local settings, a simple script is provided that will connect and disconnect from the database - verifying fundamental configuration is in place before continuing on. If the <strong>$PCP_PMDAS_DIR/oracle/connect.pl</strong> script cannot connect, do not proceed with installation of the PMDA as it will be unsuccessful. Correct your local settings first.</p><p>Once this is setup, you can access the names and values for the oracle performance metrics by doing the following as root:</p>
+<pre>
+      # cd $PCP_PMDAS_DIR/oracle
+</pre>
 
-  <p>\f3pmdaoracle\f1 uses a configuration file from (in this order):</p>
-  <dl class='dl-horizontal'>
-    <dt>&bull;</dt>
-    <dd>
-  <p>/etc/pcpdbi.conf</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>\f(CW$PCP_PMDAS_DIR/oracle/oracle.conf</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>./oracle.conf</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-  <p>This file can contain overridden values (Perl code) for the settings listed at the start of pmdaoracle.pl, for example:</p>
-  <dl class='dl-horizontal'>
-    <dt>&bull;</dt>
-    <dd>
-  <p>$username - username to connect to the database [default: 'SYSTEM']</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>$password - password to connect to the database [default: 'manager']</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>$host - host the database is running on [default: 'localhost']</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>$port - port the database is listening on [default: '1521']</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>$os_user - operating system username (PMDA will run with the corresponding user id) [default: oracle]</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>@sids - an array of $ORACLE_SID database identifiers [default: ('master')]</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>In order to test your local settings, a simple script is provided that will connect and disconnect from the database - verifying fundamental configuration is in place before continuing on. If the $PCP_PMDAS_DIR/oracle/connect.pl\f1 script cannot connect, do not proceed with installation of the PMDA as it will be unsuccessful. Correct your local settings first.</p>
-<p class='spacer'>
-
-<p>Once this is setup, you can access the names and values for the oracle performance metrics by doing the following as root:</p>
-<p class='spacer'>
-
-<pre>      # cd $PCP_PMDAS_DIR/oracle</pre>
-
-<p class='spacer'>
-
-<pre>      # ./Install</pre>
-
-<p class='spacer'>
-
+<pre>
+      # ./Install
+</pre>
 <p>To uninstall, do the following as root:</p>
-<p class='spacer'>
+<pre>
+      # cd $PCP_PMDAS_DIR/oracle
+</pre>
 
-<pre>      # cd $PCP_PMDAS_DIR/oracle</pre>
-
-<p class='spacer'>
-
-<pre>      # ./Remove</pre>
-
-<p class='spacer'>
-
-<p><strong>pmdaoracle</strong> is launched by <strong>pmcd</strong>(1) and should never be executed directly. The Install and Remove scripts notify <strong>pmcd</strong>(1) when the agent is installed or removed.</p>
+<pre>
+      # ./Remove
+</pre>
+<p><strong>pmdaoracle</strong> is launched by <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a> and should never be executed directly. The Install and Remove scripts notify <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a> when the agent is installed or removed.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONNECTION STATE</h2>
         <div class="sectioncontent">
-
-<p>By default, <strong>pmdaoracle</strong> will aggressively attempt to maintain persistent connections to Oracle to ensure timely responses to its queries, and will automatically re-connect if a connection drops.</p>
-<p class='spacer'>
-
-<p>However, in certain circumstances this may be undesirable, so a manual <strong>pmStore</strong>(3) mechanism is provided to explicitly control disconnecting and reconnecting to an Oracle instance. This can be used, for example, to ensure that <strong>pmdaoracle</strong> is not connected at shutdown, to ensure a clean Oracle shutdown process.</p>
-<p class='spacer'>
-
-<p>The <strong>pmstore (1)</strong> command can be used to disconnect and reconnect. Using the individual instances of the oracle.control.connected metric, one can set the connection state to either up (1) or down (0). Additionally, <a href="../man1/pminfo.1.html"><strong>pminfo</strong>(1)</a> can report on the current status of Oracle connections.</p>
-<p class='spacer'>
-
-<pre># pminfo \(hyf oracle.control.connected
+<p>By default, <strong>pmdaoracle</strong> will aggressively attempt to maintain persistent connections to Oracle to ensure timely responses to its queries, and will automatically re-connect if a connection drops.</p><p>However, in certain circumstances this may be undesirable, so a manual <strong>pmStore</strong>(3) mechanism is provided to explicitly control disconnecting and reconnecting to an Oracle instance. This can be used, for example, to ensure that <strong>pmdaoracle</strong> is not connected at shutdown, to ensure a clean Oracle shutdown process.</p><p>The <strong>pmstore (1)</strong> command can be used to disconnect and reconnect. Using the individual instances of the oracle.control.connected metric, one can set the connection state to either up (1) or down (0). Additionally, <a href="../man1/pminfo.1.html"><strong>pminfo</strong>(1)</a> can report on the current status of Oracle connections.</p>
+<pre>
+# pminfo \(hyf oracle.control.connected
 
 oracle.control.connected
     inst [0 or "master"] value 1
 
 # pmstore oracle.control.connected 0
-oracle.control.connected inst [0 or "master"] old value=1 new value=0</pre>
+oracle.control.connected inst [0 or "master"] old value=1 new value=0
+</pre>
 
         </div>
       </section>
@@ -202,55 +142,68 @@ oracle.control.connected inst [0 or "master"] old value=1 new value=0</pre>
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-horizontal'>
-    <dt><strong>/etc/pcpdbi.conf</strong></dt>
-    <dd>
-  <p>configuration file for all \s-1PCP\s0 database monitors</p>
-    </dd>
-    <dt>$PCP_PMDAS_DIR/oracle/oracle.conf\f1</dt>
-    <dd>
-  <p>configuration file for <strong>pmdaoracle</strong></p>
-    </dd>
-    <dt><strong>$PCP_PMDAS_DIR/oracle/sample.conf</strong></dt>
-    <dd>
-  <p>example configuration file for <strong>pmdaoracle</strong> using $LD_LIBRARY_PATH</p>
-    </dd>
-    <dt><strong>$PCP_PMDAS_DIR/oracle/connect.pl</strong></dt>
-    <dd>
-  <p>configuration test script for <strong>Oracle</strong> database connectivity</p>
-    </dd>
-    <dt><strong>$PCP_PMDAS_DIR/oracle/Install</strong></dt>
-    <dd>
-  <p>installation script for the <strong>pmdaoracle</strong> agent</p>
-    </dd>
-    <dt><strong>$PCP_PMDAS_DIR/oracle/Remove</strong></dt>
-    <dd>
-  <p>undo installation script for the <strong>pmdaoracle</strong> agent</p>
-    </dd>
-    <dt><strong>$PCP_LOG_DIR/pmcd/oracle.log</strong></dt>
-    <dd>
-  <p>default log file for error messages from <strong>pmdaoracle</strong></p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    \fB/etc/pcpdbi.conf\fR
+  </dt>
+  <dd>
+    <p>configuration file for all \s-1PCP\s0 database monitors</p>
+  </dd>
+  <dt>
+    \fB$PCP_PMDAS_DIR/oracle/oracle.conf\f1
+  </dt>
+  <dd>
+    <p>configuration file for <strong>pmdaoracle</strong></p>
+  </dd>
+  <dt>
+    \fB$PCP_PMDAS_DIR/oracle/sample.conf\fR
+  </dt>
+  <dd>
+    <p>example configuration file for <strong>pmdaoracle</strong> using $LD_LIBRARY_PATH</p>
+  </dd>
+  <dt>
+    \fB$PCP_PMDAS_DIR/oracle/connect.pl\fR
+  </dt>
+  <dd>
+    <p>configuration test script for <strong>Oracle</strong> database connectivity</p>
+  </dd>
+  <dt>
+    \fB$PCP_PMDAS_DIR/oracle/Install\fR
+  </dt>
+  <dd>
+    <p>installation script for the <strong>pmdaoracle</strong> agent</p>
+  </dd>
+  <dt>
+    \fB$PCP_PMDAS_DIR/oracle/Remove\fR
+  </dt>
+  <dd>
+    <p>undo installation script for the <strong>pmdaoracle</strong> agent</p>
+  </dd>
+  <dt>
+    \fB$PCP_LOG_DIR/pmcd/oracle.log\fR
+  </dt>
+  <dd>
+    <p>default log file for error messages from <strong>pmdaoracle</strong></p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PCP ENVIRONMENT</h2>
         <div class="sectioncontent">
-
-<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by <strong>PCP</strong>. On each installation, the file <strong>/etc/pcp.conf</strong> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <strong>pcp.conf</strong>(5).</p>
+<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by <strong>PCP</strong>. On each installation, the file <strong>/etc/pcp.conf</strong> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmdaoracle&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>PCPIntro</strong>(1), <a href="../man1/pmdadbping.1.html"><strong>pmdadbping</strong>(1)</a>, <a href="../man1/pminfo.1.html"><strong>pminfo</strong>(1)</a>, <a href="../man1/pmstore.1.html"><strong>pmstore</strong>(1)</a>, <strong>DBI</strong>(3) and <strong>pmStore</strong>(3).</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmdanvidia.1.html"><span aria-hidden="true">&larr;</span> pmdanvidia.1: Nvidia gpu metrics domain agent (pmda)</a></li>

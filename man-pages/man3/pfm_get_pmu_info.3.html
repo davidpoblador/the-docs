@@ -91,9 +91,11 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;perfmon/pfmlib.h&gt;</strong>
+<pre>
+<strong>#include <perfmon/pfmlib.h></strong>
 
 <strong>int pfm_get_pmu_info(pfm_pmu_t </strong><em>pmu</em><strong>, pfm_pmu_info_t *</strong><em>info</em><strong>);</strong>
+
 </pre>
 
         </div>
@@ -102,12 +104,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>This function returns in <strong>info</strong> information about a PMU model designated by its identifier in <strong>pmu</strong>.</p>
-<p class='spacer'>
-
-  <p>The <strong>pfm_pmu_info</strong> structure is defined as follows:</p>
-<pre>typedef struct {
+<p>This function returns in <strong>info</strong> information about a PMU model designated by its identifier in <strong>pmu</strong>.</p><p>The <strong>pfm_pmu_info</strong> structure is defined as follows:</p>
+<pre>
+typedef struct {
         const char              *name;
         const char              *desc;
         pfm_pmu_t               pmu;
@@ -125,80 +124,106 @@
                 int             is_uncore:1;
                 int             reserved:28;
         };
-} pfm_pmu_info_t;</pre>
+} pfm_pmu_info_t;
+</pre>
+<p>The fields of this structure are defined as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>name</strong></p>
+  </dt>
+  <dd>
+    <p>This is the symbolic name of the PMU. This name can be used as a prefix in an event string. This is a read-only string.</p>
+  </dd>
+  <dt>
+    <p><strong>desc</strong></p>
+  </dt>
+  <dd>
+    <p>This is the description of PMU. This is a read-only string.</p>
+  </dd>
+  <dt>
+    <p><strong>pmu</strong></p>
+  </dt>
+  <dd>
+    <p>This is the unique PMU identification code. It is identical to the value passed in <strong>pmu</strong> and it provided only for completeness.</p>
+  </dd>
+  <dt>
+    <p><strong>type</strong></p>
+  </dt>
+  <dd>
+    <p>This field contains the type of the PMU. The following types are defined:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PFM_PMU_TYPE_UNKNOWN</strong></p>
+  </dt>
+  <dd>
+    <p>The type of the PMU could not be determined.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_PMU_TYPE_CORE</strong></p>
+  </dt>
+  <dd>
+    <p>This field is set to one when the PMU is implemented by the processor core.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_PMU_TYPE_UNCORE</strong></p>
+  </dt>
+  <dd>
+    <p>This field is set to one when the PMU is implemented on the processor die but at the socket level, i.e., capturing events for all cores.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <p>The fields of this structure are defined as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>name</strong></dt>
-    <dd>
-  <p>This is the symbolic name of the PMU. This name can be used as a prefix in an event string. This is a read-only string.</p>
-    </dd>
-    <dt><strong>desc</strong></dt>
-    <dd>
-  <p>This is the description of PMU. This is a read-only string.</p>
-    </dd>
-    <dt><strong>pmu</strong></dt>
-    <dd>
-  <p>This is the unique PMU identification code. It is identical to the value passed in <strong>pmu</strong> and it provided only for completeness.</p>
-    </dd>
-    <dt><strong>type</strong></dt>
-    <dd>
-      <p>This field contains the type of the PMU. The following types are defined:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>PFM_PMU_TYPE_UNKNOWN</strong></dt>
-        <dd>
-      <p>The type of the PMU could not be determined.</p>
-        </dd>
-        <dt><strong>PFM_PMU_TYPE_CORE</strong></dt>
-        <dd>
-      <p>This field is set to one when the PMU is implemented by the processor core.</p>
-        </dd>
-        <dt><strong>PFM_PMU_TYPE_UNCORE</strong></dt>
-        <dd>
-      <p>This field is set to one when the PMU is implemented on the processor die but at the socket level, i.e., capturing events for all cores.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
+  </dd>
+  <dt>
+    <p><strong>nevents</strong></p>
+  </dt>
+  <dd>
+    <p>This is the number of available events for this PMU model based on the host processor. It is <strong>only</strong> valid if the <strong>is_present</strong> field is set to 1. Event identifiers are not guaranteed contiguous. In other words, it is not because <strong>nevents</strong> is equal to 100, that event identifiers go from 0 to 99. The iterator function <strong>pfm_get_event_next()</strong> must be used to go from one identifier to the next.</p>
+  </dd>
+  <dt>
+    <p><strong>first_event</strong></p>
+  </dt>
+  <dd>
+    <p>This field returns the opaque index of the first event for this PMU model. The index can be used with <strong>pfm_get_event_info()</strong> or <strong>pfm_get_event_next()</strong> functions. In case no event is available, this field contains <strong>-1</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>num_cntrs</strong></p>
+  </dt>
+  <dd>
+    <p>This field contains the number of generic counters supported by the PMU. A counter is generic if it can count more than one event. When it is not possible to determine the number of generic counters, this field contains <strong>-1</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>num_fixed_cntrs</strong></p>
+  </dt>
+  <dd>
+    <p>This field contains the number of fixed counters supported by the PMU. A counter is fixed if it hardwired to count only one event. When it is not possible to determine the number of generic counters, this field contains <strong>-1</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>size</strong></p>
+  </dt>
+  <dd>
+    <p>This field contains the size of the struct passed. This field is used to provide for extensibility of the struct without compromising backward compatibility. The value should be set to <strong>sizeof(pfm_pmu_info_t)</strong>. If instead, a value of <strong>0</strong> is specified, the library assumes the struct passed is identical to the first ABI version which size is <strong>PFM_PMU_INFO_ABI0</strong>. Thus, if fields were added after the first ABI, they will not be set by the library. The library does check that bytes beyond what is implemented are zeroes.</p>
+  </dd>
+  <dt>
+    <p><strong>max_encoding</strong></p>
+  </dt>
+  <dd>
+    <p>This field returns the number of event codes returned by <strong>pfm_get_event_encoding()</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>is_present</strong></p>
+  </dt>
+  <dd>
+    <p>This field is set to one is the PMU model has been detected on the host system.</p>
+  </dd>
+  <dt>
+    <p><strong>is_dfl</strong></p>
+  </dt>
+  <dd>
+    <p>This field is set to one if the PMU is the default PMU for this architecture. Otherwise this field is zero.</p>
+  </dd>
 
-    </dd>
-    <dt><strong>nevents</strong></dt>
-    <dd>
-  <p>This is the number of available events for this PMU model based on the host processor. It is <strong>only</strong> valid if the <strong>is_present</strong> field is set to 1. Event identifiers are not guaranteed contiguous. In other words, it is not because <strong>nevents</strong> is equal to 100, that event identifiers go from 0 to 99. The iterator function <strong>pfm_get_event_next()</strong> must be used to go from one identifier to the next.</p>
-    </dd>
-    <dt><strong>first_event</strong></dt>
-    <dd>
-  <p>This field returns the opaque index of the first event for this PMU model. The index can be used with <strong>pfm_get_event_info()</strong> or <strong>pfm_get_event_next()</strong> functions. In case no event is available, this field contains <strong>-1</strong>.</p>
-    </dd>
-    <dt><strong>num_cntrs</strong></dt>
-    <dd>
-  <p>This field contains the number of generic counters supported by the PMU. A counter is generic if it can count more than one event. When it is not possible to determine the number of generic counters, this field contains \fb-1.</p>
-    </dd>
-    <dt><strong>num_fixed_cntrs</strong></dt>
-    <dd>
-  <p>This field contains the number of fixed counters supported by the PMU. A counter is fixed if it hardwired to count only one event. When it is not possible to determine the number of generic counters, this field contains \fb-1.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>size</strong></dt>
-    <dd>
-  <p>This field contains the size of the struct passed. This field is used to provide for extensibility of the struct without compromising backward compatibility. The value should be set to <strong>sizeof(pfm_pmu_info_t)</strong>. If instead, a value of <strong>0</strong> is specified, the library assumes the struct passed is identical to the first ABI version which size is <strong>PFM_PMU_INFO_ABI0</strong>. Thus, if fields were added after the first ABI, they will not be set by the library. The library does check that bytes beyond what is implemented are zeroes.</p>
-    </dd>
-    <dt><strong>max_encoding</strong></dt>
-    <dd>
-  <p>This field returns the number of event codes returned by <strong>pfm_get_event_encoding()</strong>.</p>
-    </dd>
-    <dt><strong>is_present</strong></dt>
-    <dd>
-  <p>This field is set to one is the PMU model has been detected on the host system.</p>
-    </dd>
-    <dt><strong>is_dfl</strong></dt>
-    <dd>
-  <p>This field is set to one if the PMU is the default PMU for this architecture. Otherwise this field is zero.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
 
         </div>
       </section>
@@ -206,9 +231,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
 <p>If successful, the function returns <strong>PFM_SUCCESS</strong> and PMU information in <strong>info</strong>, otherwise it returns an error code.</p>
         </div>
       </section>
@@ -217,29 +239,27 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>PFMLIB_ERR_NOINIT</strong></dt>
-    <dd>
-  <p>Library has not been initialized properly.</p>
-    </dd>
-    <dt><strong>PFMLIB_ERR_NOTSUPP</strong></dt>
-    <dd>
-  <p>PMU model is not supported by the library.</p>
-    </dd>
-    <dt><strong>PFMLIB_ERR_INVAL</strong></dt>
-    <dd>
-  <p>The <strong>pmu</strong> argument is invalid or <strong>info</strong> is <strong>NULL</strong> or <strong>size</strong> is not zero.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PFMLIB_ERR_NOINIT</strong></p>
+  </dt>
+  <dd>
+    <p>Library has not been initialized properly.</p>
+  </dd>
+  <dt>
+    <p><strong>PFMLIB_ERR_NOTSUPP</strong></p>
+  </dt>
+  <dd>
+    <p>PMU model is not supported by the library.</p>
+  </dd>
+  <dt>
+    <p><strong>PFMLIB_ERR_INVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>pmu</strong> argument is invalid or <strong>info</strong> is <strong>NULL</strong> or <strong>size</strong> is not zero.</p>
+  </dd>
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
-
-<p>Stephane Eranian &lt;eranian@gmail.com&gt;</p>
-<p class='spacer'>
+</dl>
 
         </div>
       </section>
@@ -247,11 +267,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pfm_get_pmu_info&hellip;</h2>
         <div class="sectioncontent">
-
 <a href="../man3/pfm_get_event_next.3.html"><strong>pfm_get_event_next</strong>(3)</a></p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>Stephane Eranian &lt;eranian@gmail.com&gt;</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pfm_get_perf_event_encoding.3.html"><span aria-hidden="true">&larr;</span> pfm_get_perf_event_encoding.3: Encode event for perf_event api</a></li>

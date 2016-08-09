@@ -91,11 +91,13 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre>\f3xfsinvutil\f1 [-F|-i] [-m \f2media_label\f1] -M \f2mount_point\f1 \f2mm/dd/yyyy\f1
-\f3xfsinvutil\f1 [-F|-i] [-m \f2media_label\f1] -u \f2UUID\f1 \f2mm/dd/yyyy\f1
-\f3xfsinvutil\f1 [-F] -s \f2SESSION_ID\f1
-\f3xfsinvutil\f1 -i
-\f3xfsinvutil\f1 -C</pre>
+<pre>
+<strong>xfsinvutil</strong> [-F|-i] [-m <em>media_label</em>] -M <em>mount_point</em> <em>mm/dd/yyyy</em>
+<strong>xfsinvutil</strong> [-F|-i] [-m <em>media_label</em>] -u <em>UUID</em> <em>mm/dd/yyyy</em>
+<strong>xfsinvutil</strong> [-F] -s <em>SESSION_ID</em>
+<strong>xfsinvutil</strong> -i
+<strong>xfsinvutil</strong> -C
+</pre>
 
         </div>
       </section>
@@ -103,119 +105,152 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><em>xfsdump</em> maintains an online dump inventory in <em>/var/lib/xfsdump/inventory</em>. The <strong>-I</strong> option of xfsdump displays the inventory contents hierarchically. The levels of the hierarchy are: filesystem, dump session, stream, and media file.</p><p><em>xfsinvutil</em> is a utility to check this inventory database for consistency, to remove entries of dump sessions which may no longer be of relevance, and to browse the contents of the inventory.</p><p>The following command line options are available:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-F</strong></p>
+  </dt>
+  <dd>
+    <p>Don't prompt the operator.  When <em>xfsinvutil</em> encounters a matching dump session, <em>xfsinvutil</em> will normally ask the operator for permission to delete the entry. With this option the deletion is performed, no questions asked.</p>
+  </dd>
+  <dt>
+    <p><strong>-i</strong></p>
+  </dt>
+  <dd>
+    <p>Interactive mode.  Causes <em>xfsinvutil</em> to run in a mode that will allow the operator to browse and modify the contents of the inventory. Please refer to the <strong>Interactive Mode</strong> section below for more information.</p>
+  </dd>
+  <dt>
+    <p><strong>-M</strong> <em>mount_point mm/dd/yyyy</em></p>
+  </dt>
+  <dd>
+    <p>Prunes dump sessions identified by the given mount point which were created prior to the specified date. Optionally <strong>-m</strong> may be be specified to further limit the matching dump sessions by media label. <em>xfsinvutil</em> will prompt the operator prior to pruning a dump session unless the <strong>-F</strong> or <strong>-i</strong> options are given.</p>
+  </dd>
+  <dt>
+    <p><strong>-u</strong> <em>UUID mm/dd/yyyy</em></p>
+  </dt>
+  <dd>
+    <p>Like <strong>-M</strong>, except the matching filesystem is specified using its universally unique identifier (UUID) instead of its mount point.</p>
+  </dd>
+  <dt>
+    <p><strong>-m</strong> <em>media_label</em></p>
+  </dt>
+  <dd>
+    <p>If specified, only sessions with at least one media file whose label matches this value will be eligible for pruning.  This restriction is in addition to those imposed by the date and the <strong>-M</strong> or <strong>-u</strong> options.  This option allows the pruning of all inventory references to media which may have been overwritten or lost. Note that this option does not apply to sessions with no media files.</p>
+  </dd>
+  <dt>
+    <p><strong>-s</strong> <em>SESSION_ID</em></p>
+  </dt>
+  <dd>
+    <p>Prunes the dump session identified by the given session id. <em>xfsinvutil</em> will prompt the operator prior to pruning a dump session unless the <strong>-F</strong> option is given.</p>
+  </dd>
+  <dt>
+    <p><strong>-C</strong></p>
+  </dt>
+  <dd>
+    <p>With this option, <em>xfsinvutil</em> performs consistency checks for all entries in the inventory database. It fixes any problems found. If no consistent entries are found , the corresponding inventory database file is removed.</p>
+  </dd>
 
-<p><em>xfsdump</em> maintains an online dump inventory in \f2/var/lib/xfsdump/inventory\f1. The <strong>-I</strong> option of xfsdump displays the inventory contents hierarchically. The levels of the hierarchy are: filesystem, dump session, stream, and media file.</p>
-<p class='spacer'>
+</dl>
+<h3>Interactive Mode</h3>
+<p>When run with <strong>-i</strong>, <em>xfsinvutil</em> will present the operator with a hierarchical representation of the <em>xfsdump</em> inventory.  In this mode, the operator can use the arrow keys (or the <strong>h</strong> <strong>j</strong> <strong>k</strong> <strong>l</strong> keys) to navigate the inventory and also use the following keys and functionality:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>+</strong></p>
+  </dt>
+  <dd>
+    <p>Expand a branch of the tree.</p>
+  </dd>
+  <dt>
+    <p><strong>-</strong></p>
+  </dt>
+  <dd>
+    <p>Collapse a branch of the tree.</p>
+  </dd>
+  <dt>
+    <p><strong>*</strong></p>
+  </dt>
+  <dd>
+    <p>Fully expand a branch of the tree.</p>
+  </dd>
+  <dt>
+    <p><strong>%</strong></p>
+  </dt>
+  <dd>
+    <p>Fully collapse a branch of the tree.</p>
+  </dd>
+  <dt>
+    <p><strong>h</strong></p>
+  </dt>
+  <dd>
+    <p>Move selection to the parent entry.</p>
+  </dd>
+  <dt>
+    <p><strong>l</strong></p>
+  </dt>
+  <dd>
+    <p>Move selection to the child entry.</p>
+  </dd>
+  <dt>
+    <p><strong>j</strong></p>
+  </dt>
+  <dd>
+    <p>Move selection to next entry.</p>
+  </dd>
+  <dt>
+    <p><strong>k</strong></p>
+  </dt>
+  <dd>
+    <p>Move selection to previous entry.</p>
+  </dd>
+  <dt>
+    <p><strong>d</strong></p>
+  </dt>
+  <dd>
+    <p>Mark the current record, and all sub-records, to be deleted.</p>
+  </dd>
+  <dt>
+    <p><strong>u</strong></p>
+  </dt>
+  <dd>
+    <p>Clear the current record and all parent records from being deleted.</p>
+  </dd>
+  <dt>
+    <p><strong>i</strong></p>
+  </dt>
+  <dd>
+    <p>Import another <em>xfsdump</em> inventory.</p>
+  </dd>
+  <dt>
+    <p><strong>?</strong></p>
+  </dt>
+  <dd>
+    <p>Show help window.</p>
+  </dd>
+  <dt>
+    <p><strong>x</strong></p>
+  </dt>
+  <dd>
+    <p>Commit any changes made to the inventory, and exit the program.</p>
+  </dd>
+  <dt>
+    <p><strong>q</strong></p>
+  </dt>
+  <dd>
+    <p>Exit the program without committing any changes to the inventory.</p>
+  </dd>
 
-<p><em>xfsinvutil</em> is a utility to check this inventory database for consistency, to remove entries of dump sessions which may no longer be of relevance, and to browse the contents of the inventory.</p>
-<p class='spacer'>
-
-  <p>The following command line options are available:</p>
-  <dl class='dl-vertical'>
-    <dt>\f3-F\f1</dt>
-    <dd>
-  <p>Don't prompt the operator.  When <em>xfsinvutil</em> encounters a matching dump session, <em>xfsinvutil</em> will normally ask the operator for permission to delete the entry. With this option the deletion is performed, no questions asked.</p>
-    </dd>
-    <dt>\f3-i\f1</dt>
-    <dd>
-  <p>Interactive mode.  Causes <em>xfsinvutil</em> to run in a mode that will allow the operator to browse and modify the contents of the inventory. Please refer to the <strong>Interactive Mode</strong> section below for more information.</p>
-    </dd>
-    <dt>\f3-M\f1 \f2mount_point mm/dd/yyyy\f1</dt>
-    <dd>
-  <p>Prunes dump sessions identified by the given mount point which were created prior to the specified date. Optionally \f3-m\f1 may be be specified to further limit the matching dump sessions by media label. <em>xfsinvutil</em> will prompt the operator prior to pruning a dump session unless the \f3-F\f1 or \f3-i\f1 options are given.</p>
-    </dd>
-    <dt>\f3-u\f1 \f2UUID mm/dd/yyyy\f1</dt>
-    <dd>
-  <p>Like \f3-M\f1, except the matching filesystem is specified using its universally unique identifier (UUID) instead of its mount point.</p>
-    </dd>
-    <dt>\f3-m\f1 \f2media_label\f1</dt>
-    <dd>
-  <p>If specified, only sessions with at least one media file whose label matches this value will be eligible for pruning.  This restriction is in addition to those imposed by the date and the \f3-M\f1 or \f3-u\f1 options.  This option allows the pruning of all inventory references to media which may have been overwritten or lost. Note that this option does not apply to sessions with no media files.</p>
-    </dd>
-    <dt>\f3-s\f1 \f2SESSION_ID\f1</dt>
-    <dd>
-  <p>Prunes the dump session identified by the given session id. <em>xfsinvutil</em> will prompt the operator prior to pruning a dump session unless the \f3-F\f1 option is given.</p>
-    </dd>
-    <dt><strong>-C</strong></dt>
-    <dd>
-  <p>With this option, <em>xfsinvutil</em> performs consistency checks for all entries in the inventory database. It fixes any problems found. If no consistent entries are found , the corresponding inventory database file is removed.</p>
-    </dd>
-  </dl>
-  <h3>Interactive Mode</h3>
-  <p>When run with \f3-i\f1, <em>xfsinvutil</em> will present the operator with a hierarchical representation of the <em>xfsdump</em> inventory.  In this mode, the operator can use the arrow keys (or the <strong>h</strong> <strong>j</strong> <strong>k</strong> <strong>l</strong> keys) to navigate the inventory and also use the following keys and functionality:</p>
-  <dl class='dl-vertical'>
-    <dt>\f3+\f1</dt>
-    <dd>
-  <p>Expand a branch of the tree.</p>
-    </dd>
-    <dt>\f3-\f1</dt>
-    <dd>
-  <p>Collapse a branch of the tree.</p>
-    </dd>
-    <dt>\f3*\f1</dt>
-    <dd>
-  <p>Fully expand a branch of the tree.</p>
-    </dd>
-    <dt>\f3%\f1</dt>
-    <dd>
-  <p>Fully collapse a branch of the tree.</p>
-    </dd>
-    <dt>\f3h\f1</dt>
-    <dd>
-  <p>Move selection to the parent entry.</p>
-    </dd>
-    <dt>\f3l\f1</dt>
-    <dd>
-  <p>Move selection to the child entry.</p>
-    </dd>
-    <dt>\f3j\f1</dt>
-    <dd>
-  <p>Move selection to next entry.</p>
-    </dd>
-    <dt>\f3k\f1</dt>
-    <dd>
-  <p>Move selection to previous entry.</p>
-    </dd>
-    <dt>\f3d\f1</dt>
-    <dd>
-  <p>Mark the current record, and all sub-records, to be deleted.</p>
-    </dd>
-    <dt>\f3u\f1</dt>
-    <dd>
-  <p>Clear the current record and all parent records from being deleted.</p>
-    </dd>
-    <dt>\f3i\f1</dt>
-    <dd>
-  <p>Import another <em>xfsdump</em> inventory.</p>
-    </dd>
-    <dt>\f3?\f1</dt>
-    <dd>
-  <p>Show help window.</p>
-    </dd>
-    <dt>\f3x\f1</dt>
-    <dd>
-  <p>Commit any changes made to the inventory, and exit the program.</p>
-    </dd>
-    <dt>\f3q\f1</dt>
-    <dd>
-  <p>Exit the program without committing any changes to the inventory.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>Inventories from other hosts can be imported to create a larger common inventory.  It is recommended that the contents of <em>/var/lib/xfsdump/inventory</em> on the remote host be copied to a temporary local directory prior to running <em>xfsinvutil</em>. When <em>xfsinvutil</em> is run in interactive mode, and the operator hits <strong>i</strong>, they will be prompted for the path to the inventory to be imported. <em>xfsinvutil</em> will then add the contents of the imported inventory to the main window, and all entries will be marked as imported.  The operator can then delete any of these entries that are not to be imported.  When the operator commits the changes, <em>xfsinvutil</em> will import any entries which were not marked as deleted.  Deleted entries are not actually deleted from the original imported inventory.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
+<h3>Inventory</h3>
+<p>Each dump session updates an inventory database in <em>/var/lib/xfsdump/inventory</em>. <em>xfsdump</em> uses the inventory to determine the base of incremental and resumed dumps.</p><p>This database can be displayed by invoking <em>xfsdump</em> with the <strong>-I</strong> option. The display uses tabbed indentation to present the inventory hierarchically. The first level is filesystem. The second level is session. The third level is media stream (currently only one stream is supported). The fourth level lists the media files sequentially composing the stream.</p>
 
-  <h3>Inventory</h3>
-<p>Each dump session updates an inventory database in \f2/var/lib/xfsdump/inventory\f1. <em>xfsdump</em> uses the inventory to determine the base of incremental and resumed dumps.</p>
-<p class='spacer'>
-
-<p>This database can be displayed by invoking <em>xfsdump</em> with the <strong>-I</strong> option. The display uses tabbed indentation to present the inventory hierarchically. The first level is filesystem. The second level is session. The third level is media stream (currently only one stream is supported). The fourth level lists the media files sequentially composing the stream.</p>
         </div>
       </section>
 
@@ -223,27 +258,29 @@
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt>/var/lib/xfsdump/inventory</dt>
-    <dd>
-  <p>dump inventory database</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p>/var/lib/xfsdump/inventory</p>
+  </dt>
+  <dd>
+    <p>dump inventory database</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO xfsinvutil&hellip;</h2>
         <div class="sectioncontent">
-
-<strong>xfsdump</strong>(8), <strong>xfsrestore</strong>(8).</p>
+<a href="../man8/xfsdump.8.html"><strong>xfsdump</strong>(8)</a>, <a href="../man8/xfsrestore.8.html"><strong>xfsrestore</strong>(8)</a>.</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="xfs_rtcp.8.html"><span aria-hidden="true">&larr;</span> xfs_rtcp.8: Xfs realtime copy command</a></li>
-   <li class="next"><a href="xqmstats.8.html">xqmstats.8: Display xfs quota manager statistics from /proc <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="xfsdump.8.html"><span aria-hidden="true">&larr;</span> xfsdump.8: Xfs filesystem incremental dump utility</a></li>
+   <li class="next"><a href="xfsrestore.8.html">xfsrestore.8: Xfs filesystem incremental restore utility <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

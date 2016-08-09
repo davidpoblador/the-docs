@@ -90,75 +90,44 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p>#include &lt;pcp/pmapi.h&gt;</p>
-<p class='spacer'>
-
-<p>#include &lt;pcp/impl.h&gt;</p>
-<p class='spacer'>
-
-<p>int __pmLocalPMDA(int <em>op</em>, int <em>domain</em>, const char *<em>name</em>, const&nbsp;char&nbsp;*<em>init</em>);</p>
-<p class='spacer'>
-
-<p>cc ... -lpcp</p>
+<p>#include &lt;pcp/pmapi.h&gt;</p><p>#include &lt;pcp/impl.h&gt;</p><p>int __pmLocalPMDA(int <em>op</em>, int <em>domain</em>, const char *<em>name</em>, const&nbsp;char&nbsp;*<em>init</em>);</p><p>cc ... -lpcp</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>PCP contexts of type <strong>PM_CONTEXT_LOCAL</strong> are used by clients that wish to fetch metrics directly from one or more PMDAs on the local host without involving <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>. A PMDA that is to be used in this way must have been built as a Dynamic Shared Object (DSO).</p><p>Historically the table of PMDAs available for use with <strong>PM_CONTEXT_LOCAL</strong> was hardcoded to the following:</p><ul>
+<li><p>The PMDA (or PMDAs) that export the operating system performance data and data about process activity.</p></li><li><p>The <strong>mmv</strong> PMDA.</p></li><li><p>The <strong>sample</strong> PMDA provided <strong>$PCP_LITE_SAMPLE</strong> or <strong>$PMDA_LOCAL_SAMPLE</strong> is set in the environment - used mostly for QA and testing.</p></li>
+</ul><p>The initial table of PMDAs available for use with <strong>PM_CONTEXT_LOCAL</strong> is now generated dynamically from all those PMDAs that have been installed as DSOs on the local host. The one exception is the ``pmcd'' PMDA which only operates correctly in the address space of a running <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a> process and so is not available to an application using a <strong>PM_CONTEXT_LOCAL</strong> context.</p><p><strong>__pmLocalPMDA</strong> provides a number of services to amend the table of PMDAs available for use with <strong>PM_CONTEXT_LOCAL</strong>.</p><p>The <em>op</em> argument specifies the what should be done and takes one of the following values and actions:</p>
+<dl class='dl-vertical'>
+  <dt>
+    PM_LOCAL_ADD
+  </dt>
+  <dd>
+    <p>Append an entry to the table for the PMDA with a Performance Metrics Domain (PMD) of <em>domain</em>, the path to the DSO PMDA is given by <em>path</em> and the PMDA's initialization routine is <em>init</em>.</p>
+  </dd>
+  <dt>
+    PM_LOCAL_DEL
+  </dt>
+  <dd>
+    <p>Removes all entries in the table where the <em>domain</em> matches, or the <em>path</em> matches.  Setting the arguments <em>domain</em> to -1 or <em>path</em> to <strong>NULL</strong> to force matching on the <em>other</em> argument. The <em>init</em> argument is ignored.</p>
+  </dd>
+  <dt>
+    PM_LOCAL_CLEAR
+  </dt>
+  <dd>
+    <p>Remove all entries from the table.  All the other arguments are ignored in this case.</p>
+  </dd>
 
-<p>PCP contexts of type <strong>PM_CONTEXT_LOCAL</strong> are used by clients that wish to fetch metrics directly from one or more PMDAs on the local host without involving <strong>pmcd</strong>(1). A PMDA that is to be used in this way must have been built as a Dynamic Shared Object (DSO).</p>
-<p class='spacer'>
-
-  <p>Historically the table of PMDAs available for use with <strong>PM_CONTEXT_LOCAL</strong> was hardcoded to the following:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>The PMDA (or PMDAs) that export the operating system performance data and data about process activity.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>The <strong>mmv</strong> PMDA.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>The <strong>sample</strong> PMDA provided <strong>$PCP_LITE_SAMPLE</strong> or <strong>$PMDA_LOCAL_SAMPLE</strong> is set in the environment - used mostly for QA and testing.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The initial table of PMDAs available for use with <strong>PM_CONTEXT_LOCAL</strong> is now generated dynamically from all those PMDAs that have been installed as DSOs on the local host. The one exception is the ``pmcd'' PMDA which only operates correctly in the address space of a running <strong>pmcd</strong>(1) process and so is not available to an application using a <strong>PM_CONTEXT_LOCAL</strong> context.</p>
-<p class='spacer'>
-
-<p><strong>__pmLocalPMDA</strong> provides a number of services to amend the table of PMDAs available for use with <strong>PM_CONTEXT_LOCAL</strong>.</p>
-<p class='spacer'>
-
-  <p>The <em>op</em> argument specifies the what should be done and takes one of the following values and actions:</p>
-  <dl class='dl-horizontal'>
-    <dt>PM_LOCAL_ADD</dt>
-    <dd>
-  <p>Append an entry to the table for the PMDA with a Performance Metrics Domain (PMD) of <em>domain</em>, the path to the DSO PMDA is given by <em>path</em> and the PMDA's initialization routine is <em>init</em>.</p>
-    </dd>
-    <dt>PM_LOCAL_DEL</dt>
-    <dd>
-  <p>Removes all entries in the table where the <em>domain</em> matches, or the <em>path</em> matches.  Setting the arguments <em>domain</em> to -1 or <em>path</em> to <strong>NULL</strong> to force matching on the <em>other</em> argument. The <em>init</em> argument is ignored.</p>
-    </dd>
-    <dt>PM_LOCAL_CLEAR</dt>
-    <dd>
-  <p>Remove all entries from the table.  All the other arguments are ignored in this case.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The <em>domain</em>, <em>name</em> and <em>init</em> arguments have similar syntax and semantics to the associated fields in the <strong>pmcd</strong>(1) configuration file. The one difference is the <em>path</em> argument which is used by <strong>__pmLocalPMDA</strong> to find a likely looking DSO by searching in this order: <strong>$PCP_PMDAS_DIR / .IR path ,</strong> <em>path</em>, <strong>$PCP_PMDAS_DIR / .I path . .I dso-suffix</strong> and finally <em>path . .I dso-suffix</em> ( .I dso-suffix is the local platform specific default file name suffix for a DSO, e.g. <strong>so</strong> for Linux, <strong>dylib</strong> for Mac OS X, <strong>dll</strong> for Windows, etc.).</p>
+</dl>
+<p>The <em>domain</em>, <em>name</em> and <em>init</em> arguments have similar syntax and semantics to the associated fields in the <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a> configuration file. The one difference is the <em>path</em> argument which is used by <strong>__pmLocalPMDA</strong> to find a likely looking DSO by searching in this order: <strong>$PCP_PMDAS_DIR / .IR path ,</strong> <em>path</em>, <strong>$PCP_PMDAS_DIR / .I path . .I dso-suffix</strong> and finally <em>path . .I dso-suffix</em> ( .I dso-suffix is the local platform specific default file name suffix for a DSO, e.g. <strong>so</strong> for Linux, <strong>dylib</strong> for Mac OS X, <strong>dll</strong> for Windows, etc.).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>In most cases, <strong>__pmLocalPMDA</strong> returns 0 to indicate success. If <em>op</em> is invalid, then the return value is <strong>PM_ERR_CONV</strong> else if there is no matching table entry found for a <strong>PM_LOCAL_DEL</strong> operation, PM_ERR_INDOM is returned.</p>
         </div>
       </section>
@@ -166,11 +135,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmlocalpmda&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>pmcd</strong>(1), <strong>PMAPI</strong>(3), <strong>pmNewContext</strong>(3) and <strong>__pmSpecLocalPMDA</strong>(3).</p>
+<p><a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>, <strong>PMAPI</strong>(3), <strong>pmNewContext</strong>(3) and <strong>__pmSpecLocalPMDA</strong>(3).</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmloadnamespace.3.html"><span aria-hidden="true">&larr;</span> pmloadnamespace.3: Load a local pmns for an application</a></li>

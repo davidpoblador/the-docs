@@ -91,12 +91,14 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;sys/socket.h&gt;</strong>
+<pre>
+<strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <sys/socket.h></strong>
 
 <strong>int recvmmsg(int </strong><em>sockfd</em><strong>, struct mmsghdr *</strong><em>msgvec</em><strong>, unsigned int </strong><em>vlen</em><strong>,</strong>
 
-<strong>             unsigned int </strong><em>flags</em><strong>, struct timespec *</strong><em>timeout</em><strong>);</strong></pre>
+<strong>             unsigned int </strong><em>flags</em><strong>, struct timespec *</strong><em>timeout</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -104,52 +106,30 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The <strong>recvmmsg</strong>() system call is an extension of <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> that allows the caller to receive multiple messages from a socket using a single system call. (This has performance benefits for some applications.) A further extension over <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> is support for a timeout on the receive operation.</p>
-<p class='spacer'>
-
-<p>The <em>sockfd</em> argument is the file descriptor of the socket to receive data from.</p>
-<p class='spacer'>
-
-<p>The <em>msgvec</em> argument is a pointer to an array of <em>mmsghdr</em> structures. The size of this array is specified in <em>vlen</em>.</p>
-<p class='spacer'>
-
-<p>The <em>mmsghdr</em> structure is defined in <em>&lt;sys/socket.h&gt;</em> as:</p>
-<p class='spacer'>
-
-<pre>struct mmsghdr {
+<p>The <strong>recvmmsg</strong>() system call is an extension of <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> that allows the caller to receive multiple messages from a socket using a single system call. (This has performance benefits for some applications.) A further extension over <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> is support for a timeout on the receive operation.</p><p>The <em>sockfd</em> argument is the file descriptor of the socket to receive data from.</p><p>The <em>msgvec</em> argument is a pointer to an array of <em>mmsghdr</em> structures. The size of this array is specified in <em>vlen</em>.</p><p>The <em>mmsghdr</em> structure is defined in <em><sys/socket.h></em> as:</p>
+<pre>
+struct mmsghdr {
     struct msghdr msg_hdr;  /* Message header */
     unsigned int  msg_len;  /* Number of received bytes for header */
-};</pre>
+};
+</pre>
+<p>The <em>msg_hdr</em> field is a <em>msghdr</em> structure, as described in <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. The <em>msg_len</em> field is the number of bytes returned for the message in the entry. This field has the same value as the return value of a single <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> on the header.</p><p>The <em>flags</em> argument contains flags ORed together. The flags are the same as documented for <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, with the following addition:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>MSG_WAITFORONE</strong> (since Linux 2.6.34)</p>
+  </dt>
+  <dd>
+    <p>Turns on <strong>MSG_DONTWAIT</strong> after the first message has been received.</p>
+  </dd>
 
-<p class='spacer'>
-
-<p>The <em>msg_hdr</em> field is a <em>msghdr</em> structure, as described in <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. The <em>msg_len</em> field is the number of bytes returned for the message in the entry. This field has the same value as the return value of a single <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> on the header.</p>
-<p class='spacer'>
-
-  <p>The <em>flags</em> argument contains flags ORed together. The flags are the same as documented for <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, with the following addition:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>MSG_WAITFORONE</strong> (since Linux 2.6.34)</dt>
-    <dd>
-  <p>Turns on <strong>MSG_DONTWAIT</strong> after the first message has been received.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The <em>timeout</em> argument points to a <em>struct timespec</em> (see <a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>) defining a timeout (seconds plus nanoseconds) for the receive operation (<em>but see BUGS!</em>). (This interval will be rounded up to the system clock granularity, and kernel scheduling delays mean that the blocking interval may overrun by a small amount.) If <em>timeout</em> is NULL, then the operation blocks indefinitely.</p>
-<p class='spacer'>
-
-<p>A blocking <strong>recvmmsg</strong>() call blocks until <em>vlen</em> messages have been received or until the timeout expires. A nonblocking call reads as many messages as are available (up to the limit specified by <em>vlen</em>) and returns immediately.</p>
-<p class='spacer'>
-
-<p>On return from <strong>recvmmsg</strong>(), successive elements of <em>msgvec</em> are updated to contain information about each received message: <em>msg_len</em> contains the size of the received message; the subfields of <em>msg_hdr</em> are updated as described in <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. The return value of the call indicates the number of elements of <em>msgvec</em> that have been updated.</p>
+</dl>
+<p>The <em>timeout</em> argument points to a <em>struct timespec</em> (see <a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>) defining a timeout (seconds plus nanoseconds) for the receive operation (<em>but see BUGS!</em>). (This interval will be rounded up to the system clock granularity, and kernel scheduling delays mean that the blocking interval may overrun by a small amount.) If <em>timeout</em> is NULL, then the operation blocks indefinitely.</p><p>A blocking <strong>recvmmsg</strong>() call blocks until <em>vlen</em> messages have been received or until the timeout expires. A nonblocking call reads as many messages as are available (up to the limit specified by <em>vlen</em>) and returns immediately.</p><p>On return from <strong>recvmmsg</strong>(), successive elements of <em>msgvec</em> are updated to contain information about each received message: <em>msg_len</em> contains the size of the received message; the subfields of <em>msg_hdr</em> are updated as described in <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. The return value of the call indicates the number of elements of <em>msgvec</em> that have been updated.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, <strong>recvmmsg</strong>() returns the number of messages received in <em>msgvec</em>; on error, -1 is returned, and <em>errno</em> is set to indicate the error.</p>
         </div>
       </section>
@@ -157,21 +137,23 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>Errors are as for <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. In addition, the following error can occur:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>timeout</em> is invalid.</p>
+  </dd>
 
-  <p>Errors are as for <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. In addition, the following error can occur:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>timeout</em> is invalid.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>recvmmsg</strong>() system call was added in Linux 2.6.33. Support in glibc was added in version 2.12.</p>
         </div>
       </section>
@@ -179,7 +161,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p><strong>recvmmsg</strong>() is Linux-specific.</p>
         </div>
       </section>
@@ -187,32 +168,27 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>The following program uses <strong>recvmmsg</strong>() to receive multiple messages on a socket and stores them in multiple buffers. The call returns if all buffers are filled or if the timeout specified has expired.</p>
-<p class='spacer'>
-
-  <p>The following snippet periodically generates UDP datagrams containing a random number:</p>
+<p>The following program uses <strong>recvmmsg</strong>() to receive multiple messages on a socket and stores them in multiple buffers. The call returns if all buffers are filled or if the timeout specified has expired.</p><p>The following snippet periodically generates UDP datagrams containing a random number:</p>
 <pre>
-$<strong> while true; do echo $RANDOM &gt; /dev/udp/127.0.0.1/1234; </strong>
-<strong>      sleep 0.25; done</strong></pre>
 
-<p class='spacer'>
-
-  <p>These datagrams are read by the example application, which can give the following output:</p>
+$<strong> while true; do echo $RANDOM > /dev/udp/127.0.0.1/1234; </strong>
+<strong>      sleep 0.25; done</strong>
+</pre>
+<p>These datagrams are read by the example application, which can give the following output:</p>
 <pre>
+
 $<strong> ./a.out</strong>
 5 messages received
 1 11782
 2 11345
 3 304
 4 13514
-5 28421</pre>
+5 28421
+</pre>
+<h3>Program source</h3>
 
-  <h3>Program source</h3>
-  <p></p>
-<pre>#define _GNU_SOURCE
+<pre>
+#define _GNU_SOURCE
 #include &lt;netinet/ip.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -269,7 +245,9 @@ main(void)
         printf("%d %s", i+1, bufs[i]);
     }
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
+
 
         </div>
       </section>
@@ -277,7 +255,6 @@ main(void)
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>The <em>timeout</em> argument does not work as intended. The timeout is checked only after the receipt of each datagram, so that if up to <em>vlen-1</em> datagrams are received before the timeout expires, but then no further datagrams are received, the call will block forever.</p>
         </div>
       </section>
@@ -285,11 +262,9 @@ main(void)
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO recvmmsg&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>, <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/sendmmsg.2.html"><strong>sendmmsg</strong>(2)</a>, <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a>, <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="recvfrom.2.html"><span aria-hidden="true">&larr;</span> recvfrom.2: Receive a message from a socket</a></li>

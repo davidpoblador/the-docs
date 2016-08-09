@@ -91,8 +91,10 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre>#include &lt;sys/types.h&gt;
-#include &lt;db.h&gt;</pre>
+<pre>
+#include &lt;sys/types.h&gt;
+#include &lt;db.h&gt;
+</pre>
 
         </div>
       </section>
@@ -100,20 +102,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><em>Note well</em>: This page documents interfaces provided in glibc up until version 2.1. Since version 2.2, glibc no longer provides these interfaces. Probably, you are looking for the APIs provided by the <em>libdb</em> library instead.</p>
-<p class='spacer'>
-
-<p>The routine <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is the library interface to database files. One of the supported file formats is record number files. The general description of the database access methods is in <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, this manual page describes only the recno-specific information.</p>
-<p class='spacer'>
-
-<p>The record number data structure is either variable or fixed-length records stored in a flat-file format, accessed by the logical record number. The existence of record number five implies the existence of records one through four, and the deletion of record number one causes record number five to be renumbered to record number four, as well as the cursor, if positioned after record number one, to shift down one record.</p>
-<p class='spacer'>
-
-<p>The recno access-method-specific data structure provided to <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is defined in the <em>&lt;db.h&gt;</em> include file as follows:</p>
-<p class='spacer'>
-
-<pre>typedef struct {
+<p><em>Note well</em>: This page documents interfaces provided in glibc up until version 2.1. Since version 2.2, glibc no longer provides these interfaces. Probably, you are looking for the APIs provided by the <em>libdb</em> library instead.</p><p>The routine <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is the library interface to database files. One of the supported file formats is record number files. The general description of the database access methods is in <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, this manual page describes only the recno-specific information.</p><p>The record number data structure is either variable or fixed-length records stored in a flat-file format, accessed by the logical record number. The existence of record number five implies the existence of records one through four, and the deletion of record number one causes record number five to be renumbered to record number four, as well as the cursor, if positioned after record number one, to shift down one record.</p><p>The recno access-method-specific data structure provided to <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is defined in the <em><db.h></em> include file as follows:</p>
+<pre>
+typedef struct {
     unsigned long flags;
     unsigned int  cachesize;
     unsigned int  psize;
@@ -121,85 +112,100 @@
     size_t        reclen;
     unsigned char bval;
     char         *bfname;
-} RECNOINFO;</pre>
+} RECNOINFO;
+</pre>
+<p>The elements of this structure are defined as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><em>flags</em></p>
+  </dt>
+  <dd>
+    <p>The flag value is specified by ORing any of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>R_FIXEDLEN</strong></p>
+  </dt>
+  <dd>
+    <p>The records are fixed-length, not byte delimited. The structure element <em>reclen</em> specifies the length of the record, and the structure element <em>bval</em> is used as the pad character. Any records, inserted into the database, that are less than <em>reclen</em> bytes long are automatically padded.</p>
+  </dd>
+  <dt>
+    <p><strong>R_NOKEY</strong></p>
+  </dt>
+  <dd>
+    <p>In the interface specified by <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, the sequential record retrieval fills in both the caller's key and data structures. If the <strong>R_NOKEY</strong> flag is specified, the <em>cursor</em> routines are not required to fill in the key structure. This permits applications to retrieve records at the end of files without reading all of the intervening records.</p>
+  </dd>
+  <dt>
+    <p><strong>R_SNAPSHOT</strong></p>
+  </dt>
+  <dd>
+    <p>This flag requires that a snapshot of the file be taken when <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is called, instead of permitting any unmodified records to be read from the original file.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <p>The elements of this structure are defined as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><em>flags</em></dt>
-    <dd>
-      <p>The flag value is specified by ORing any of the following values:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>R_FIXEDLEN</strong></dt>
-        <dd>
-      <p>The records are fixed-length, not byte delimited. The structure element <em>reclen</em> specifies the length of the record, and the structure element <em>bval</em> is used as the pad character. Any records, inserted into the database, that are less than <em>reclen</em> bytes long are automatically padded.</p>
-        </dd>
-        <dt><strong>R_NOKEY</strong></dt>
-        <dd>
-      <p>In the interface specified by <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, the sequential record retrieval fills in both the caller's key and data structures. If the <strong>R_NOKEY</strong> flag is specified, the <em>cursor</em> routines are not required to fill in the key structure. This permits applications to retrieve records at the end of files without reading all of the intervening records.</p>
-        </dd>
-        <dt><strong>R_SNAPSHOT</strong></dt>
-        <dd>
-      <p>This flag requires that a snapshot of the file be taken when <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> is called, instead of permitting any unmodified records to be read from the original file.</p>
-        </dd>
-      </dl>
-    </dd>
-    <dt><em>cachesize</em></dt>
-    <dd>
-  <p>A suggested maximum size, in bytes, of the memory cache. This value is <strong>only</strong> advisory, and the access method will allocate more memory rather than fail. If <em>cachesize</em> is  0 (no size is specified), a default cache is used.</p>
-    </dd>
-    <dt><em>psize</em></dt>
-    <dd>
-  <p>The recno access method stores the in-memory copies of its records in a btree. This value is the size (in bytes) of the pages used for nodes in that tree. If <em>psize</em> is 0 (no page size is specified), a page size is chosen based on the underlying filesystem I/O block size. See <a href="../man3/btree.3.html"><strong>btree</strong>(3)</a> for more information.</p>
-    </dd>
-    <dt><em>lorder</em></dt>
-    <dd>
-  <p>The byte order for integers in the stored database metadata. The number should represent the order as an integer; for example, big endian order would be the number 4,321. If <em>lorder</em> is 0 (no order is specified), the current host order is used.</p>
-    </dd>
-    <dt><em>reclen</em></dt>
-    <dd>
-  <p>The length of a fixed-length record.</p>
-    </dd>
-    <dt><em>bval</em></dt>
-    <dd>
-  <p>The delimiting byte to be used to mark the end of a record for variable-length records, and the pad character for fixed-length records. If no value is specified, newlines ("&#92;n") are used to mark the end of variable-length records and fixed-length records are padded with spaces.</p>
-    </dd>
-    <dt><em>bfname</em></dt>
-    <dd>
-  <p>The recno access method stores the in-memory copies of its records in a btree. If <em>bfname</em> is non-NULL, it specifies the name of the btree file, as if specified as the filename for a <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> of a btree file.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+  </dd>
+  <dt>
+    <p><em>cachesize</em></p>
+  </dt>
+  <dd>
+    <p>A suggested maximum size, in bytes, of the memory cache. This value is <strong>only</strong> advisory, and the access method will allocate more memory rather than fail. If <em>cachesize</em> is  0 (no size is specified), a default cache is used.</p>
+  </dd>
+  <dt>
+    <p><em>psize</em></p>
+  </dt>
+  <dd>
+    <p>The recno access method stores the in-memory copies of its records in a btree. This value is the size (in bytes) of the pages used for nodes in that tree. If <em>psize</em> is 0 (no page size is specified), a page size is chosen based on the underlying filesystem I/O block size. See <a href="../man3/btree.3.html"><strong>btree</strong>(3)</a> for more information.</p>
+  </dd>
+  <dt>
+    <p><em>lorder</em></p>
+  </dt>
+  <dd>
+    <p>The byte order for integers in the stored database metadata. The number should represent the order as an integer; for example, big endian order would be the number 4,321. If <em>lorder</em> is 0 (no order is specified), the current host order is used.</p>
+  </dd>
+  <dt>
+    <p><em>reclen</em></p>
+  </dt>
+  <dd>
+    <p>The length of a fixed-length record.</p>
+  </dd>
+  <dt>
+    <p><em>bval</em></p>
+  </dt>
+  <dd>
+    <p>The delimiting byte to be used to mark the end of a record for variable-length records, and the pad character for fixed-length records. If no value is specified, newlines ("&#92;n") are used to mark the end of variable-length records and fixed-length records are padded with spaces.</p>
+  </dd>
+  <dt>
+    <p><em>bfname</em></p>
+  </dt>
+  <dd>
+    <p>The recno access method stores the in-memory copies of its records in a btree. If <em>bfname</em> is non-NULL, it specifies the name of the btree file, as if specified as the filename for a <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> of a btree file.</p>
+  </dd>
 
-<p>The data part of the key/data pair used by the <em>recno</em> access method is the same as other access methods. The key is different. The <em>data</em> field of the key should be a pointer to a memory location of type <em>recno_t</em>, as defined in the <em>&lt;db.h&gt;</em> include file. This type is normally the largest unsigned integral type available to the implementation. The <em>size</em> field of the key should be the size of that type.</p>
-<p class='spacer'>
-
-<p>Because there can be no metadata associated with the underlying recno access method files, any changes made to the default values (e.g., fixed record length or byte separator value) must be explicitly specified each time the file is opened.</p>
-<p class='spacer'>
-
-<p>In the interface specified by <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, using the <em>put</em> interface to create a new record will cause the creation of multiple, empty records if the record number is more than one greater than the largest record currently in the database.</p>
+</dl>
+<p>The data part of the key/data pair used by the <em>recno</em> access method is the same as other access methods. The key is different. The <em>data</em> field of the key should be a pointer to a memory location of type <em>recno_t</em>, as defined in the <em><db.h></em> include file. This type is normally the largest unsigned integral type available to the implementation. The <em>size</em> field of the key should be the size of that type.</p><p>Because there can be no metadata associated with the underlying recno access method files, any changes made to the default values (e.g., fixed record length or byte separator value) must be explicitly specified each time the file is opened.</p><p>In the interface specified by <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, using the <em>put</em> interface to create a new record will cause the creation of multiple, empty records if the record number is more than one greater than the largest record currently in the database.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>The <em>recno</em> access method routines may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> or the following:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>An attempt was made to add a record to a fixed-length database that was too large to fit.</p>
+  </dd>
 
-  <p>The <em>recno</em> access method routines may fail and set <em>errno</em> for any of the errors specified for the library routine <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a> or the following:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>An attempt was made to add a record to a fixed-length database that was too large to fit.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>Only big and little endian byte order is supported.</p>
         </div>
       </section>
@@ -207,18 +213,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO recno&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man3/btree.3.html"><strong>btree</strong>(3)</a>, <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, <a href="../man3/hash.3.html"><strong>hash</strong>(3)</a>, <a href="../man3/mpool.3.html"><strong>mpool</strong>(3)</a></p>
-<p class='spacer'>
-
-<p><em>Document Processing in a Relational Database System</em>, Michael Stonebraker, Heidi Stettner, Joseph Kalash, Antonin Guttman, Nadene Lynn, Memorandum No. UCB/ERL M82/32, May 1982.</p>
+<p><a href="../man3/btree.3.html"><strong>btree</strong>(3)</a>, <a href="../man3/dbopen.3.html"><strong>dbopen</strong>(3)</a>, <a href="../man3/hash.3.html"><strong>hash</strong>(3)</a>, <a href="../man3/mpool.3.html"><strong>mpool</strong>(3)</a></p><p><em>Document Processing in a Relational Database System</em>, Michael Stonebraker, Heidi Stettner, Joseph Kalash, Antonin Guttman, Nadene Lynn, Memorandum No. UCB/ERL M82/32, May 1982.</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="realpath.3.html"><span aria-hidden="true">&larr;</span> realpath.3: Return the canonicalized absolute pathname</a></li>
-   <li class="next"><a href="recursive_key_scan.3.html">recursive_key_scan.3: Apply a function to all keys in a keyring tree recursive_session_key_scan - apply a function to all keys in the session keyring tree <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="recursive_key_scan.3.html">recursive_key_scan.3: Apply a function to all keys in a keyring tree  recursive_session_key_scan - apply a function to all keys in the session keyring tree <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

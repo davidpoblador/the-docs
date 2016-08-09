@@ -90,128 +90,54 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p>#include &lt;pcp/pmapi.h&gt;</p>
-<p class='spacer'>
-
-<p>#include &lt;pcp/impl.h&gt;</p>
-<p class='spacer'>
-
-<p>int __pmParseHostAttrsSpec(const char *<em>string</em>, pmHostSpec **<em>hostsp</em>, int&nbsp;*<em>count</em>, __pmHashCtl&nbsp;*<em>attrs</em>, char&nbsp;**<em>errmsg</em>);</p>
-<p class='spacer'>
-
-<p>int __pmUnparseHostAttrsSpec(pmHostSpec *<em>hostsp</em>, int&nbsp;*<em>count</em>, __pmHashCtl&nbsp;*<em>attrs</em>, char&nbsp;*<em>string</em>, size_t <em>size</em>);</p>
-<p class='spacer'>
-
-<p>void __pmFreeHostAttrsSpec(pmHostSpec *<em>hosts</em>, int <em>count</em>, __pmHashCtl&nbsp;*<em>attrs</em>);</p>
-<p class='spacer'>
-
-<p>void __pmFreeAttrsSpec(__pmHashCtl&nbsp;*<em>attrs</em>);</p>
-<p class='spacer'>
-
-<p>cc ... -lpcp</p>
+<p>#include &lt;pcp/pmapi.h&gt;</p><p>#include &lt;pcp/impl.h&gt;</p><p>int __pmParseHostAttrsSpec(const char *<em>string</em>, pmHostSpec **<em>hostsp</em>, int&nbsp;*<em>count</em>, __pmHashCtl&nbsp;*<em>attrs</em>, char&nbsp;**<em>errmsg</em>);</p><p>int __pmUnparseHostAttrsSpec(pmHostSpec *<em>hostsp</em>, int&nbsp;*<em>count</em>, __pmHashCtl&nbsp;*<em>attrs</em>, char&nbsp;*<em>string</em>, size_t <em>size</em>);</p><p>void __pmFreeHostAttrsSpec(pmHostSpec *<em>hosts</em>, int <em>count</em>, __pmHashCtl&nbsp;*<em>attrs</em>);</p><p>void __pmFreeAttrsSpec(__pmHashCtl&nbsp;*<em>attrs</em>);</p><p>cc ... -lpcp</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p><strong>__pmParseHostAttrsSpec</strong> accepts a <strong>string</strong> specifying the location of a PCP performance metric collector daemon, and any attributes that should be associated with the connection to that daemon.</p>
-<p class='spacer'>
-
-<p>The syntax allows the optional specification of a protocol (native PCP protocol, encrypted PCP protocol or unix domain socket protocol).</p>
-<p class='spacer'>
-
-<p>If the specified protocol is native PCP protocol, or encrypted PCP protocol, an initial <strong>pmcd</strong>(1) hostname with optional port numbers and optional proxy host, and optional attributes which are to be associated with the connection may be specified. Some examples follow:</p>
-<p class='spacer'>
-
-<pre>pcp://nas1.servers.com:44321@firewalls.r.us?compress
-pcps://nas1.servers.com?user=otto&pass=blotto&compress</pre>
-
-<p class='spacer'>
-
+<p><strong>__pmParseHostAttrsSpec</strong> accepts a <strong>string</strong> specifying the location of a PCP performance metric collector daemon, and any attributes that should be associated with the connection to that daemon.</p><p>The syntax allows the optional specification of a protocol (native PCP protocol, encrypted PCP protocol or unix domain socket protocol).</p><p>If the specified protocol is native PCP protocol, or encrypted PCP protocol, an initial <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a> hostname with optional port numbers and optional proxy host, and optional attributes which are to be associated with the connection may be specified. Some examples follow:</p>
+<pre>
+pcp://nas1.servers.com:44321@firewalls.r.us?compress
+pcps://nas1.servers.com?user=otto&pass=blotto&compress
+</pre>
 <p>If the specified protocol is a unix domain socket protocol, the path to the socket in the local file system may be specified along with optional attributes which are to be associated with the connection. For example:</p>
-<p class='spacer'>
-
-<pre>unix://$PCP_RUN_DIR/pmcd.socket:?compress
-local://my/local/pmcd.socket:?user=otto&pass=blotto&compress</pre>
-
-<p class='spacer'>
-
-<p>If the optional protocol component is not specified, then the default setting will be used - which is the native PCP binary protocol. However, this can still be overwritten via the environment as described in <strong>PCPIntro</strong>(1). If the protocol prefix is specified, it must be one of either "pcp://" (clear), "pcps://" (secure, encrypted), "unix://" (authenticated local) or "local://" ("unix://" then "pcp://").</p>
-<p class='spacer'>
-
-<p>The path specified for the "unix://" and "local://" protocols will always be interpreted as an absolute path name. For example, the following are all interpreted identically as <em>$PCP_RUN_DIR/pmcd.socket</em>.</p>
-<p class='spacer'>
-
-<pre>unix://$PCP_RUN_DIR/pmcd.socket
+<pre>
+unix://$PCP_RUN_DIR/pmcd.socket:?compress
+local://my/local/pmcd.socket:?user=otto&pass=blotto&compress
+</pre>
+<p>If the optional protocol component is not specified, then the default setting will be used - which is the native PCP binary protocol. However, this can still be overwritten via the environment as described in <strong>PCPIntro</strong>(1). If the protocol prefix is specified, it must be one of either "pcp://" (clear), "pcps://" (secure, encrypted), "unix://" (authenticated local) or "local://" ("unix://" then "pcp://").</p><p>The path specified for the "unix://" and "local://" protocols will always be interpreted as an absolute path name. For example, the following are all interpreted identically as <em>$PCP_RUN_DIR/pmcd.socket</em>.</p>
+<pre>
+unix://$PCP_RUN_DIR/pmcd.socket
 unix:/$PCP_RUN_DIR/pmcd.socket
-unix:$PCP_RUN_DIR/pmcd.socket</pre>
-
-<p class='spacer'>
-
-<p>Refer to <strong>__pmParseHostSpec</strong>(3) for further details of the host and proxy host components.</p>
-<p class='spacer'>
-
-<p>If any optional connection attributes are to be specified, these are separated from the hostname component via the '?' character. Each attribute is separated by the '&' character, and each can be either a simple attribute flag (such as "compress") or a name=value pair (such as "username=fred").</p>
-<p class='spacer'>
-
-<p><strong>__pmParseHostAttrsSpec</strong> takes a null-terminated host-and-attributes specification <strong>string</strong> and returns an array of <strong>pmHostSpec</strong> structures, where the array has <strong>count</strong> entries, and an <strong>attrs</strong> hash table containing any attributes (including the optional protocol, if it was specified).</p>
-<p class='spacer'>
-
-<p>Full details of the <strong>pmHostSpec</strong> structures are provided in <strong>__pmParseHostSpec</strong>(3).</p>
-<p class='spacer'>
-
-<p>The <strong>__pmHashCtl</strong> structure that is filled out on return via <strong>attributes</strong>, represents each individual attribute in the specification <strong>string</strong> with any associated value. It should be considered an opaque structure and should be zeroed beforehand.</p>
-<p class='spacer'>
-
-<p>The returned hash table control structure can be iterated using one of the supplied iteration mechanisms - <strong>__pmHashWalkCB</strong> (a callback-based mechanism) or <strong>__pmHashWalk</strong> (a simple procedural mechanism). These provide access to the individual hash nodes, as <strong>__pmHashNode</strong> entries, which provide access to decoded attributes and their (optional) values.</p>
-<p class='spacer'>
-
-<pre>    typedef struct __pmHashNode {
+unix:$PCP_RUN_DIR/pmcd.socket
+</pre>
+<p>Refer to <strong>__pmParseHostSpec</strong>(3) for further details of the host and proxy host components.</p><p>If any optional connection attributes are to be specified, these are separated from the hostname component via the '?' character. Each attribute is separated by the '&' character, and each can be either a simple attribute flag (such as "compress") or a name=value pair (such as "username=fred").</p><p><strong>__pmParseHostAttrsSpec</strong> takes a null-terminated host-and-attributes specification <strong>string</strong> and returns an array of <strong>pmHostSpec</strong> structures, where the array has <strong>count</strong> entries, and an <strong>attrs</strong> hash table containing any attributes (including the optional protocol, if it was specified).</p><p>Full details of the <strong>pmHostSpec</strong> structures are provided in <strong>__pmParseHostSpec</strong>(3).</p><p>The <strong>__pmHashCtl</strong> structure that is filled out on return via <strong>attributes</strong>, represents each individual attribute in the specification <strong>string</strong> with any associated value. It should be considered an opaque structure and should be zeroed beforehand.</p><p>The returned hash table control structure can be iterated using one of the supplied iteration mechanisms - <strong>__pmHashWalkCB</strong> (a callback-based mechanism) or <strong>__pmHashWalk</strong> (a simple procedural mechanism). These provide access to the individual hash nodes, as <strong>__pmHashNode</strong> entries, which provide access to decoded attributes and their (optional) values.</p>
+<pre>
+    typedef struct __pmHashNode {
         __pmHashNode    *next;    /* next node in hash bucket (internal) */
         unsigned int    key;      /* key identifying particular attribute */
         void            *data;    /* attributes value (optional, string) */
-    } __pmHashNode;</pre>
-
-<p class='spacer'>
-
-<p>There are a set number of valid attributes, however these may be extended in future releases as new connection parameters become needed. These can be identified via the PCP_ATTR_* macros in the PCP header files.</p>
-<p class='spacer'>
-
-<p><strong>__pmUnparseHostSpec</strong> performs the inverse operation, creating a <strong>string</strong> representation from <strong>hosts</strong> and <strong>attributes</strong> structures. The size of the supplied <strong>string</strong> buffer must be provided by the caller using the <strong>size</strong> parameter.</p>
+    } __pmHashNode;
+</pre>
+<p>There are a set number of valid attributes, however these may be extended in future releases as new connection parameters become needed. These can be identified via the PCP_ATTR_* macros in the PCP header files.</p><p><strong>__pmUnparseHostSpec</strong> performs the inverse operation, creating a <strong>string</strong> representation from <strong>hosts</strong> and <strong>attributes</strong> structures. The size of the supplied <strong>string</strong> buffer must be provided by the caller using the <strong>size</strong> parameter.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
-<p>If the given <strong>string</strong> is successfully parsed <strong>__pmParseHostAttrsSpec</strong> returns zero. In this case the dynamic storage allocated by <strong>__pmParseHostAttrsSpec</strong> can be released by calling <strong>__pmFreeHostAttrsSpec</strong> using the addresses returned from <strong>__pmParseHostAttrsSpec</strong></p>
-<p class='spacer'>
-
-<p>Alternatively, the <strong>hosts</strong> and <strong>attributes</strong> memory can be freed separately, using <strong>__pmFreeHostSpec</strong>(3) and <strong>__pmFreeAttrsSpec</strong>.</p>
-<p class='spacer'>
-
-<p><strong>__pmParseHostAttrsSpec</strong> returns <strong>PM_ERR_GENERIC</strong> and a dynamically allocated error message string in <strong>errmsg</strong>, if the given <strong>string</strong> does not parse, and the user-supplied <strong>errmsg</strong> pointer is non-null. Be sure to <a href="../man3/free.3.html"><strong>free</strong>(3)</a> the error message string in this situation.</p>
-<p class='spacer'>
-
-<p>In the case of an error, both <strong>hosts</strong> and <strong>attributes</strong> are undefined. In the case of success, <strong>errmsg</strong> is undefined.</p>
-<p class='spacer'>
-
-<p>On success <strong>__pmUnparseHostAttrsSpec</strong> returns a positive value indicating the number of characters written into the supplied buffer. However, if the supplied buffer was too small, a negative status code of <strong>-E2BIG</strong> will be returned.</p>
+<p>If the given <strong>string</strong> is successfully parsed <strong>__pmParseHostAttrsSpec</strong> returns zero. In this case the dynamic storage allocated by <strong>__pmParseHostAttrsSpec</strong> can be released by calling <strong>__pmFreeHostAttrsSpec</strong> using the addresses returned from <strong>__pmParseHostAttrsSpec</strong></p><p>Alternatively, the <strong>hosts</strong> and <strong>attributes</strong> memory can be freed separately, using <strong>__pmFreeHostSpec</strong>(3) and <strong>__pmFreeAttrsSpec</strong>.</p><p><strong>__pmParseHostAttrsSpec</strong> returns <strong>PM_ERR_GENERIC</strong> and a dynamically allocated error message string in <strong>errmsg</strong>, if the given <strong>string</strong> does not parse, and the user-supplied <strong>errmsg</strong> pointer is non-null. Be sure to <a href="../man3/free.3.html"><strong>free</strong>(3)</a> the error message string in this situation.</p><p>In the case of an error, both <strong>hosts</strong> and <strong>attributes</strong> are undefined. In the case of success, <strong>errmsg</strong> is undefined.</p><p>On success <strong>__pmUnparseHostAttrsSpec</strong> returns a positive value indicating the number of characters written into the supplied buffer. However, if the supplied buffer was too small, a negative status code of <strong>-E2BIG</strong> will be returned.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmparsehostattrsspec&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>pmcd</strong>(1), <a href="../man1/pmproxy.1.html"><strong>pmproxy</strong>(1)</a>, <strong>pmchart</strong>(1), <strong>__pmParseHostSpec</strong>(3), <strong>PMAPI</strong>(3) and <strong>pmNewContext</strong>(3).</p>
+<p><a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>, <a href="../man1/pmproxy.1.html"><strong>pmproxy</strong>(1)</a>, <a href="../man1/pmchart.1.html"><strong>pmchart</strong>(1)</a>, <strong>__pmParseHostSpec</strong>(3), <strong>PMAPI</strong>(3) and <strong>pmNewContext</strong>(3).</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmparsedebug.3.html"><span aria-hidden="true">&larr;</span> pmparsedebug.3: Convert a list of debug flags into an integer</a></li>

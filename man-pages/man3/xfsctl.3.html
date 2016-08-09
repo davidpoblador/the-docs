@@ -90,253 +90,265 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;xfs/xfs.h&gt;</strong> <strong>int&nbsp;xfsctl(const char *</strong><em>path</em><strong>, int </strong><em>fd</em><strong>, int </strong><em>cmd</em><strong>, void *</strong><em>ptr</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>int platform_test_xfs_fd(int </strong><em>fd</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>int platform_test_xfs_path(const char *</strong><em>path</em><strong>);</strong></p>
+<p><strong>#include <xfs/xfs.h></strong> <strong>int&nbsp;xfsctl(const char *</strong><em>path</em><strong>, int </strong><em>fd</em><strong>, int </strong><em>cmd</em><strong>, void *</strong><em>ptr</em><strong>);</strong></p><p><strong>int platform_test_xfs_fd(int </strong><em>fd</em><strong>);</strong></p><p><strong>int platform_test_xfs_path(const char *</strong><em>path</em><strong>);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>Some functionality specific to the XFS filesystem is accessible to applications through platform-specific system call interfaces. These operations can be divided into two sections - operations that operate on individual files, and operations that operate on the filesystem itself. Care should be taken when issuing <strong>xfsctl</strong>() calls to ensure the target path and file descriptor (both must be supplied) do indeed represent a file from an XFS filesystem. The <a href="../man2/statfs.2.html"><strong>statfs</strong>(2)</a> and <a href="../man2/fstatfs.2.html"><strong>fstatfs</strong>(2)</a> system calls can be used to determine whether or not an arbitrary path or file descriptor belong to an XFS filesystem. These are not portable however, so the routines <strong>platform_test_xfs_fd</strong>() and <strong>platform_test_xfs_path</strong>() provide a platform-independent mechanism.</p><h3>File Operations</h3>
+<p>In order to effect an operation on an individual file, the pathname and descriptor arguments passed to <strong>xfsctl</strong> identifies the file being operated on. The final argument described below refers to the final argument of <strong>xfsctl</strong>. All of the data structures and macros mentioned below are defined in the <<em>xfs/xfs_fs.h</em>> header file.</p><p><strong>XFS_IOC_ALLOCSP</strong></p><p><strong>XFS_IOC_ALLOCSP64</strong></p><p><strong>XFS_IOC_FREESP</strong></p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>XFS_IOC_FREESP64</strong></p>
+  </dt>
+  <dd>
+    <p>Alter storage space associated with a section of the ordinary file specified.  The section is specified by a variable of type <strong>xfs_flock64_t</strong>, pointed to by the final argument. The data type <strong>xfs_flock64_t</strong> contains the following members: <strong>l_whence</strong> is 0, 1, or 2 to indicate that the relative offset <strong>l_start</strong> will be measured from the start of the file, the current position, or the end of the file, respectively (i.e., <strong>l_start</strong> is the offset from the position specified in <strong>l_whence</strong>). If the offset specified is before the current end of file, any data previously written into this section is no longer accessible. If the offset specified is beyond the current end of file, the file is grown and filled with zeroes. The <strong>l_len</strong> field is currently ignored, and should be set to zero.</p><p><strong>XFS_IOC_ALLOCSP</strong>, <strong>XFS_IOC_ALLOCSP64</strong>, <strong>XFS_IOC_FREESP</strong> and <strong>XFS_IOC_FREESP64</strong> operations are all identical.</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_FSSETDM</strong></p>
+  </dt>
+  <dd>
+    <p>Set the di_dmevmask and di_dmstate fields in an XFS on-disk inode. The only legitimate values for these fields are those previously returned in the <strong>bs_dmevmask</strong> and <strong>bs_dmstate</strong> fields of the bulkstat structure. The data referred to by the final argument is a <strong>struct fsdmidata</strong>. This structure's members are <strong>fsd_dmevmask</strong> and <strong>fsd_dmstate</strong>. The di_dmevmask field is set to the value in <strong>fsd_dmevmask</strong>. The di_dmstate field is set to the value in <strong>fsd_dmstate</strong>. This command is restricted to root or to processes with device management capabilities. Its sole purpose is to allow backup and restore programs to restore the aforementioned critical on-disk inode fields.</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_DIOINFO</strong></p>
+  </dt>
+  <dd>
+    <p>Get information required to perform direct I/O on the specified file descriptor. Direct I/O is performed directly to and from a user's data buffer. Since the kernel's buffer cache is no longer between the two, the user's data buffer must conform to the same type of constraints as required for accessing a raw disk partition. The final argument points to a variable of type <strong>struct dioattr</strong>, which contains the following members: <strong>d_mem</strong> is the memory alignment requirement of the user's data buffer. <strong>d_miniosz</strong> specifies block size, minimum I/O request size, and I/O alignment. The size of all I/O requests must be a multiple of this amount and the value of the seek pointer at the time of the I/O request must also be an integer multiple of this amount. <strong>d_maxiosz</strong> is the maximum I/O request size which can be performed on the file descriptor. If an I/O request does not meet these constraints, the <a href="../man2/read.2.html"><strong>read</strong>(2)</a> or <a href="../man2/write.2.html"><strong>write</strong>(2)</a> will fail with EINVAL. All I/O requests are kept consistent with any data brought into the cache with an access through a non-direct I/O file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_FSGETXATTR</strong></p>
+  </dt>
+  <dd>
+    <p>Get additional attributes associated with files in XFS file systems. The final argument points to a variable of type <strong>struct fsxattr</strong>, whose fields include: <strong>fsx_xflags</strong> (extended flag bits), <strong>fsx_extsize</strong> (nominal extent size in file system blocks), <strong>fsx_nextents</strong> (number of data extents in the file). A <strong>fsx_extsize</strong> value returned indicates that a preferred extent size was previously set on the file, a <strong>fsx_extsize</strong> of zero indicates that the defaults for that filesystem will be used. Currently the meaningful bits for the <strong>fsx_xflags</strong> field are:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><small>Bit 0 (0x1) - XFS_XFLAG_REALTIME</small></p>
+  </dt>
+  <dd>
+    <p>The file is a realtime file.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 1 (0x2) - XFS_XFLAG_PREALLOC</small></p>
+  </dt>
+  <dd>
+    <p>The file has preallocated space.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 3 (0x8) - XFS_XFLAG_IMMUTABLE</small></p>
+  </dt>
+  <dd>
+    <p>The file is immutable - it cannot be modified, deleted or renamed, no link can be created to this file and no data can be written to the file. Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE capability can set or clear this flag.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 4 (0x10) - XFS_XFLAG_APPEND</small></p>
+  </dt>
+  <dd>
+    <p>The file is append-only - it can only be open in append mode for writing. Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE capability can set or clear this flag.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 5 (0x20) - XFS_XFLAG_SYNC</small></p>
+  </dt>
+  <dd>
+    <p>All writes to the file are synchronous.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 6 (0x40) - XFS_XFLAG_NOATIME</small></p>
+  </dt>
+  <dd>
+    <p>When the file is accessed, its atime record is not modified.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 7 (0x80) - XFS_XFLAG_NODUMP</small></p>
+  </dt>
+  <dd>
+    <p>The file should be skipped by backup utilities.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 8 (0x100) - XFS_XFLAG_RTINHERIT</small></p>
+  </dt>
+  <dd>
+    <p>Realtime inheritance bit - new files created in the directory will be automatically realtime, and new directories created in the directory will inherit the inheritance bit.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 9 (0x200) - XFS_XFLAG_PROJINHERIT</small></p>
+  </dt>
+  <dd>
+    <p>Project inheritance bit - new files and directories created in the directory will inherit the parents project ID.  New directories also inherit the project inheritance bit.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 10 (0x400) - XFS_XFLAG_NOSYMLINKS</small></p>
+  </dt>
+  <dd>
+    <p>Can only be set on a directory and disallows creation of symbolic links in that directory.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 11 (0x800) - XFS_XFLAG_EXTSIZE</small></p>
+  </dt>
+  <dd>
+    <p>Extent size bit - if a basic extent size value is set on the file then the allocator will allocate in multiples of the set size for this file (see <strong>XFS_IOC_FSSETXATTR</strong> below).</p>
+  </dd>
+  <dt>
+    <p><small>Bit 12 (0x1000) - XFS_XFLAG_EXTSZINHERIT</small></p>
+  </dt>
+  <dd>
+    <p>Extent size inheritance bit - new files and directories created in the directory will inherit the parents basic extent size value (see <strong>XFS_IOC_FSSETXATTR</strong> below). Can only be set on a directory.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 13 (0x2000) - XFS_XFLAG_NODEFRAG</small></p>
+  </dt>
+  <dd>
+    <p>No defragment file bit - the file should be skipped during a defragmentation operation. When applied to a directory, new files and directories created will inherit the no-defrag bit.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 14 (0x4000) - XFS_XFLAG_FILESTREAM</small></p>
+  </dt>
+  <dd>
+    <p>Filestream allocator bit - allows a directory to reserve an allocation group for exclusive use by files created within that directory. Files being written in other directories will not use the same allocation group and so files within different directories will not interleave extents on disk. The reservation is only active while files are being created and written into the directory.</p>
+  </dd>
+  <dt>
+    <p><small>Bit 31 (0x80000000) - XFS_XFLAG_HASATTR</small></p>
+  </dt>
+  <dd>
+    <p>The file has extended attributes associated with it.</p>
+  </dd>
 
-<p>Some functionality specific to the XFS filesystem is accessible to applications through platform-specific system call interfaces. These operations can be divided into two sections - operations that operate on individual files, and operations that operate on the filesystem itself. Care should be taken when issuing <strong>xfsctl</strong>() calls to ensure the target path and file descriptor (both must be supplied) do indeed represent a file from an XFS filesystem. The <a href="../man2/statfs.2.html"><strong>statfs</strong>(2)</a> and <a href="../man2/fstatfs.2.html"><strong>fstatfs</strong>(2)</a> system calls can be used to determine whether or not an arbitrary path or file descriptor belong to an XFS filesystem. These are not portable however, so the routines <strong>platform_test_xfs_fd</strong>() and <strong>platform_test_xfs_path</strong>() provide a platform-independent mechanism.</p>
-  <h3>File Operations</h3>
-<p>In order to effect an operation on an individual file, the pathname and descriptor arguments passed to <strong>xfsctl</strong> identifies the file being operated on. The final argument described below refers to the final argument of <strong>xfsctl</strong>. All of the data structures and macros mentioned below are defined in the &lt;<em>xfs/xfs_fs.h</em>&gt; header file.</p>
-<p class='spacer'>
+</dl>
 
-<p><strong>XFS_IOC_ALLOCSP</strong></p>
-<p class='spacer'>
+  </dd>
 
-<p><strong>XFS_IOC_ALLOCSP64</strong></p>
-<p class='spacer'>
+</dl>
 
-  <p><strong>XFS_IOC_FREESP</strong></p>
-  <dl class='dl-vertical'>
-    <dt><strong>XFS_IOC_FREESP64</strong></dt>
-    <dd>
-  <p>Alter storage space associated with a section of the ordinary file specified.  The section is specified by a variable of type <strong>xfs_flock64_t</strong>, pointed to by the final argument. The data type <strong>xfs_flock64_t</strong> contains the following members: <strong>l_whence</strong> is 0, 1, or 2 to indicate that the relative offset <strong>l_start</strong> will be measured from the start of the file, the current position, or the end of the file, respectively (i.e., <strong>l_start</strong> is the offset from the position specified in <strong>l_whence</strong>). If the offset specified is before the current end of file, any data previously written into this section is no longer accessible. If the offset specified is beyond the current end of file, the file is grown and filled with zeroes. The <strong>l_len</strong> field is currently ignored, and should be set to zero.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>XFS_IOC_FSGETXATTRA</strong></p>
+  </dt>
+  <dd>
+    <p>Identical to <strong>XFS_IOC_FSGETXATTR</strong> except that the <strong>fsx_nextents</strong> field contains the number of attribute extents in the file.</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_FSSETXATTR</strong></p>
+  </dt>
+  <dd>
+    <p>Set additional attributes associated with files in XFS file systems. The final argument points to a variable of type <strong>struct fsxattr</strong>, but only the following fields are used in this call: <strong>fsx_xflags</strong>, <strong>fsx_extsize</strong> and <strong>fsx_projid</strong>. The <strong>fsx_xflags</strong> realtime file bit and the file's extent size may be changed only when the file is empty, except in the case of a directory where the extent size can be set at any time (this value is only used for regular file allocations, so should only be set on a directory in conjunction with the XFS_XFLAG_EXTSZINHERIT flag).</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_GETBMAP</strong></p>
+  </dt>
+  <dd>
+    <p>Get the block map for a segment of a file in an XFS file system. The final argument points to an arry of variables of type <strong>struct getbmap</strong>. All sizes and offsets in the structure are in units of 512 bytes. The structure fields include: <strong>bmv_offset</strong> (file offset of segment), <strong>bmv_block</strong> (starting block of segment), <strong>bmv_length</strong> (length of segment), <strong>bmv_count</strong> (number of array entries, including the first), and <strong>bmv_entries</strong> (number of entries filled in). The first structure in the array is a header, and the remaining structures in the array contain block map information on return. The header controls iterative calls to the <strong>XFS_IOC_GETBMAP</strong> command. The caller fills in the <strong>bmv_offset</strong> and <strong>bmv_length</strong> fields of the header to indicate the area of interest in the file, and fills in the <strong>bmv_count</strong> field to indicate the length of the array. If the <strong>bmv_length</strong> value is set to -1 then the length of the interesting area is the rest of the file. On return from a call, the header is updated so that the command can be reused to obtain more information, without re-initializing the structures. Also on return, the <strong>bmv_entries</strong> field of the header is set to the number of array entries actually filled in. The non-header structures will be filled in with <strong>bmv_offset</strong>, <strong>bmv_block</strong>, and <strong>bmv_length</strong>. If a region of the file has no blocks (is a hole in the file) then the <strong>bmv_block</strong> field is set to -1.</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_GETBMAPA</strong></p>
+  </dt>
+  <dd>
+    <p>Identical to <strong>XFS_IOC_GETBMAP</strong> except that information about the attribute fork of the file is returned.</p>
+  </dd>
 
-  <p><strong>XFS_IOC_ALLOCSP</strong>, <strong>XFS_IOC_ALLOCSP64</strong>, <strong>XFS_IOC_FREESP</strong> and <strong>XFS_IOC_FREESP64</strong> operations are all identical.</p>
-<p class='spacer'>
+</dl>
+<p><strong>XFS_IOC_RESVSP</strong></p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>XFS_IOC_RESVSP64</strong></p>
+  </dt>
+  <dd>
+    <p>This command is used to allocate space to a file. A range of bytes is specified using a pointer to a variable of type <strong>xfs_flock64_t</strong> in the final argument. The blocks are allocated, but not zeroed, and the file size does not change. If the XFS filesystem is configured to flag unwritten file extents, performance will be negatively affected when writing to preallocated space, since extra filesystem transactions are required to convert extent flags on the range of the file written. If <strong>xfs_info</strong>(8) reports unwritten=1, then the filesystem was made to flag unwritten extents.</p>
+  </dd>
 
-    </dd>
-    <dt><strong>XFS_IOC_FSSETDM</strong></dt>
-    <dd>
-  <p>Set the di_dmevmask and di_dmstate fields in an XFS on-disk inode. The only legitimate values for these fields are those previously returned in the <strong>bs_dmevmask</strong> and <strong>bs_dmstate</strong> fields of the bulkstat structure. The data referred to by the final argument is a <strong>struct fsdmidata</strong>. This structure's members are <strong>fsd_dmevmask</strong> and <strong>fsd_dmstate</strong>. The di_dmevmask field is set to the value in <strong>fsd_dmevmask</strong>. The di_dmstate field is set to the value in <strong>fsd_dmstate</strong>. This command is restricted to root or to processes with device management capabilities. Its sole purpose is to allow backup and restore programs to restore the aforementioned critical on-disk inode fields.</p>
-<p class='spacer'>
+</dl>
+<p><strong>XFS_IOC_UNRESVSP</strong></p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>XFS_IOC_UNRESVSP64</strong></p>
+  </dt>
+  <dd>
+    <p>This command is used to free space from a file. A range of bytes is specified using a pointer to a variable of type <strong>xfs_flock64_t</strong> in the final argument. Partial filesystem blocks are zeroed, and whole filesystem blocks are removed from the file.  The file size does not change.</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_ZERO_RANGE</strong></p>
+  </dt>
+  <dd>
+    <p>This command is used to convert a range of a file to zeros without issuing data IO. A range of bytes is specified using a pointer to a variable of type <strong>xfs_flock64_t</strong> in the final argument. Blocks are preallocated for regions that span holes in the file, and the entire range is converted to unwritten extents. This operation is a fast method of overwriting any from the range specified with zeros without removing any blocks or having to write zeros to disk. Any subsequent read in the given range will return zeros until new data is written. This functionality requires filesystems to support unwritten extents. If <strong>xfs_info</strong>(8) reports unwritten=1, then the filesystem was made to flag unwritten extents.</p>
+  </dd>
 
-    </dd>
-    <dt><strong>XFS_IOC_DIOINFO</strong></dt>
-    <dd>
-  <p>Get information required to perform direct I/O on the specified file descriptor. Direct I/O is performed directly to and from a user's data buffer. Since the kernel's buffer cache is no longer between the two, the user's data buffer must conform to the same type of constraints as required for accessing a raw disk partition. The final argument points to a variable of type <strong>struct dioattr</strong>, which contains the following members: <strong>d_mem</strong> is the memory alignment requirement of the user's data buffer. <strong>d_miniosz</strong> specifies block size, minimum I/O request size, and I/O alignment. The size of all I/O requests must be a multiple of this amount and the value of the seek pointer at the time of the I/O request must also be an integer multiple of this amount. <strong>d_maxiosz</strong> is the maximum I/O request size which can be performed on the file descriptor. If an I/O request does not meet these constraints, the <a href="../man2/read.2.html"><strong>read</strong>(2)</a> or <a href="../man2/write.2.html"><strong>write</strong>(2)</a> will fail with EINVAL. All I/O requests are kept consistent with any data brought into the cache with an access through a non-direct I/O file descriptor.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-    <dt><strong>XFS_IOC_FSGETXATTR</strong></dt>
-    <dd>
-      <p>Get additional attributes associated with files in XFS file systems. The final argument points to a variable of type <strong>struct fsxattr</strong>, whose fields include: <strong>fsx_xflags</strong> (extended flag bits), <strong>fsx_extsize</strong> (nominal extent size in file system blocks), <strong>fsx_nextents</strong> (number of data extents in the file). A <strong>fsx_extsize</strong> value returned indicates that a preferred extent size was previously set on the file, a <strong>fsx_extsize</strong> of zero indicates that the defaults for that filesystem will be used. Currently the meaningful bits for the <strong>fsx_xflags</strong> field are:</p>
-      <dl class='dl-vertical'>
-        <dt>"Bit 0 (0x1) - XFS_XFLAG_REALTIME"</dt>
-        <dd>
-      <p>The file is a realtime file.</p>
-        </dd>
-        <dt>"Bit 1 (0x2) - XFS_XFLAG_PREALLOC"</dt>
-        <dd>
-      <p>The file has preallocated space.</p>
-        </dd>
-        <dt>"Bit 3 (0x8) - XFS_XFLAG_IMMUTABLE"</dt>
-        <dd>
-      <p>The file is immutable - it cannot be modified, deleted or renamed, no link can be created to this file and no data can be written to the file. Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE capability can set or clear this flag.</p>
-        </dd>
-        <dt>"Bit 4 (0x10) - XFS_XFLAG_APPEND"</dt>
-        <dd>
-      <p>The file is append-only - it can only be open in append mode for writing. Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE capability can set or clear this flag.</p>
-        </dd>
-        <dt>"Bit 5 (0x20) - XFS_XFLAG_SYNC"</dt>
-        <dd>
-      <p>All writes to the file are synchronous.</p>
-        </dd>
-        <dt>"Bit 6 (0x40) - XFS_XFLAG_NOATIME"</dt>
-        <dd>
-      <p>When the file is accessed, its atime record is not modified.</p>
-        </dd>
-        <dt>"Bit 7 (0x80) - XFS_XFLAG_NODUMP"</dt>
-        <dd>
-      <p>The file should be skipped by backup utilities.</p>
-        </dd>
-        <dt>"Bit 8 (0x100) - XFS_XFLAG_RTINHERIT"</dt>
-        <dd>
-      <p>Realtime inheritance bit - new files created in the directory will be automatically realtime, and new directories created in the directory will inherit the inheritance bit.</p>
-        </dd>
-        <dt>"Bit 9 (0x200) - XFS_XFLAG_PROJINHERIT"</dt>
-        <dd>
-      <p>Project inheritance bit - new files and directories created in the directory will inherit the parents project ID.  New directories also inherit the project inheritance bit.</p>
-        </dd>
-        <dt>"Bit 10 (0x400) - XFS_XFLAG_NOSYMLINKS"</dt>
-        <dd>
-      <p>Can only be set on a directory and disallows creation of symbolic links in that directory.</p>
-        </dd>
-        <dt>"Bit 11 (0x800) - XFS_XFLAG_EXTSIZE"</dt>
-        <dd>
-      <p>Extent size bit - if a basic extent size value is set on the file then the allocator will allocate in multiples of the set size for this file (see <strong>XFS_IOC_FSSETXATTR</strong> below).</p>
-        </dd>
-        <dt>"Bit 12 (0x1000) - XFS_XFLAG_EXTSZINHERIT"</dt>
-        <dd>
-      <p>Extent size inheritance bit - new files and directories created in the directory will inherit the parents basic extent size value (see <strong>XFS_IOC_FSSETXATTR</strong> below). Can only be set on a directory.</p>
-        </dd>
-        <dt>"Bit 13 (0x2000) - XFS_XFLAG_NODEFRAG"</dt>
-        <dd>
-      <p>No defragment file bit - the file should be skipped during a defragmentation operation. When applied to a directory, new files and directories created will inherit the no-defrag bit.</p>
-        </dd>
-        <dt>"Bit 14 (0x4000) - XFS_XFLAG_FILESTREAM"</dt>
-        <dd>
-      <p>Filestream allocator bit - allows a directory to reserve an allocation group for exclusive use by files created within that directory. Files being written in other directories will not use the same allocation group and so files within different directories will not interleave extents on disk. The reservation is only active while files are being created and written into the directory.</p>
-        </dd>
-        <dt>"Bit 31 (0x80000000) - XFS_XFLAG_HASATTR"</dt>
-        <dd>
-      <p>The file has extended attributes associated with it.</p>
-        </dd>
-      </dl>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p class='spacer'>
-
-  <dl class='dl-vertical'>
-    <dt><strong>XFS_IOC_FSGETXATTRA</strong></dt>
-    <dd>
-  <p>Identical to <strong>XFS_IOC_FSGETXATTR</strong> except that the <strong>fsx_nextents</strong> field contains the number of attribute extents in the file.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>XFS_IOC_FSSETXATTR</strong></dt>
-    <dd>
-  <p>Set additional attributes associated with files in XFS file systems. The final argument points to a variable of type <strong>struct fsxattr</strong>, but only the following fields are used in this call: <strong>fsx_xflags</strong>, <strong>fsx_extsize</strong> and <strong>fsx_projid</strong>. The <strong>fsx_xflags</strong> realtime file bit and the file's extent size may be changed only when the file is empty, except in the case of a directory where the extent size can be set at any time (this value is only used for regular file allocations, so should only be set on a directory in conjunction with the XFS_XFLAG_EXTSZINHERIT flag).</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>XFS_IOC_GETBMAP</strong></dt>
-    <dd>
-  <p>Get the block map for a segment of a file in an XFS file system. The final argument points to an arry of variables of type <strong>struct getbmap</strong>. All sizes and offsets in the structure are in units of 512 bytes. The structure fields include: <strong>bmv_offset</strong> (file offset of segment), <strong>bmv_block</strong> (starting block of segment), <strong>bmv_length</strong> (length of segment), <strong>bmv_count</strong> (number of array entries, including the first), and <strong>bmv_entries</strong> (number of entries filled in). The first structure in the array is a header, and the remaining structures in the array contain block map information on return. The header controls iterative calls to the <strong>XFS_IOC_GETBMAP</strong> command. The caller fills in the <strong>bmv_offset</strong> and <strong>bmv_length</strong> fields of the header to indicate the area of interest in the file, and fills in the <strong>bmv_count</strong> field to indicate the length of the array. If the <strong>bmv_length</strong> value is set to -1 then the length of the interesting area is the rest of the file. On return from a call, the header is updated so that the command can be reused to obtain more information, without re-initializing the structures. Also on return, the <strong>bmv_entries</strong> field of the header is set to the number of array entries actually filled in. The non-header structures will be filled in with <strong>bmv_offset</strong>, <strong>bmv_block</strong>, and <strong>bmv_length</strong>. If a region of the file has no blocks (is a hole in the file) then the <strong>bmv_block</strong> field is set to -1.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>XFS_IOC_GETBMAPA</strong></dt>
-    <dd>
-  <p>Identical to <strong>XFS_IOC_GETBMAP</strong> except that information about the attribute fork of the file is returned.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-<p class='spacer'>
-
-  <p><strong>XFS_IOC_RESVSP</strong></p>
-  <dl class='dl-vertical'>
-    <dt><strong>XFS_IOC_RESVSP64</strong></dt>
-    <dd>
-  <p>This command is used to allocate space to a file. A range of bytes is specified using a pointer to a variable of type <strong>xfs_flock64_t</strong> in the final argument. The blocks are allocated, but not zeroed, and the file size does not change. If the XFS filesystem is configured to flag unwritten file extents, performance will be negatively affected when writing to preallocated space, since extra filesystem transactions are required to convert extent flags on the range of the file written. If <strong>xfs_info</strong>(8) reports unwritten=1, then the filesystem was made to flag unwritten extents.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-<p class='spacer'>
-
-  <p><strong>XFS_IOC_UNRESVSP</strong></p>
-  <dl class='dl-vertical'>
-    <dt><strong>XFS_IOC_UNRESVSP64</strong></dt>
-    <dd>
-  <p>This command is used to free space from a file. A range of bytes is specified using a pointer to a variable of type <strong>xfs_flock64_t</strong> in the final argument. Partial filesystem blocks are zeroed, and whole filesystem blocks are removed from the file.  The file size does not change.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>XFS_IOC_ZERO_RANGE</strong></dt>
-    <dd>
-  <p>This command is used to convert a range of a file to zeros without issuing data IO. A range of bytes is specified using a pointer to a variable of type <strong>xfs_flock64_t</strong> in the final argument. Blocks are preallocated for regions that span holes in the file, and the entire range is converted to unwritten extents. This operation is a fast method of overwriting any from the range specified with zeros without removing any blocks or having to write zeros to disk. Any subsequent read in the given range will return zeros until new data is written. This functionality requires filesystems to support unwritten extents. If <strong>xfs_info</strong>(8) reports unwritten=1, then the filesystem was made to flag unwritten extents.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<pre><strong>XFS_IOC_PATH_TO_HANDLE</strong>
+<pre>
+<strong>XFS_IOC_PATH_TO_HANDLE</strong>
 <strong>XFS_IOC_PATH_TO_FSHANDLE</strong>
 <strong>XFS_IOC_FD_TO_HANDLE</strong>
 <strong>XFS_IOC_OPEN_BY_HANDLE</strong>
 <strong>XFS_IOC_READLINK_BY_HANDLE</strong>
 <strong>XFS_IOC_ATTR_LIST_BY_HANDLE</strong>
-<strong>XFS_IOC_ATTR_MULTI_BY_HANDLE</strong></pre>
+<strong>XFS_IOC_ATTR_MULTI_BY_HANDLE</strong>
+</pre>
 
-  <dl class='dl-vertical'>
-    <dt><strong>XFS_IOC_FSSETDM_BY_HANDLE</strong></dt>
-    <dd>
-  <p>These are all interfaces that are used to implement various <em>libhandle</em> functions (see <strong>open_by_handle</strong>(3)). They are all subject to change and should not be called directly by applications.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>XFS_IOC_FSSETDM_BY_HANDLE</strong></p>
+  </dt>
+  <dd>
+    <p>These are all interfaces that are used to implement various <em>libhandle</em> functions (see <strong>open_by_handle</strong>(3)). They are all subject to change and should not be called directly by applications.</p>
+  </dd>
 
-    </dd>
-  </dl>
-  <h3>Filesystem Operations</h3>
+</dl>
+
+<h3>Filesystem Operations</h3>
 <p>In order to effect one of the following operations, the pathname and descriptor arguments passed to <strong>xfsctl</strong>() can be any open file in the XFS filesystem in question.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>XFS_IOC_FSINUMBERS</strong></p>
+  </dt>
+  <dd>
+    <p>This interface is used to extract a list of valid inode numbers from an XFS filesystem. It is intended to be called iteratively, to obtain the entire set of inodes. The information is passed in and out via a structure of type <strong>xfs_fsop_bulkreq_t</strong> pointed to by the final argument. <strong>lastip</strong> is a pointer to a variable containing the last inode number returned, initially it should be zero. <strong>icount</strong> is the size of the array of structures specified by <strong>ubuffer</strong>. <strong>ubuffer</strong> is the address of an array of structures, of type <strong>xfs_inogrp_t</strong>. This structure has the following elements: <strong>xi_startino</strong> (starting inode number), <strong>xi_alloccount</strong> (count of bits set in xi_allocmask), and <strong>xi_allocmask</strong> (mask of allocated inodes in this group). The bitmask is 64 bits long, and the least significant bit corresponds to inode <strong>xi_startino.</strong> Each bit is set if the corresponding inode is in use. <strong>ocount</strong> is a pointer to a count of returned values, filled in by the call. An output <strong>ocount</strong> value of zero means that the inode table has been exhausted.</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_FSBULKSTAT</strong></p>
+  </dt>
+  <dd>
+    <p>This interface is used to extract inode information (stat information) "in bulk" from a filesystem.  It is intended to be called iteratively, to obtain information about the entire set of inodes in a filesystem. The information is passed in and out via a structure of type <strong>xfs_fsop_bulkreq_t</strong> pointed to by the final argument. <strong>lastip</strong> is a pointer to a variable containing the last inode number returned, initially it should be zero. <strong>icount</strong> indicates the size of the array of structures specified by <strong>ubuffer.</strong> <strong>ubuffer</strong> is the address of an array of structures of type <strong>xfs_bstat_t</strong>. Many of the elements in the structure are the same as for the stat structure. The structure has the following elements: <strong>bs_ino</strong> (inode number), <strong>bs_mode</strong> (type and mode), <strong>bs_nlink</strong> (number of links), <strong>bs_uid</strong> (user id), <strong>bs_gid</strong> (group id), <strong>bs_rdev</strong> (device value), <strong>bs_blksize</strong> (block size of the filesystem), <strong>bs_size</strong> (file size in bytes), <strong>bs_atime</strong> (access time), <strong>bs_mtime</strong> (modify time), <strong>bs_ctime</strong> (inode change time), <strong>bs_blocks</strong> (number of blocks used by the file), <strong>bs_xflags</strong> (extended flags), <strong>bs_extsize</strong> (extent size), <strong>bs_extents</strong> (number of extents), <strong>bs_gen</strong> (generation count), <strong>bs_projid_lo</strong> (project id - low word), <strong>bs_projid_hi</strong> (project id - high word, used when projid32bit feature is enabled), <strong>bs_dmevmask</strong> (DMIG event mask), <strong>bs_dmstate</strong> (DMIG state information), and <strong>bs_aextents</strong> (attribute extent count). <strong>ocount</strong> is a pointer to a count of returned values, filled in by the call. An output <strong>ocount</strong> value of zero means that the inode table has been exhausted.</p>
+  </dd>
+  <dt>
+    <p><strong>XFS_IOC_FSBULKSTAT_SINGLE</strong></p>
+  </dt>
+  <dd>
+    <p>This interface is a variant of the <strong>XFS_IOC_FSBULKSTAT</strong> interface, used to obtain information about a single inode. for an open file in the filesystem of interest. The same structure is used to pass information in and out of the kernel, except no output count parameter is used (should be initialized to zero). An error is returned if the inode number is invalid.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <dl class='dl-vertical'>
-    <dt><strong>XFS_IOC_FSINUMBERS</strong></dt>
-    <dd>
-  <p>This interface is used to extract a list of valid inode numbers from an XFS filesystem. It is intended to be called iteratively, to obtain the entire set of inodes. The information is passed in and out via a structure of type <strong>xfs_fsop_bulkreq_t</strong> pointed to by the final argument. <strong>lastip</strong> is a pointer to a variable containing the last inode number returned, initially it should be zero. <strong>icount</strong> is the size of the array of structures specified by <strong>ubuffer</strong>. <strong>ubuffer</strong> is the address of an array of structures, of type <strong>xfs_inogrp_t</strong>. This structure has the following elements: <strong>xi_startino</strong> (starting inode number), <strong>xi_alloccount</strong> (count of bits set in xi_allocmask), and <strong>xi_allocmask</strong> (mask of allocated inodes in this group). The bitmask is 64 bits long, and the least significant bit corresponds to inode <strong>xi_startino.</strong> Each bit is set if the corresponding inode is in use. <strong>ocount</strong> is a pointer to a count of returned values, filled in by the call. An output <strong>ocount</strong> value of zero means that the inode table has been exhausted.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>XFS_IOC_FSBULKSTAT</strong></dt>
-    <dd>
-  <p>This interface is used to extract inode information (stat information) "in bulk" from a filesystem.  It is intended to be called iteratively, to obtain information about the entire set of inodes in a filesystem. The information is passed in and out via a structure of type <strong>xfs_fsop_bulkreq_t</strong> pointed to by the final argument. <strong>lastip</strong> is a pointer to a variable containing the last inode number returned, initially it should be zero. <strong>icount</strong> indicates the size of the array of structures specified by <strong>ubuffer.</strong> <strong>ubuffer</strong> is the address of an array of structures of type <strong>xfs_bstat_t</strong>. Many of the elements in the structure are the same as for the stat structure. The structure has the following elements: <strong>bs_ino</strong> (inode number), <strong>bs_mode</strong> (type and mode), <strong>bs_nlink</strong> (number of links), <strong>bs_uid</strong> (user id), <strong>bs_gid</strong> (group id), <strong>bs_rdev</strong> (device value), <strong>bs_blksize</strong> (block size of the filesystem), <strong>bs_size</strong> (file size in bytes), <strong>bs_atime</strong> (access time), <strong>bs_mtime</strong> (modify time), <strong>bs_ctime</strong> (inode change time), <strong>bs_blocks</strong> (number of blocks used by the file), <strong>bs_xflags</strong> (extended flags), <strong>bs_extsize</strong> (extent size), <strong>bs_extents</strong> (number of extents), <strong>bs_gen</strong> (generation count), <strong>bs_projid_lo</strong> (project id - low word), <strong>bs_projid_hi</strong> (project id - high word, used when projid32bit feature is enabled), <strong>bs_dmevmask</strong> (DMIG event mask), <strong>bs_dmstate</strong> (DMIG state information), and <strong>bs_aextents</strong> (attribute extent count). <strong>ocount</strong> is a pointer to a count of returned values, filled in by the call. An output <strong>ocount</strong> value of zero means that the inode table has been exhausted.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>XFS_IOC_FSBULKSTAT_SINGLE</strong></dt>
-    <dd>
-  <p>This interface is a variant of the <strong>XFS_IOC_FSBULKSTAT</strong> interface, used to obtain information about a single inode. for an open file in the filesystem of interest. The same structure is used to pass information in and out of the kernel, except no output count parameter is used (should be initialized to zero). An error is returned if the inode number is invalid.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<pre><strong>XFS_IOC_THAW</strong>
+<pre>
+<strong>XFS_IOC_THAW</strong>
 <strong>XFS_IOC_FREEZE</strong>
 <strong>XFS_IOC_GET_RESBLKS</strong>
 <strong>XFS_IOC_SET_RESBLKS</strong>
 <strong>XFS_IOC_FSGROWFSDATA</strong>
 <strong>XFS_IOC_FSGROWFSLOG</strong>
-<strong>XFS_IOC_FSGROWFSRT</strong></pre>
+<strong>XFS_IOC_FSGROWFSRT</strong>
+</pre>
 
-  <dl class='dl-vertical'>
-    <dt><strong>XFS_IOC_FSCOUNTS</strong></dt>
-    <dd>
-  <p>These interfaces are used to implement various filesystem internal operations on XFS filesystems. For <strong>XFS_IOC_FSGEOMETRY</strong> (get filesystem mkfs time information), the output structure is of type <strong>xfs_fsop_geom_t</strong>. For <strong>XFS_FS_COUNTS</strong> (get filesystem dynamic global information), the output structure is of type <strong>xfs_fsop_counts_t</strong>. The remainder of these operations will not be described further as they are not of general use to applications.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>XFS_IOC_FSCOUNTS</strong></p>
+  </dt>
+  <dd>
+    <p>These interfaces are used to implement various filesystem internal operations on XFS filesystems. For <strong>XFS_IOC_FSGEOMETRY</strong> (get filesystem mkfs time information), the output structure is of type <strong>xfs_fsop_geom_t</strong>. For <strong>XFS_FS_COUNTS</strong> (get filesystem dynamic global information), the output structure is of type <strong>xfs_fsop_counts_t</strong>. The remainder of these operations will not be described further as they are not of general use to applications.</p>
+  </dd>
 
-    </dd>
-  </dl>
+</dl>
+
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO xfsctl&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/fstatfs.2.html"><strong>fstatfs</strong>(2)</a>, <a href="../man2/statfs.2.html"><strong>statfs</strong>(2)</a>, <a href="../man5/xfs.5.html"><strong>xfs</strong>(5)</a>, <strong>xfs_info</strong>(8).</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="xencrypt.3.html"><span aria-hidden="true">&larr;</span> xencrypt.3: Rfs password encryption</a></li>

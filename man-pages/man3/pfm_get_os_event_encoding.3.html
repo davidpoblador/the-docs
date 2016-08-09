@@ -91,9 +91,11 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;perfmon/pfmlib.h&gt;</strong>
+<pre>
+<strong>#include <perfmon/pfmlib.h></strong>
 
 <strong>int pfm_get_os_event_encoding(const char *</strong><em>str</em><strong>, int </strong><em>dfl_plm</em><strong>, pfm_os_t </strong><em>os</em><strong>,  void *</strong><em>arg</em><strong>);</strong>
+
 </pre>
 
         </div>
@@ -102,44 +104,43 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>This is the key function to retrieve the encoding of an event for a specific operating system interface. The event string passed in <strong>str</strong> is parsed and encoded for the operating system specified by <strong>os</strong>. The event is encoded to monitor at the privilege levels specified by the <strong>dfl_plm</strong> mask, if supported, otherwise this parameter is ignored. The operating system specific input and output arguments are passed in <strong>arg</strong>.</p>
-<p class='spacer'>
-
-<p>The event string, <strong>str</strong>, may contains sub-event masks (umask) and any other supported modifiers. Only one event is parsed from the string. For convenience, it is possible to pass a comma-separated list of events in <strong>str</strong> but only the first event is encoded.</p>
-<p class='spacer'>
-
-  <p>The following values are supported for <strong>os</strong>:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>PFM_OS_NONE</strong></dt>
-    <dd>
-  <p>This value causes the event to be encoded purely as specified by the PMU hardware. The <strong>arg</strong> argument must be a pointer to a <strong>pfm_raw_pmu_encode_arg_t</strong> structure which is defined as follows:</p>
-<p class='spacer'>
-
-<pre>typedef struct {
+<p>This is the key function to retrieve the encoding of an event for a specific operating system interface. The event string passed in <strong>str</strong> is parsed and encoded for the operating system specified by <strong>os</strong>. The event is encoded to monitor at the privilege levels specified by the <strong>dfl_plm</strong> mask, if supported, otherwise this parameter is ignored. The operating system specific input and output arguments are passed in <strong>arg</strong>.</p><p>The event string, <strong>str</strong>, may contains sub-event masks (umask) and any other supported modifiers. Only one event is parsed from the string. For convenience, it is possible to pass a comma-separated list of events in <strong>str</strong> but only the first event is encoded.</p><p>The following values are supported for <strong>os</strong>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PFM_OS_NONE</strong></p>
+  </dt>
+  <dd>
+    <p>This value causes the event to be encoded purely as specified by the PMU hardware. The <strong>arg</strong> argument must be a pointer to a <strong>pfm_raw_pmu_encode_arg_t</strong> structure which is defined as follows:</p>
+<pre>
+typedef struct {
     uint64_t    *codes;
     char        **fstr;
     size_t      size;
     int         count;
     int         idx;
-} pfm_pmu_encode_arg_t;</pre>
-
-<p class='spacer'>
-
-      <p>The fields are defined as follows:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>codes</strong></dt>
-        <dd>
-      <p>A pointer to an array of 64-bit values. On input, if <strong>codes</strong> is NULL, then the library allocates whatever is necessary to store the encoding of the event. If <strong>codes</strong> is not NULL on input, then <strong>count</strong> must reflect its actual number of elements. If <strong>count</strong> is big enough, the library stores the encoding at the address provided.  Otherwise, an error is returned.</p>
-        </dd>
-        <dt><strong>count</strong></dt>
-        <dd>
-      <p>On input, the field contains the maximum number of elements in the array <strong>codes</strong>. Upon return, it contains the number of actual entries in <strong>codes</strong>. If <strong>codes</strong> is NULL, then count must be zero.</p>
-        </dd>
-        <dt><strong>fstr</strong></dt>
-        <dd>
-        <p>If the caller is interested in retrieving the fully qualified event string where all used unit masks and all modifiers are spelled out, this field must be set to a non-null address of a pointer to a string (char **). Upon return, if <strong>fstr</strong> was not NULL, then the string pointer passed on entry points to the event string. The string is dynamically allocated and <strong>must</strong> eventually be freed by the caller. If <strong>fstr</strong> was NULL on entry, then nothing is returned in this field. The typical calling sequence looks as follows:</p>
-<pre>   char *fstr = NULL
+} pfm_pmu_encode_arg_t;
+</pre>
+<p>The fields are defined as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>codes</strong></p>
+  </dt>
+  <dd>
+    <p>A pointer to an array of 64-bit values. On input, if <strong>codes</strong> is NULL, then the library allocates whatever is necessary to store the encoding of the event. If <strong>codes</strong> is not NULL on input, then <strong>count</strong> must reflect its actual number of elements. If <strong>count</strong> is big enough, the library stores the encoding at the address provided.  Otherwise, an error is returned.</p>
+  </dd>
+  <dt>
+    <p><strong>count</strong></p>
+  </dt>
+  <dd>
+    <p>On input, the field contains the maximum number of elements in the array <strong>codes</strong>. Upon return, it contains the number of actual entries in <strong>codes</strong>. If <strong>codes</strong> is NULL, then count must be zero.</p>
+  </dd>
+  <dt>
+    <p><strong>fstr</strong></p>
+  </dt>
+  <dd>
+    <p>If the caller is interested in retrieving the fully qualified event string where all used unit masks and all modifiers are spelled out, this field must be set to a non-null address of a pointer to a string (char **). Upon return, if <strong>fstr</strong> was not NULL, then the string pointer passed on entry points to the event string. The string is dynamically allocated and <strong>must</strong> eventually be freed by the caller. If <strong>fstr</strong> was NULL on entry, then nothing is returned in this field. The typical calling sequence looks as follows:</p>
+<pre>
+   char *fstr = NULL
    pfm_pmu_encode_arg_t arg;
    arg.fstr = &fstr;
    ret = pfm_get_os_event_encoding("event",
@@ -149,66 +150,88 @@
    if (ret == PFM_SUCCESS) {
       printf("fstr=%s\n", fstr);
       free(fstr);
-   }</pre>
+   }
+</pre>
 
-        </dd>
-        <dt><strong>size</strong></dt>
-        <dd>
-      <p>This field contains the size of the struct passed. This field is used to provide for extensibility of the struct without compromising backward compatibility. The value should be set to <strong>sizeof(pfm_pmu_encode_arg_t)</strong>. If instead, a value of <strong>0</strong> is specified, the library assumes the struct passed is identical to the first ABI version which size is <strong>PFM_RAW_ENCODE_ABI0</strong>. Thus, if fields were added after the first ABI, they will not be set by the library. The library does check that bytes beyond what is implemented are zeroes.</p>
-        </dd>
-        <dt><strong>idx</strong></dt>
-        <dd>
-      <p>Upon return, this field contains the opaque unique identifier for the event described in <strong>str</strong>. This index can be used to retrieve information about the event using <strong>pfm_get_event_info()</strong>, for instance.</p>
-        </dd>
-      </dl>
-    </dd>
-    <dt><strong>PFM_OS_PERF_EVENT, PFM_OS_PERF_EVENT_EXT</strong></dt>
-    <dd>
-  <p>This value causes the event to be encoded for the perf_event Linux kernel interface (available since 2.6.31). The <strong>arg</strong> must be a pointer to a <strong>pfm_perf_encode_arg_t</strong> structure. The PFM_OS_PERF_EVENT layer provides the modifiers exported by the underlying PMU hardware, some of which may actually be overridden by the perf_event interface, such as the monitoring privilege levels. The <strong>PFM_OS_PERF_EVENT_EXT</strong> extends <strong>PFM_OS_EVENT</strong> to add modifiers controlled only by the perf_event interface, such as sampling period (<strong>period</strong>), frequency (<strong>freq</strong>) and exclusive resource access (<strong>excl</strong>).</p>
-<p class='spacer'>
+  </dd>
+  <dt>
+    <p><strong>size</strong></p>
+  </dt>
+  <dd>
+    <p>This field contains the size of the struct passed. This field is used to provide for extensibility of the struct without compromising backward compatibility. The value should be set to <strong>sizeof(pfm_pmu_encode_arg_t)</strong>. If instead, a value of <strong>0</strong> is specified, the library assumes the struct passed is identical to the first ABI version which size is <strong>PFM_RAW_ENCODE_ABI0</strong>. Thus, if fields were added after the first ABI, they will not be set by the library. The library does check that bytes beyond what is implemented are zeroes.</p>
+  </dd>
+  <dt>
+    <p><strong>idx</strong></p>
+  </dt>
+  <dd>
+    <p>Upon return, this field contains the opaque unique identifier for the event described in <strong>str</strong>. This index can be used to retrieve information about the event using <strong>pfm_get_event_info()</strong>, for instance.</p>
+  </dd>
 
-<pre>typedef struct {
+</dl>
+
+  </dd>
+  <dt>
+    <p><strong>PFM_OS_PERF_EVENT, PFM_OS_PERF_EVENT_EXT</strong></p>
+  </dt>
+  <dd>
+    <p>This value causes the event to be encoded for the perf_event Linux kernel interface (available since 2.6.31). The <strong>arg</strong> must be a pointer to a <strong>pfm_perf_encode_arg_t</strong> structure. The PFM_OS_PERF_EVENT layer provides the modifiers exported by the underlying PMU hardware, some of which may actually be overridden by the perf_event interface, such as the monitoring privilege levels. The <strong>PFM_OS_PERF_EVENT_EXT</strong> extends <strong>PFM_OS_EVENT</strong> to add modifiers controlled only by the perf_event interface, such as sampling period (<strong>period</strong>), frequency (<strong>freq</strong>) and exclusive resource access (<strong>excl</strong>).</p>
+<pre>
+typedef struct {
     struct perf_event_attr *attr;
     char **fstr;
     size_t size;
     int idx;
     int cpu;
     int flags;
-} pfm_perf_encode_arg_t;</pre>
+} pfm_perf_encode_arg_t;
+</pre>
+<p>The fields are defined as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>attr</strong></p>
+  </dt>
+  <dd>
+    <p>A pointer to a struct perf_event_attr as defined in perf_event.h. This field cannot be NULL on entry. The struct is not completely overwritten by the call. The library only modifies the fields it knows about, thereby allowing perf_event ABI mismatch between caller and library.</p>
+  </dd>
+  <dt>
+    <p><strong>fstr</strong></p>
+  </dt>
+  <dd>
+    <p>Same behavior as is described for PFM_OS_NONE above.</p>
+  </dd>
+  <dt>
+    <p><strong>size</strong></p>
+  </dt>
+  <dd>
+    <p>This field contains the size of the struct passed. This field is used to provide for extensibility of the struct without compromising backward compatibility. The value should be set to <strong>sizeof(pfm_perf_encode_arg_t)</strong>. If instead, a value of <strong>0</strong> is specified, the library assumes the struct passed is identical to the first ABI version which size is <strong>PFM_PERF_ENCODE_ABI0</strong>. Thus, if fields were added after the first ABI, they will not be set by the library. The library does check that bytes beyond what is implemented are zeroes.</p>
+  </dd>
+  <dt>
+    <p><strong>idx</strong></p>
+  </dt>
+  <dd>
+    <p>Upon return, this field contains the opaque unique identifier for the event described in <strong>str</strong>. This index can be used to retrieve information about the event using <strong>pfm_get_event_info()</strong>, for instance.</p>
+  </dd>
+  <dt>
+    <p><strong>cpu</strong></p>
+  </dt>
+  <dd>
+    <p>Not used yet.</p>
+  </dd>
+  <dt>
+    <p><strong>flags</strong></p>
+  </dt>
+  <dd>
+    <p>Not used yet.</p>
+  </dd>
 
-      <p>The fields are defined as follows:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>attr</strong></dt>
-        <dd>
-      <p>A pointer to a struct perf_event_attr as defined in perf_event.h. This field cannot be NULL on entry. The struct is not completely overwritten by the call. The library only modifies the fields it knows about, thereby allowing perf_event ABI mismatch between caller and library.</p>
-        </dd>
-        <dt><strong>fstr</strong></dt>
-        <dd>
-      <p>Same behavior as is described for PFM_OS_NONE above.</p>
-        </dd>
-        <dt><strong>size</strong></dt>
-        <dd>
-      <p>This field contains the size of the struct passed. This field is used to provide for extensibility of the struct without compromising backward compatibility. The value should be set to <strong>sizeof(pfm_perf_encode_arg_t)</strong>. If instead, a value of <strong>0</strong> is specified, the library assumes the struct passed is identical to the first ABI version which size is <strong>PFM_PERF_ENCODE_ABI0</strong>. Thus, if fields were added after the first ABI, they will not be set by the library. The library does check that bytes beyond what is implemented are zeroes.</p>
-        </dd>
-        <dt><strong>idx</strong></dt>
-        <dd>
-      <p>Upon return, this field contains the opaque unique identifier for the event described in <strong>str</strong>. This index can be used to retrieve information about the event using <strong>pfm_get_event_info()</strong>, for instance.</p>
-        </dd>
-        <dt><strong>cpu</strong></dt>
-        <dd>
-      <p>Not used yet.</p>
-        </dd>
-        <dt><strong>flags</strong></dt>
-        <dd>
-      <p>Not used yet.</p>
-        </dd>
-      </dl>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
 
-  <p>Here is a example of how this function could be used with PFM_OS_NONE:</p>
-<pre>#include &lt;inttypes.h&gt;
+  </dd>
+
+</dl>
+<p>Here is a example of how this function could be used with PFM_OS_NONE:</p>
+<pre>
+#include &lt;inttypes.h&gt;
 #include &lt;err.h&gt;
 #include &lt;perfmon/pfmlib.h&gt;
 int main(int argc, char **argv)
@@ -231,7 +254,8 @@ int main(int argc, char **argv)
 
    free(raw.codes);
    return 0;
-}</pre>
+}
+</pre>
 
         </div>
       </section>
@@ -239,7 +263,6 @@ int main(int argc, char **argv)
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN</h2>
         <div class="sectioncontent">
-
 <p>The function returns in <strong>arg</strong> the encoding of the event for the os passed in <strong>os</strong>. The content of <strong>arg</strong> depends on the <strong>os</strong> argument. Upon success, <strong>PFM_SUCCESS</strong> is returned otherwise a specific error code is returned.</p>
         </div>
       </section>
@@ -248,54 +271,71 @@ int main(int argc, char **argv)
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>PFM_ERR_TOOSMALL</strong></dt>
-    <dd>
-  <p>The <strong>code</strong> argument is too small for the encoding.</p>
-    </dd>
-    <dt><strong>PFM_ERR_INVAL</strong></dt>
-    <dd>
-  <p>The <strong>code</strong> or <strong>count</strong> argument is <strong>NULL</strong>.</p>
-    </dd>
-    <dt><strong>PFM_ERR_NOMEM</strong></dt>
-    <dd>
-  <p>Not enough memory.</p>
-    </dd>
-    <dt><strong>PFM_ERR_NOTFOUND</strong></dt>
-    <dd>
-  <p>Event not found.</p>
-    </dd>
-    <dt><strong>PFM_ERR_ATTR</strong></dt>
-    <dd>
-  <p>Invalid event attribute (unit mask or modifier)</p>
-    </dd>
-    <dt><strong>PFM_ERR_ATTR_VAL</strong></dt>
-    <dd>
-  <p>Invalid modifier value.</p>
-    </dd>
-    <dt><strong>PFM_ERR_ATTR_SET</strong></dt>
-    <dd>
-  <p>attribute already set, cannot be changed.</p>
-    </dd>
-    <dt><strong>PFM_ERR_ATTR_UMASK</strong></dt>
-    <dd>
-  <p>Missing unit mask.</p>
-    </dd>
-    <dt><strong>PFM_ERR_ATTR_FEATCOMB</strong></dt>
-    <dd>
-  <p>Unit masks or features cannot be combined into a single event.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>PFM_ERR_TOOSMALL</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>code</strong> argument is too small for the encoding.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_INVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>code</strong> or <strong>count</strong> argument is <strong>NULL</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_NOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Not enough memory.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_NOTFOUND</strong></p>
+  </dt>
+  <dd>
+    <p>Event not found.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_ATTR</strong></p>
+  </dt>
+  <dd>
+    <p>Invalid event attribute (unit mask or modifier)</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_ATTR_VAL</strong></p>
+  </dt>
+  <dd>
+    <p>Invalid modifier value.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_ATTR_SET</strong></p>
+  </dt>
+  <dd>
+    <p>attribute already set, cannot be changed.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_ATTR_UMASK</strong></p>
+  </dt>
+  <dd>
+    <p>Missing unit mask.</p>
+  </dd>
+  <dt>
+    <p><strong>PFM_ERR_ATTR_FEATCOMB</strong></p>
+  </dt>
+  <dd>
+    <p>Unit masks or features cannot be combined into a single event.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
-
 <p>Stephane Eranian &lt;eranian@gmail.com&gt;</p>
-<p class='spacer'>
-
         </div>
       </section>
 <nav>

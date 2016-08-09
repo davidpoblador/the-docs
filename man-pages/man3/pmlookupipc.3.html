@@ -90,77 +90,33 @@
       <section>
         <h2 class="font-effect-shadow-multiple">C SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p>#include &lt;pcp/pmapi.h&gt;</p>
-<p class='spacer'>
-
-<p>#include &lt;pcp/impl.h&gt;</p>
-<p class='spacer'>
-
-<p>int __pmAddIPC(int <em>fd</em>, __pmIPC <em>ipc</em>);</p>
-<p class='spacer'>
-
-<p>int __pmLookupIPC(__pmIPC **<em>ipcp</em>);</p>
-<p class='spacer'>
-
-<p>int __pmFdLookupIPC(int <em>fd</em>, __pmIPC **<em>ipcp</em>);</p>
-<p class='spacer'>
-
-<p>void __pmOverrideLastFd(int <em>fd</em>);</p>
-<p class='spacer'>
-
-<p>void __pmPrintIPC(void);</p>
-<p class='spacer'>
-
-<p>void __pmResetIPC(int <em>fd</em>);</p>
-<p class='spacer'>
-
-<p>cc ... -lpcp</p>
+<p>#include &lt;pcp/pmapi.h&gt;</p><p>#include &lt;pcp/impl.h&gt;</p><p>int __pmAddIPC(int <em>fd</em>, __pmIPC <em>ipc</em>);</p><p>int __pmLookupIPC(__pmIPC **<em>ipcp</em>);</p><p>int __pmFdLookupIPC(int <em>fd</em>, __pmIPC **<em>ipcp</em>);</p><p>void __pmOverrideLastFd(int <em>fd</em>);</p><p>void __pmPrintIPC(void);</p><p>void __pmResetIPC(int <em>fd</em>);</p><p>cc ... -lpcp</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>IPC channels throughout the distributed PCP framework are affected by the PCP 2.0 (and later) PDU changes.  These functions are the interface to the libpcp IPC connection management global data.  This data consists of a hash table of __pmIPC structures (indexed by file descriptor) and a cached, most-recently-used file descriptor.</p>
-<p class='spacer'>
-
-<p>Newly created IPC channels must be registered with the hash table using \f3__pmAddIPC\f1, such that the PDU sending and decoding routines can determine whether they need to perform any PDU version translations or not, for backward compatibility with previous the PCP 1.x IPC protocol.</p>
-<p class='spacer'>
-
-<p><strong>__pmLookupIPC</strong> and <strong>__pmFdLookupIPC</strong> both provide handles to the __pmIPC structure associated with the given file descriptor, as previously established by a call to <strong>__pmAddIPC</strong>. The difference between the two is that one allows an explicit file descriptor lookup, and the other uses the cached, most-recently-used file descriptor. So <strong>__pmLookupIPC</strong> actually calls <strong>__pmFdLookupIPC</strong> using this cached file descriptor as the argument.  The justification for having both is that in some places it is not possible to use <strong>__pmFdLookupIPC</strong> (which is preferred), since at that particular level of the PMAPI a file descriptor is not available (see the __pmDecodeError code for an example).</p>
-<p class='spacer'>
-
-<p>The <strong>__pmOverrideLastFd</strong> is an escape mechanism for use in those situations where the last PDU fetch did not go through the usual channels (ie. __pmGetPDU), so as to ensure that the cached file descriptor is the correct file descriptor for the PDU which is currently being processed.  This will typically be used for archive PDU processing or where version information is not available for a given file descriptor (eg. immediately prior to a PDU version exchange).</p>
-<p class='spacer'>
-
-<p><strong>__pmPrintIPC</strong> is a useful debugging routine for displaying a table mapping all currently registered file descriptors to their associated PDU version numbers.  Unused entries in this table should display the value zero in the version column.</p>
-<p class='spacer'>
-
-<p><strong>__pmResetIPC</strong> resets the version information associated with the given file descriptor to some known (invalid) number.  Subsequent lookups on this file descriptor will return an UNKNOWN_VERSION embedded within the __pmIPC structure.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
-        <div class="sectioncontent">
-
-<p>A negative return value from \f3__pmLookupIPC\f1 indicates that the requested file descriptor is not registered in the hash table. This typically indicates closure of an IPC channel, so PM_ERR_IPC is returned if this is the case.</p>
+<p>IPC channels throughout the distributed PCP framework are affected by the PCP 2.0 (and later) PDU changes.  These functions are the interface to the libpcp IPC connection management global data.  This data consists of a hash table of __pmIPC structures (indexed by file descriptor) and a cached, most-recently-used file descriptor.</p><p>Newly created IPC channels must be registered with the hash table using <strong>__pmAddIPC</strong>, such that the PDU sending and decoding routines can determine whether they need to perform any PDU version translations or not, for backward compatibility with previous the PCP 1.x IPC protocol.</p><p><strong>__pmLookupIPC</strong> and <strong>__pmFdLookupIPC</strong> both provide handles to the __pmIPC structure associated with the given file descriptor, as previously established by a call to <strong>__pmAddIPC</strong>. The difference between the two is that one allows an explicit file descriptor lookup, and the other uses the cached, most-recently-used file descriptor. So <strong>__pmLookupIPC</strong> actually calls <strong>__pmFdLookupIPC</strong> using this cached file descriptor as the argument.  The justification for having both is that in some places it is not possible to use <strong>__pmFdLookupIPC</strong> (which is preferred), since at that particular level of the PMAPI a file descriptor is not available (see the __pmDecodeError code for an example).</p><p>The <strong>__pmOverrideLastFd</strong> is an escape mechanism for use in those situations where the last PDU fetch did not go through the usual channels (ie. __pmGetPDU), so as to ensure that the cached file descriptor is the correct file descriptor for the PDU which is currently being processed.  This will typically be used for archive PDU processing or where version information is not available for a given file descriptor (eg. immediately prior to a PDU version exchange).</p><p><strong>__pmPrintIPC</strong> is a useful debugging routine for displaying a table mapping all currently registered file descriptors to their associated PDU version numbers.  Unused entries in this table should display the value zero in the version column.</p><p><strong>__pmResetIPC</strong> resets the version information associated with the given file descriptor to some known (invalid) number.  Subsequent lookups on this file descriptor will return an UNKNOWN_VERSION embedded within the __pmIPC structure.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmlookupipc&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>PMAPI</strong>(3)</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">DIAGNOSTICS</h2>
+        <div class="sectioncontent">
+<p>A negative return value from <strong>__pmLookupIPC</strong> indicates that the requested file descriptor is not registered in the hash table. This typically indicates closure of an IPC channel, so PM_ERR_IPC is returned if this is the case.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="pmlocaltime.3.html"><span aria-hidden="true">&larr;</span> pmlocaltime.3: Convert the date and time for a reporting timezone</a></li>
+   <li class="previous"><a href="pmlookupindomtext.3.html"><span aria-hidden="true">&larr;</span> pmlookupindomtext.3: Return text describing a performance metrics instance domain</a></li>
    <li class="next"><a href="pmlookupname.3.html">pmlookupname.3: Translate performance metric names into pmids <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

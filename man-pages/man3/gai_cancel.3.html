@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>gai_cancel: Asynchronous network address and service translation</title>
+  <title>getaddrinfo_a: Asynchronous network address and service translation</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -30,7 +30,7 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">gai_cancel<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">getaddrinfo_a<small> (3)</small></h1>
         <p class="lead">Asynchronous network address and service translation</p>
       </div>
 
@@ -54,8 +54,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/gai_cancel.3.html">
-      <span itemprop="name">gai_cancel: Asynchronous network address and service translation</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/getaddrinfo_a.3.html">
+      <span itemprop="name">getaddrinfo_a: Asynchronous network address and service translation</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -80,8 +80,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/gai_cancel.3.html">
-      <span itemprop="name">gai_cancel: Asynchronous network address and service translation</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/getaddrinfo_a.3.html">
+      <span itemprop="name">getaddrinfo_a: Asynchronous network address and service translation</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -91,8 +91,9 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;netdb.h&gt;</strong>
+<pre>
+<strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <netdb.h></strong>
 
 <strong>int getaddrinfo_a(int </strong><em>mode</em><strong>, struct gaicb *</strong><em>list[]</em><strong>,</strong>
 <strong>                int </strong><em>nitems</em><strong>, struct sigevent *</strong><em>sevp</em><strong>);</strong>
@@ -104,7 +105,8 @@
 
 <strong>int gai_cancel(struct gaicb *</strong><em>req</em><strong>);</strong>
 
-Link with <em>-lanl</em>.</pre>
+Link with <em>-lanl</em>.
+</pre>
 
         </div>
       </section>
@@ -112,143 +114,128 @@ Link with <em>-lanl</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>getaddrinfo_a</strong>() function performs the same task as <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>, but allows multiple name look-ups to be performed asynchronously, with optional notification on completion of look-up operations.</p><p>The <em>mode</em> argument has one of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>GAI_WAIT</strong></p>
+  </dt>
+  <dd>
+    <p>Perform the look-ups synchronously. The call blocks until the look-ups have completed.</p>
+  </dd>
+  <dt>
+    <p><strong>GAI_NOWAIT</strong></p>
+  </dt>
+  <dd>
+    <p>Perform the look-ups asynchronously. The call returns immediately, and the requests are resolved in the background. See the discussion of the <em>sevp</em> argument below.</p>
+  </dd>
 
-<p>The <strong>getaddrinfo_a</strong>() function performs the same task as <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>, but allows multiple name look-ups to be performed asynchronously, with optional notification on completion of look-up operations.</p>
-<p class='spacer'>
-
-  <p>The <em>mode</em> argument has one of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>GAI_WAIT</strong></dt>
-    <dd>
-  <p>Perform the look-ups synchronously. The call blocks until the look-ups have completed.</p>
-    </dd>
-    <dt><strong>GAI_NOWAIT</strong></dt>
-    <dd>
-  <p>Perform the look-ups asynchronously. The call returns immediately, and the requests are resolved in the background. See the discussion of the <em>sevp</em> argument below.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The array <em>list</em> specifies the look-up requests to process. The <em>nitems</em> argument specifies the number of elements in <em>list</em>. The requested look-up operations are started in parallel. NULL elements in <em>list</em> are ignored. Each request is described by a <em>gaicb</em> structure, defined as follows:</p>
-<p class='spacer'>
-
-<pre>struct gaicb {
+<pre>
+struct gaicb {
     const char            *ar_name;
     const char            *ar_service;
     const struct addrinfo *ar_request;
     struct addrinfo       *ar_result;
-};</pre>
+};
+</pre>
+<p>The elements of this structure correspond to the arguments of <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>. Thus, <em>ar_name</em> corresponds to the <em>node</em> argument and <em>ar_service</em> to the <em>service</em> argument, identifying an Internet host and a service. The <em>ar_request</em> element corresponds to the <em>hints</em> argument, specifying the criteria for selecting the returned socket address structures. Finally, <em>ar_result</em> corresponds to the <em>res</em> argument; you do not need to initialize this element, it will be automatically set when the request is resolved. The <em>addrinfo</em> structure referenced by the last two elements is described in <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>.</p><p>When <em>mode</em> is specified as <strong>GAI_NOWAIT</strong>, notifications about resolved requests can be obtained by employing the <em>sigevent</em> structure pointed to by the <em>sevp</em> argument. For the definition and general details of this structure, see <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a>. The <em>sevp->sigev_notify</em> field can have the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SIGEV_NONE</strong></p>
+  </dt>
+  <dd>
+    <p>Don't provide any notification.</p>
+  </dd>
+  <dt>
+    <p><strong>SIGEV_SIGNAL</strong></p>
+  </dt>
+  <dd>
+    <p>When a look-up completes, generate the signal <em>sigev_signo</em> for the process. See <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a> for general details. The <em>si_code</em> field of the <em>siginfo_t</em> structure will be set to <strong>SI_ASYNCNL</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>SIGEV_THREAD</strong></p>
+  </dt>
+  <dd>
+    <p>When a look-up completes, invoke <em>sigev_notify_function</em> as if it were the start function of a new thread. See <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a> for details.</p>
+  </dd>
 
-<p class='spacer'>
-
-<p>The elements of this structure correspond to the arguments of <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>. Thus, <em>ar_name</em> corresponds to the <em>node</em> argument and <em>ar_service</em> to the <em>service</em> argument, identifying an Internet host and a service. The <em>ar_request</em> element corresponds to the <em>hints</em> argument, specifying the criteria for selecting the returned socket address structures. Finally, <em>ar_result</em> corresponds to the <em>res</em> argument; you do not need to initialize this element, it will be automatically set when the request is resolved. The <em>addrinfo</em> structure referenced by the last two elements is described in <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>.</p>
-<p class='spacer'>
-
-  <p>When <em>mode</em> is specified as <strong>GAI_NOWAIT</strong>, notifications about resolved requests can be obtained by employing the <em>sigevent</em> structure pointed to by the <em>sevp</em> argument. For the definition and general details of this structure, see <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a>. The <em>sevp-&gt;sigev_notify</em> field can have the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SIGEV_NONE</strong></dt>
-    <dd>
-  <p>Don't provide any notification.</p>
-    </dd>
-    <dt><strong>SIGEV_SIGNAL</strong></dt>
-    <dd>
-  <p>When a look-up completes, generate the signal <em>sigev_signo</em> for the process. See <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a> for general details. The <em>si_code</em> field of the <em>siginfo_t</em> structure will be set to <strong>SI_ASYNCNL</strong>.</p>
-    </dd>
-    <dt><strong>SIGEV_THREAD</strong></dt>
-    <dd>
-  <p>When a look-up completes, invoke <em>sigev_notify_function</em> as if it were the start function of a new thread. See <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a> for details.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>For <strong>SIGEV_SIGNAL</strong> and <strong>SIGEV_THREAD</strong>, it may be useful to point <em>sevp-&gt;sigev_value.sival_ptr</em> to <em>list</em>.</p>
-<p class='spacer'>
-
-  <p>The <strong>gai_suspend</strong>() function suspends execution of the calling thread, waiting for the completion of one or more requests in the array <em>list</em>. The <em>nitems</em> argument specifies the size of the array <em>list</em>. The call blocks until one of the following occurs:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>One or more of the operations in <em>list</em> completes.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>The call is interrupted by a signal that is caught.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>The time interval specified in <em>timeout</em> elapses. This argument specifies a timeout in seconds plus nanoseconds (see <a href="../man2/nanosleep.2.html"><strong>nanosleep</strong>(2)</a> for details of the <em>timespec</em> structure). If <em>timeout</em> is NULL, then the call blocks indefinitely (until one of the events above occurs).</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>No explicit indication of which request was completed is given; you must determine which request(s) have completed by iterating with <strong>gai_error</strong>() over the list of requests.</p>
-<p class='spacer'>
-
-<p>The <strong>gai_error</strong>() function returns the status of the request <em>req</em>: either <strong>EAI_INPROGRESS</strong> if the request was not completed yet, 0 if it was handled successfully, or an error code if the request could not be resolved.</p>
-<p class='spacer'>
-
-<p>The <strong>gai_cancel</strong>() function cancels the request <em>req</em>. If the request has been canceled successfully, the error status of the request will be set to <strong>EAI_CANCELED</strong> and normal asynchronous notification will be performed. The request cannot be canceled if it is currently being processed; in that case, it will be handled as if <strong>gai_cancel</strong>() has never been called. If <em>req</em> is NULL, an attempt is made to cancel all outstanding requests that the process has made.</p>
+</dl>
+<p>For <strong>SIGEV_SIGNAL</strong> and <strong>SIGEV_THREAD</strong>, it may be useful to point <em>sevp->sigev_value.sival_ptr</em> to <em>list</em>.</p><p>The <strong>gai_suspend</strong>() function suspends execution of the calling thread, waiting for the completion of one or more requests in the array <em>list</em>. The <em>nitems</em> argument specifies the size of the array <em>list</em>. The call blocks until one of the following occurs:</p><ul>
+<li><p>One or more of the operations in <em>list</em> completes.</p></li><li><p>The call is interrupted by a signal that is caught.</p></li><li><p>The time interval specified in <em>timeout</em> elapses. This argument specifies a timeout in seconds plus nanoseconds (see <a href="../man2/nanosleep.2.html"><strong>nanosleep</strong>(2)</a> for details of the <em>timespec</em> structure). If <em>timeout</em> is NULL, then the call blocks indefinitely (until one of the events above occurs).</p></li>
+</ul><p>No explicit indication of which request was completed is given; you must determine which request(s) have completed by iterating with <strong>gai_error</strong>() over the list of requests.</p><p>The <strong>gai_error</strong>() function returns the status of the request <em>req</em>: either <strong>EAI_INPROGRESS</strong> if the request was not completed yet, 0 if it was handled successfully, or an error code if the request could not be resolved.</p><p>The <strong>gai_cancel</strong>() function cancels the request <em>req</em>. If the request has been canceled successfully, the error status of the request will be set to <strong>EAI_CANCELED</strong> and normal asynchronous notification will be performed. The request cannot be canceled if it is currently being processed; in that case, it will be handled as if <strong>gai_cancel</strong>() has never been called. If <em>req</em> is NULL, an attempt is made to cancel all outstanding requests that the process has made.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
+<p>The <strong>getaddrinfo_a</strong>() function returns 0 if all of the requests have been enqueued successfully, or one of the following nonzero error codes:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EAI_AGAIN</strong></p>
+  </dt>
+  <dd>
+    <p>The resources necessary to enqueue the look-up requests were not available. The application may check the error status of each request to determine which ones failed.</p>
+  </dd>
+  <dt>
+    <p><strong>EAI_MEMORY</strong></p>
+  </dt>
+  <dd>
+    <p>Out of memory.</p>
+  </dd>
+  <dt>
+    <p><strong>EAI_SYSTEM</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> is invalid.</p>
+  </dd>
 
-  <p>The <strong>getaddrinfo_a</strong>() function returns 0 if all of the requests have been enqueued successfully, or one of the following nonzero error codes:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EAI_AGAIN</strong></dt>
-    <dd>
-  <p>The resources necessary to enqueue the look-up requests were not available. The application may check the error status of each request to determine which ones failed.</p>
-    </dd>
-    <dt><strong>EAI_MEMORY</strong></dt>
-    <dd>
-  <p>Out of memory.</p>
-    </dd>
-    <dt><strong>EAI_SYSTEM</strong></dt>
-    <dd>
-  <p><em>mode</em> is invalid.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+<p>The <strong>gai_suspend</strong>() function returns 0 if at least one of the listed requests has been completed. Otherwise, it returns one of the following nonzero error codes:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EAI_AGAIN</strong></p>
+  </dt>
+  <dd>
+    <p>The given timeout expired before any of the requests could be completed.</p>
+  </dd>
+  <dt>
+    <p><strong>EAI_ALLDONE</strong></p>
+  </dt>
+  <dd>
+    <p>There were no actual requests given to the function.</p>
+  </dd>
+  <dt>
+    <p><strong>EAI_INTR</strong></p>
+  </dt>
+  <dd>
+    <p>A signal has interrupted the function. Note that this interruption might have been caused by signal notification of some completed look-up request.</p>
+  </dd>
 
-  <p>The <strong>gai_suspend</strong>() function returns 0 if at least one of the listed requests has been completed. Otherwise, it returns one of the following nonzero error codes:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EAI_AGAIN</strong></dt>
-    <dd>
-  <p>The given timeout expired before any of the requests could be completed.</p>
-    </dd>
-    <dt><strong>EAI_ALLDONE</strong></dt>
-    <dd>
-  <p>There were no actual requests given to the function.</p>
-    </dd>
-    <dt><strong>EAI_INTR</strong></dt>
-    <dd>
-  <p>A signal has interrupted the function. Note that this interruption might have been caused by signal notification of some completed look-up request.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+<p>The <strong>gai_error</strong>() function can return <strong>EAI_INPROGRESS</strong> for an unfinished look-up request, 0 for a successfully completed look-up (as described above), one of the error codes that could be returned by <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>, or the error code <strong>EAI_CANCELED</strong> if the request has been canceled explicitly before it could be finished.</p><p>The <strong>gai_cancel</strong>() function can return one of these values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EAI_CANCELED</strong></p>
+  </dt>
+  <dd>
+    <p>The request has been canceled successfully.</p>
+  </dd>
+  <dt>
+    <p><strong>EAI_NOTCANCELED</strong></p>
+  </dt>
+  <dd>
+    <p>The request has not been canceled.</p>
+  </dd>
+  <dt>
+    <p><strong>EAI_ALLDONE</strong></p>
+  </dt>
+  <dd>
+    <p>The request has already completed.</p>
+  </dd>
 
-<p>The <strong>gai_error</strong>() function can return <strong>EAI_INPROGRESS</strong> for an unfinished look-up request, 0 for a successfully completed look-up (as described above), one of the error codes that could be returned by <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>, or the error code <strong>EAI_CANCELED</strong> if the request has been canceled explicitly before it could be finished.</p>
-<p class='spacer'>
-
-  <p>The <strong>gai_cancel</strong>() function can return one of these values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EAI_CANCELED</strong></dt>
-    <dd>
-  <p>The request has been canceled successfully.</p>
-    </dd>
-    <dt><strong>EAI_NOTCANCELED</strong></dt>
-    <dd>
-  <p>The request has not been canceled.</p>
-    </dd>
-    <dt><strong>EAI_ALLDONE</strong></dt>
-    <dd>
-  <p>The request has already completed.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The <a href="../man3/gai_strerror.3.html"><strong>gai_strerror</strong>(3)</a> function translates these error codes to a human readable string, suitable for error reporting.</p>
         </div>
       </section>
@@ -256,9 +243,7 @@ Link with <em>-lanl</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -269,16 +254,12 @@ Link with <em>-lanl</em>.</pre>
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>These functions are GNU extensions; they first appeared in glibc in version 2.2.3.</p>
         </div>
       </section>
@@ -286,7 +267,6 @@ Link with <em>-lanl</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
 <p>The interface of <strong>getaddrinfo_a</strong>() was modeled after the <a href="../man3/lio_listio.3.html"><strong>lio_listio</strong>(3)</a> interface.</p>
         </div>
       </section>
@@ -294,20 +274,18 @@ Link with <em>-lanl</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-<p>Two examples are provided: a simple example that resolves several requests in parallel synchronously, and a complex example showing some of the asynchronous capabilities.</p>
-  <h3>Synchronous example</h3>
-  <p>The program below simply resolves several hostnames in parallel, giving a speed-up compared to resolving the hostnames sequentially using <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>. The program might be used like this:</p>
+<p>Two examples are provided: a simple example that resolves several requests in parallel synchronously, and a complex example showing some of the asynchronous capabilities.</p><h3>Synchronous example</h3>
+<p>The program below simply resolves several hostnames in parallel, giving a speed-up compared to resolving the hostnames sequentially using <a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>. The program might be used like this:</p>
 <pre>
+
 $ <strong>./a.out ftp.us.kernel.org enoent.linuxfoundation.org gnu.cz</strong>
 ftp.us.kernel.org: 128.30.2.36
 enoent.linuxfoundation.org: Name or service not known
-gnu.cz: 87.236.197.13</pre>
-
-<p class='spacer'>
-
-  <p>Here is the program source code</p>
+gnu.cz: 87.236.197.13
+</pre>
+<p>Here is the program source code</p>
 <pre>
+
 #define _GNU_SOURCE
 #include &lt;netdb.h&gt;
 #include &lt;stdio.h&gt;
@@ -365,14 +343,13 @@ main(int argc, char *argv[])
         }
     }
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
 
-  <h3>Asynchronous example</h3>
-<p>This example shows a simple interactive <strong>getaddrinfo_a</strong>() front-end. The notification facility is not demonstrated.</p>
-<p class='spacer'>
-
-  <p>An example session might look like this:</p>
+<h3>Asynchronous example</h3>
+<p>This example shows a simple interactive <strong>getaddrinfo_a</strong>() front-end. The notification facility is not demonstrated.</p><p>An example session might look like this:</p>
 <pre>
+
 $ <strong>./a.out</strong>
 &gt; a ftp.us.kernel.org enoent.linuxfoundation.org gnu.cz
 &gt; c 2
@@ -386,14 +363,11 @@ $ <strong>./a.out</strong>
 &gt; l
 [00] ftp.us.kernel.org: 216.165.129.139
 [01] enoent.linuxfoundation.org: Name or service not known
-[02] gnu.cz: 87.236.197.13</pre>
-
-<p class='spacer'>
-
+[02] gnu.cz: 87.236.197.13
+</pre>
 <p>The program source is as follows:</p>
-<p class='spacer'>
-
-<pre>#define _GNU_SOURCE
+<pre>
+#define _GNU_SOURCE
 #include &lt;netdb.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -566,19 +540,19 @@ main(int argc, char *argv[])
         }
     }
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
+
 
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO gai_cancel&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO getaddrinfo_a&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/getaddrinfo.3.html"><strong>getaddrinfo</strong>(3)</a>, <a href="../man3/inet.3.html"><strong>inet</strong>(3)</a>, <a href="../man3/lio_listio.3.html"><strong>lio_listio</strong>(3)</a>, <a href="../man7/hostname.7.html"><strong>hostname</strong>(7)</a>, <strong>ip</strong>(7), <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="fwrite_unlocked.3.html"><span aria-hidden="true">&larr;</span> fwrite_unlocked.3: Nonlocking stdio functions</a></li>

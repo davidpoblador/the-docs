@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>mcheck_check_all: Heap consistency checking</title>
+  <title>mcheck: Heap consistency checking</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -30,7 +30,7 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">mcheck_check_all<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">mcheck<small> (3)</small></h1>
         <p class="lead">Heap consistency checking</p>
       </div>
 
@@ -54,8 +54,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/mcheck_check_all.3.html">
-      <span itemprop="name">mcheck_check_all: Heap consistency checking</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/mcheck.3.html">
+      <span itemprop="name">mcheck: Heap consistency checking</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -80,8 +80,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/mcheck_check_all.3.html">
-      <span itemprop="name">mcheck_check_all: Heap consistency checking</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/mcheck.3.html">
+      <span itemprop="name">mcheck: Heap consistency checking</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -91,7 +91,8 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;mcheck.h&gt;</strong>
+<pre>
+<strong>#include <mcheck.h></strong>
 
 <strong>int mcheck(void (*</strong><em>abortfunc</em><strong>)(enum mcheck_status </strong><em>mstatus</em><strong>));</strong>
 
@@ -99,7 +100,8 @@
 
 <strong>void mcheck_check_all(void);</strong>
 
-<strong>enum mcheck_status mprobe(void *</strong><em>ptr</em><strong>);</strong></pre>
+<strong>enum mcheck_status mprobe(void *</strong><em>ptr</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -107,55 +109,47 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>mcheck</strong>() function installs a set of debugging hooks for the <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> family of memory-allocation functions. These hooks cause certain consistency checks to be performed on the state of the heap. The checks can detect application errors such as freeing a block of memory more than once or corrupting the bookkeeping data structures that immediately precede a block of allocated memory.</p><p>To be effective, the <strong>mcheck</strong>() function must be called before the first call to <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> or a related function. In cases where this is difficult to ensure, linking the program with <em>-lmcheck</em> inserts an implicit call to <strong>mcheck</strong>() (with a NULL argument) before the first call to a memory-allocation function.</p><p>The <strong>mcheck_pedantic</strong>() function is similar to <strong>mcheck</strong>(), but performs checks on all allocated blocks whenever one of the memory-allocation functions is called. This can be very slow!</p><p>The <strong>mcheck_check_all</strong>() function causes an immediate check on all allocated blocks. This call is effective only if <strong>mcheck</strong>() is called beforehand.</p><p>If the system detects an inconsistency in the heap, the caller-supplied function pointed to by <em>abortfunc</em> is invoked with a single argument, <em>mstatus</em>, that indicates what type of inconsistency was detected. If <em>abortfunc</em> is NULL, a default function prints an error message on <em>stderr</em> and calls <a href="../man3/abort.3.html"><strong>abort</strong>(3)</a>.</p><p>The <strong>mprobe</strong>() function performs a consistency check on the block of allocated memory pointed to by <em>ptr</em>. The <strong>mcheck</strong>() function should be called beforehand (otherwise <strong>mprobe</strong>() returns <strong>MCHECK_DISABLED</strong>).</p><p>The following list describes the values returned by <strong>mprobe</strong>() or passed as the <em>mstatus</em> argument when <em>abortfunc</em> is invoked:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>MCHECK_DISABLED</strong> (<strong>mprobe</strong>() only)</p>
+  </dt>
+  <dd>
+    <p><strong>mcheck</strong>() was not called before the first memory allocation function was called. Consistency checking is not possible.</p>
+  </dd>
+  <dt>
+    <p><strong>MCHECK_OK</strong> (<strong>mprobe</strong>() only)</p>
+  </dt>
+  <dd>
+    <p>No inconsistency detected.</p>
+  </dd>
+  <dt>
+    <p><strong>MCHECK_HEAD</strong></p>
+  </dt>
+  <dd>
+    <p>Memory preceding an allocated block was clobbered.</p>
+  </dd>
+  <dt>
+    <p><strong>MCHECK_TAIL</strong></p>
+  </dt>
+  <dd>
+    <p>Memory following an allocated block was clobbered.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p>MCHECK_FREE A block of memory was freed twice.</p>
+  </dd>
 
-<p>The <strong>mcheck</strong>() function installs a set of debugging hooks for the <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> family of memory-allocation functions. These hooks cause certain consistency checks to be performed on the state of the heap. The checks can detect application errors such as freeing a block of memory more than once or corrupting the bookkeeping data structures that immediately precede a block of allocated memory.</p>
-<p class='spacer'>
+</dl>
 
-<p>To be effective, the <strong>mcheck</strong>() function must be called before the first call to <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> or a related function. In cases where this is difficult to ensure, linking the program with <em>-lmcheck</em> inserts an implicit call to <strong>mcheck</strong>() (with a NULL argument) before the first call to a memory-allocation function.</p>
-<p class='spacer'>
-
-<p>The <strong>mcheck_pedantic</strong>() function is similar to <strong>mcheck</strong>(), but performs checks on all allocated blocks whenever one of the memory-allocation functions is called. This can be very slow!</p>
-<p class='spacer'>
-
-<p>The <strong>mcheck_check_all</strong>() function causes an immediate check on all allocated blocks. This call is effective only if <strong>mcheck</strong>() is called beforehand.</p>
-<p class='spacer'>
-
-<p>If the system detects an inconsistency in the heap, the caller-supplied function pointed to by <em>abortfunc</em> is invoked with a single argument, <em>mstatus</em>, that indicates what type of inconsistency was detected. If <em>abortfunc</em> is NULL, a default function prints an error message on <em>stderr</em> and calls <a href="../man3/abort.3.html"><strong>abort</strong>(3)</a>.</p>
-<p class='spacer'>
-
-<p>The <strong>mprobe</strong>() function performs a consistency check on the block of allocated memory pointed to by <em>ptr</em>. The <strong>mcheck</strong>() function should be called beforehand (otherwise <strong>mprobe</strong>() returns <strong>MCHECK_DISABLED</strong>).</p>
-<p class='spacer'>
-
-  <p>The following list describes the values returned by <strong>mprobe</strong>() or passed as the <em>mstatus</em> argument when <em>abortfunc</em> is invoked:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>MCHECK_DISABLED</strong> (<strong>mprobe</strong>() only)</dt>
-    <dd>
-  <p><strong>mcheck</strong>() was not called before the first memory allocation function was called. Consistency checking is not possible.</p>
-    </dd>
-    <dt><strong>MCHECK_OK</strong> (<strong>mprobe</strong>() only)</dt>
-    <dd>
-  <p>No inconsistency detected.</p>
-    </dd>
-    <dt><strong>MCHECK_HEAD</strong></dt>
-    <dd>
-  <p>Memory preceding an allocated block was clobbered.</p>
-    </dd>
-    <dt><strong>MCHECK_TAIL</strong></dt>
-    <dd>
-  <p>Memory following an allocated block was clobbered.</p>
-    </dd>
-    <dt>MCHECK_FREE</dt>
-    <dd>
-  <p>A block of memory was freed twice.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p><strong>mcheck</strong>() and <strong>mcheck_pedantic</strong>() return 0 on success, or -1 on error.</p>
         </div>
       </section>
@@ -163,7 +157,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>mcheck_pedantic</strong>() and <strong>mcheck_check_all</strong>() functions are available since glibc 2.2. The <strong>mcheck</strong>() and <strong>mprobe</strong>() functions are present since at least glibc 2.0</p>
         </div>
       </section>
@@ -171,33 +164,23 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
 <th>Value</th></tr>
 
 <tr>
-<td><strong>mcheck</strong>(),   <strong>mcheck_pedantic</strong>(),   <strong>mcheck_check_all</strong>(),   <strong>mprobe</strong>()  </td>
+<td><strong>mcheck</strong>(),   <strong>mcheck_pedantic</strong>(),      <strong>mcheck_check_all</strong>(),   <strong>mprobe</strong>()  </td>
 <td>Thread safety</td>
-<td>MT-Unsafe race:mcheck   const:malloc_hooks  </td></tr>
+<td>MT-Unsafe race:mcheck      const:malloc_hooks  </td></tr>
 </table>
-
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>These functions are GNU extensions.</p>
         </div>
       </section>
@@ -205,7 +188,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
 <p>Linking a program with <em>-lmcheck</em> and using the <strong>MALLOC_CHECK_</strong> environment variable (described in <a href="../man3/mallopt.3.html"><strong>mallopt</strong>(3)</a>) cause the same kinds of errors to be detected. But, using <strong>MALLOC_CHECK_</strong> does not require the application to be relinked.</p>
         </div>
       </section>
@@ -213,19 +195,20 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-  <p>The program below calls <strong>mcheck</strong>() with a NULL argument and then frees the same block of memory twice. The following shell session demonstrates what happens when running the program:</p>
+<p>The program below calls <strong>mcheck</strong>() with a NULL argument and then frees the same block of memory twice. The following shell session demonstrates what happens when running the program:</p>
 <pre>
+
 $<strong> ./a.out</strong>
 About to free
 
 About to free a second time
 block freed twice
-Aborted (core dumped)</pre>
+Aborted (core dumped)
+</pre>
+<h3>Program source</h3>
 
-  <h3>Program source</h3>
-  <p></p>
-<pre>#include &lt;stdlib.h&gt;
+<pre>
+#include &lt;stdlib.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;mcheck.h&gt;
 
@@ -248,19 +231,19 @@ main(int argc, char *argv[])
     free(p);
 
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
+
 
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO mcheck_check_all&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO mcheck&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>, <a href="../man3/mallopt.3.html"><strong>mallopt</strong>(3)</a>, <a href="../man3/mtrace.3.html"><strong>mtrace</strong>(3)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="mcheck.3.html"><span aria-hidden="true">&larr;</span> mcheck.3: Heap consistency checking</a></li>

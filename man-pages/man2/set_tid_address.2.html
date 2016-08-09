@@ -91,9 +91,11 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;linux/unistd.h&gt;</strong>
+<pre>
+<strong>#include <linux/unistd.h></strong>
 
-<strong>long set_tid_address(int *</strong><em>tidptr</em><strong>);</strong></pre>
+<strong>long set_tid_address(int *</strong><em>tidptr</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -101,33 +103,28 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>For each thread, the kernel maintains two attributes (addresses) called <em>set_child_tid</em> and <em>clear_child_tid</em>. These two attributes contain the value NULL by default.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><em>set_child_tid</em></p>
+  </dt>
+  <dd>
+    <p>If a thread is started using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_CHILD_SETTID</strong> flag, <em>set_child_tid</em> is set to the value passed in the <em>ctid</em> argument of that system call.</p><ul>
+<li><p>When <em>set_child_tid</em> is set, the very first thing the new thread does is to write its thread ID at this address.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><em>clear_child_tid</em></p>
+  </dt>
+  <dd>
+    <p>If a thread is started using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_CHILD_CLEARTID</strong> flag, <em>clear_child_tid</em> is set to the value passed in the <em>ctid</em> argument of that system call.</p>
+  </dd>
 
-  <p>For each thread, the kernel maintains two attributes (addresses) called <em>set_child_tid</em> and <em>clear_child_tid</em>. These two attributes contain the value NULL by default.</p>
-  <dl class='dl-vertical'>
-    <dt><em>set_child_tid</em></dt>
-    <dd>
-  <p>If a thread is started using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_CHILD_SETTID</strong> flag, <em>set_child_tid</em> is set to the value passed in the <em>ctid</em> argument of that system call.</p>
-<p class='spacer'>
-
-  <p>When <em>set_child_tid</em> is set, the very first thing the new thread does is to write its thread ID at this address.</p>
-    </dd>
-    <dt><em>clear_child_tid</em></dt>
-    <dd>
-  <p>If a thread is started using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> with the <strong>CLONE_CHILD_CLEARTID</strong> flag, <em>clear_child_tid</em> is set to the value passed in the <em>ctid</em> argument of that system call.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The system call <strong>set_tid_address</strong>() sets the <em>clear_child_tid</em> value for the calling thread to <em>tidptr</em>.</p>
-<p class='spacer'>
-
-<p>When a thread whose <em>clear_child_tid</em> is not NULL terminates, then, if the thread is sharing memory with other threads, then 0 is written at the address specified in <em>clear_child_tid</em> and the kernel performs the following operation:</p>
-<p class='spacer'>
-
-<pre>    futex(clear_child_tid, FUTEX_WAKE, 1, NULL, NULL, 0);</pre>
-
-<p class='spacer'>
-
+</dl>
+<p>The system call <strong>set_tid_address</strong>() sets the <em>clear_child_tid</em> value for the calling thread to <em>tidptr</em>.</p><p>When a thread whose <em>clear_child_tid</em> is not NULL terminates, then, if the thread is sharing memory with other threads, then 0 is written at the address specified in <em>clear_child_tid</em> and the kernel performs the following operation:</p>
+<pre>
+    futex(clear_child_tid, FUTEX_WAKE, 1, NULL, NULL, 0);
+</pre>
 <p>The effect of this operation is to wake a single thread that is performing a futex wait on the memory location. Errors from the futex wake operation are ignored.</p>
         </div>
       </section>
@@ -135,7 +132,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p><strong>set_tid_address</strong>() always returns the caller's thread ID.</p>
         </div>
       </section>
@@ -143,7 +139,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
-
 <p><strong>set_tid_address</strong>() always succeeds.</p>
         </div>
       </section>
@@ -151,7 +146,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>This call is present since Linux 2.5.48. Details as given here are valid since Linux 2.5.49.</p>
         </div>
       </section>
@@ -159,7 +153,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>This system call is Linux-specific.</p>
         </div>
       </section>
@@ -167,11 +160,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO set_tid_address&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/futex.2.html"><strong>futex</strong>(2)</a>, <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="set_thread_area.2.html"><span aria-hidden="true">&larr;</span> set_thread_area.2: Set a gdt entry for thread-local storage</a></li>

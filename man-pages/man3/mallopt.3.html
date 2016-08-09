@@ -90,204 +90,208 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;malloc.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>int mallopt(int </strong><em>param</em><strong>, int </strong><em>value</em><strong>);</strong></p>
+<p><strong>#include <malloc.h></strong></p><p><strong>int mallopt(int </strong><em>param</em><strong>, int </strong><em>value</em><strong>);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>mallopt</strong>() function adjusts parameters that control the behavior of the memory-allocation functions (see <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>). The <em>param</em> argument specifies the parameter to be modified, and <em>value</em> specifies the new value for that parameter.</p><p>The following values can be specified for <em>param</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>M_ARENA_MAX</strong></p>
+  </dt>
+  <dd>
+    <p>This is the maximum number of arenas that can be created. The value of <strong>M_ARENA_TEST</strong> is not used when <strong>M_ARENA_MAX</strong> is defined. An arena represents a pool of memory that can be used by <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> (and similar) calls to service allocation requests. Arenas are thread safe and therefore may have multiple concurrent memory requests. The trade-off is between the number of threads and the number of arenas. The more arenas you have, the lower the per-thread contention, but the higher the memory usage. This parameter has been available since glibc 2.10 via <strong>--enable-experimental-malloc</strong>, and since glibc 2.15 by default. In some versions of the allocator there was no limit on the number of created arenas (e.g., CentOS 5, RHEL 5).</p><p>When employing newer glibc versions, applications may in some cases exhibit high contention when accessing arenas. In these cases, it may be beneficial to increase <strong>M_ARENA_MAX</strong> to match the number of threads. This is similar in behavior to strategies taken by tcmalloc and jemalloc (e.g., per-thread allocation pools).</p>
+  </dd>
+  <dt>
+    <p><strong>M_ARENA_TEST</strong></p>
+  </dt>
+  <dd>
+    <p>This is the limit, in number of arenas created, at which the system configuration will be examined to evaluate a hard limit on the number of created arenas. The computed limit is implementation-defined and is usually a multiple of the number of available CPUs. Once the limit is computed, the result is final and constrains the total number of arenas. See <strong>M_ARENA_MAX</strong> for the definition of an arena. This parameter has been available since glibc 2.10 via <strong>--enable-experimental-malloc</strong>, and since glibc 2.15 by default.</p>
+  </dd>
+  <dt>
+    <p><strong>M_CHECK_ACTION</strong></p>
+  </dt>
+  <dd>
+    <p>Setting this parameter controls how glibc responds when various kinds of programming errors are detected (e.g., freeing the same pointer twice). The 3 least significant bits (2, 1, and 0) of the value assigned to this parameter determine the glibc behavior, as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>Bit 0</p>
+  </dt>
+  <dd>
+    <p>If this bit is set, then print a one-line message on <em>stderr</em> that provides details about the error. The message starts with the string "***&nbsp;glibc detected&nbsp;***", followed by the program name, the name of the memory-allocation function in which the error was detected, a brief description of the error, and the memory address where the error was detected.</p>
+  </dd>
+  <dt>
+    <p>Bit 1</p>
+  </dt>
+  <dd>
+    <p>If this bit is set, then, after printing any error message specified by bit 0, the program is terminated by calling <a href="../man3/abort.3.html"><strong>abort</strong>(3)</a>. In glibc versions since 2.4, if bit 0 is also set, then, between printing the error message and aborting, the program also prints a stack trace in the manner of <a href="../man3/backtrace.3.html"><strong>backtrace</strong>(3)</a>, and prints the process's memory mapping in the style of <em>/proc/[pid]/maps</em> (see <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>).</p>
+  </dd>
+  <dt>
+    <p>Bit 2 (since glibc 2.4)</p>
+  </dt>
+  <dd>
+    <p>This bit has an effect only if bit 0 is also set. If this bit is set, then the one-line message describing the error is simplified to contain just the name of the function where the error was detected and the brief description of the error.</p>
+  </dd>
 
-<p>The <strong>mallopt</strong>() function adjusts parameters that control the behavior of the memory-allocation functions (see <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>). The <em>param</em> argument specifies the parameter to be modified, and <em>value</em> specifies the new value for that parameter.</p>
-<p class='spacer'>
+</dl>
+<ul>
+<li><p>The remaining bits in <em>value</em> are ignored.</p></li><li><p>Combining the above details, the following numeric values are meaningful for <strong>M_CHECK_ACTION</strong>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    0
+  </dt>
+  <dd>
+    <p>Ignore error conditions; continue execution (with undefined results).</p>
+  </dd>
+  <dt>
+    1
+  </dt>
+  <dd>
+    <p>Print a detailed error message and continue execution.</p>
+  </dd>
+  <dt>
+    2
+  </dt>
+  <dd>
+    <p>Abort the program.</p>
+  </dd>
+  <dt>
+    3
+  </dt>
+  <dd>
+    <p>Print detailed error message, stack trace, and memory mappings, and abort the program.</p>
+  </dd>
+  <dt>
+    5
+  </dt>
+  <dd>
+    <p>Print a simple error message and continue execution.</p>
+  </dd>
+  <dt>
+    7
+  </dt>
+  <dd>
+    <p>Print simple error message, stack trace, and memory mappings, and abort the program.</p>
+  </dd>
 
-  <p>The following values can be specified for <em>param</em>:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>M_ARENA_MAX</strong></dt>
-    <dd>
-  <p>This is the maximum number of arenas that can be created. The value of <strong>M_ARENA_TEST</strong> is not used when <strong>M_ARENA_MAX</strong> is defined. An arena represents a pool of memory that can be used by <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> (and similar) calls to service allocation requests. Arenas are thread safe and therefore may have multiple concurrent memory requests. The trade-off is between the number of threads and the number of arenas. The more arenas you have, the lower the per-thread contention, but the higher the memory usage. This parameter has been available since glibc 2.10 via <strong>--enable-experimental-malloc</strong>, and since glibc 2.15 by default. In some versions of the allocator there was no limit on the number of created arenas (e.g., CentOS 5, RHEL 5).</p>
-<p class='spacer'>
+</dl>
+</li><li><p>Since glibc 2.3.4, the default value for the <strong>M_CHECK_ACTION</strong> parameter is 3. In glibc version 2.3.3 and earlier, the default value is 1.</p></li><li><p>Using a nonzero <strong>M_CHECK_ACTION</strong> value can be useful because otherwise a crash may happen much later, and the true cause of the problem is then very hard to track down.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>M_MMAP_MAX</strong></p>
+  </dt>
+  <dd>
+    <p>This parameter specifies the maximum number of allocation requests that may be simultaneously serviced using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. This parameter exists because some systems have a limited number of internal tables for use by <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, and using more than a few of them may degrade performance.</p><ul>
+<li><p>The default value is 65,536, a value which has no special significance and which servers only as a safeguard. Setting this parameter to 0 disables the use of <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> for servicing large allocation requests.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>M_MMAP_THRESHOLD</strong></p>
+  </dt>
+  <dd>
+    <p>For allocations greater than or equal to the limit specified (in bytes) by <strong>M_MMAP_THRESHOLD</strong> that can't be satisfied from the free list, the memory-allocation functions employ <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> instead of increasing the program break using <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a>.</p><ul>
+<li><p>Allocating memory using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> has the significant advantage that the allocated memory blocks can always be independently released back to the system. (By contrast, the heap can be trimmed only if memory is freed at the top end.) On the other hand, there are some disadvantages to the use of <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>: deallocated space is not placed on the free list for reuse by later allocations; memory may be wasted because <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> allocations must be page-aligned; and the kernel must perform the expensive task of zeroing out memory allocated via <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. Balancing these factors leads to a default setting of 128*1024 for the <strong>M_MMAP_THRESHOLD</strong> parameter.</p></li><li><p>The lower limit for this parameter is 0. The upper limit is <strong>DEFAULT_MMAP_THRESHOLD_MAX</strong>: 512*1024 on 32-bit systems or <em>4*1024*1024*sizeof(long)</em> on 64-bit systems.</p></li><li><p><em>Note:</em> Nowadays, glibc uses a dynamic mmap threshold by default. The initial value of the threshold is 128*1024, but when blocks larger than the current threshold and less than or equal to <strong>DEFAULT_MMAP_THRESHOLD_MAX</strong> are freed, the threshold is adjusted upward to the size of the freed block. When dynamic mmap thresholding is in effect, the threshold for trimming the heap is also dynamically adjusted to be twice the dynamic mmap threshold. Dynamic adjustment of the mmap threshold is disabled if any of the <strong>M_TRIM_THRESHOLD</strong>, <strong>M_TOP_PAD</strong>, <strong>M_MMAP_THRESHOLD</strong>, or <strong>M_MMAP_MAX</strong> parameters is set.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>M_MXFAST</strong> (since glibc 2.3)</p>
+  </dt>
+  <dd>
+    <p>Set the upper limit for memory allocation requests that are satisfied using "fastbins". (The measurement unit for this parameter is bytes.) Fastbins are storage areas that hold deallocated blocks of memory of the same size without merging adjacent free blocks. Subsequent reallocation of blocks of the same size can be handled very quickly by allocating from the fastbin, although memory fragmentation and the overall memory footprint of the program can increase. The default value for this parameter is <em>64*sizeof(size_t)/4</em> (i.e., 64 on 32-bit architectures). The range for this parameter is 0 to <em>80*sizeof(size_t)/4</em>. Setting <strong>M_MXFAST</strong> to 0 disables the use of fastbins.</p>
+  </dd>
+  <dt>
+    <p><strong>M_PERTURB</strong> (since glibc 2.4)</p>
+  </dt>
+  <dd>
+    <p>If this parameter is set to a nonzero value, then bytes of allocated memory (other than allocations via <a href="../man3/calloc.3.html"><strong>calloc</strong>(3)</a>) are initialized to the complement of the value in the least significant byte of <em>value</em>, and when allocated memory is released using <a href="../man3/free.3.html"><strong>free</strong>(3)</a>, the freed bytes are set to the least significant byte of <em>value</em>. This can be useful for detecting errors where programs incorrectly rely on allocated memory being initialized to zero, or reuse values in memory that has already been freed.</p>
+  </dd>
+  <dt>
+    <p><strong>M_TOP_PAD</strong></p>
+  </dt>
+  <dd>
+    <p>This parameter defines the amount of padding to employ when calling <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a> to modify the program break. (The measurement unit for this parameter is bytes.) This parameter has an effect in the following circumstances:</p><ul>
+<li><p>When the program break is increased, then <strong>M_TOP_PAD</strong> bytes are added to the <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a> request.</p></li><li><p>When the heap is trimmed as a consequence of calling <a href="../man3/free.3.html"><strong>free</strong>(3)</a> (see the discussion of <strong>M_TRIM_THRESHOLD</strong>) this much free space is preserved at the top of the heap.</p></li>
+</ul><ul>
+<li><p>In either case, the amount of padding is always rounded to a system page boundary.</p></li><li><p>Modifying <strong>M_TOP_PAD</strong> is a trade-off between increasing the number of system calls (when the parameter is set low) and wasting unused memory at the top of the heap (when the parameter is set high).</p></li><li><p>The default value for this parameter is 128*1024.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>M_TRIM_THRESHOLD</strong></p>
+  </dt>
+  <dd>
+    <p>When the amount of contiguous free memory at the top of the heap grows sufficiently large, <a href="../man3/free.3.html"><strong>free</strong>(3)</a> employs <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a> to release this memory back to the system. (This can be useful in programs that continue to execute for a long period after freeing a significant amount of memory.) The <strong>M_TRIM_THRESHOLD</strong> parameter specifies the minimum size (in bytes) that this block of memory must reach before <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a> is used to trim the heap.</p><ul>
+<li><p>The default value for this parameter is 128*1024. Setting <strong>M_TRIM_THRESHOLD</strong> to -1 disables trimming completely.</p></li><li><p>Modifying <strong>M_TRIM_THRESHOLD</strong> is a trade-off between increasing the number of system calls (when the parameter is set low) and wasting unused memory at the top of the heap (when the parameter is set high).</p></li>
+</ul>
+  </dd>
 
-  <p>When employing newer glibc versions, applications may in some cases exhibit high contention when accessing arenas. In these cases, it may be beneficial to increase <strong>M_ARENA_MAX</strong> to match the number of threads. This is similar in behavior to strategies taken by tcmalloc and jemalloc (e.g., per-thread allocation pools).</p>
-    </dd>
-    <dt><strong>M_ARENA_TEST</strong></dt>
-    <dd>
-  <p>This is the limit, in number of arenas created, at which the system configuration will be examined to evaluate a hard limit on the number of created arenas. The computed limit is implementation-defined and is usually a multiple of the number of available CPUs. Once the limit is computed, the result is final and constrains the total number of arenas. See <strong>M_ARENA_MAX</strong> for the definition of an arena. This parameter has been available since glibc 2.10 via <strong>--enable-experimental-malloc</strong>, and since glibc 2.15 by default.</p>
-    </dd>
-    <dt><strong>M_CHECK_ACTION</strong></dt>
-    <dd>
-      <p>Setting this parameter controls how glibc responds when various kinds of programming errors are detected (e.g., freeing the same pointer twice). The 3 least significant bits (2, 1, and 0) of the value assigned to this parameter determine the glibc behavior, as follows:</p>
-      <dl class='dl-horizontal'>
-        <dt>Bit 0</dt>
-        <dd>
-      <p>If this bit is set, then print a one-line message on <em>stderr</em> that provides details about the error. The message starts with the string "***&nbsp;glibc detected&nbsp;***", followed by the program name, the name of the memory-allocation function in which the error was detected, a brief description of the error, and the memory address where the error was detected.</p>
-        </dd>
-        <dt>Bit 1</dt>
-        <dd>
-      <p>If this bit is set, then, after printing any error message specified by bit 0, the program is terminated by calling <a href="../man3/abort.3.html"><strong>abort</strong>(3)</a>. In glibc versions since 2.4, if bit 0 is also set, then, between printing the error message and aborting, the program also prints a stack trace in the manner of <a href="../man3/backtrace.3.html"><strong>backtrace</strong>(3)</a>, and prints the process's memory mapping in the style of <em>/proc/[pid]/maps</em> (see <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>).</p>
-        </dd>
-        <dt>Bit 2 (since glibc 2.4)</dt>
-        <dd>
-      <p>This bit has an effect only if bit 0 is also set. If this bit is set, then the one-line message describing the error is simplified to contain just the name of the function where the error was detected and the brief description of the error.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
+</dl>
+<h3>Environment variables</h3>
+<p>A number of environment variables can be defined to modify some of the same parameters as are controlled by <strong>mallopt</strong>(). Using these variables has the advantage that the source code of the program need not be changed. To be effective, these variables must be defined before the first call to a memory-allocation function. (If the same parameters are adjusted via <strong>mallopt</strong>(), then the <strong>mallopt</strong>() settings take precedence.) For security reasons, these variables are ignored in set-user-ID and set-group-ID programs.</p><p>The environment variables are as follows (note the trailing underscore at the end of the name of some variables):</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>MALLOC_ARENA_MAX</strong></p>
+  </dt>
+  <dd>
+    <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_ARENA_MAX</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>MALLOC_ARENA_TEST</strong></p>
+  </dt>
+  <dd>
+    <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_ARENA_TEST</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>MALLOC_CHECK_</strong></p>
+  </dt>
+  <dd>
+    <p>This environment variable controls the same parameter as <strong>mallopt</strong>() <strong>M_CHECK_ACTION</strong>. If this variable is set to a nonzero value, then a special implementation of the memory-allocation functions is used. (This is accomplished using the <a href="../man3/malloc_hook.3.html"><strong>malloc_hook</strong>(3)</a> feature.) This implementation performs additional error checking, but is slower than the standard set of memory-allocation functions. (This implementation does not detect all possible errors; memory leaks can still occur.)</p><ul>
+<li><p>The value assigned to this environment variable should be a single digit, whose meaning is as described for <strong>M_CHECK_ACTION</strong>. Any characters beyond the initial digit are ignored.</p></li><li><p>For security reasons, the effect of <strong>MALLOC_CHECK_</strong> is disabled by default for set-user-ID and set-group-ID programs. However, if the file <em>/etc/suid-debug</em> exists (the content of the file is irrelevant), then <strong>MALLOC_CHECK_</strong> also has an effect for set-user-ID and set-group-ID programs.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><strong>MALLOC_MMAP_MAX_</strong></p>
+  </dt>
+  <dd>
+    <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_MMAP_MAX</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>MALLOC_MMAP_THRESHOLD_</strong></p>
+  </dt>
+  <dd>
+    <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_MMAP_THRESHOLD</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>MALLOC_PERTURB_</strong></p>
+  </dt>
+  <dd>
+    <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_PERTURB</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>MALLOC_TRIM_THRESHOLD_</strong></p>
+  </dt>
+  <dd>
+    <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_TRIM_THRESHOLD</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>MALLOC_TOP_PAD_</strong></p>
+  </dt>
+  <dd>
+    <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_TOP_PAD</strong>.</p>
+  </dd>
 
-  <p>The remaining bits in <em>value</em> are ignored.</p>
-<p class='spacer'>
+</dl>
 
-      <p>Combining the above details, the following numeric values are meaningful for <strong>M_CHECK_ACTION</strong>:</p>
-      <dl class='dl-horizontal'>
-        <dt>0</dt>
-        <dd>
-      <p>Ignore error conditions; continue execution (with undefined results).</p>
-        </dd>
-        <dt>1</dt>
-        <dd>
-      <p>Print a detailed error message and continue execution.</p>
-        </dd>
-        <dt>2</dt>
-        <dd>
-      <p>Abort the program.</p>
-        </dd>
-        <dt>3</dt>
-        <dd>
-      <p>Print detailed error message, stack trace, and memory mappings, and abort the program.</p>
-        </dd>
-        <dt>5</dt>
-        <dd>
-      <p>Print a simple error message and continue execution.</p>
-        </dd>
-        <dt>7</dt>
-        <dd>
-      <p>Print simple error message, stack trace, and memory mappings, and abort the program.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
 
-  <p>Since glibc 2.3.4, the default value for the <strong>M_CHECK_ACTION</strong> parameter is 3. In glibc version 2.3.3 and earlier, the default value is 1.</p>
-<p class='spacer'>
-
-  <p>Using a nonzero <strong>M_CHECK_ACTION</strong> value can be useful because otherwise a crash may happen much later, and the true cause of the problem is then very hard to track down.</p>
-    </dd>
-    <dt><strong>M_MMAP_MAX</strong></dt>
-    <dd>
-  <p>This parameter specifies the maximum number of allocation requests that may be simultaneously serviced using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. This parameter exists because some systems have a limited number of internal tables for use by <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, and using more than a few of them may degrade performance.</p>
-<p class='spacer'>
-
-  <p>The default value is 65,536, a value which has no special significance and which servers only as a safeguard. Setting this parameter to 0 disables the use of <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> for servicing large allocation requests.</p>
-    </dd>
-    <dt><strong>M_MMAP_THRESHOLD</strong></dt>
-    <dd>
-  <p>For allocations greater than or equal to the limit specified (in bytes) by <strong>M_MMAP_THRESHOLD</strong> that can't be satisfied from the free list, the memory-allocation functions employ <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> instead of increasing the program break using <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a>.</p>
-<p class='spacer'>
-
-  <p>Allocating memory using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> has the significant advantage that the allocated memory blocks can always be independently released back to the system. (By contrast, the heap can be trimmed only if memory is freed at the top end.) On the other hand, there are some disadvantages to the use of <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>: deallocated space is not placed on the free list for reuse by later allocations; memory may be wasted because <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> allocations must be page-aligned; and the kernel must perform the expensive task of zeroing out memory allocated via <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. Balancing these factors leads to a default setting of 128*1024 for the <strong>M_MMAP_THRESHOLD</strong> parameter.</p>
-<p class='spacer'>
-
-  <p>The lower limit for this parameter is 0. The upper limit is <strong>DEFAULT_MMAP_THRESHOLD_MAX</strong>: 512*1024 on 32-bit systems or <em>4*1024*1024*sizeof(long)</em> on 64-bit systems.</p>
-<p class='spacer'>
-
-  <p><em>Note:</em> Nowadays, glibc uses a dynamic mmap threshold by default. The initial value of the threshold is 128*1024, but when blocks larger than the current threshold and less than or equal to <strong>DEFAULT_MMAP_THRESHOLD_MAX</strong> are freed, the threshold is adjusted upward to the size of the freed block. When dynamic mmap thresholding is in effect, the threshold for trimming the heap is also dynamically adjusted to be twice the dynamic mmap threshold. Dynamic adjustment of the mmap threshold is disabled if any of the <strong>M_TRIM_THRESHOLD</strong>, <strong>M_TOP_PAD</strong>, <strong>M_MMAP_THRESHOLD</strong>, or <strong>M_MMAP_MAX</strong> parameters is set.</p>
-    </dd>
-    <dt><strong>M_MXFAST</strong> (since glibc 2.3)</dt>
-    <dd>
-  <p>Set the upper limit for memory allocation requests that are satisfied using "fastbins". (The measurement unit for this parameter is bytes.) Fastbins are storage areas that hold deallocated blocks of memory of the same size without merging adjacent free blocks. Subsequent reallocation of blocks of the same size can be handled very quickly by allocating from the fastbin, although memory fragmentation and the overall memory footprint of the program can increase. The default value for this parameter is <em>64*sizeof(size_t)/4</em> (i.e., 64 on 32-bit architectures). The range for this parameter is 0 to <em>80*sizeof(size_t)/4</em>. Setting <strong>M_MXFAST</strong> to 0 disables the use of fastbins.</p>
-    </dd>
-    <dt><strong>M_PERTURB</strong> (since glibc 2.4)</dt>
-    <dd>
-  <p>If this parameter is set to a nonzero value, then bytes of allocated memory (other than allocations via <a href="../man3/calloc.3.html"><strong>calloc</strong>(3)</a>) are initialized to the complement of the value in the least significant byte of <em>value</em>, and when allocated memory is released using <a href="../man3/free.3.html"><strong>free</strong>(3)</a>, the freed bytes are set to the least significant byte of <em>value</em>. This can be useful for detecting errors where programs incorrectly rely on allocated memory being initialized to zero, or reuse values in memory that has already been freed.</p>
-    </dd>
-    <dt><strong>M_TOP_PAD</strong></dt>
-    <dd>
-      <p>This parameter defines the amount of padding to employ when calling <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a> to modify the program break. (The measurement unit for this parameter is bytes.) This parameter has an effect in the following circumstances:</p>
-      <dl class='dl-horizontal'>
-        <dt>*</dt>
-        <dd>
-      <p>When the program break is increased, then <strong>M_TOP_PAD</strong> bytes are added to the <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a> request.</p>
-        </dd>
-        <dt>*</dt>
-        <dd>
-      <p>When the heap is trimmed as a consequence of calling <a href="../man3/free.3.html"><strong>free</strong>(3)</a> (see the discussion of <strong>M_TRIM_THRESHOLD</strong>) this much free space is preserved at the top of the heap.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
-
-  <p>In either case, the amount of padding is always rounded to a system page boundary.</p>
-<p class='spacer'>
-
-  <p>Modifying <strong>M_TOP_PAD</strong> is a trade-off between increasing the number of system calls (when the parameter is set low) and wasting unused memory at the top of the heap (when the parameter is set high).</p>
-<p class='spacer'>
-
-  <p>The default value for this parameter is 128*1024.</p>
-    </dd>
-    <dt><strong>M_TRIM_THRESHOLD</strong></dt>
-    <dd>
-  <p>When the amount of contiguous free memory at the top of the heap grows sufficiently large, <a href="../man3/free.3.html"><strong>free</strong>(3)</a> employs <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a> to release this memory back to the system. (This can be useful in programs that continue to execute for a long period after freeing a significant amount of memory.) The <strong>M_TRIM_THRESHOLD</strong> parameter specifies the minimum size (in bytes) that this block of memory must reach before <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a> is used to trim the heap.</p>
-<p class='spacer'>
-
-  <p>The default value for this parameter is 128*1024. Setting <strong>M_TRIM_THRESHOLD</strong> to -1 disables trimming completely.</p>
-<p class='spacer'>
-
-  <p>Modifying <strong>M_TRIM_THRESHOLD</strong> is a trade-off between increasing the number of system calls (when the parameter is set low) and wasting unused memory at the top of the heap (when the parameter is set high).</p>
-    </dd>
-  </dl>
-  <h3>Environment variables</h3>
-<p>A number of environment variables can be defined to modify some of the same parameters as are controlled by <strong>mallopt</strong>(). Using these variables has the advantage that the source code of the program need not be changed. To be effective, these variables must be defined before the first call to a memory-allocation function. (If the same parameters are adjusted via <strong>mallopt</strong>(), then the <strong>mallopt</strong>() settings take precedence.) For security reasons, these variables are ignored in set-user-ID and set-group-ID programs.</p>
-<p class='spacer'>
-
-  <p>The environment variables are as follows (note the trailing underscore at the end of the name of some variables):</p>
-  <dl class='dl-vertical'>
-    <dt><strong>MALLOC_ARENA_MAX</strong></dt>
-    <dd>
-  <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_ARENA_MAX</strong>.</p>
-    </dd>
-    <dt><strong>MALLOC_ARENA_TEST</strong></dt>
-    <dd>
-  <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_ARENA_TEST</strong>.</p>
-    </dd>
-    <dt><strong>MALLOC_CHECK_</strong></dt>
-    <dd>
-  <p>This environment variable controls the same parameter as <strong>mallopt</strong>() <strong>M_CHECK_ACTION</strong>. If this variable is set to a nonzero value, then a special implementation of the memory-allocation functions is used. (This is accomplished using the <a href="../man3/malloc_hook.3.html"><strong>malloc_hook</strong>(3)</a> feature.) This implementation performs additional error checking, but is slower than the standard set of memory-allocation functions. (This implementation does not detect all possible errors; memory leaks can still occur.)</p>
-<p class='spacer'>
-
-  <p>The value assigned to this environment variable should be a single digit, whose meaning is as described for <strong>M_CHECK_ACTION</strong>. Any characters beyond the initial digit are ignored.</p>
-<p class='spacer'>
-
-  <p>For security reasons, the effect of <strong>MALLOC_CHECK_</strong> is disabled by default for set-user-ID and set-group-ID programs. However, if the file <em>/etc/suid-debug</em> exists (the content of the file is irrelevant), then <strong>MALLOC_CHECK_</strong> also has an effect for set-user-ID and set-group-ID programs.</p>
-    </dd>
-    <dt><strong>MALLOC_MMAP_MAX_</strong></dt>
-    <dd>
-  <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_MMAP_MAX</strong>.</p>
-    </dd>
-    <dt><strong>MALLOC_MMAP_THRESHOLD_</strong></dt>
-    <dd>
-  <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_MMAP_THRESHOLD</strong>.</p>
-    </dd>
-    <dt><strong>MALLOC_PERTURB_</strong></dt>
-    <dd>
-  <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_PERTURB</strong>.</p>
-    </dd>
-    <dt><strong>MALLOC_TRIM_THRESHOLD_</strong></dt>
-    <dd>
-  <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_TRIM_THRESHOLD</strong>.</p>
-    </dd>
-    <dt><strong>MALLOC_TOP_PAD_</strong></dt>
-    <dd>
-  <p>Controls the same parameter as <strong>mallopt</strong>() <strong>M_TOP_PAD</strong>.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, <strong>mallopt</strong>() returns 1. On error, it returns 0.</p>
         </div>
       </section>
@@ -295,7 +299,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
-
 <p>On error, <em>errno</em> is <em>not</em> set.</p>
         </div>
       </section>
@@ -303,7 +306,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>This function is not specified by POSIX or the C standards. A similar function exists on many System V derivatives, but the range of values for <em>param</em> varies across systems. The SVID defined options <strong>M_MXFAST</strong>, <strong>M_NLBLKS</strong>, <strong>M_GRAIN</strong>, and <strong>M_KEEP</strong>, but only the first of these is implemented in glibc.</p>
         </div>
       </section>
@@ -311,31 +313,22 @@
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
-<p>Specifying an invalid value for <em>param</em> does not generate an error.</p>
-<p class='spacer'>
-
-  <p>A calculation error within the glibc implementation means that a call of the form:</p>
+<p>Specifying an invalid value for <em>param</em> does not generate an error.</p><p>A calculation error within the glibc implementation means that a call of the form:</p>
 <pre>
+
     mallopt(M_MXFAST, n)
+
 </pre>
-
-<p>does not result in fastbins being employed for all allocations of size up to <em>n</em>. To ensure desired results, <em>n</em> should be rounded up to the next multiple greater than or equal to <em>(2k+1)*sizeof(size_t)</em>, where <em>k</em> is an integer.</p>
-<p class='spacer'>
-
-<p>If <strong>mallopt</strong>() is used to set <strong>M_PERTURB</strong>, then, as expected, the bytes of allocated memory are initialized to the complement of the byte in <em>value</em>, and when that memory is freed, the bytes of the region are initialized to the byte specified in <em>value</em>. However, there is an off-by-<em>sizeof(size_t)</em> error in the implementation: instead of initializing precisely the block of memory being freed by the call <em>free(p)</em>, the block starting at <em>p+sizeof(size_t)</em> is initialized.</p>
+<p>does not result in fastbins being employed for all allocations of size up to <em>n</em>. To ensure desired results, <em>n</em> should be rounded up to the next multiple greater than or equal to <em>(2k+1)*sizeof(size_t)</em>, where <em>k</em> is an integer.</p><p>If <strong>mallopt</strong>() is used to set <strong>M_PERTURB</strong>, then, as expected, the bytes of allocated memory are initialized to the complement of the byte in <em>value</em>, and when that memory is freed, the bytes of the region are initialized to the byte specified in <em>value</em>. However, there is an off-by-<em>sizeof(size_t)</em> error in the implementation: instead of initializing precisely the block of memory being freed by the call <em>free(p)</em>, the block starting at <em>p+sizeof(size_t)</em> is initialized.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-<p>The program below demonstrates the use of <strong>M_CHECK_ACTION</strong>. If the program is supplied with an (integer) command-line argument, then that argument is used to set the <strong>M_CHECK_ACTION</strong> parameter. The program then allocates a block of memory, and frees it twice (an error).</p>
-<p class='spacer'>
-
-  <p>The following shell session shows what happens when we run this program under glibc, with the default value for <strong>M_CHECK_ACTION</strong>:</p>
+<p>The program below demonstrates the use of <strong>M_CHECK_ACTION</strong>. If the program is supplied with an (integer) command-line argument, then that argument is used to set the <strong>M_CHECK_ACTION</strong> parameter. The program then allocates a block of memory, and frees it twice (an error).</p><p>The following shell session shows what happens when we run this program under glibc, with the default value for <strong>M_CHECK_ACTION</strong>:</p>
 <pre>
+
 $ <strong>./a.out</strong>
 main(): returned from first free() call
 *** glibc detected *** ./a.out: double free or corruption (top): 0x09d30008 ***
@@ -352,14 +345,11 @@ main(): returned from first free() call
 [some lines omitted]
 b7814000-b7817000 rw-p 00000000 00:00 0
 bff53000-bff74000 rw-p 00000000 00:00 0          [stack]
-Aborted (core dumped)</pre>
-
-<p class='spacer'>
-
+Aborted (core dumped)
+</pre>
 <p>The following runs show the results when employing other values for <strong>M_CHECK_ACTION</strong>:</p>
-<p class='spacer'>
-
-<pre>$ <strong>./a.out 1</strong>             # Diagnose error and continue
+<pre>
+$ <strong>./a.out 1</strong>             # Diagnose error and continue
 main(): returned from first free() call
 *** glibc detected *** ./a.out: double free or corruption (top): 0x09cbe008 ***
 main(): returned from second free() call
@@ -368,21 +358,19 @@ main(): returned from first free() call
 Aborted (core dumped)
 $ <strong>./a.out 0</strong>             # Ignore error and continue
 main(): returned from first free() call
-main(): returned from second free() call</pre>
-
-<p class='spacer'>
-
+main(): returned from second free() call
+</pre>
 <p>The next run shows how to set the same parameter using the <strong>MALLOC_CHECK_</strong> environment variable:</p>
-<p class='spacer'>
-
-<pre>$ <strong>MALLOC_CHECK_=1 ./a.out</strong>
+<pre>
+$ <strong>MALLOC_CHECK_=1 ./a.out</strong>
 main(): returned from first free() call
 *** glibc detected *** ./a.out: free(): invalid pointer: 0x092c2008 ***
-main(): returned from second free() call</pre>
+main(): returned from second free() call
+</pre>
+<h3>Program source</h3>
 
-  <h3>Program source</h3>
-  <p></p>
-<pre>#include &lt;malloc.h&gt;
+<pre>
+#include &lt;malloc.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
 
@@ -411,7 +399,9 @@ main(int argc, char *argv[])
     printf("main(): returned from second free() call&#92;n");
 
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
+
 
         </div>
       </section>
@@ -419,15 +409,13 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO mallopt&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man2/sbrk.2.html"><strong>sbrk</strong>(2)</a>, <a href="../man3/mallinfo.3.html"><strong>mallinfo</strong>(3)</a>, <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>, <a href="../man3/malloc_hook.3.html"><strong>malloc_hook</strong>(3)</a>, <a href="../man3/malloc_info.3.html"><strong>malloc_info</strong>(3)</a>, <a href="../man3/malloc_stats.3.html"><strong>malloc_stats</strong>(3)</a>, <a href="../man3/malloc_trim.3.html"><strong>malloc_trim</strong>(3)</a>, <a href="../man3/mcheck.3.html"><strong>mcheck</strong>(3)</a>, <a href="../man3/mtrace.3.html"><strong>mtrace</strong>(3)</a>, <a href="../man3/posix_memalign.3.html"><strong>posix_memalign</strong>(3)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="malloc_usable_size.3.html"><span aria-hidden="true">&larr;</span> malloc_usable_size.3: Obtain size of block of memory allocated from heap</a></li>
-   <li class="next"><a href="manual_user_enter_context.3.html">manual_user_enter_context.3: Determine selinux context(s) for user sessions . <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="manual_user_enter_context.3.html">manual_user_enter_context.3: Determine selinux context(s) for user sessions <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

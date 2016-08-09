@@ -91,11 +91,13 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;sys/mman.h&gt;</strong>
+<pre>
+<strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <sys/mman.h></strong>
 
 <strong>int remap_file_pages(void *</strong><em>addr</em><strong>, size_t </strong><em>size</em><strong>, int </strong><em>prot</em><strong>,</strong>
-<strong>                     size_t </strong><em>pgoff</em><strong>, int </strong><em>flags</em><strong>);</strong></pre>
+<strong>                     size_t </strong><em>pgoff</em><strong>, int </strong><em>flags</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -103,46 +105,29 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>Note</strong>: this system call is (since Linux 3.16) deprecated and will eventually be replaced by a slower in-kernel emulation. Those few applications that use this system call should consider migrating to alternatives.</p><p>The <strong>remap_file_pages</strong>() system call is used to create a nonlinear mapping, that is, a mapping in which the pages of the file are mapped into a nonsequential order in memory. The advantage of using <strong>remap_file_pages</strong>() over using repeated calls to <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> is that the former approach does not require the kernel to create additional VMA (Virtual Memory Area) data structures.</p><p>To create a nonlinear mapping we perform the following steps:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>1.</p>
+  </dt>
+  <dd>
+    <p>Use <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> to create a mapping (which is initially linear). This mapping must be created with the <strong>MAP_SHARED</strong> flag.</p>
+  </dd>
+  <dt>
+    <p>2.</p>
+  </dt>
+  <dd>
+    <p>Use one or more calls to <strong>remap_file_pages</strong>() to rearrange the correspondence between the pages of the mapping and the pages of the file. It is possible to map the same page of a file into multiple locations within the mapped region.</p>
+  </dd>
 
-<p><strong>Note</strong>: this system call is (since Linux 3.16) deprecated and will eventually be replaced by a slower in-kernel emulation. Those few applications that use this system call should consider migrating to alternatives.</p>
-<p class='spacer'>
-
-<p>The <strong>remap_file_pages</strong>() system call is used to create a nonlinear mapping, that is, a mapping in which the pages of the file are mapped into a nonsequential order in memory. The advantage of using <strong>remap_file_pages</strong>() over using repeated calls to <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> is that the former approach does not require the kernel to create additional VMA (Virtual Memory Area) data structures.</p>
-<p class='spacer'>
-
-  <p>To create a nonlinear mapping we perform the following steps:</p>
-  <dl class='dl-horizontal'>
-    <dt>1.</dt>
-    <dd>
-  <p>Use <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> to create a mapping (which is initially linear). This mapping must be created with the <strong>MAP_SHARED</strong> flag.</p>
-    </dd>
-    <dt>2.</dt>
-    <dd>
-  <p>Use one or more calls to <strong>remap_file_pages</strong>() to rearrange the correspondence between the pages of the mapping and the pages of the file. It is possible to map the same page of a file into multiple locations within the mapped region.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The <em>pgoff</em> and <em>size</em> arguments specify the region of the file that is to be relocated within the mapping: <em>pgoff</em> is a file offset in units of the system page size; <em>size</em> is the length of the region in bytes.</p>
-<p class='spacer'>
-
-<p>The <em>addr</em> argument serves two purposes. First, it identifies the mapping whose pages we want to rearrange. Thus, <em>addr</em> must be an address that falls within a region previously mapped by a call to <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. Second, <em>addr</em> specifies the address at which the file pages identified by <em>pgoff</em> and <em>size</em> will be placed.</p>
-<p class='spacer'>
-
-<p>The values specified in <em>addr</em> and <em>size</em> should be multiples of the system page size. If they are not, then the kernel rounds <em>both</em> values <em>down</em> to the nearest multiple of the page size.</p>
-<p class='spacer'>
-
-<p>The <em>prot</em> argument must be specified as 0.</p>
-<p class='spacer'>
-
-<p>The <em>flags</em> argument has the same meaning as for <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, but all flags other than <strong>MAP_NONBLOCK</strong> are ignored.</p>
+</dl>
+<p>The <em>pgoff</em> and <em>size</em> arguments specify the region of the file that is to be relocated within the mapping: <em>pgoff</em> is a file offset in units of the system page size; <em>size</em> is the length of the region in bytes.</p><p>The <em>addr</em> argument serves two purposes. First, it identifies the mapping whose pages we want to rearrange. Thus, <em>addr</em> must be an address that falls within a region previously mapped by a call to <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>. Second, <em>addr</em> specifies the address at which the file pages identified by <em>pgoff</em> and <em>size</em> will be placed.</p><p>The values specified in <em>addr</em> and <em>size</em> should be multiples of the system page size. If they are not, then the kernel rounds <em>both</em> values <em>down</em> to the nearest multiple of the page size.</p><p>The <em>prot</em> argument must be specified as 0.</p><p>The <em>flags</em> argument has the same meaning as for <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, but all flags other than <strong>MAP_NONBLOCK</strong> are ignored.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, <strong>remap_file_pages</strong>() returns 0. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
@@ -151,23 +136,28 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>addr</em> does not refer to a valid mapping created with the <strong>MAP_SHARED</strong> flag.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>addr</em>, <em>size</em>, <em>prot</em>, or <em>pgoff</em> is invalid.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>addr</em> does not refer to a valid mapping created with the <strong>MAP_SHARED</strong> flag.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>addr</em>, <em>size</em>, <em>prot</em>, or <em>pgoff</em> is invalid.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>remap_file_pages</strong>() system call appeared in Linux 2.5.46; glibc support was added in version 2.3.3.</p>
         </div>
       </section>
@@ -175,7 +165,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>The <strong>remap_file_pages</strong>() system call is Linux-specific.</p>
         </div>
       </section>
@@ -183,7 +172,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
 <p>Since Linux 2.6.23, <strong>remap_file_pages</strong>() creates non-linear mappings only on in-memory file systems such as tmpfs, hugetlbfs or ramfs. On filesystems with a backing store, <strong>remap_file_pages</strong>() is not much more efficient than using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> to adjust which parts of the file are mapped to which addresses.</p>
         </div>
       </section>
@@ -191,11 +179,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO remap_file_pages&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/getpagesize.2.html"><strong>getpagesize</strong>(2)</a>, <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man2/mmap2.2.html"><strong>mmap2</strong>(2)</a>, <a href="../man2/mprotect.2.html"><strong>mprotect</strong>(2)</a>, <a href="../man2/mremap.2.html"><strong>mremap</strong>(2)</a>, <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="recvmsg.2.html"><span aria-hidden="true">&larr;</span> recvmsg.2: Receive a message from a socket</a></li>

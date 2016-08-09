@@ -90,66 +90,25 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>Extended attributes are name:value pairs associated permanently with files and directories, similar to the environment strings associated with a process. An attribute may be defined or undefined. If it is defined, its value may be empty or non-empty.</p>
-<p class='spacer'>
-
-<p>Extended attributes are extensions to the normal attributes which are associated with all inodes in the system (i.e., the <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a> data). They are often used to provide additional functionality to a filesystem&ndash;for example, additional security features such as Access Control Lists (ACLs) may be implemented using extended attributes.</p>
-<p class='spacer'>
-
-<p>Users with search access to a file or directory may use <a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a> to retrieve a list of attribute names defined for that file or directory.</p>
-<p class='spacer'>
-
-<p>Extended attributes are accessed as atomic objects. Reading (<a href="../man2/getxattr.2.html"><strong>getxattr</strong>(2)</a>) retrieves the whole value of an attribute and stores it in a buffer. Writing (<a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>) replaces any previous value with the new value.</p>
-<p class='spacer'>
-
-<p>Space consumed for extended attributes may be counted towards the disk quotas of the file owner and file group.</p>
-  <h3>Extended attribute namespaces</h3>
-<p>Attribute names are null-terminated strings. The attribute name is always specified in the fully qualified <em>namespace.attribute</em> form, for example, <em>user.mime_type</em>, <em>trusted.md5sum</em>, <em>system.posix_acl_access</em>, or <em>security.selinux</em>.</p>
-<p class='spacer'>
-
-<p>The namespace mechanism is used to define different classes of extended attributes. These different classes exist for several reasons; for example, the permissions and capabilities required for manipulating extended attributes of one namespace may differ to another.</p>
-<p class='spacer'>
-
-<p>Currently, the <em>security</em>, <em>system</em>, <em>trusted</em>, and <em>user</em> extended attribute classes are defined as described below. Additional classes may be added in the future.</p>
-  <h3>Extended security attributes</h3>
+<p>Extended attributes are name:value pairs associated permanently with files and directories, similar to the environment strings associated with a process. An attribute may be defined or undefined. If it is defined, its value may be empty or non-empty.</p><p>Extended attributes are extensions to the normal attributes which are associated with all inodes in the system (i.e., the <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a> data). They are often used to provide additional functionality to a filesystem&ndash;for example, additional security features such as Access Control Lists (ACLs) may be implemented using extended attributes.</p><p>Users with search access to a file or directory may use <a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a> to retrieve a list of attribute names defined for that file or directory.</p><p>Extended attributes are accessed as atomic objects. Reading (<a href="../man2/getxattr.2.html"><strong>getxattr</strong>(2)</a>) retrieves the whole value of an attribute and stores it in a buffer. Writing (<a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>) replaces any previous value with the new value.</p><p>Space consumed for extended attributes may be counted towards the disk quotas of the file owner and file group.</p><h3>Extended attribute namespaces</h3>
+<p>Attribute names are null-terminated strings. The attribute name is always specified in the fully qualified <em>namespace.attribute</em> form, for example, <em>user.mime_type</em>, <em>trusted.md5sum</em>, <em>system.posix_acl_access</em>, or <em>security.selinux</em>.</p><p>The namespace mechanism is used to define different classes of extended attributes. These different classes exist for several reasons; for example, the permissions and capabilities required for manipulating extended attributes of one namespace may differ to another.</p><p>Currently, the <em>security</em>, <em>system</em>, <em>trusted</em>, and <em>user</em> extended attribute classes are defined as described below. Additional classes may be added in the future.</p>
+<h3>Extended security attributes</h3>
 <p>The security attribute namespace is used by kernel security modules, such as Security Enhanced Linux, and also to implement file capabilities (see <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>). Read and write access permissions to security attributes depend on the policy implemented for each security attribute by the security module. When no security module is loaded, all processes have read access to extended security attributes, and write access is limited to processes that have the <strong>CAP_SYS_ADMIN</strong> capability.</p>
-  <h3>Extended system attributes</h3>
+<h3>Extended system attributes</h3>
 <p>Extended system attributes are used by the kernel to store system objects such as Access Control Lists. Read and write access permissions to system attributes depend on the policy implemented for each system attribute implemented by filesystems in the kernel.</p>
-  <h3>Trusted extended attributes</h3>
+<h3>Trusted extended attributes</h3>
 <p>Trusted extended attributes are visible and accessible only to processes that have the <strong>CAP_SYS_ADMIN</strong> capability. Attributes in this class are used to implement mechanisms in user space (i.e., outside the kernel) which keep information in extended attributes to which ordinary processes should not have access.</p>
-  <h3>Extended user attributes</h3>
-<p>Extended user attributes may be assigned to files and directories for storing arbitrary additional information such as the mime type, character set or encoding of a file. The access permissions for user attributes are defined by the file permission bits: read permission is required to retrieve the attribute value, and writer permission is required to change it.</p>
-<p class='spacer'>
+<h3>Extended user attributes</h3>
+<p>Extended user attributes may be assigned to files and directories for storing arbitrary additional information such as the mime type, character set or encoding of a file. The access permissions for user attributes are defined by the file permission bits: read permission is required to retrieve the attribute value, and writer permission is required to change it.</p><p>The file permission bits of regular files and directories are interpreted differently from the file permission bits of special files and symbolic links. For regular files and directories the file permission bits define access to the file's contents, while for device special files they define access to the device described by the special file. The file permissions of symbolic links are not used in access checks. These differences would allow users to consume filesystem resources in a way not controllable by disk quotas for group or world writable special files and directories.</p><p>For this reason, extended user attributes are allowed only for regular files and directories, and access to extended user attributes is restricted to the owner and to users with appropriate capabilities for directories with the sticky bit set (see the <strong>chmod</strong>(1) manual page for an explanation of the sticky bit).</p>
+<h3>Filesystem differences</h3>
+<p>The kernel and the filesystem may place limits on the maximum number and size of extended attributes that can be associated with a file. The VFS imposes limitations that an attribute names is limited to 255 bytes and an attribute value is limited to 64 kB. The list of attribute names that can be returned is also limited to 64 kB (see BUGS in <a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a>).</p><p>Some filesystems, such as Reiserfs (and, historically, ext2 and ext3), require the filesystem to be mounted with the <strong>user_xattr</strong> mount option in order for extended user attributes to be used.</p><p>In the current ext2, ext3, and ext4 filesystem implementations, the total bytes used by the names and values of all of a files extended attributes must fit in a single filesystem block (1024, 2048 or 4096 bytes, depending on the block size specified when the filesystem was created).</p><p>In the Btrfs, XFS, and Reiserfs filesystem implementations, there is no practical limit on the number of extended attributes associated with a file, and the algorithms used to store extended attribute information on disk are scalable.</p><p>In the JFS, XFS, and Reiserfs filesystem implementations, the limit on bytes used in an EA value is the ceiling imposed by the VFS.</p><p>In the Btrfs filesystem implementation, the total bytes used for the name, value, and implementation overhead bytes is limited to the filesystem <em>nodesize</em> value (16 kB by default).</p>
 
-<p>The file permission bits of regular files and directories are interpreted differently from the file permission bits of special files and symbolic links. For regular files and directories the file permission bits define access to the file's contents, while for device special files they define access to the device described by the special file. The file permissions of symbolic links are not used in access checks. These differences would allow users to consume filesystem resources in a way not controllable by disk quotas for group or world writable special files and directories.</p>
-<p class='spacer'>
-
-<p>For this reason, extended user attributes are allowed only for regular files and directories, and access to extended user attributes is restricted to the owner and to users with appropriate capabilities for directories with the sticky bit set (see the <strong>chmod</strong>(1) manual page for an explanation of the sticky bit).</p>
-  <h3>Filesystem differences</h3>
-<p>The kernel and the filesystem may place limits on the maximum number and size of extended attributes that can be associated with a file. The VFS imposes limitations that an attribute names is limited to 255 bytes and an attribute value is limited to 64 kB. The list of attribute names that can be returned is also limited to 64 kB (see BUGS in <a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a>).</p>
-<p class='spacer'>
-
-<p>Some filesystems, such as Reiserfs (and, historically, ext2 and ext3), require the filesystem to be mounted with the <strong>user_xattr</strong> mount option in order for extended user attributes to be used.</p>
-<p class='spacer'>
-
-<p>In the current ext2, ext3, and ext4 filesystem implementations, the total bytes used by the names and values of all of a files extended attributes must fit in a single filesystem block (1024, 2048 or 4096 bytes, depending on the block size specified when the filesystem was created).</p>
-<p class='spacer'>
-
-<p>In the Btrfs, XFS, and Reiserfs filesystem implementations, there is no practical limit on the number of extended attributes associated with a file, and the algorithms used to store extended attribute information on disk are scalable.</p>
-<p class='spacer'>
-
-<p>In the JFS, XFS, and Reiserfs filesystem implementations, the limit on bytes used in an EA value is the ceiling imposed by the VFS.</p>
-<p class='spacer'>
-
-<p>In the Btrfs filesystem implementation, the total bytes used for the name, value, and implementation overhead bytes is limited to the filesystem <em>nodesize</em> value (16 kB by default).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>Extended attributes are not specified in POSIX.1, but some other systems (e.g., the BSDs and Solaris) provide a similar feature.</p>
         </div>
       </section>
@@ -157,22 +116,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>Since the filesystems on which extended attributes are stored might also be used on architectures with a different byte order and machine word size, care should be taken to store attribute values in an architecture-independent format.</p>
-<p class='spacer'>
-
-<p>This page was formerly named <a href="../man5/attr.5.html"><strong>attr</strong>(5)</a>.</p>
+<p>Since the filesystems on which extended attributes are stored might also be used on architectures with a different byte order and machine word size, care should be taken to store attribute values in an architecture-independent format.</p><p>This page was formerly named <a href="../man5/attr.5.html"><strong>attr</strong>(5)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO xattr&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man1/getfattr.1.html"><strong>getfattr</strong>(1)</a>, <a href="../man1/setfattr.1.html"><strong>setfattr</strong>(1)</a>, <a href="../man2/getxattr.2.html"><strong>getxattr</strong>(2)</a>, <a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a>, <a href="../man2/removexattr.2.html"><strong>removexattr</strong>(2)</a>, <a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>, <strong>acl</strong>(5), <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="x25.7.html"><span aria-hidden="true">&larr;</span> x25.7: Itu-t x.25 / iso-8208 protocol interface.</a></li>

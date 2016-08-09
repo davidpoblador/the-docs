@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>dlvsym: Obtain address of a symbol in a shared object or executable</title>
+  <title>dlsym: Obtain address of a symbol in a shared object or executable</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -30,7 +30,7 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">dlvsym<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">dlsym<small> (3)</small></h1>
         <p class="lead">Obtain address of a symbol in a shared object or executable</p>
       </div>
 
@@ -54,8 +54,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/dlvsym.3.html">
-      <span itemprop="name">dlvsym: Obtain address of a symbol in a shared object or executable</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/dlsym.3.html">
+      <span itemprop="name">dlsym: Obtain address of a symbol in a shared object or executable</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -80,8 +80,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/dlvsym.3.html">
-      <span itemprop="name">dlvsym: Obtain address of a symbol in a shared object or executable</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/dlsym.3.html">
+      <span itemprop="name">dlsym: Obtain address of a symbol in a shared object or executable</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -90,49 +90,29 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;dlfcn.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>void *dlsym(void *</strong><em>handle</em><strong>, const char *</strong><em>symbol</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p><strong>#define _GNU_SOURCE</strong></p>
-<p class='spacer'>
-
-<p><strong>#include &lt;dlfcn.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>void *dlvsym(void *</strong><em>handle</em><strong>, char *</strong><em>symbol</em><strong>, char *</strong><em>version</em><strong>);</strong></p>
-<p class='spacer'>
-
-<p>Link with <em>-ldl</em>.</p>
+<p><strong>#include <dlfcn.h></strong></p><p><strong>void *dlsym(void *</strong><em>handle</em><strong>, const char *</strong><em>symbol</em><strong>);</strong></p><p><strong>#define _GNU_SOURCE</strong></p><p><strong>#include <dlfcn.h></strong></p><p><strong>void *dlvsym(void *</strong><em>handle</em><strong>, char *</strong><em>symbol</em><strong>, char *</strong><em>version</em><strong>);</strong></p><p>Link with <em>-ldl</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The function <strong>dlsym</strong>() takes a "handle" of a dynamic loaded shared object returned by <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a> along with a null-terminated symbol name, and returns the address where that symbol is loaded into memory. If the symbol is not found, in the specified object or any of the shared objects that were automatically loaded by <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a> when that object was loaded, <strong>dlsym</strong>() returns NULL. (The search performed by <strong>dlsym</strong>() is breadth first through the dependency tree of these shared objects.)</p><p>Since the value of the symbol could actually be NULL (so that a NULL return from <strong>dlsym</strong>() need not indicate an error), the correct way to test for an error is to call <a href="../man3/dlerror.3.html"><strong>dlerror</strong>(3)</a> to clear any old error conditions, then call <strong>dlsym</strong>(), and then call <a href="../man3/dlerror.3.html"><strong>dlerror</strong>(3)</a> again, saving its return value into a variable, and check whether this saved value is not NULL.</p><p>There are two special pseudo-handles that may be specified in <em>handle</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>RTLD_DEFAULT</strong></p>
+  </dt>
+  <dd>
+    <p>Find the first occurrence of the desired symbol using the default shared object search order. The search will include global symbols in the executable and its dependencies, as well as symbols in shared objects that were dynamically loaded with the <strong>RTLD_GLOBAL</strong> flag.</p>
+  </dd>
+  <dt>
+    <p><strong>RTLD_NEXT</strong></p>
+  </dt>
+  <dd>
+    <p>Find the next occurrence of the desired symbol in the search order after the current object. This allows one to provide a wrapper around a function in another shared object, so that, for example, the definition of a function in a preloaded shared object (see <strong>LD_PRELOAD</strong> in <a href="../man8/ld.so.8.html"><strong>ld.so</strong>(8)</a>) can find and invoke the "real" function provided in another shared object (or for that matter, the "next" definition of the function in cases where there are multiple layers of preloading).</p>
+  </dd>
 
-<p>The function <strong>dlsym</strong>() takes a "handle" of a dynamic loaded shared object returned by <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a> along with a null-terminated symbol name, and returns the address where that symbol is loaded into memory. If the symbol is not found, in the specified object or any of the shared objects that were automatically loaded by <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a> when that object was loaded, <strong>dlsym</strong>() returns NULL. (The search performed by <strong>dlsym</strong>() is breadth first through the dependency tree of these shared objects.)</p>
-<p class='spacer'>
-
-<p>Since the value of the symbol could actually be NULL (so that a NULL return from <strong>dlsym</strong>() need not indicate an error), the correct way to test for an error is to call <a href="../man3/dlerror.3.html"><strong>dlerror</strong>(3)</a> to clear any old error conditions, then call <strong>dlsym</strong>(), and then call <a href="../man3/dlerror.3.html"><strong>dlerror</strong>(3)</a> again, saving its return value into a variable, and check whether this saved value is not NULL.</p>
-<p class='spacer'>
-
-  <p>There are two special pseudo-handles that may be specified in <em>handle</em>:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>RTLD_DEFAULT</strong></dt>
-    <dd>
-  <p>Find the first occurrence of the desired symbol using the default shared object search order. The search will include global symbols in the executable and its dependencies, as well as symbols in shared objects that were dynamically loaded with the <strong>RTLD_GLOBAL</strong> flag.</p>
-    </dd>
-    <dt><strong>RTLD_NEXT</strong></dt>
-    <dd>
-  <p>Find the next occurrence of the desired symbol in the search order after the current object. This allows one to provide a wrapper around a function in another shared object, so that, for example, the definition of a function in a preloaded shared object (see <strong>LD_PRELOAD</strong> in <a href="../man8/ld.so.8.html"><strong>ld.so</strong>(8)</a>) can find and invoke the "real" function provided in another shared object (or for that matter, the "next" definition of the function in cases where there are multiple layers of preloading).</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The function <strong>dlvsym</strong>() does the same as <strong>dlsym</strong>() but takes a version string as an additional argument.</p>
         </div>
       </section>
@@ -140,7 +120,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, these functions return the address associated with <em>symbol</em>. On failure, they return NULL; the cause of the error can be diagnosed using <a href="../man3/dlerror.3.html"><strong>dlerror</strong>(3)</a>.</p>
         </div>
       </section>
@@ -148,7 +127,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p><strong>dlsym</strong>() is present in glibc 2.0 and later. <strong>dlvsym</strong>() first appeared in glibc 2.1.</p>
         </div>
       </section>
@@ -156,9 +134,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -169,14 +145,12 @@
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2001 describes <strong>dlsym</strong>(). The <strong>dlvsym</strong>() function is a GNU extension.</p>
         </div>
       </section>
@@ -184,28 +158,25 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-  <h3>History</h3>
+<h3>History</h3>
 <p>The <strong>dlsym</strong>() function is part of the dlopen API, derived from SunOS. That system does not have <strong>dlvsym</strong>().</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>See <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a>.</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO dlvsym&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO dlsym&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/dl_iterate_phdr.3.html"><strong>dl_iterate_phdr</strong>(3)</a>, <a href="../man3/dladdr.3.html"><strong>dladdr</strong>(3)</a>, <a href="../man3/dlerror.3.html"><strong>dlerror</strong>(3)</a>, <a href="../man3/dlinfo.3.html"><strong>dlinfo</strong>(3)</a>, <a href="../man3/dlopen.3.html"><strong>dlopen</strong>(3)</a>, <a href="../man8/ld.so.8.html"><strong>ld.so</strong>(8)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="dlsym.3.html"><span aria-hidden="true">&larr;</span> dlsym.3: Obtain address of a symbol in a shared object or executable</a></li>

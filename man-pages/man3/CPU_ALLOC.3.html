@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CPU_ALLOC: Macros for manipulating cpu sets</title>
+  <title>CPU_SET: Macros for manipulating cpu sets</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -30,7 +30,7 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">CPU_ALLOC<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">CPU_SET<small> (3)</small></h1>
         <p class="lead">Macros for manipulating cpu sets</p>
       </div>
 
@@ -54,8 +54,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/CPU_ALLOC.3.html">
-      <span itemprop="name">CPU_ALLOC: Macros for manipulating cpu sets</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/CPU_SET.3.html">
+      <span itemprop="name">CPU_SET: Macros for manipulating cpu sets</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -80,8 +80,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/CPU_ALLOC.3.html">
-      <span itemprop="name">CPU_ALLOC: Macros for manipulating cpu sets</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/CPU_SET.3.html">
+      <span itemprop="name">CPU_SET: Macros for manipulating cpu sets</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -91,8 +91,9 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;sched.h&gt;</strong>
+<pre>
+<strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <sched.h></strong>
 
 <strong>void CPU_ZERO(cpu_set_t *</strong><em>set</em><strong>);</strong>
 
@@ -130,7 +131,8 @@
 <strong>void CPU_XOR_S(size_t </strong><em>setsize</em><strong>, cpu_set_t *</strong><em>destset</em><strong>,</strong>
 <strong>             cpu_set_t *</strong><em>srcset1</em><strong>, cpu_set_t *</strong><em>srcset2</em><strong>);</strong>
 
-<strong>int  CPU_EQUAL_S(size_t </strong><em>setsize</em><strong>, cpu_set_t *</strong><em>set1</em><strong>, cpu_set_t *</strong><em>set2</em><strong>);</strong></pre>
+<strong>int  CPU_EQUAL_S(size_t </strong><em>setsize</em><strong>, cpu_set_t *</strong><em>set1</em><strong>, cpu_set_t *</strong><em>set2</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -138,129 +140,113 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <em>cpu_set_t</em> data structure represents a set of CPUs. CPU sets are used by <a href="../man2/sched_setaffinity.2.html"><strong>sched_setaffinity</strong>(2)</a> and similar interfaces.</p><p>The <em>cpu_set_t</em> data type is implemented as a bit mask. However, the data structure treated as considered opaque: all manipulation of CPU sets should be done via the macros described in this page.</p><p>The following macros are provided to operate on the CPU set <em>set</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>CPU_ZERO</strong>()</p>
+  </dt>
+  <dd>
+    <p>Clears <em>set</em>, so that it contains no CPUs.</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_SET</strong>()</p>
+  </dt>
+  <dd>
+    <p>Add CPU <em>cpu</em> to <em>set</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_CLR</strong>()</p>
+  </dt>
+  <dd>
+    <p>Remove CPU <em>cpu</em> from <em>set</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_ISSET</strong>()</p>
+  </dt>
+  <dd>
+    <p>Test to see if CPU <em>cpu</em> is a member of <em>set</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_COUNT</strong>()</p>
+  </dt>
+  <dd>
+    <p>Return the number of CPUs in <em>set</em>.</p>
+  </dd>
 
-<p>The <em>cpu_set_t</em> data structure represents a set of CPUs. CPU sets are used by <a href="../man2/sched_setaffinity.2.html"><strong>sched_setaffinity</strong>(2)</a> and similar interfaces.</p>
-<p class='spacer'>
+</dl>
+<p>Where a <em>cpu</em> argument is specified, it should not produce side effects, since the above macros may evaluate the argument more than once.</p><p>The first CPU on the system corresponds to a <em>cpu</em> value of 0, the next CPU corresponds to a <em>cpu</em> value of 1, and so on. No assumptions should be made about particular CPUs being available, or the set of CPUs being contiguous, since CPUs can be taken offline dynamically or be otherwise absent. The constant <strong>CPU_SETSIZE</strong> (currently 1024) specifies a value one greater than the maximum CPU number that can be stored in <em>cpu_set_t</em>.</p><p>The following macros perform logical operations on CPU sets:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>CPU_AND</strong>()</p>
+  </dt>
+  <dd>
+    <p>Store the intersection of the sets <em>srcset1</em> and <em>srcset2</em> in <em>destset</em> (which may be one of the source sets).</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_OR</strong>()</p>
+  </dt>
+  <dd>
+    <p>Store the union of the sets <em>srcset1</em> and <em>srcset2</em> in <em>destset</em> (which may be one of the source sets).</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_XOR</strong>()</p>
+  </dt>
+  <dd>
+    <p>Store the XOR of the sets <em>srcset1</em> and <em>srcset2</em> in <em>destset</em> (which may be one of the source sets). The XOR means the set of CPUs that are in either <em>srcset1</em> or <em>srcset2</em>, but not both.</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_EQUAL</strong>()</p>
+  </dt>
+  <dd>
+    <p>Test whether two CPU set contain exactly the same CPUs.</p>
+  </dd>
 
-<p>The <em>cpu_set_t</em> data type is implemented as a bit mask. However, the data structure treated as considered opaque: all manipulation of CPU sets should be done via the macros described in this page.</p>
-<p class='spacer'>
+</dl>
+<h3>Dynamically sized CPU sets</h3>
+<p>Because some applications may require the ability to dynamically size CPU sets (e.g., to allocate sets larger than that defined by the standard <em>cpu_set_t</em> data type), glibc nowadays provides a set of macros to support this.</p><p>The following macros are used to allocate and deallocate CPU sets:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>CPU_ALLOC</strong>()</p>
+  </dt>
+  <dd>
+    <p>Allocate a CPU set large enough to hold CPUs in the range 0 to <em>num_cpus-1</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_ALLOC_SIZE</strong>()</p>
+  </dt>
+  <dd>
+    <p>Return the size in bytes of the CPU set that would be needed to hold CPUs in the range 0 to <em>num_cpus-1</em>. This macro provides the value that can be used for the <em>setsize</em> argument in the <strong>CPU_*_S</strong>() macros described below.</p>
+  </dd>
+  <dt>
+    <p><strong>CPU_FREE</strong>()</p>
+  </dt>
+  <dd>
+    <p>Free a CPU set previously allocated by <strong>CPU_ALLOC</strong>().</p>
+  </dd>
 
-  <p>The following macros are provided to operate on the CPU set <em>set</em>:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>CPU_ZERO</strong>()</dt>
-    <dd>
-  <p>Clears <em>set</em>, so that it contains no CPUs.</p>
-    </dd>
-    <dt><strong>CPU_SET</strong>()</dt>
-    <dd>
-  <p>Add CPU <em>cpu</em> to <em>set</em>.</p>
-    </dd>
-    <dt><strong>CPU_CLR</strong>()</dt>
-    <dd>
-  <p>Remove CPU <em>cpu</em> from <em>set</em>.</p>
-    </dd>
-    <dt><strong>CPU_ISSET</strong>()</dt>
-    <dd>
-  <p>Test to see if CPU <em>cpu</em> is a member of <em>set</em>.</p>
-    </dd>
-    <dt><strong>CPU_COUNT</strong>()</dt>
-    <dd>
-  <p>Return the number of CPUs in <em>set</em>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>Where a <em>cpu</em> argument is specified, it should not produce side effects, since the above macros may evaluate the argument more than once.</p>
-<p class='spacer'>
-
-<p>The first CPU on the system corresponds to a <em>cpu</em> value of 0, the next CPU corresponds to a <em>cpu</em> value of 1, and so on. No assumptions should be made about particular CPUs being available, or the set of CPUs being contiguous, since CPUs can be taken offline dynamically or be otherwise absent. The constant <strong>CPU_SETSIZE</strong> (currently 1024) specifies a value one greater than the maximum CPU number that can be stored in <em>cpu_set_t</em>.</p>
-<p class='spacer'>
-
-  <p>The following macros perform logical operations on CPU sets:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>CPU_AND</strong>()</dt>
-    <dd>
-  <p>Store the intersection of the sets <em>srcset1</em> and <em>srcset2</em> in <em>destset</em> (which may be one of the source sets).</p>
-    </dd>
-    <dt><strong>CPU_OR</strong>()</dt>
-    <dd>
-  <p>Store the union of the sets <em>srcset1</em> and <em>srcset2</em> in <em>destset</em> (which may be one of the source sets).</p>
-    </dd>
-    <dt><strong>CPU_XOR</strong>()</dt>
-    <dd>
-  <p>Store the XOR of the sets <em>srcset1</em> and <em>srcset2</em> in <em>destset</em> (which may be one of the source sets). The XOR means the set of CPUs that are in either <em>srcset1</em> or <em>srcset2</em>, but not both.</p>
-    </dd>
-    <dt><strong>CPU_EQUAL</strong>()</dt>
-    <dd>
-  <p>Test whether two CPU set contain exactly the same CPUs.</p>
-    </dd>
-  </dl>
-  <h3>Dynamically sized CPU sets</h3>
-<p>Because some applications may require the ability to dynamically size CPU sets (e.g., to allocate sets larger than that defined by the standard <em>cpu_set_t</em> data type), glibc nowadays provides a set of macros to support this.</p>
-<p class='spacer'>
-
-  <p>The following macros are used to allocate and deallocate CPU sets:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>CPU_ALLOC</strong>()</dt>
-    <dd>
-  <p>Allocate a CPU set large enough to hold CPUs in the range 0 to <em>num_cpus-1</em>.</p>
-    </dd>
-    <dt><strong>CPU_ALLOC_SIZE</strong>()</dt>
-    <dd>
-  <p>Return the size in bytes of the CPU set that would be needed to hold CPUs in the range 0 to <em>num_cpus-1</em>. This macro provides the value that can be used for the <em>setsize</em> argument in the <strong>CPU_*_S</strong>() macros described below.</p>
-    </dd>
-    <dt><strong>CPU_FREE</strong>()</dt>
-    <dd>
-  <p>Free a CPU set previously allocated by <strong>CPU_ALLOC</strong>().</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The macros whose names end with "_S" are the analogs of the similarly named macros without the suffix. These macros perform the same tasks as their analogs, but operate on the dynamically allocated CPU set(s) whose size is <em>setsize</em> bytes.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
-<p><strong>CPU_ISSET</strong>() and <strong>CPU_ISSET_S</strong>() return nonzero if <em>cpu</em> is in <em>set</em>; otherwise, it returns 0.</p>
-<p class='spacer'>
-
-<p><strong>CPU_COUNT</strong>() and <strong>CPU_COUNT_S</strong>() return the number of CPUs in <em>set</em>.</p>
-<p class='spacer'>
-
-<p><strong>CPU_EQUAL</strong>() and <strong>CPU_EQUAL_S</strong>() return nonzero if the two CPU sets are equal; otherwise they return 0.</p>
-<p class='spacer'>
-
-<p><strong>CPU_ALLOC</strong>() returns a pointer on success, or NULL on failure. (Errors are as for <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>.)</p>
-<p class='spacer'>
-
-<p><strong>CPU_ALLOC_SIZE</strong>() returns the number of bytes required to store a CPU set of the specified cardinality.</p>
-<p class='spacer'>
-
-<p>The other functions do not return a value.</p>
+<p><strong>CPU_ISSET</strong>() and <strong>CPU_ISSET_S</strong>() return nonzero if <em>cpu</em> is in <em>set</em>; otherwise, it returns 0.</p><p><strong>CPU_COUNT</strong>() and <strong>CPU_COUNT_S</strong>() return the number of CPUs in <em>set</em>.</p><p><strong>CPU_EQUAL</strong>() and <strong>CPU_EQUAL_S</strong>() return nonzero if the two CPU sets are equal; otherwise they return 0.</p><p><strong>CPU_ALLOC</strong>() returns a pointer on success, or NULL on failure. (Errors are as for <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>.)</p><p><strong>CPU_ALLOC_SIZE</strong>() returns the number of bytes required to store a CPU set of the specified cardinality.</p><p>The other functions do not return a value.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
-<p>The <strong>CPU_ZERO</strong>(), <strong>CPU_SET</strong>(), <strong>CPU_CLR</strong>(), and <strong>CPU_ISSET</strong>() macros were added in glibc 2.3.3.</p>
-<p class='spacer'>
-
-<p><strong>CPU_COUNT</strong>() first appeared in glibc 2.6.</p>
-<p class='spacer'>
-
-<p><strong>CPU_AND</strong>(), <strong>CPU_OR</strong>(), <strong>CPU_XOR</strong>(), <strong>CPU_EQUAL</strong>(), <strong>CPU_ALLOC</strong>(), <strong>CPU_ALLOC_SIZE</strong>(), <strong>CPU_FREE</strong>(), <strong>CPU_ZERO_S</strong>(), <strong>CPU_SET_S</strong>(), <strong>CPU_CLR_S</strong>(), <strong>CPU_ISSET_S</strong>(), <strong>CPU_AND_S</strong>(), <strong>CPU_OR_S</strong>(), <strong>CPU_XOR_S</strong>(), and <strong>CPU_EQUAL_S</strong>() first appeared in glibc 2.7.</p>
+<p>The <strong>CPU_ZERO</strong>(), <strong>CPU_SET</strong>(), <strong>CPU_CLR</strong>(), and <strong>CPU_ISSET</strong>() macros were added in glibc 2.3.3.</p><p><strong>CPU_COUNT</strong>() first appeared in glibc 2.6.</p><p><strong>CPU_AND</strong>(), <strong>CPU_OR</strong>(), <strong>CPU_XOR</strong>(), <strong>CPU_EQUAL</strong>(), <strong>CPU_ALLOC</strong>(), <strong>CPU_ALLOC_SIZE</strong>(), <strong>CPU_FREE</strong>(), <strong>CPU_ZERO_S</strong>(), <strong>CPU_SET_S</strong>(), <strong>CPU_CLR_S</strong>(), <strong>CPU_ISSET_S</strong>(), <strong>CPU_AND_S</strong>(), <strong>CPU_OR_S</strong>(), <strong>CPU_XOR_S</strong>(), and <strong>CPU_EQUAL_S</strong>() first appeared in glibc 2.7.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>These interfaces are Linux-specific.</p>
         </div>
       </section>
@@ -268,24 +254,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>To duplicate a CPU set, use <a href="../man3/memcpy.3.html"><strong>memcpy</strong>(3)</a>.</p>
-<p class='spacer'>
-
-<p>Since CPU sets are bit masks allocated in units of long words, the actual number of CPUs in a dynamically allocated CPU set will be rounded up to the next multiple of <em>sizeof(unsigned long)</em>. An application should consider the contents of these extra bits to be undefined.</p>
-<p class='spacer'>
-
-<p>Notwithstanding the similarity in the names, note that the constant <strong>CPU_SETSIZE</strong> indicates the number of CPUs in the <em>cpu_set_t</em> data type (thus, it is effectively a count of the bits in the bit mask), while the <em>setsize</em> argument of the <strong>CPU_*_S</strong>() macros is a size in bytes.</p>
-<p class='spacer'>
-
-<p>The data types for arguments and return values shown in the SYNOPSIS are hints what about is expected in each case. However, since these interfaces are implemented as macros, the compiler won't necessarily catch all type errors if you violate the suggestions.</p>
+<p>To duplicate a CPU set, use <a href="../man3/memcpy.3.html"><strong>memcpy</strong>(3)</a>.</p><p>Since CPU sets are bit masks allocated in units of long words, the actual number of CPUs in a dynamically allocated CPU set will be rounded up to the next multiple of <em>sizeof(unsigned long)</em>. An application should consider the contents of these extra bits to be undefined.</p><p>Notwithstanding the similarity in the names, note that the constant <strong>CPU_SETSIZE</strong> indicates the number of CPUs in the <em>cpu_set_t</em> data type (thus, it is effectively a count of the bits in the bit mask), while the <em>setsize</em> argument of the <strong>CPU_*_S</strong>() macros is a size in bytes.</p><p>The data types for arguments and return values shown in the SYNOPSIS are hints what about is expected in each case. However, since these interfaces are implemented as macros, the compiler won't necessarily catch all type errors if you violate the suggestions.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>On 32-bit platforms with glibc 2.8 and earlier, <strong>CPU_ALLOC</strong>() allocates twice as much space as is required, and <strong>CPU_ALLOC_SIZE</strong>() returns a value twice as large as it should. This bug should not affect the semantics of a program, but does result in wasted memory and less efficient operation of the macros that operate on dynamically allocated CPU sets. These bugs are fixed in glibc 2.9.</p>
         </div>
       </section>
@@ -293,11 +268,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>The following program demonstrates the use of some of the macros used for dynamically allocated CPU sets.</p>
-<p class='spacer'>
-
-<pre>#define _GNU_SOURCE
+<pre>
+#define _GNU_SOURCE
 #include &lt;sched.h&gt;
 #include &lt;stdlib.h&gt;
 #include &lt;unistd.h&gt;
@@ -334,19 +307,18 @@ main(int argc, char *argv[])
 
     CPU_FREE(cpusetp);
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
 
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO CPU_ALLOC&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO CPU_SET&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/sched_setaffinity.2.html"><strong>sched_setaffinity</strong>(2)</a>, <a href="../man3/pthread_attr_setaffinity_np.3.html"><strong>pthread_attr_setaffinity_np</strong>(3)</a>, <a href="../man3/pthread_setaffinity_np.3.html"><strong>pthread_setaffinity_np</strong>(3)</a>, <a href="../man7/cpuset.7.html"><strong>cpuset</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="CMSG_SPACE.3.html"><span aria-hidden="true">&larr;</span> CMSG_SPACE.3: Access ancillary data</a></li>

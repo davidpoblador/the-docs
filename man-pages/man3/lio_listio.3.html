@@ -91,12 +91,14 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;aio.h&gt;</strong>
+<pre>
+<strong>#include <aio.h></strong>
 
 <strong>int lio_listio(int </strong><em>mode</em><strong>, struct aiocb *const </strong><em>aiocb_list</em><strong>[],</strong>
 <strong>               int </strong><em>nitems</em><strong>, struct sigevent *</strong><em>sevp</em><strong>);</strong>
 
-Link with <em>-lrt</em>.</pre>
+Link with <em>-lrt</em>.
+</pre>
 
         </div>
       </section>
@@ -104,43 +106,44 @@ Link with <em>-lrt</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>lio_listio</strong>() function initiates the list of I/O operations described by the array <em>aiocb_list</em>.</p><p>The <em>mode</em> operation has one of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>LIO_WAIT</strong></p>
+  </dt>
+  <dd>
+    <p>The call blocks until all operations are complete. The <em>sevp</em> argument is ignored.</p>
+  </dd>
+  <dt>
+    <p><strong>LIO_NOWAIT</strong></p>
+  </dt>
+  <dd>
+    <p>The I/O operations are queued for processing and the call returns immediately. When all of the I/O operations complete, asynchronous notification occurs, as specified by the <em>sevp</em> argument; see <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a> for details. If <em>sevp</em> is NULL, no asynchronous notification occurs.</p>
+  </dd>
 
-<p>The <strong>lio_listio</strong>() function initiates the list of I/O operations described by the array <em>aiocb_list</em>.</p>
-<p class='spacer'>
+</dl>
+<p>The <em>aiocb_list</em> argument is an array of pointers to <em>aiocb</em> structures that describe I/O operations. These operations are executed in an unspecified order. The <em>nitems</em> argument specifies the size of the array <em>aiocb_list</em>. null pointers in <em>aiocb_list</em> are ignored.</p><p>In each control block in <em>aiocb_list</em>, the <em>aio_lio_opcode</em> field specifies the I/O operation to be initiated, as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>LIO_READ</strong></p>
+  </dt>
+  <dd>
+    <p>Initiate a read operation. The operation is queued as for a call to <a href="../man3/aio_read.3.html"><strong>aio_read</strong>(3)</a> specifying this control block.</p>
+  </dd>
+  <dt>
+    <p><strong>LIO_WRITE</strong></p>
+  </dt>
+  <dd>
+    <p>Initiate a write operation. The operation is queued as for a call to <a href="../man3/aio_write.3.html"><strong>aio_write</strong>(3)</a> specifying this control block.</p>
+  </dd>
+  <dt>
+    <p><strong>LIO_NOP</strong></p>
+  </dt>
+  <dd>
+    <p>Ignore this control block.</p>
+  </dd>
 
-  <p>The <em>mode</em> operation has one of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>LIO_WAIT</strong></dt>
-    <dd>
-  <p>The call blocks until all operations are complete. The <em>sevp</em> argument is ignored.</p>
-    </dd>
-    <dt><strong>LIO_NOWAIT</strong></dt>
-    <dd>
-  <p>The I/O operations are queued for processing and the call returns immediately. When all of the I/O operations complete, asynchronous notification occurs, as specified by the <em>sevp</em> argument; see <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a> for details. If <em>sevp</em> is NULL, no asynchronous notification occurs.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The <em>aiocb_list</em> argument is an array of pointers to <em>aiocb</em> structures that describe I/O operations. These operations are executed in an unspecified order. The <em>nitems</em> argument specifies the size of the array <em>aiocb_list</em>. null pointers in <em>aiocb_list</em> are ignored.</p>
-<p class='spacer'>
-
-  <p>In each control block in <em>aiocb_list</em>, the <em>aio_lio_opcode</em> field specifies the I/O operation to be initiated, as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>LIO_READ</strong></dt>
-    <dd>
-  <p>Initiate a read operation. The operation is queued as for a call to <a href="../man3/aio_read.3.html"><strong>aio_read</strong>(3)</a> specifying this control block.</p>
-    </dd>
-    <dt><strong>LIO_WRITE</strong></dt>
-    <dd>
-  <p>Initiate a write operation. The operation is queued as for a call to <a href="../man3/aio_write.3.html"><strong>aio_write</strong>(3)</a> specifying this control block.</p>
-    </dd>
-    <dt><strong>LIO_NOP</strong></dt>
-    <dd>
-  <p>Ignore this control block.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The remaining fields in each control block have the same meanings as for <a href="../man3/aio_read.3.html"><strong>aio_read</strong>(3)</a> and <a href="../man3/aio_write.3.html"><strong>aio_write</strong>(3)</a>. The <em>aio_sigevent</em> fields of each control block can be used to specify notifications for the individual I/O operations (see <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a>).</p>
         </div>
       </section>
@@ -148,46 +151,47 @@ Link with <em>-lrt</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
-<p>If <em>mode</em> is <strong>LIO_NOWAIT</strong>, <strong>lio_listio</strong>() returns 0 if all I/O operations are successfully queued. Otherwise, -1 is returned, and <em>errno</em> is set to indicate the error.</p>
-<p class='spacer'>
-
-<p>If <em>mode</em> is <strong>LIO_WAIT</strong>, <strong>lio_listio</strong>() returns 0 when all of the I/O operations have completed successfully. Otherwise, -1 is returned, and <em>errno</em> is set to indicate the error.</p>
-<p class='spacer'>
-
-<p>The return status from <strong>lio_listio</strong>() provides information only about the call itself, not about the individual I/O operations. One or more of the I/O operations may fail, but this does not prevent other operations completing. The status of individual I/O operations in <em>aiocb_list</em> can be determined using <a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a>. When an operation has completed, its return status can be obtained using <a href="../man3/aio_return.3.html"><strong>aio_return</strong>(3)</a>. Individual I/O operations can fail for the reasons described in <a href="../man3/aio_read.3.html"><strong>aio_read</strong>(3)</a> and <a href="../man3/aio_write.3.html"><strong>aio_write</strong>(3)</a>.</p>
+<p>If <em>mode</em> is <strong>LIO_NOWAIT</strong>, <strong>lio_listio</strong>() returns 0 if all I/O operations are successfully queued. Otherwise, -1 is returned, and <em>errno</em> is set to indicate the error.</p><p>If <em>mode</em> is <strong>LIO_WAIT</strong>, <strong>lio_listio</strong>() returns 0 when all of the I/O operations have completed successfully. Otherwise, -1 is returned, and <em>errno</em> is set to indicate the error.</p><p>The return status from <strong>lio_listio</strong>() provides information only about the call itself, not about the individual I/O operations. One or more of the I/O operations may fail, but this does not prevent other operations completing. The status of individual I/O operations in <em>aiocb_list</em> can be determined using <a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a>. When an operation has completed, its return status can be obtained using <a href="../man3/aio_return.3.html"><strong>aio_return</strong>(3)</a>. Individual I/O operations can fail for the reasons described in <a href="../man3/aio_read.3.html"><strong>aio_read</strong>(3)</a> and <a href="../man3/aio_write.3.html"><strong>aio_write</strong>(3)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
+<p>The <strong>lio_listio</strong>() function may fail for the following reasons:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EAGAIN</strong></p>
+  </dt>
+  <dd>
+    <p>Out of resources.</p>
+  </dd>
+  <dt>
+    <p><strong>EAGAIN</strong></p>
+  </dt>
+  <dd>
+    <p>The number of I/O operations specified by <em>nitems</em> would cause the limit <strong>AIO_MAX</strong> to be exceeded.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> is invalid, or <em>nitems</em> exceeds the limit <strong>AIO_LISTIO_MAX</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>EINTR</strong></p>
+  </dt>
+  <dd>
+    <p><em>mode</em> was <strong>LIO_WAIT</strong> and a signal was caught before all I/O operations completed; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>. (This may even be one of the signals used for asynchronous I/O completion notification.)</p>
+  </dd>
+  <dt>
+    <p><strong>EIO</strong></p>
+  </dt>
+  <dd>
+    <p>One of more of the operations specified by <em>aiocb_list</em> failed. The application can check the status of each operation using <a href="../man3/aio_return.3.html"><strong>aio_return</strong>(3)</a>.</p>
+  </dd>
 
-  <p>The <strong>lio_listio</strong>() function may fail for the following reasons:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>EAGAIN</strong></dt>
-    <dd>
-  <p>Out of resources.</p>
-    </dd>
-    <dt><strong>EAGAIN</strong></dt>
-    <dd>
-  <p>The number of I/O operations specified by <em>nitems</em> would cause the limit <strong>AIO_MAX</strong> to be exceeded.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>mode</em> is invalid, or <em>nitems</em> exceeds the limit <strong>AIO_LISTIO_MAX</strong>.</p>
-    </dd>
-    <dt><strong>EINTR</strong></dt>
-    <dd>
-  <p><em>mode</em> was <strong>LIO_WAIT</strong> and a signal was caught before all I/O operations completed; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>. (This may even be one of the signals used for asynchronous I/O completion notification.)</p>
-    </dd>
-    <dt><strong>EIO</strong></dt>
-    <dd>
-  <p>One of more of the operations specified by <em>aiocb_list</em> failed. The application can check the status of each operation using <a href="../man3/aio_return.3.html"><strong>aio_return</strong>(3)</a>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>If <strong>lio_listio</strong>() fails with the error <strong>EAGAIN</strong>, <strong>EINTR</strong>, or <strong>EIO</strong>, then some of the operations in <em>aiocb_list</em> may have been initiated. If <strong>lio_listio</strong>() fails for any other reason, then none of the I/O operations has been initiated.</p>
         </div>
       </section>
@@ -195,7 +199,6 @@ Link with <em>-lrt</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>lio_listio</strong>() function is available since glibc 2.1.</p>
         </div>
       </section>
@@ -203,9 +206,7 @@ Link with <em>-lrt</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -216,16 +217,12 @@ Link with <em>-lrt</em>.</pre>
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2001, POSIX.1-2008.</p>
         </div>
       </section>
@@ -233,22 +230,16 @@ Link with <em>-lrt</em>.</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>It is a good idea to zero out the control blocks before use. The control blocks must not be changed while the I/O operations are in progress. The buffer areas being read into or written from must not be accessed during the operations or undefined results may occur. The memory areas involved must remain valid.</p>
-<p class='spacer'>
-
-<p>Simultaneous I/O operations specifying the same <em>aiocb</em> structure produce undefined results.</p>
+<p>It is a good idea to zero out the control blocks before use. The control blocks must not be changed while the I/O operations are in progress. The buffer areas being read into or written from must not be accessed during the operations or undefined results may occur. The memory areas involved must remain valid.</p><p>Simultaneous I/O operations specifying the same <em>aiocb</em> structure produce undefined results.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO lio_listio&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man3/aio_cancel.3.html"><strong>aio_cancel</strong>(3)</a>, <a href="../man3/aio_error.3.html"><strong>aio_error</strong>(3)</a>, <a href="../man3/aio_fsync.3.html"><strong>aio_fsync</strong>(3)</a>, <a href="../man3/aio_return.3.html"><strong>aio_return</strong>(3)</a>, <a href="../man3/aio_suspend.3.html"><strong>aio_suspend</strong>(3)</a>, <a href="../man3/aio_write.3.html"><strong>aio_write</strong>(3)</a>, <a href="../man7/aio.7.html"><strong>aio</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="libpfm_perf_event_raw.3.html"><span aria-hidden="true">&larr;</span> libpfm_perf_event_raw.3: Support for perf_events raw events syntax</a></li>

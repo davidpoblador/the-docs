@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p><strong>tc qdisc ...</strong> <strong>[ divisor</strong> hashtablesize <strong>] [ limit</strong> packets <strong>] [ perturb</strong> seconds <strong>] [ quantum</strong> bytes <strong>] [ flows</strong> number <strong>] [ depth</strong> number <strong>] [ headdrop</strong> <strong>] [ redflowlimit</strong> bytes <strong>] [ min</strong> bytes <strong>] [ max</strong> bytes <strong>] [ avpkt</strong> bytes <strong>] [ burst</strong> packets <strong>] [ probability</strong> P <strong>] [ ecn</strong> <strong>] [ harddrop ]</strong></p>
         </div>
       </section>
@@ -98,61 +97,36 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>Stochastic Fairness Queueing is a classless queueing discipline available for traffic control with the <strong>tc</strong>(8) command.</p>
-<p class='spacer'>
-
-<p>SFQ does not shape traffic but only schedules the transmission of packets, based on 'flows'. The goal is to ensure fairness so that each flow is able to send data in turn, thus preventing any single flow from drowning out the rest.</p>
-<p class='spacer'>
-
-<p>This may in fact have some effect in mitigating a Denial of Service attempt.</p>
-<p class='spacer'>
-
-<p>SFQ is work-conserving and therefore always delivers a packet if it has one available.</p>
+<p>Stochastic Fairness Queueing is a classless queueing discipline available for traffic control with the <strong>tc</strong>(8) command.</p><p>SFQ does not shape traffic but only schedules the transmission of packets, based on 'flows'. The goal is to ensure fairness so that each flow is able to send data in turn, thus preventing any single flow from drowning out the rest.</p><p>This may in fact have some effect in mitigating a Denial of Service attempt.</p><p>SFQ is work-conserving and therefore always delivers a packet if it has one available.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ALGORITHM</h2>
         <div class="sectioncontent">
+<p>On enqueueing, each packet is assigned to a hash bucket, based on the packets hash value. This hash value is either obtained from an external flow classifier (use <strong></strong> tc filter to set them), or a default internal classifier if no external classifier has been configured.</p><p>When the internal classifier is used, sfq uses</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>(i)</p>
+  </dt>
+  <dd>
+    <p>Source address</p>
+  </dd>
+  <dt>
+    <p>(ii)</p>
+  </dt>
+  <dd>
+    <p>Destination address</p>
+  </dd>
+  <dt>
+    <p>(iii)</p>
+  </dt>
+  <dd>
+    <p>Source and Destination port</p>
+  </dd>
 
-<p>On enqueueing, each packet is assigned to a hash bucket, based on the packets hash value. This hash value is either obtained from an external flow classifier (use tc filter to set them), or a default internal classifier if no external classifier has been configured.</p>
-<p class='spacer'>
-
-  <p>When the internal classifier is used, sfq uses</p>
-  <dl class='dl-horizontal'>
-    <dt>(i)</dt>
-    <dd>
-  <p>Source address</p>
-    </dd>
-    <dt>(ii)</dt>
-    <dd>
-  <p>Destination address</p>
-    </dd>
-    <dt>(iii)</dt>
-    <dd>
-  <p>Source and Destination port</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>If these are available. SFQ knows about ipv4 and ipv6 and also UDP, TCP and ESP. Packets with other protocols are hashed based on the 32bits representation of their destination and source. A flow corresponds mostly to a TCP/IP connection.</p>
-<p class='spacer'>
-
-<p>Each of these buckets should represent a unique flow. Because multiple flows may get hashed to the same bucket, sfqs internal hashing algorithm may be perturbed at configurable intervals so that the unfairness lasts only for a short while. Perturbation may however cause some inadvertent packet reordering to occur. After linux-3.3, there is no packet reordering problem, but possible packet drops if rehashing hits one limit (number of flows or packets per flow)</p>
-<p class='spacer'>
-
-<p>When dequeuing, each hashbucket with data is queried in a round robin fashion.</p>
-<p class='spacer'>
-
-<p>Before linux-3.3, the compile time maximum length of the SFQ is 128 packets, which can be spread over at most 128 buckets of 1024 available. In case of overflow, tail-drop is performed on the fullest bucket, thus maintaining fairness.</p>
-<p class='spacer'>
-
-<p>After linux-3.3, maximum length of SFQ is 65535 packets, and divisor limit is 65536. In case of overflow, tail-drop is performed on the fullest bucket, unless headdrop was requested.</p>
-<p class='spacer'>
-
+</dl>
+<p>If these are available. SFQ knows about ipv4 and ipv6 and also UDP, TCP and ESP. Packets with other protocols are hashed based on the 32bits representation of their destination and source. A flow corresponds mostly to a TCP/IP connection.</p><p>Each of these buckets should represent a unique flow. Because multiple flows may get hashed to the same bucket, sfqs internal hashing algorithm may be perturbed at configurable intervals so that the unfairness lasts only for a short while. Perturbation may however cause some inadvertent packet reordering to occur. After linux-3.3, there is no packet reordering problem, but possible packet drops if rehashing hits one limit (number of flows or packets per flow)</p><p>When dequeuing, each hashbucket with data is queried in a round robin fashion.</p><p>Before linux-3.3, the compile time maximum length of the SFQ is 128 packets, which can be spread over at most 128 buckets of 1024 available. In case of overflow, tail-drop is performed on the fullest bucket, thus maintaining fairness.</p><p>After linux-3.3, maximum length of SFQ is 65535 packets, and divisor limit is 65536. In case of overflow, tail-drop is performed on the fullest bucket, unless headdrop was requested.</p>
         </div>
       </section>
 
@@ -160,118 +134,119 @@
         <h2 class="font-effect-shadow-multiple">PARAMETERS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt>divisor</dt>
-    <dd>
-  <p>Can be used to set a different hash table size, available from kernel 2.6.39 onwards. The specified divisor must be a power of two and cannot be larger than 65536. Default value: 1024.</p>
-    </dd>
-    <dt>limit</dt>
-    <dd>
-  <p>Upper limit of the SFQ. Can be used to reduce the default length of 127 packets. After linux-3.3, it can be raised.</p>
-    </dd>
-    <dt>depth</dt>
-    <dd>
-  <p>Limit of packets per flow (after linux-3.3). Default to 127 and can be lowered.</p>
-    </dd>
-    <dt>perturb</dt>
-    <dd>
-  <p>Interval in seconds for queue algorithm perturbation. Defaults to 0, which means that no perturbation occurs. Do not set too low for each perturbation may cause some packet reordering or losses. Advised value: 60 This value has no effect when external flow classification is used. Its better to increase divisor value to lower risk of hash collisions.</p>
-    </dd>
-    <dt>quantum</dt>
-    <dd>
-  <p>Amount of bytes a flow is allowed to dequeue during a round of the round robin process. Defaults to the MTU of the interface which is also the advised value and the minimum value.</p>
-    </dd>
-    <dt>flows</dt>
-    <dd>
-  <p>After linux-3.3, it is possible to change the default limit of flows. Default value is 127</p>
-    </dd>
-    <dt>headdrop</dt>
-    <dd>
-  <p>Default SFQ behavior is to perform tail-drop of packets from a flow. You can ask a headdrop instead, as this is known to provide a better feedback for TCP flows.</p>
-    </dd>
-    <dt>redflowlimit</dt>
-    <dd>
+<dl class='dl-vertical'>
+  <dt>
+    <p>divisor</p>
+  </dt>
+  <dd>
+    <p>Can be used to set a different hash table size, available from kernel 2.6.39 onwards. The specified divisor must be a power of two and cannot be larger than 65536. Default value: 1024.</p>
+  </dd>
+  <dt>
+    <p>limit</p>
+  </dt>
+  <dd>
+    <p>Upper limit of the SFQ. Can be used to reduce the default length of 127 packets. After linux-3.3, it can be raised.</p>
+  </dd>
+  <dt>
+    <p>depth</p>
+  </dt>
+  <dd>
+    <p>Limit of packets per flow (after linux-3.3). Default to 127 and can be lowered.</p>
+  </dd>
+  <dt>
+    <p>perturb</p>
+  </dt>
+  <dd>
+    <p>Interval in seconds for queue algorithm perturbation. Defaults to 0, which means that no perturbation occurs. Do not set too low for each perturbation may cause some packet reordering or losses. Advised value: 60 This value has no effect when external flow classification is used. Its better to increase divisor value to lower risk of hash collisions.</p>
+  </dd>
+  <dt>
+    <p>quantum</p>
+  </dt>
+  <dd>
+    <p>Amount of bytes a flow is allowed to dequeue during a round of the round robin process. Defaults to the MTU of the interface which is also the advised value and the minimum value.</p>
+  </dd>
+  <dt>
+    <p>flows</p>
+  </dt>
+  <dd>
+    <p>After linux-3.3, it is possible to change the default limit of flows. Default value is 127</p>
+  </dd>
+  <dt>
+    <p>headdrop</p>
+  </dt>
+  <dd>
+    <p>Default SFQ behavior is to perform tail-drop of packets from a flow. You can ask a headdrop instead, as this is known to provide a better feedback for TCP flows.</p>
+  </dd>
+  <dt>
+    <p>redflowlimit</p>
+  </dt>
+  <dd>
     <p>Configure the optional RED module on top of each SFQ flow. Random Early Detection principle is to perform packet marks or drops in a probabilistic way. (man tc-red for details about RED)</p>
-<pre>redflowlimit configures the hard limit on the real (not average) queue size per SFQ flow in bytes.</pre>
+<pre>
+redflowlimit configures the hard limit on the real (not average) queue size per SFQ flow in bytes.
+</pre>
 
-    </dd>
-    <dt>min</dt>
-    <dd>
-  <p>Average queue size at which marking becomes a possibility. Defaults to <strong>max</strong> /3</p>
-    </dd>
-    <dt>max</dt>
-    <dd>
-  <p>At this average queue size, the marking probability is maximal. Defaults to <strong>redflowlimit</strong> /4</p>
-    </dd>
-    <dt>probability</dt>
-    <dd>
-  <p>Maximum  probability  for  marking, specified as a floating point number from 0.0 to 1.0. Default value is 0.02</p>
-    </dd>
-    <dt>avpkt</dt>
-    <dd>
-  <p>Specified in bytes. Used with burst to determine the time constant for average queue size calculations. Default value is 1000</p>
-    </dd>
-    <dt>burst</dt>
-    <dd>
+  </dd>
+  <dt>
+    <p>min</p>
+  </dt>
+  <dd>
+    <p>Average queue size at which marking becomes a possibility. Defaults to <strong>max</strong> /3</p>
+  </dd>
+  <dt>
+    <p>max</p>
+  </dt>
+  <dd>
+    <p>At this average queue size, the marking probability is maximal. Defaults to <strong>redflowlimit</strong> /4</p>
+  </dd>
+  <dt>
+    <p>probability</p>
+  </dt>
+  <dd>
+    <p>Maximum  probability  for  marking, specified as a floating point number from 0.0 to 1.0. Default value is 0.02</p>
+  </dd>
+  <dt>
+    <p>avpkt</p>
+  </dt>
+  <dd>
+    <p>Specified in bytes. Used with burst to determine the time constant for average queue size calculations. Default value is 1000</p>
+  </dd>
+  <dt>
+    <p>burst</p>
+  </dt>
+  <dd>
     <p>Used for determining how fast the average queue size is influenced by the real queue size.</p>
-<pre>Default value is :
-<strong>(2 * min + max) / (3 * avpkt)</strong></pre>
+<pre>
+Default value is :
+<strong>(2 * min + max) / (3 * avpkt)</strong>
+</pre>
 
-    </dd>
-    <dt>ecn</dt>
-    <dd>
-  <p>RED can either 'mark' or 'drop'. Explicit Congestion Notification allows RED to notify remote hosts that their rate exceeds the amount of bandwidth available. Non-ECN capable hosts can only be notified by dropping a packet. If this parameter is specified, packets which indicate that their hosts honor ECN will only be marked and not dropped, unless the queue size hits <strong>depth</strong> packets.</p>
-    </dd>
-    <dt>harddrop</dt>
-    <dd>
-  <p>If average flow queue size is above <strong>max</strong> bytes, this parameter forces a drop instead of ecn marking.</p>
-    </dd>
-  </dl>
+  </dd>
+  <dt>
+    <p>ecn</p>
+  </dt>
+  <dd>
+    <p>RED can either 'mark' or 'drop'. Explicit Congestion Notification allows RED to notify remote hosts that their rate exceeds the amount of bandwidth available. Non-ECN capable hosts can only be notified by dropping a packet. If this parameter is specified, packets which indicate that their hosts honor ECN will only be marked and not dropped, unless the queue size hits <strong>depth</strong> packets.</p>
+  </dd>
+  <dt>
+    <p>harddrop</p>
+  </dt>
+  <dd>
+    <p>If average flow queue size is above <strong>max</strong> bytes, this parameter forces a drop instead of ecn marking.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE & USAGE</h2>
         <div class="sectioncontent">
-
-<p class='spacer'>
-
-<p>To attach to device ppp0:</p>
-<p class='spacer'>
-
-<p># tc qdisc add dev ppp0 root sfq</p>
-<p class='spacer'>
-
-<p>Please note that SFQ, like all non-shaping (work-conserving) qdiscs, is only useful if it owns the queue. This is the case when the link speed equals the actually available bandwidth. This holds for regular phone modems, ISDN connections and direct non-switched ethernet links.</p>
-<p class='spacer'>
-
-<p>Most often, cable modems and DSL devices do not fall into this category. The same holds for when connected to a switch  and trying to send data to a congested segment also connected to the switch.</p>
-<p class='spacer'>
-
-<p>In this case, the effective queue does not reside within Linux and is therefore not available for scheduling.</p>
-<p class='spacer'>
-
-<p>Embed SFQ in a classful qdisc to make sure it owns the queue.</p>
-<p class='spacer'>
-
-<p>It is possible to use external classifiers with sfq, for example to hash traffic based only on source/destination ip addresses:</p>
-<p class='spacer'>
-
-<p># tc filter add ... flow hash keys src,dst perturb 30 divisor 1024</p>
-<p class='spacer'>
-
-<p>Note that the given divisor should match the one used by sfq. If you have changed the sfq default of 1024, use the same value for the flow hash filter, too.</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>Example of sfq with optional RED mode :</p>
-<p class='spacer'>
-
-<p># tc qdisc add dev eth0 parent 1:1 handle 10: sfq limit 3000 flows 512 divisor 16384</p>
-<pre>  redflowlimit 100000 min 8000 max 60000 probability 0.20 ecn headdrop</pre>
-
-<p class='spacer'>
+<p>To attach to device ppp0:</p><p># tc qdisc add dev ppp0 root sfq</p><p>Please note that SFQ, like all non-shaping (work-conserving) qdiscs, is only useful if it owns the queue. This is the case when the link speed equals the actually available bandwidth. This holds for regular phone modems, ISDN connections and direct non-switched ethernet links.</p><p>Most often, cable modems and DSL devices do not fall into this category. The same holds for when connected to a switch  and trying to send data to a congested segment also connected to the switch.</p><p>In this case, the effective queue does not reside within Linux and is therefore not available for scheduling.</p><p>Embed SFQ in a classful qdisc to make sure it owns the queue.</p><p>It is possible to use external classifiers with sfq, for example to hash traffic based only on source/destination ip addresses:</p><p># tc filter add ... flow hash keys src,dst perturb 30 divisor 1024</p><p>Note that the given divisor should match the one used by sfq. If you have changed the sfq default of 1024, use the same value for the flow hash filter, too.</p><p>Example of sfq with optional RED mode :</p><p># tc qdisc add dev eth0 parent 1:1 handle 10: sfq limit 3000 flows 512 divisor 16384</p>
+<pre>
+  redflowlimit 100000 min 8000 max 60000 probability 0.20 ecn headdrop
+</pre>
 
         </div>
       </section>
@@ -280,54 +255,48 @@
         <h2 class="font-effect-shadow-multiple">SOURCE</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-horizontal'>
-    <dt>o</dt>
-    <dd>
-  <p>Paul E. McKenney "Stochastic Fairness Queuing", IEEE INFOCOMM'90 Proceedings, San Francisco, 1990.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p>o</p>
+  </dt>
+  <dd>
+    <p>Paul E. McKenney "Stochastic Fairness Queuing", IEEE INFOCOMM'90 Proceedings, San Francisco, 1990.</p>
+  </dd>
+  <dt>
+    <p>o</p>
+  </dt>
+  <dd>
+    <p>Paul E. McKenney "Stochastic Fairness Queuing", "Interworking: Research and Experience", v.2, 1991, p.113-131.</p>
+  </dd>
+  <dt>
+    <p>o</p>
+  </dt>
+  <dd>
+    <p>See also: M. Shreedhar and George Varghese "Efficient Fair Queuing using Deficit Round Robin", Proc. SIGCOMM 95.</p>
+  </dd>
 
-    </dd>
-    <dt>o</dt>
-    <dd>
-  <p>Paul E. McKenney "Stochastic Fairness Queuing", "Interworking: Research and Experience", v.2, 1991, p.113-131.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-    <dt>o</dt>
-    <dd>
-  <p>See also: M. Shreedhar and George Varghese "Efficient Fair Queuing using Deficit Round Robin", Proc. SIGCOMM 95.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
-        <div class="sectioncontent">
-
-<p>Alexey N. Kuznetsov, &lt;kuznet@ms2.inr.ac.ru&gt;, Eric Dumazet &lt;eric.dumazet@gmail.com&gt;.</p>
-<p class='spacer'>
-
-<p>This manpage maintained by bert hubert &lt;ahu@ds9a.nl&gt;</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO tc-sfq&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>tc</strong>(8), <a href="../man8/tc-red.8.html"><strong>tc-red</strong>(8)</a></p>
-<p class='spacer'>
-
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+<p>Alexey N. Kuznetsov, &lt;kuznet@ms2.inr.ac.ru&gt;, Eric Dumazet &lt;eric.dumazet@gmail.com&gt;.</p><p>This manpage maintained by bert hubert &lt;ahu@ds9a.nl&gt;</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="tc-sfb.8.html"><span aria-hidden="true">&larr;</span> tc-sfb.8: Stochastic fair blue</a></li>
-   <li class="next"><a href="tc-skbedit.8.html">tc-skbedit.8: Skb editing action <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="tc-simple.8.html">tc-simple.8: Basic example action <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

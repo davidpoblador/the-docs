@@ -91,12 +91,14 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;perfmon/pfmlib.h&gt;</strong>
+<pre>
+<strong>#include <perfmon/pfmlib.h></strong>
 
 <strong>PMU name: nhm</strong>
 <strong>PMU desc: Intel Nehalem</strong>
 <strong>PMU name: nhm_ex</strong>
 <strong>PMU desc: Intel Nehalem EX</strong>
+
 </pre>
 
         </div>
@@ -105,69 +107,67 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
 <p>The library supports the Intel Nehalem core PMU. It should be noted that this PMU model only covers the each core's PMU and not the socket level PMU. It is provided separately. Support is provided for the Intel Core i7 and Core i5 processors.</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">MODIFIERS</h2>
         <div class="sectioncontent">
+<p>The following modifiers are supported on Intel Nehalem processors:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>u</strong></p>
+  </dt>
+  <dd>
+    <p>Measure at user level which includes privilege levels 1, 2, 3. This corresponds to <strong>PFM_PLM3</strong>. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>k</strong></p>
+  </dt>
+  <dd>
+    <p>Measure at kernel level which includes privilege level 0. This corresponds to <strong>PFM_PLM0</strong>. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>i</strong></p>
+  </dt>
+  <dd>
+    <p>Invert the meaning of the event. The counter will now count cycles in which the event is <strong>not</strong> occurring. This is a boolean modifier</p>
+  </dd>
+  <dt>
+    <p><strong>e</strong></p>
+  </dt>
+  <dd>
+    <p>Enable edge detection, i.e., count only when there is a state transition from no occurrence of the event to at least one occurrence. This modifier must be combined with a counter mask modifier (m) with a value greater or equal to one. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>c</strong></p>
+  </dt>
+  <dd>
+    <p>Set the counter mask value. The mask acts as a threshold. The counter will count the number of cycles in which the number of occurrences of the event is greater or equal to the threshold. This is an integer modifier with values in the range [0:255].</p>
+  </dd>
+  <dt>
+    <p><strong>t</strong></p>
+  </dt>
+  <dd>
+    <p>Measure on both threads at the same time assuming hyper-threading is enabled. This is a boolean modifier.</p>
+  </dd>
+  <dt>
+    <p><strong>ldlat</strong></p>
+  </dt>
+  <dd>
+    <p>Pass a latency threshold to the MEM_INST_RETIRED:LATENCY_ABOVE_THRESHOLD event. This is an integer attribute that must be in the range [3:65535]. It is required for this event.  Note that the event must be used with precise sampling (PEBS).</p>
+  </dd>
 
-  <p>The following modifiers are supported on Intel Nehalem processors:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>u</strong></dt>
-    <dd>
-  <p>Measure at user level which includes privilege levels 1, 2, 3. This corresponds to <strong>PFM_PLM3</strong>. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>k</strong></dt>
-    <dd>
-  <p>Measure at kernel level which includes privilege level 0. This corresponds to <strong>PFM_PLM0</strong>. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>i</strong></dt>
-    <dd>
-  <p>Invert the meaning of the event. The counter will now count cycles in which the event is <strong>not</strong> occurring. This is a boolean modifier</p>
-    </dd>
-    <dt><strong>e</strong></dt>
-    <dd>
-  <p>Enable edge detection, i.e., count only when there is a state transition from no occurrence of the event to at least one occurrence. This modifier must be combined with a counter mask modifier (m) with a value greater or equal to one. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>c</strong></dt>
-    <dd>
-  <p>Set the counter mask value. The mask acts as a threshold. The counter will count the number of cycles in which the number of occurrences of the event is greater or equal to the threshold. This is an integer modifier with values in the range [0:255].</p>
-    </dd>
-    <dt><strong>t</strong></dt>
-    <dd>
-  <p>Measure on both threads at the same time assuming hyper-threading is enabled. This is a boolean modifier.</p>
-    </dd>
-    <dt><strong>ldlat</strong></dt>
-    <dd>
-  <p>Pass a latency threshold to the MEM_INST_RETIRED:LATENCY_ABOVE_THRESHOLD event. This is an integer attribute that must be in the range [3:65535]. It is required for this event.  Note that the event must be used with precise sampling (PEBS).</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">OFFCORE_RESPONSE event</h2>
         <div class="sectioncontent">
-
-<p>The library is able to encode the OFFCORE_RESPONSE_0 event. This is a special event because it needs a second MSR (0x1a6) to be programmed for the event to count properly. Thus two values are necessary. The first value can be programmed on any of the generic counters. The second value goes into the dedicated MSR (0x1a6).</p>
-<p class='spacer'>
-
-<p>The OFFCORE_RESPONSE event is exposed as a normal event with several umasks which are divided in two groups: request and response. The user must provide <strong>at least</strong> one umask from each group. For instance, OFFCORE_RESPONSE_0:ANY_DATA:LOCAL_DRAM.</p>
-<p class='spacer'>
-
-<p>When using <strong>pfm_get_event_encoding()</strong>, two 64-bit values are returned. The first value corresponds to what needs to be programmed into any of the generic counters. The second value must be programmed into the dedicated MSR (0x1a6).</p>
-<p class='spacer'>
-
-<p>When using an OS-specific encoding routine, the way the event is encoded is OS specific. Refer to the corresponding man page for more information.</p>
-<p class='spacer'>
-
+<p>The library is able to encode the OFFCORE_RESPONSE_0 event. This is a special event because it needs a second MSR (0x1a6) to be programmed for the event to count properly. Thus two values are necessary. The first value can be programmed on any of the generic counters. The second value goes into the dedicated MSR (0x1a6).</p><p>The OFFCORE_RESPONSE event is exposed as a normal event with several umasks which are divided in two groups: request and response. The user must provide <strong>at least</strong> one umask from each group. For instance, OFFCORE_RESPONSE_0:ANY_DATA:LOCAL_DRAM.</p><p>When using <strong>pfm_get_event_encoding()</strong>, two 64-bit values are returned. The first value corresponds to what needs to be programmed into any of the generic counters. The second value must be programmed into the dedicated MSR (0x1a6).</p><p>When using an OS-specific encoding routine, the way the event is encoded is OS specific. Refer to the corresponding man page for more information.</p>
         </div>
       </section>
 
@@ -175,7 +175,9 @@
         <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
 
-<pre>Stephane Eranian &lt;eranian@gmail.com&gt;
+<pre>
+Stephane Eranian &lt;eranian@gmail.com&gt;
+
 </pre>
 
         </div>
@@ -183,7 +185,7 @@
 <nav>
   <ul class="pager">
    <li class="previous"><a href="libpfm_intel_knc.3.html"><span aria-hidden="true">&larr;</span> libpfm_intel_knc.3: Support for intel knights corner</a></li>
-   <li class="next"><a href="libpfm_intel_p6.3.html">libpfm_intel_p6.3: Support for intel p5 based processors <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="libpfm_intel_nhm_unc.3.html">libpfm_intel_nhm_unc.3: None <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

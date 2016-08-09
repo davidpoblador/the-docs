@@ -91,12 +91,11 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;sys/spu.h&gt;</strong>
+<pre>
+<strong>#include <sys/spu.h></strong>
 
-<strong>int spu_run(int </strong><em>fd</em><strong>, unsigned int *</strong><em>npc</em><strong>, unsigned int *</strong><em>event</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
+<strong>int spu_run(int </strong><em>fd</em><strong>, unsigned int *</strong><em>npc</em><strong>, unsigned int *</strong><em>event</em><strong>);</strong>
+</pre>
 <p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
         </div>
       </section>
@@ -104,40 +103,34 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>spu_run</strong>() system call is used on PowerPC machines that implement the Cell Broadband Engine Architecture in order to access Synergistic Processor Units (SPUs). The <em>fd</em> argument is a file descriptor returned by <a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a> that refers to a specific SPU context. When the context gets scheduled to a physical SPU, it starts execution at the instruction pointer passed in <em>npc</em>.</p><p>Execution of SPU code happens synchronously, meaning that <strong>spu_run</strong>() blocks while the SPU is still running. If there is a need to execute SPU code in parallel with other code on either the main CPU or other SPUs, a new thread of execution must be created first (e.g., using <a href="../man3/pthread_create.3.html"><strong>pthread_create</strong>(3)</a>).</p><p>When <strong>spu_run</strong>() returns, the current value of the SPU program counter is written to <em>npc</em>, so successive calls to <strong>spu_run</strong>() can use the same <em>npc</em> pointer.</p><p>The <em>event</em> argument provides a buffer for an extended status code. If the SPU context was created with the <strong>SPU_CREATE_EVENTS_ENABLED</strong> flag, then this buffer is populated by the Linux kernel before <strong>spu_run</strong>() returns.</p><p>The status code may be one (or more) of the following constants:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SPE_EVENT_DMA_ALIGNMENT</strong></p>
+  </dt>
+  <dd>
+    <p>A DMA alignment error occurred.</p>
+  </dd>
+  <dt>
+    <p><strong>SPE_EVENT_INVALID_DMA</strong></p>
+  </dt>
+  <dd>
+    <p>An invalid MFC DMA command was attempted.</p>
+  </dd>
+  <dt>
+    <p><strong>SPE_EVENT_SPE_DATA_STORAGE</strong></p>
+  </dt>
+  <dd>
+    <p>A DMA storage error occurred.</p>
+  </dd>
+  <dt>
+    <p><strong>SPE_EVENT_SPE_ERROR</strong></p>
+  </dt>
+  <dd>
+    <p>An illegal instruction was executed.</p>
+  </dd>
 
-<p>The <strong>spu_run</strong>() system call is used on PowerPC machines that implement the Cell Broadband Engine Architecture in order to access Synergistic Processor Units (SPUs). The <em>fd</em> argument is a file descriptor returned by <a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a> that refers to a specific SPU context. When the context gets scheduled to a physical SPU, it starts execution at the instruction pointer passed in <em>npc</em>.</p>
-<p class='spacer'>
-
-<p>Execution of SPU code happens synchronously, meaning that <strong>spu_run</strong>() blocks while the SPU is still running. If there is a need to execute SPU code in parallel with other code on either the main CPU or other SPUs, a new thread of execution must be created first (e.g., using <a href="../man3/pthread_create.3.html"><strong>pthread_create</strong>(3)</a>).</p>
-<p class='spacer'>
-
-<p>When <strong>spu_run</strong>() returns, the current value of the SPU program counter is written to <em>npc</em>, so successive calls to <strong>spu_run</strong>() can use the same <em>npc</em> pointer.</p>
-<p class='spacer'>
-
-<p>The <em>event</em> argument provides a buffer for an extended status code. If the SPU context was created with the <strong>SPU_CREATE_EVENTS_ENABLED</strong> flag, then this buffer is populated by the Linux kernel before <strong>spu_run</strong>() returns.</p>
-<p class='spacer'>
-
-  <p>The status code may be one (or more) of the following constants:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SPE_EVENT_DMA_ALIGNMENT</strong></dt>
-    <dd>
-  <p>A DMA alignment error occurred.</p>
-    </dd>
-    <dt><strong>SPE_EVENT_INVALID_DMA</strong></dt>
-    <dd>
-  <p>An invalid MFC DMA command was attempted.</p>
-    </dd>
-    <dt><strong>SPE_EVENT_SPE_DATA_STORAGE</strong></dt>
-    <dd>
-  <p>A DMA storage error occurred.</p>
-    </dd>
-    <dt><strong>SPE_EVENT_SPE_ERROR</strong></dt>
-    <dd>
-  <p>An illegal instruction was executed.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>NULL is a valid value for the <em>event</em> argument. In this case, the events will not be reported to the calling process.</p>
         </div>
       </section>
@@ -145,43 +138,52 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
+<p>On success, <strong>spu_run</strong>() returns the value of the <em>spu_status</em> register. On error, it returns -1 and sets <em>errno</em> to one of the error codes listed below.</p><p>The <em>spu_status</em> register value is a bit mask of status codes and optionally a 14-bit code returned from the <strong>stop-and-signal</strong> instruction on the SPU. The bit masks for the status codes are:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>0x02</strong></p>
+  </dt>
+  <dd>
+    <p>SPU was stopped by a <strong>stop-and-signal</strong> instruction.</p>
+  </dd>
+  <dt>
+    <p><strong>0x04</strong></p>
+  </dt>
+  <dd>
+    <p>SPU was stopped by a <strong>halt</strong> instruction.</p>
+  </dd>
+  <dt>
+    <p><strong>0x08</strong></p>
+  </dt>
+  <dd>
+    <p>SPU is waiting for a channel.</p>
+  </dd>
+  <dt>
+    <p><strong>0x10</strong></p>
+  </dt>
+  <dd>
+    <p>SPU is in single-step mode.</p>
+  </dd>
+  <dt>
+    <p><strong>0x20</strong></p>
+  </dt>
+  <dd>
+    <p>SPU has tried to execute an invalid instruction.</p>
+  </dd>
+  <dt>
+    <p><strong>0x40</strong></p>
+  </dt>
+  <dd>
+    <p>SPU has tried to access an invalid channel.</p>
+  </dd>
+  <dt>
+    <p><strong>0x3fff0000</strong></p>
+  </dt>
+  <dd>
+    <p>The bits masked with this value contain the code returned from a <strong>stop-and-signal</strong> instruction. These bits are valid only if the 0x02 bit is set.</p>
+  </dd>
 
-<p>On success, <strong>spu_run</strong>() returns the value of the <em>spu_status</em> register. On error, it returns -1 and sets <em>errno</em> to one of the error codes listed below.</p>
-<p class='spacer'>
-
-  <p>The <em>spu_status</em> register value is a bit mask of status codes and optionally a 14-bit code returned from the <strong>stop-and-signal</strong> instruction on the SPU. The bit masks for the status codes are:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>0x02</strong></dt>
-    <dd>
-  <p>SPU was stopped by a <strong>stop-and-signal</strong> instruction.</p>
-    </dd>
-    <dt><strong>0x04</strong></dt>
-    <dd>
-  <p>SPU was stopped by a <strong>halt</strong> instruction.</p>
-    </dd>
-    <dt><strong>0x08</strong></dt>
-    <dd>
-  <p>SPU is waiting for a channel.</p>
-    </dd>
-    <dt><strong>0x10</strong></dt>
-    <dd>
-  <p>SPU is in single-step mode.</p>
-    </dd>
-    <dt><strong>0x20</strong></dt>
-    <dd>
-  <p>SPU has tried to execute an invalid instruction.</p>
-    </dd>
-    <dt><strong>0x40</strong></dt>
-    <dd>
-  <p>SPU has tried to access an invalid channel.</p>
-    </dd>
-    <dt><strong>0x3fff0000</strong></dt>
-    <dd>
-  <p>The bits masked with this value contain the code returned from a <strong>stop-and-signal</strong> instruction. These bits are valid only if the 0x02 bit is set.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>If <strong>spu_run</strong>() has not returned an error, one or more bits among the lower eight ones are always set.</p>
         </div>
       </section>
@@ -190,39 +192,52 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>fd</em> is not a valid file descriptor.</p>
-    </dd>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p><em>npc</em> is not a valid pointer, or <em>event</em> is non-NULL and an invalid pointer.</p>
-    </dd>
-    <dt><strong>EINTR</strong></dt>
-    <dd>
-  <p>A signal occurred while <strong>spu_run</strong>() was in progress; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>. The <em>npc</em> value has been updated to the new program counter value if necessary.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>fd</em> is not a valid file descriptor returned from <a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a>.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>There was not enough memory available to handle a page fault resulting from a Memory Flow Controller (MFC) direct memory access.</p>
-    </dd>
-    <dt><strong>ENOSYS</strong></dt>
-    <dd>
-  <p>The functionality is not provided by the current system, because either the hardware does not provide SPUs or the spufs module is not loaded.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> is not a valid file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p><em>npc</em> is not a valid pointer, or <em>event</em> is non-NULL and an invalid pointer.</p>
+  </dd>
+  <dt>
+    <p><strong>EINTR</strong></p>
+  </dt>
+  <dd>
+    <p>A signal occurred while <strong>spu_run</strong>() was in progress; see <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>. The <em>npc</em> value has been updated to the new program counter value if necessary.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> is not a valid file descriptor returned from <a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>There was not enough memory available to handle a page fault resulting from a Memory Flow Controller (MFC) direct memory access.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOSYS</strong></p>
+  </dt>
+  <dd>
+    <p>The functionality is not provided by the current system, because either the hardware does not provide SPUs or the spufs module is not loaded.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>spu_run</strong>() system call was added to Linux in kernel 2.6.16.</p>
         </div>
       </section>
@@ -230,7 +245,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>This call is Linux-specific and implemented only by the PowerPC architecture. Programs using this system call are not portable.</p>
         </div>
       </section>
@@ -238,19 +252,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>. Note however, that <strong>spu_run</strong>() is meant to be used from libraries that implement a more abstract interface to SPUs, not to be used from regular applications. See <a href="http://www.bsc.es/projects/deepcomputing/linuxoncell/">http://www.bsc.es/projects/deepcomputing/linuxoncell/</a> for the recommended libraries.</p>
+<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>. Note however, that <strong>spu_run</strong>() is meant to be used from libraries that implement a more abstract interface to SPUs, not to be used from regular applications. See</p><p>for the recommended libraries.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>The following is an example of running a simple, one-instruction SPU program with the <strong>spu_run</strong>() system call.</p>
-<p class='spacer'>
-
-<pre>#include &lt;stdlib.h&gt;
+<pre>
+#include &lt;stdlib.h&gt;
 #include &lt;stdint.h&gt;
 #include &lt;unistd.h&gt;
 #include &lt;stdio.h&gt;
@@ -296,7 +307,8 @@ int main(void)
     printf("SPU Status: 0x%08x&#92;n", spu_status);
 
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
 
         </div>
       </section>
@@ -304,11 +316,9 @@ int main(void)
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO spu_run&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/close.2.html"><strong>close</strong>(2)</a>, <a href="../man2/spu_create.2.html"><strong>spu_create</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/spufs.7.html"><strong>spufs</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="spu_create.2.html"><span aria-hidden="true">&larr;</span> spu_create.2: Create a new spu context</a></li>

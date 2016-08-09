@@ -90,86 +90,58 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p>\f3$PCP_PMDAS_DIR/mmv/pmdammv\f1 [\f3-d\f1 \f2domain\f1] [\f3-l\f1 \f2logfile\f1] [\f3-U\f1 \f2username\f1]</p>
+<p><strong>$PCP_PMDAS_DIR/mmv/pmdammv</strong> [<strong>-d</strong> <em>domain</em>] [<strong>-l</strong> <em>logfile</em>] [<strong>-U</strong> <em>username</em>]</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>pmdammv</strong> is a Performance Metrics Domain Agent (PMDA) which exports application level performance metrics using memory mapped files. It offers an extremely low overhead instrumentation facility that is well-suited to long running, mission critical applications where it is desirable to have performance metrics and availability information permanently enabled.</p><p>The <strong>mmv</strong> PMDA exports instrumentation that has been added to an application using the MMV APIs (refer to <a href="../man3/mmv_stats_init.3.html"><strong>mmv_stats_init</strong>(3)</a> and <a href="../man5/mmv.5.html"><strong>mmv</strong>(5)</a> for further details). These APIs can be called from several languages, including C, C++, Perl, Python and Java (via the separate ``Parfait'' class library).</p><p>A brief description of the <strong>pmdammv</strong> command line options follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-d</strong></p>
+  </dt>
+  <dd>
+    <p>It is absolutely crucial that the performance metrics <em>domain</em> number specified here is unique and consistent. That is, <em>domain</em> should be different for every PMDA on the one host, and the same <em>domain</em> number should be used for the same PMDA on all hosts.</p>
+  </dd>
+  <dt>
+    <p><strong>-l</strong></p>
+  </dt>
+  <dd>
+    <p>Location of the log file.  By default, a log file named <em>mmv.log</em> is written in the current directory of <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a> when <strong>pmdammv</strong> is started, i.e. <strong>$PCP_LOG_DIR/pmcd</strong>. If the log file cannot be created or is not writable, output is written to the standard error instead.</p>
+  </dd>
+  <dt>
+    <p><strong>-U</strong></p>
+  </dt>
+  <dd>
+    <p>User account under which to run the agent. The default is the unprivileged "pcp" account in current versions of PCP, but in older versions the superuser account ("root") was used by default.</p>
+  </dd>
 
-<p><strong>pmdammv</strong> is a Performance Metrics Domain Agent (PMDA) which exports application level performance metrics using memory mapped files. It offers an extremely low overhead instrumentation facility that is well-suited to long running, mission critical applications where it is desirable to have performance metrics and availability information permanently enabled.</p>
-<p class='spacer'>
+</dl>
 
-<p>The <strong>mmv</strong> PMDA exports instrumentation that has been added to an application using the MMV APIs (refer to <a href="../man3/mmv_stats_init.3.html"><strong>mmv_stats_init</strong>(3)</a> and <a href="../man5/mmv.5.html"><strong>mmv</strong>(5)</a> for further details). These APIs can be called from several languages, including C, C++, Perl, Python and Java (via the separate ``Parfait'' class library).</p>
-<p class='spacer'>
-
-  <p>A brief description of the <strong>pmdammv</strong> command line options follows:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>-d</strong></dt>
-    <dd>
-  <p>It is absolutely crucial that the performance metrics <em>domain</em> number specified here is unique and consistent. That is, <em>domain</em> should be different for every PMDA on the one host, and the same <em>domain</em> number should be used for the same PMDA on all hosts.</p>
-    </dd>
-    <dt><strong>-l</strong></dt>
-    <dd>
-  <p>Location of the log file.  By default, a log file named <em>mmv.log</em> is written in the current directory of <strong>pmcd</strong>(1) when <strong>pmdammv</strong> is started, i.e. <strong>$PCP_LOG_DIR/pmcd</strong>. If the log file cannot be created or is not writable, output is written to the standard error instead.</p>
-    </dd>
-    <dt><strong>-U</strong></dt>
-    <dd>
-  <p>User account under which to run the agent. The default is the unprivileged "pcp" account in current versions of PCP, but in older versions the superuser account ("root") was used by default.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">INSTALLATION</h2>
         <div class="sectioncontent">
-
-<p>Firstly, a security model for interprocess communication between instrumented applications and <strong>pmdammv</strong> (running as a shared library inside <strong>pmcd</strong>) must be chosen and established.</p>
-<p class='spacer'>
-
-<p>This communication occurs through memory mapped files in a location known to both <strong>pmdammv</strong> and the instrumented applications. That location is <em>$PCP_TMP_DIR/mmv</em>, although that is often hidden behind application APIs such as ``Parfait'' and <a href="../man3/mmv_stats_init.3.html"><strong>mmv_stats_init</strong>(3)</a>. The permissions set on this directory indicate the security model in use.</p>
-<p class='spacer'>
-
-<p>The more secure method is to use an existing unprivileged group which is shared by instrumented applications, <strong>pmcd</strong> and <strong>pmdammv</strong> such as the "pcp" group.</p>
-<p class='spacer'>
-
-<pre># . /etc/pcp.env
+<p>Firstly, a security model for interprocess communication between instrumented applications and <strong>pmdammv</strong> (running as a shared library inside <strong>pmcd</strong>) must be chosen and established.</p><p>This communication occurs through memory mapped files in a location known to both <strong>pmdammv</strong> and the instrumented applications. That location is <em>$PCP_TMP_DIR/mmv</em>, although that is often hidden behind application APIs such as ``Parfait'' and <a href="../man3/mmv_stats_init.3.html"><strong>mmv_stats_init</strong>(3)</a>. The permissions set on this directory indicate the security model in use.</p><p>The more secure method is to use an existing unprivileged group which is shared by instrumented applications, <strong>pmcd</strong> and <strong>pmdammv</strong> such as the "pcp" group.</p>
+<pre>
+# . /etc/pcp.env
 # mkdir -m 775 $PCP_TMP_DIR/mmv
-# chgrp pcp $PCP_TMP_DIR/mmv</pre>
-
-<p class='spacer'>
-
-<p>Since this method requires instrumented applications to use this non-default group (see <a href="../man1/newgrp.1.html"><strong>newgrp</strong>(1)</a> and <a href="../man2/setgid.2.html"><strong>setgid</strong>(2)</a>) a common alternative involves the use of a world-writeable <em>$PCP_TMP_DIR/mmv</em> directory with the sticky-bit set (similar to <em>/tmp</em> and <em>/var/tmp</em>, for example).</p>
-<p class='spacer'>
-
-<p>This allows any application, running under any user account, to communicate with the PMDA (which runs under the "pcp" account by default). This may not be desirable for all environments and one should consider the security implications of any directory setup like this (similar classes of issues exist as those that affect the system temporary file directories).</p>
-<p class='spacer'>
-
-<p><strong>pmdammv</strong> is enabled by default on all modern PCP installations, and thus the names, help text and values for the mmv performance metrics are available without the usual PMDA ./Install process.</p>
-<p class='spacer'>
-
-<p>If no explicit security model has been selected (as described above), the ./Install script will create a world-writeable sticky-bit-set mmv directory for communication.  This is for backwards compatibility, as well as ease of use - to use this, do the following as root:</p>
-<p class='spacer'>
-
-<pre># cd $PCP_PMDAS_DIR/mmv
-# ./Install</pre>
-
-<p class='spacer'>
-
-<p>This installation process will not overwrite any existing <em>$PCP_TMP_DIR/mmv</em> directory.</p>
-<p class='spacer'>
-
-<p>If you want to undo the installation, do the following as root:</p>
-<p class='spacer'>
-
-<pre># cd $PCP_PMDAS_DIR/mmv
-# ./Remove</pre>
-
-<p class='spacer'>
-
+# chgrp pcp $PCP_TMP_DIR/mmv
+</pre>
+<p>Since this method requires instrumented applications to use this non-default group (see <a href="../man1/newgrp.1.html"><strong>newgrp</strong>(1)</a> and <a href="../man2/setgid.2.html"><strong>setgid</strong>(2)</a>) a common alternative involves the use of a world-writeable <em>$PCP_TMP_DIR/mmv</em> directory with the sticky-bit set (similar to <em>/tmp</em> and <em>/var/tmp</em>, for example).</p><p>This allows any application, running under any user account, to communicate with the PMDA (which runs under the "pcp" account by default). This may not be desirable for all environments and one should consider the security implications of any directory setup like this (similar classes of issues exist as those that affect the system temporary file directories).</p><p><strong>pmdammv</strong> is enabled by default on all modern PCP installations, and thus the names, help text and values for the mmv performance metrics are available without the usual PMDA ./Install process.</p><p>If no explicit security model has been selected (as described above), the ./Install script will create a world-writeable sticky-bit-set mmv directory for communication.  This is for backwards compatibility, as well as ease of use - to use this, do the following as root:</p>
+<pre>
+# cd $PCP_PMDAS_DIR/mmv
+# ./Install
+</pre>
+<p>This installation process will not overwrite any existing <em>$PCP_TMP_DIR/mmv</em> directory.</p><p>If you want to undo the installation, do the following as root:</p>
+<pre>
+# cd $PCP_PMDAS_DIR/mmv
+# ./Remove
+</pre>
 <p><strong>pmdammv</strong> is launched by <strong>pmcd</strong> and should never be executed directly. The Install and Remove scripts notify <strong>pmcd</strong> when the agent is installed or removed.</p>
         </div>
       </section>
@@ -178,51 +150,62 @@
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>$PCP_PMCDCONF_PATH</strong></dt>
-    <dd>
-  <p>command line options used to launch <strong>pmdammv</strong></p>
-    </dd>
-    <dt><strong>$PCP_TMP_DIR/mmv</strong></dt>
-    <dd>
-  <p>directory housing memory mapped value files</p>
-    </dd>
-    <dt><strong>$PCP_PMDAS_DIR/mmv/help</strong></dt>
-    <dd>
-  <p>default help text file for the mmv metrics</p>
-    </dd>
-    <dt><strong>$PCP_PMDAS_DIR/mmv/Install</strong></dt>
-    <dd>
-  <p>installation script for the <strong>pmdammv</strong> agent</p>
-    </dd>
-    <dt><strong>$PCP_PMDAS_DIR/mmv/Remove</strong></dt>
-    <dd>
-  <p>undo installation script for the <strong>pmdammv</strong> agent</p>
-    </dd>
-    <dt><strong>$PCP_LOG_DIR/pmcd/mmv.log</strong></dt>
-    <dd>
-  <p>default log file for error messages and other information from <strong>pmdammv</strong></p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>$PCP_PMCDCONF_PATH</strong></p>
+  </dt>
+  <dd>
+    <p>command line options used to launch <strong>pmdammv</strong></p>
+  </dd>
+  <dt>
+    <p><strong>$PCP_TMP_DIR/mmv</strong></p>
+  </dt>
+  <dd>
+    <p>directory housing memory mapped value files</p>
+  </dd>
+  <dt>
+    <p><strong>$PCP_PMDAS_DIR/mmv/help</strong></p>
+  </dt>
+  <dd>
+    <p>default help text file for the mmv metrics</p>
+  </dd>
+  <dt>
+    <p><strong>$PCP_PMDAS_DIR/mmv/Install</strong></p>
+  </dt>
+  <dd>
+    <p>installation script for the <strong>pmdammv</strong> agent</p>
+  </dd>
+  <dt>
+    <p><strong>$PCP_PMDAS_DIR/mmv/Remove</strong></p>
+  </dt>
+  <dd>
+    <p>undo installation script for the <strong>pmdammv</strong> agent</p>
+  </dd>
+  <dt>
+    <p><strong>$PCP_LOG_DIR/pmcd/mmv.log</strong></p>
+  </dt>
+  <dd>
+    <p>default log file for error messages and other information from <strong>pmdammv</strong></p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">PCP ENVIRONMENT</h2>
         <div class="sectioncontent">
-
-<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <strong>pcp.conf</strong>(5).</p>
+<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmdammv&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>PCPIntro</strong>(1), <strong>pmcd</strong>(1), <a href="../man1/newgrp.1.html"><strong>newgrp</strong>(1)</a>, <a href="../man2/setgid.2.html"><strong>setgid</strong>(2)</a>, <a href="../man3/mmv_stats_init.3.html"><strong>mmv_stats_init</strong>(3)</a>, <a href="../man5/mmv.5.html"><strong>mmv</strong>(5)</a>, <strong>pcp.conf</strong>(5) and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
+<p><strong>PCPIntro</strong>(1), <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>, <a href="../man1/newgrp.1.html"><strong>newgrp</strong>(1)</a>, <a href="../man2/setgid.2.html"><strong>setgid</strong>(2)</a>, <a href="../man3/mmv_stats_init.3.html"><strong>mmv_stats_init</strong>(3)</a>, <a href="../man5/mmv.5.html"><strong>mmv</strong>(5)</a>, <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a> and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="pmdamic.1.html"><span aria-hidden="true">&larr;</span> pmdamic.1: Mic card pmda</a></li>

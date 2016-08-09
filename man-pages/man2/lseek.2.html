@@ -90,103 +90,62 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;sys/types.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>#include &lt;unistd.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>off_t lseek(int </strong><em>fd</em><strong>, off_t </strong><em>offset</em><strong>, int </strong><em>whence</em><strong>);</strong></p>
+<p><strong>#include <sys/types.h></strong></p><p><strong>#include <unistd.h></strong></p><p><strong>off_t lseek(int </strong><em>fd</em><strong>, off_t </strong><em>offset</em><strong>, int </strong><em>whence</em><strong>);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>lseek</strong>() function repositions the file offset of the open file description associated with the file descriptor <em>fd</em> to the argument <em>offset</em> according to the directive <em>whence</em> as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SEEK_SET</strong></p>
+  </dt>
+  <dd>
+    <p>The file offset is set to <em>offset</em> bytes.</p>
+  </dd>
+  <dt>
+    <p><strong>SEEK_CUR</strong></p>
+  </dt>
+  <dd>
+    <p>The file offset is set to its current location plus <em>offset</em> bytes.</p>
+  </dd>
+  <dt>
+    <p><strong>SEEK_END</strong></p>
+  </dt>
+  <dd>
+    <p>The file offset is set to the size of the file plus <em>offset</em> bytes.</p>
+  </dd>
 
-  <p>The <strong>lseek</strong>() function repositions the file offset of the open file description associated with the file descriptor <em>fd</em> to the argument <em>offset</em> according to the directive <em>whence</em> as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SEEK_SET</strong></dt>
-    <dd>
-  <p>The file offset is set to <em>offset</em> bytes.</p>
-    </dd>
-    <dt><strong>SEEK_CUR</strong></dt>
-    <dd>
-  <p>The file offset is set to its current location plus <em>offset</em> bytes.</p>
-    </dd>
-    <dt><strong>SEEK_END</strong></dt>
-    <dd>
-  <p>The file offset is set to the size of the file plus <em>offset</em> bytes.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+<p>The <strong>lseek</strong>() function allows the file offset to be set beyond the end of the file (but this does not change the size of the file). If data is later written at this point, subsequent reads of the data in the gap (a "hole") return null bytes (&apos;nbsp;&apos;) until data is actually written into the gap.</p><h3>Seeking file data and holes</h3>
+<p>Since version 3.1, Linux supports the following additional values for <em>whence</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SEEK_DATA</strong></p>
+  </dt>
+  <dd>
+    <p>Adjust the file offset to the next location in the file greater than or equal to <em>offset</em> containing data. If <em>offset</em> points to data, then the file offset is set to <em>offset</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>SEEK_HOLE</strong></p>
+  </dt>
+  <dd>
+    <p>Adjust the file offset to the next hole in the file greater than or equal to <em>offset</em>. If <em>offset</em> points into the middle of a hole, then the file offset is set to <em>offset</em>. If there is no hole past <em>offset</em>, then the file offset is adjusted to the end of the file (i.e., there is an implicit hole at the end of any file).</p>
+  </dd>
 
-<p>The <strong>lseek</strong>() function allows the file offset to be set beyond the end of the file (but this does not change the size of the file). If data is later written at this point, subsequent reads of the data in the gap (a "hole") return null bytes (&apos;nbsp;&apos;) until data is actually written into the gap.</p>
-  <h3>Seeking file data and holes</h3>
-  <p>Since version 3.1, Linux supports the following additional values for <em>whence</em>:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SEEK_DATA</strong></dt>
-    <dd>
-  <p>Adjust the file offset to the next location in the file greater than or equal to <em>offset</em> containing data. If <em>offset</em> points to data, then the file offset is set to <em>offset</em>.</p>
-    </dd>
-    <dt><strong>SEEK_HOLE</strong></dt>
-    <dd>
-  <p>Adjust the file offset to the next hole in the file greater than or equal to <em>offset</em>. If <em>offset</em> points into the middle of a hole, then the file offset is set to <em>offset</em>. If there is no hole past <em>offset</em>, then the file offset is adjusted to the end of the file (i.e., there is an implicit hole at the end of any file).</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+<p>In both of the above cases, <strong>lseek</strong>() fails if <em>offset</em> points past the end of the file.</p><p>These operations allow applications to map holes in a sparsely allocated file. This can be useful for applications such as file backup tools, which can save space when creating backups and preserve holes, if they have a mechanism for discovering holes.</p><p>For the purposes of these operations, a hole is a sequence of zeros that (normally) has not been allocated in the underlying file storage. However, a filesystem is not obliged to report holes, so these operations are not a guaranteed mechanism for mapping the storage space actually allocated to a file. (Furthermore, a sequence of zeros that actually has been written to the underlying storage may not be reported as a hole.) In the simplest implementation, a filesystem can support the operations by making <strong>SEEK_HOLE</strong> always return the offset of the end of the file, and making <strong>SEEK_DATA</strong> always return <em>offset</em> (i.e., even if the location referred to by <em>offset</em> is a hole, it can be considered to consist of data that is a sequence of zeros).</p><p>The <strong>_GNU_SOURCE</strong> feature test macro must be defined in order to obtain the definitions of <strong>SEEK_DATA</strong> and <strong>SEEK_HOLE</strong> from <em><unistd.h></em>.</p><p>The <strong>SEEK_HOLE</strong> and <strong>SEEK_DATA</strong> operations are supported for the following filesystems:</p><ul>
+<li><p>Btrfs (since Linux 3.1)</p></li><li><p>OCFS (since Linux 3.2)</p></li><li><p>XFS (since Linux 3.5)</p></li><li><p>ext4 (since Linux 3.8)</p></li><li><p>tmpfs (since Linux 3.8)</p></li><li><p>NFS (since Linux 3.18)</p></li><li><p>FUSE (since Linux 4.5)</p></li>
+</ul>
 
-<p>In both of the above cases, <strong>lseek</strong>() fails if <em>offset</em> points past the end of the file.</p>
-<p class='spacer'>
-
-<p>These operations allow applications to map holes in a sparsely allocated file. This can be useful for applications such as file backup tools, which can save space when creating backups and preserve holes, if they have a mechanism for discovering holes.</p>
-<p class='spacer'>
-
-<p>For the purposes of these operations, a hole is a sequence of zeros that (normally) has not been allocated in the underlying file storage. However, a filesystem is not obliged to report holes, so these operations are not a guaranteed mechanism for mapping the storage space actually allocated to a file. (Furthermore, a sequence of zeros that actually has been written to the underlying storage may not be reported as a hole.) In the simplest implementation, a filesystem can support the operations by making <strong>SEEK_HOLE</strong> always return the offset of the end of the file, and making <strong>SEEK_DATA</strong> always return <em>offset</em> (i.e., even if the location referred to by <em>offset</em> is a hole, it can be considered to consist of data that is a sequence of zeros).</p>
-<p class='spacer'>
-
-<p>The <strong>_GNU_SOURCE</strong> feature test macro must be defined in order to obtain the definitions of <strong>SEEK_DATA</strong> and <strong>SEEK_HOLE</strong> from <em>&lt;unistd.h&gt;</em>.</p>
-<p class='spacer'>
-
-  <p>The <strong>SEEK_HOLE</strong> and <strong>SEEK_DATA</strong> operations are supported for the following filesystems:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>Btrfs (since Linux 3.1)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>OCFS (since Linux 3.2)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>XFS (since Linux 3.5)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>ext4 (since Linux 3.8)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>tmpfs (since Linux 3.8)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>NFS (since Linux 3.18)</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>FUSE (since Linux 4.5)</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>Upon successful completion, <strong>lseek</strong>() returns the resulting offset location as measured in bytes from the beginning of the file. On error, the value <em>(off_t)&nbsp;-1</em> is returned and <em>errno</em> is set to indicate the error.</p>
         </div>
       </section>
@@ -195,60 +154,54 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>fd</em> is not an open file descriptor.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>whence</em> is not valid. Or: the resulting file offset would be negative, or beyond the end of a seekable device.</p>
-    </dd>
-    <dt><strong>EOVERFLOW</strong></dt>
-    <dd>
-  <p>The resulting file offset cannot be represented in an <em>off_t</em>.</p>
-    </dd>
-    <dt><strong>ESPIPE</strong></dt>
-    <dd>
-  <p><em>fd</em> is associated with a pipe, socket, or FIFO.</p>
-    </dd>
-    <dt><strong>ENXIO</strong></dt>
-    <dd>
-  <p><em>whence</em> is <strong>SEEK_DATA</strong> or <strong>SEEK_HOLE</strong>, and the file offset is beyond the end of the file.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> is not an open file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>whence</em> is not valid. Or: the resulting file offset would be negative, or beyond the end of a seekable device.</p>
+  </dd>
+  <dt>
+    <p><strong>EOVERFLOW</strong></p>
+  </dt>
+  <dd>
+    <p>The resulting file offset cannot be represented in an <em>off_t</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>ESPIPE</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> is associated with a pipe, socket, or FIFO.</p>
+  </dd>
+  <dt>
+    <p><strong>ENXIO</strong></p>
+  </dt>
+  <dd>
+    <p><em>whence</em> is <strong>SEEK_DATA</strong> or <strong>SEEK_HOLE</strong>, and the file offset is beyond the end of the file.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
-<p>POSIX.1-2001, POSIX.1-2008, SVr4, 4.3BSD.</p>
-<p class='spacer'>
-
-<p><strong>SEEK_DATA</strong> and <strong>SEEK_HOLE</strong> are nonstandard extensions also present in Solaris, FreeBSD, and DragonFly BSD; they are proposed for inclusion in the next POSIX revision (Issue 8).</p>
+<p>POSIX.1-2001, POSIX.1-2008, SVr4, 4.3BSD.</p><p><strong>SEEK_DATA</strong> and <strong>SEEK_HOLE</strong> are nonstandard extensions also present in Solaris, FreeBSD, and DragonFly BSD; they are proposed for inclusion in the next POSIX revision (Issue 8).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>See <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for a discussion of the relationship between file descriptors, open file descriptions, and files.</p>
-<p class='spacer'>
-
-<p>The <em>off_t</em> data type is a signed integer data type specified by POSIX.1.</p>
-<p class='spacer'>
-
-<p>Some devices are incapable of seeking and POSIX does not specify which devices must support <strong>lseek</strong>().</p>
-<p class='spacer'>
-
-<p>On Linux, using <strong>lseek</strong>() on a terminal device returns <strong>ESPIPE</strong>.</p>
-<p class='spacer'>
-
-<p>When converting old code, substitute values for <em>whence</em> with the following macros:</p>
-<table class="table table-striped">
+<p>See <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for a discussion of the relationship between file descriptors, open file descriptions, and files.</p><p>The <em>off_t</em> data type is a signed integer data type specified by POSIX.1.</p><p>Some devices are incapable of seeking and POSIX does not specify which devices must support <strong>lseek</strong>().</p><p>On Linux, using <strong>lseek</strong>() on a terminal device returns <strong>ESPIPE</strong>.</p><p>When converting old code, substitute values for <em>whence</em> with the following macros:</p><table class="table table-striped">
 <tr>
 <th>old</th>
 <th>new</th></tr>
@@ -276,22 +229,16 @@
 <tr>
 <td>L_XTND</td>
 <td>SEEK_END</td></tr>
-</table>
-
-<p class='spacer'>
-
-<p>Note that file descriptors created by <a href="../man2/dup.2.html"><strong>dup</strong>(2)</a> or <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> refer to the same open file descriptions (and thus file offsets), so seeking on such files may be subject to race conditions.</p>
+</table><p>Note that file descriptors created by <a href="../man2/dup.2.html"><strong>dup</strong>(2)</a> or <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> refer to the same open file descriptions (and thus file offsets), so seeking on such files may be subject to race conditions.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO lseek&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/dup.2.html"><strong>dup</strong>(2)</a>, <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man3/fseek.3.html"><strong>fseek</strong>(3)</a>, <a href="../man3/lseek64.3.html"><strong>lseek64</strong>(3)</a>, <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="lremovexattr.2.html"><span aria-hidden="true">&larr;</span> lremovexattr.2: Remove an extended attribute</a></li>

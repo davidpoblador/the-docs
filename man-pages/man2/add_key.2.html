@@ -91,11 +91,13 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;keyutils.h&gt;</strong>
+<pre>
+<strong>#include <keyutils.h></strong>
 
 <strong>key_serial_t add_key(const char *</strong><em>type</em><strong>, const char *</strong><em>description</em><strong>,</strong>
 <strong>                     const void *</strong><em>payload</em><strong>, size_t </strong><em>plen</em><strong>,</strong>
-<strong>                     key_serial_t </strong><em>keyring</em><strong>);</strong></pre>
+<strong>                     key_serial_t </strong><em>keyring</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -103,64 +105,70 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><strong>add_key</strong>() asks the kernel to create or update a key of the given <em>type</em> and <em>description</em>, instantiate it with the <em>payload</em> of length <em>plen</em>, and to attach it to the nominated <em>keyring</em> and to return its serial number.</p><p>The key type may reject the data if it's in the wrong format or in some other way invalid.</p><p>If the destination <em>keyring</em> already contains a key that matches the specified <em>type</em> and <em>description,</em> then, if the key type supports it, that key will be updated rather than a new key being created; if not, a new key will be created and it will displace the link to the extant key from the keyring.</p><p>The destination <em>keyring</em> serial number may be that of a valid keyring to which the caller has write permission, or it may be a special keyring ID:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>KEY_SPEC_THREAD_KEYRING</strong></p>
+  </dt>
+  <dd>
+    <p>This specifies the caller's thread-specific keyring.</p>
+  </dd>
+  <dt>
+    <p><strong>KEY_SPEC_PROCESS_KEYRING</strong></p>
+  </dt>
+  <dd>
+    <p>This specifies the caller's process-specific keyring.</p>
+  </dd>
+  <dt>
+    <p><strong>KEY_SPEC_SESSION_KEYRING</strong></p>
+  </dt>
+  <dd>
+    <p>This specifies the caller's session-specific keyring.</p>
+  </dd>
+  <dt>
+    <p><strong>KEY_SPEC_USER_KEYRING</strong></p>
+  </dt>
+  <dd>
+    <p>This specifies the caller's UID-specific keyring.</p>
+  </dd>
+  <dt>
+    <p><strong>KEY_SPEC_USER_SESSION_KEYRING</strong></p>
+  </dt>
+  <dd>
+    <p>This specifies the caller's UID-session keyring.</p>
+  </dd>
 
-<p><strong>add_key</strong>() asks the kernel to create or update a key of the given <em>type</em> and <em>description</em>, instantiate it with the <em>payload</em> of length <em>plen</em>, and to attach it to the nominated <em>keyring</em> and to return its serial number.</p>
-<p class='spacer'>
+</dl>
 
-<p>The key type may reject the data if it's in the wrong format or in some other way invalid.</p>
-<p class='spacer'>
-
-<p>If the destination <em>keyring</em> already contains a key that matches the specified <em>type</em> and <em>description,</em> then, if the key type supports it, that key will be updated rather than a new key being created; if not, a new key will be created and it will displace the link to the extant key from the keyring.</p>
-<p class='spacer'>
-
-  <p>The destination <em>keyring</em> serial number may be that of a valid keyring to which the caller has write permission, or it may be a special keyring ID:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>KEY_SPEC_THREAD_KEYRING</strong></dt>
-    <dd>
-  <p>This specifies the caller's thread-specific keyring.</p>
-    </dd>
-    <dt><strong>KEY_SPEC_PROCESS_KEYRING</strong></dt>
-    <dd>
-  <p>This specifies the caller's process-specific keyring.</p>
-    </dd>
-    <dt><strong>KEY_SPEC_SESSION_KEYRING</strong></dt>
-    <dd>
-  <p>This specifies the caller's session-specific keyring.</p>
-    </dd>
-    <dt><strong>KEY_SPEC_USER_KEYRING</strong></dt>
-    <dd>
-  <p>This specifies the caller's UID-specific keyring.</p>
-    </dd>
-    <dt><strong>KEY_SPEC_USER_SESSION_KEYRING</strong></dt>
-    <dd>
-  <p>This specifies the caller's UID-session keyring.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">KEY TYPES</h2>
         <div class="sectioncontent">
+<p>There are a number of key types available in the core key management code, and these can be specified to this function:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>&ldquo;user&rdquo;</strong></p>
+  </dt>
+  <dd>
+    <p>Keys of the user-defined key type may contain a blob of arbitrary data, and the <em>description</em> may be any valid string, though it is preferred that the description be prefixed with a string representing the service to which the key is of interest and a colon (for instance &ldquo;<strong>afs:mykey</strong>&rdquo;).</p>
+  </dd>
+  <dt>
+    <p><strong>&ldquo;keyring&rdquo;</strong></p>
+  </dt>
+  <dd>
+    <p>Keyrings are special key types that may contain links to sequences of other keys of any type. If this interface is used to create a keyring, then a NULL <em>payload</em> should be specified, and <em>plen</em> should be zero.</p>
+  </dd>
 
-  <p>There are a number of key types available in the core key management code, and these can be specified to this function:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>&ldquo;user&rdquo;</strong></dt>
-    <dd>
-  <p>Keys of the user-defined key type may contain a blob of arbitrary data, and the <em>description</em> may be any valid string, though it is preferred that the description be prefixed with a string representing the service to which the key is of interest and a colon (for instance &ldquo;<strong>afs:mykey</strong>&rdquo;).</p>
-    </dd>
-    <dt><strong>&ldquo;keyring&rdquo;</strong></dt>
-    <dd>
-  <p>Keyrings are special key types that may contain links to sequences of other keys of any type. If this interface is used to create a keyring, then a NULL <em>payload</em> should be specified, and <em>plen</em> should be zero.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success <strong>add_key</strong>() returns the serial number of the key it created or updated. On error, the value -1 will be returned and errno will have been set to an appropriate error.</p>
         </div>
       </section>
@@ -169,43 +177,58 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>ENOKEY</strong></dt>
-    <dd>
-  <p>The keyring doesn't exist.</p>
-    </dd>
-    <dt><strong>EKEYEXPIRED</strong></dt>
-    <dd>
-  <p>The keyring has expired.</p>
-    </dd>
-    <dt><strong>EKEYREVOKED</strong></dt>
-    <dd>
-  <p>The keyring has been revoked.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The payload data was invalid.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Insufficient memory to create a key.</p>
-    </dd>
-    <dt><strong>EDQUOT</strong></dt>
-    <dd>
-  <p>The key quota for this user would be exceeded by creating this key or linking it to the keyring.</p>
-    </dd>
-    <dt><strong>EACCES</strong></dt>
-    <dd>
-  <p>The keyring wasn't available for modification by the user.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>ENOKEY</strong></p>
+  </dt>
+  <dd>
+    <p>The keyring doesn't exist.</p>
+  </dd>
+  <dt>
+    <p><strong>EKEYEXPIRED</strong></p>
+  </dt>
+  <dd>
+    <p>The keyring has expired.</p>
+  </dd>
+  <dt>
+    <p><strong>EKEYREVOKED</strong></p>
+  </dt>
+  <dd>
+    <p>The keyring has been revoked.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The payload data was invalid.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Insufficient memory to create a key.</p>
+  </dd>
+  <dt>
+    <p><strong>EDQUOT</strong></p>
+  </dt>
+  <dd>
+    <p>The key quota for this user would be exceeded by creating this key or linking it to the keyring.</p>
+  </dd>
+  <dt>
+    <p><strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>The keyring wasn't available for modification by the user.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">LINKING</h2>
         <div class="sectioncontent">
-
 <p>Although this is a Linux system call, it is not present in <em>libc</em> but can be found rather in <em>libkeyutils</em>. When linking, <strong>-lkeyutils</strong> should be specified to the linker.</p>
         </div>
       </section>
@@ -213,11 +236,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO add_key&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man1/keyctl.1.html"><strong>keyctl</strong>(1)</a>, <a href="../man2/keyctl.2.html"><strong>keyctl</strong>(2)</a>, <a href="../man2/request_key.2.html"><strong>request_key</strong>(2)</a>, <a href="../man3/keyctl.3.html"><strong>keyctl</strong>(3)</a>, <a href="../man7/keyrings.7.html"><strong>keyrings</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="acct.2.html"><span aria-hidden="true">&larr;</span> acct.2: Switch process accounting on or off</a></li>

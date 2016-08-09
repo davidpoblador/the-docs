@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>fegetexcept: Floating-point rounding and exception handling</title>
+  <title>fenv: Floating-point rounding and exception handling</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -30,7 +30,7 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">fegetexcept<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">fenv<small> (3)</small></h1>
         <p class="lead">Floating-point rounding and exception handling</p>
       </div>
 
@@ -54,8 +54,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/fegetexcept.3.html">
-      <span itemprop="name">fegetexcept: Floating-point rounding and exception handling</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/fenv.3.html">
+      <span itemprop="name">fenv: Floating-point rounding and exception handling</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -80,8 +80,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/fegetexcept.3.html">
-      <span itemprop="name">fegetexcept: Floating-point rounding and exception handling</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/fenv.3.html">
+      <span itemprop="name">fenv: Floating-point rounding and exception handling</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -91,7 +91,8 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;fenv.h&gt;</strong>
+<pre>
+<strong>#include <fenv.h></strong>
 
 <strong>int feclearexcept(int </strong><em>excepts</em><strong>);</strong>
 
@@ -113,10 +114,8 @@
 
 <strong>int fesetenv(const fenv_t *</strong><em>envp</em><strong>);</strong>
 
-<strong>int feupdateenv(const fenv_t *</strong><em>envp</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
+<strong>int feupdateenv(const fenv_t *</strong><em>envp</em><strong>);</strong>
+</pre>
 <p>Link with <em>-lm</em>.</p>
         </div>
       </section>
@@ -124,105 +123,55 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>These eleven functions were defined in C99, and describe the handling of floating-point rounding and exceptions (overflow, zero-divide, etc.).</p><h3>Exceptions</h3>
+<p>The <em>divide-by-zero</em> exception occurs when an operation on finite numbers produces infinity as exact answer.</p><p>The <em>overflow</em> exception occurs when a result has to be represented as a floating-point number, but has (much) larger absolute value than the largest (finite) floating-point number that is representable.</p><p>The <em>underflow</em> exception occurs when a result has to be represented as a floating-point number, but has smaller absolute value than the smallest positive normalized floating-point number (and would lose much accuracy when represented as a denormalized number).</p><p>The <em>inexact</em> exception occurs when the rounded result of an operation is not equal to the infinite precision result. It may occur whenever <em>overflow</em> or <em>underflow</em> occurs.</p><p>The <em>invalid</em> exception occurs when there is no well-defined result for an operation, as for 0/0 or infinity - infinity or sqrt(-1).</p>
+<h3>Exception handling</h3>
+<p>Exceptions are represented in two ways: as a single bit (exception present/absent), and these bits correspond in some implementation-defined way with bit positions in an integer, and also as an opaque structure that may contain more information about the exception (perhaps the code address where it occurred).</p><p>Each of the macros <strong>FE_DIVBYZERO</strong>, <strong>FE_INEXACT</strong>, <strong>FE_INVALID</strong>, <strong>FE_OVERFLOW</strong>, <strong>FE_UNDERFLOW</strong> is defined when the implementation supports handling of the corresponding exception, and if so then defines the corresponding bit(s), so that one can call exception handling functions, for example, using the integer argument <strong>FE_OVERFLOW</strong>|<strong>FE_UNDERFLOW</strong>. Other exceptions may be supported. The macro <strong>FE_ALL_EXCEPT</strong> is the bitwise OR of all bits corresponding to supported exceptions.</p><p>The <strong>feclearexcept</strong>() function clears the supported exceptions represented by the bits in its argument.</p><p>The <strong>fegetexceptflag</strong>() function stores a representation of the state of the exception flags represented by the argument <em>excepts</em> in the opaque object <em>*flagp</em>.</p><p>The <strong>feraiseexcept</strong>() function raises the supported exceptions represented by the bits in <em>excepts</em>.</p><p>The <strong>fesetexceptflag</strong>() function sets the complete status for the exceptions represented by <em>excepts</em> to the value <em>*flagp</em>. This value must have been obtained by an earlier call of <strong>fegetexceptflag</strong>() with a last argument that contained all bits in <em>excepts</em>.</p><p>The <strong>fetestexcept</strong>() function returns a word in which the bits are set that were set in the argument <em>excepts</em> and for which the corresponding exception is currently set.</p>
+<h3>Rounding mode</h3>
+<p>The rounding mode determines how the result of floating-point operations is treated when the result cannot be exactly represented in the significand. Various rounding modes may be provided: round to nearest (the default), round up (toward positive infinity), round down (toward negative infinity), and round toward zero.</p><p>Each of the macros <strong>FE_TONEAREST</strong>, <strong>FE_UPWARD</strong>, <strong>FE_DOWNWARD</strong>, and <strong>FE_TOWARDZERO</strong> is defined when the implementation supports getting and setting the corresponding rounding direction.</p><p>The <strong>fegetround</strong>() function returns the macro corresponding to the current rounding mode.</p><p>The <strong>fesetround</strong>() function sets the rounding mode as specified by its argument and returns zero when it was successful.</p><p>C99 and POSIX.1-2008 specify an identifier, <strong>FLT_ROUNDS</strong>, defined in <em><float.h></em>, which indicates the implementation-defined rounding behavior for floating-point addition. This identifier has one of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    \-1
+  </dt>
+  <dd>
+    <p>The rounding mode is not determinable.</p>
+  </dd>
+  <dt>
+    0
+  </dt>
+  <dd>
+    <p>Rounding is toward 0.</p>
+  </dd>
+  <dt>
+    1
+  </dt>
+  <dd>
+    <p>Rounding is toward nearest number.</p>
+  </dd>
+  <dt>
+    2
+  </dt>
+  <dd>
+    <p>Rounding is toward positive infinity.</p>
+  </dd>
+  <dt>
+    3
+  </dt>
+  <dd>
+    <p>Rounding is toward negative infinity.</p>
+  </dd>
 
-<p>These eleven functions were defined in C99, and describe the handling of floating-point rounding and exceptions (overflow, zero-divide, etc.).</p>
-  <h3>Exceptions</h3>
-<p>The <em>divide-by-zero</em> exception occurs when an operation on finite numbers produces infinity as exact answer.</p>
-<p class='spacer'>
+</dl>
+<p>Other values represent machine-dependent, nonstandard rounding modes.</p><p>The value of <strong>FLT_ROUNDS</strong> should reflect the current rounding mode as set by <strong>fesetround</strong>() (but see BUGS).</p>
+<h3>Floating-point environment</h3>
+<p>The entire floating-point environment, including control modes and status flags, can be handled as one opaque object, of type <em>fenv_t</em>. The default environment is denoted by <strong>FE_DFL_ENV</strong> (of type <em>const fenv_t&nbsp;*</em>). This is the environment setup at program start and it is defined by ISO C to have round to nearest, all exceptions cleared and a nonstop (continue on exceptions) mode.</p><p>The <strong>fegetenv</strong>() function saves the current floating-point environment in the object <em>*envp</em>.</p><p>The <strong>feholdexcept</strong>() function does the same, then clears all exception flags, and sets a nonstop (continue on exceptions) mode, if available. It returns zero when successful.</p><p>The <strong>fesetenv</strong>() function restores the floating-point environment from the object <em>*envp</em>. This object must be known to be valid, for example, the result of a call to <strong>fegetenv</strong>() or <strong>feholdexcept</strong>() or equal to <strong>FE_DFL_ENV</strong>. This call does not raise exceptions.</p><p>The <strong>feupdateenv</strong>() function installs the floating-point environment represented by the object <em>*envp</em>, except that currently raised exceptions are not cleared. After calling this function, the raised exceptions will be a bitwise OR of those previously set with those in <em>*envp</em>. As before, the object <em>*envp</em> must be known to be valid.</p>
 
-<p>The <em>overflow</em> exception occurs when a result has to be represented as a floating-point number, but has (much) larger absolute value than the largest (finite) floating-point number that is representable.</p>
-<p class='spacer'>
-
-<p>The <em>underflow</em> exception occurs when a result has to be represented as a floating-point number, but has smaller absolute value than the smallest positive normalized floating-point number (and would lose much accuracy when represented as a denormalized number).</p>
-<p class='spacer'>
-
-<p>The <em>inexact</em> exception occurs when the rounded result of an operation is not equal to the infinite precision result. It may occur whenever <em>overflow</em> or <em>underflow</em> occurs.</p>
-<p class='spacer'>
-
-<p>The <em>invalid</em> exception occurs when there is no well-defined result for an operation, as for 0/0 or infinity - infinity or sqrt(-1).</p>
-  <h3>Exception handling</h3>
-<p>Exceptions are represented in two ways: as a single bit (exception present/absent), and these bits correspond in some implementation-defined way with bit positions in an integer, and also as an opaque structure that may contain more information about the exception (perhaps the code address where it occurred).</p>
-<p class='spacer'>
-
-<p>Each of the macros <strong>FE_DIVBYZERO</strong>, <strong>FE_INEXACT</strong>, <strong>FE_INVALID</strong>, <strong>FE_OVERFLOW</strong>, <strong>FE_UNDERFLOW</strong> is defined when the implementation supports handling of the corresponding exception, and if so then defines the corresponding bit(s), so that one can call exception handling functions, for example, using the integer argument <strong>FE_OVERFLOW</strong>|<strong>FE_UNDERFLOW</strong>. Other exceptions may be supported. The macro <strong>FE_ALL_EXCEPT</strong> is the bitwise OR of all bits corresponding to supported exceptions.</p>
-<p class='spacer'>
-
-<p>The <strong>feclearexcept</strong>() function clears the supported exceptions represented by the bits in its argument.</p>
-<p class='spacer'>
-
-<p>The <strong>fegetexceptflag</strong>() function stores a representation of the state of the exception flags represented by the argument <em>excepts</em> in the opaque object <em>*flagp</em>.</p>
-<p class='spacer'>
-
-<p>The <strong>feraiseexcept</strong>() function raises the supported exceptions represented by the bits in <em>excepts</em>.</p>
-<p class='spacer'>
-
-<p>The <strong>fesetexceptflag</strong>() function sets the complete status for the exceptions represented by <em>excepts</em> to the value <em>*flagp</em>. This value must have been obtained by an earlier call of <strong>fegetexceptflag</strong>() with a last argument that contained all bits in <em>excepts</em>.</p>
-<p class='spacer'>
-
-<p>The <strong>fetestexcept</strong>() function returns a word in which the bits are set that were set in the argument <em>excepts</em> and for which the corresponding exception is currently set.</p>
-  <h3>Rounding mode</h3>
-<p>The rounding mode determines how the result of floating-point operations is treated when the result cannot be exactly represented in the significand. Various rounding modes may be provided: round to nearest (the default), round up (toward positive infinity), round down (toward negative infinity), and round toward zero.</p>
-<p class='spacer'>
-
-<p>Each of the macros <strong>FE_TONEAREST</strong>, <strong>FE_UPWARD</strong>, <strong>FE_DOWNWARD</strong>, and <strong>FE_TOWARDZERO</strong> is defined when the implementation supports getting and setting the corresponding rounding direction.</p>
-<p class='spacer'>
-
-<p>The <strong>fegetround</strong>() function returns the macro corresponding to the current rounding mode.</p>
-<p class='spacer'>
-
-<p>The <strong>fesetround</strong>() function sets the rounding mode as specified by its argument and returns zero when it was successful.</p>
-<p class='spacer'>
-
-  <p>C99 and POSIX.1-2008 specify an identifier, <strong>FLT_ROUNDS</strong>, defined in <em>&lt;float.h&gt;</em>, which indicates the implementation-defined rounding behavior for floating-point addition. This identifier has one of the following values:</p>
-  <dl class='dl-horizontal'>
-    <dt>-1</dt>
-    <dd>
-  <p>The rounding mode is not determinable.</p>
-    </dd>
-    <dt>0</dt>
-    <dd>
-  <p>Rounding is toward 0.</p>
-    </dd>
-    <dt>1</dt>
-    <dd>
-  <p>Rounding is toward nearest number.</p>
-    </dd>
-    <dt>2</dt>
-    <dd>
-  <p>Rounding is toward positive infinity.</p>
-    </dd>
-    <dt>3</dt>
-    <dd>
-  <p>Rounding is toward negative infinity.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>Other values represent machine-dependent, nonstandard rounding modes.</p>
-<p class='spacer'>
-
-<p>The value of <strong>FLT_ROUNDS</strong> should reflect the current rounding mode as set by <strong>fesetround</strong>() (but see BUGS).</p>
-  <h3>Floating-point environment</h3>
-<p>The entire floating-point environment, including control modes and status flags, can be handled as one opaque object, of type <em>fenv_t</em>. The default environment is denoted by <strong>FE_DFL_ENV</strong> (of type <em>const fenv_t&nbsp;*</em>). This is the environment setup at program start and it is defined by ISO C to have round to nearest, all exceptions cleared and a nonstop (continue on exceptions) mode.</p>
-<p class='spacer'>
-
-<p>The <strong>fegetenv</strong>() function saves the current floating-point environment in the object <em>*envp</em>.</p>
-<p class='spacer'>
-
-<p>The <strong>feholdexcept</strong>() function does the same, then clears all exception flags, and sets a nonstop (continue on exceptions) mode, if available. It returns zero when successful.</p>
-<p class='spacer'>
-
-<p>The <strong>fesetenv</strong>() function restores the floating-point environment from the object <em>*envp</em>. This object must be known to be valid, for example, the result of a call to <strong>fegetenv</strong>() or <strong>feholdexcept</strong>() or equal to <strong>FE_DFL_ENV</strong>. This call does not raise exceptions.</p>
-<p class='spacer'>
-
-<p>The <strong>feupdateenv</strong>() function installs the floating-point environment represented by the object <em>*envp</em>, except that currently raised exceptions are not cleared. After calling this function, the raised exceptions will be a bitwise OR of those previously set with those in <em>*envp</em>. As before, the object <em>*envp</em> must be known to be valid.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>These functions return zero on success and nonzero if an error occurred.</p>
         </div>
       </section>
@@ -230,7 +179,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>These functions first appeared in glibc in version 2.1.</p>
         </div>
       </section>
@@ -238,9 +186,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -251,14 +197,12 @@
 <td>Thread safety</td>
 <td>MT-Safe  </td></tr>
 </table>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>IEC 60559 (IEC 559:1989), ANSI/IEEE 854, C99, POSIX.1-2001.</p>
         </div>
       </section>
@@ -266,44 +210,38 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-  <h3>Glibc notes</h3>
+<h3>Glibc notes</h3>
 <p>If possible, the GNU C Library defines a macro <strong>FE_NOMASK_ENV</strong> which represents an environment where every exception raised causes a trap to occur. You can test for this macro using <strong>#ifdef</strong>. It is defined only if <strong>_GNU_SOURCE</strong> is defined. The C99 standard does not define a way to set individual bits in the floating-point mask, for example, to trap on specific flags. Since version 2.2, glibc supports the functions <strong>feenableexcept</strong>() and <strong>fedisableexcept</strong>() to set individual floating-point traps, and <strong>fegetexcept</strong>() to query the state.</p>
-<p class='spacer'>
+<pre>
+<strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
 
-<pre><strong>#define _GNU_SOURCE</strong>         /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-
-<strong>#include &lt;fenv.h&gt;</strong>
+<strong>#include <fenv.h></strong>
 
 <strong>int feenableexcept(int </strong><em>excepts</em><strong>);</strong>
 
 <strong>int fedisableexcept(int </strong><em>excepts</em><strong>);</strong>
 
 <strong>int fegetexcept(void);</strong>
+
 </pre>
-
-<p class='spacer'>
-
 <p>The <strong>feenableexcept</strong>() and <strong>fedisableexcept</strong>() functions enable (disable) traps for each of the exceptions represented by <em>excepts</em> and return the previous set of enabled exceptions when successful, and -1 otherwise. The <strong>fegetexcept</strong>() function returns the set of all currently enabled exceptions.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
 <p>C99 specifies that the value of <strong>FLT_ROUNDS</strong> should reflect changes to the current rounding mode, as set by <strong>fesetround</strong>(). Currently, this does not occur: <strong>FLT_ROUNDS</strong> always has the value 1.</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO fegetexcept&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO fenv&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man7/math_error.7.html"><strong>math_error</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="fegetenv.3.html"><span aria-hidden="true">&larr;</span> fegetenv.3: Floating-point rounding and exception handling</a></li>

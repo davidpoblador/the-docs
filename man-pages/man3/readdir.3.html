@@ -91,9 +91,11 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#include &lt;dirent.h&gt;</strong>
+<pre>
+<strong>#include <dirent.h></strong>
 
-<strong>struct dirent *readdir(DIR *</strong><em>dirp</em><strong>);</strong></pre>
+<strong>struct dirent *readdir(DIR *</strong><em>dirp</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -101,92 +103,105 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The <strong>readdir</strong>() function returns a pointer to a <em>dirent</em> structure representing the next directory entry in the directory stream pointed to by <em>dirp</em>. It returns NULL on reaching the end of the directory stream or if an error occurred.</p>
-<p class='spacer'>
-
-<p>In the glibc implementation, the <em>dirent</em> structure is defined as follows:</p>
-<p class='spacer'>
-
-<pre>struct dirent {
+<p>The <strong>readdir</strong>() function returns a pointer to a <em>dirent</em> structure representing the next directory entry in the directory stream pointed to by <em>dirp</em>. It returns NULL on reaching the end of the directory stream or if an error occurred.</p><p>In the glibc implementation, the <em>dirent</em> structure is defined as follows:</p>
+<pre>
+struct dirent {
     ino_t          d_ino;       /* Inode number */
     off_t          d_off;       /* Not an offset; see below */
     unsigned short d_reclen;    /* Length of this record */
     unsigned char  d_type;      /* Type of file; not supported
                                    by all filesystem types */
     char           d_name[256]; /* Null-terminated filename */
-};</pre>
+};
+</pre>
+<p>The only fields in the <em>dirent</em> structure that are mandated by POSIX.1 are <em>d_name</em> and <em>d_ino</em>. The other fields are unstandardized, and not present on all systems; see NOTES below for some further details.</p><p>The fields of the <em>dirent</em> structure are as follows:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><em>d_ino</em></p>
+  </dt>
+  <dd>
+    <p>This is the inode number of the file.</p>
+  </dd>
+  <dt>
+    <p><em>d_off</em></p>
+  </dt>
+  <dd>
+    <p>The value returned in <em>d_off</em> is the same as would be returned by calling <a href="../man3/telldir.3.html"><strong>telldir</strong>(3)</a> at the current position in the directory stream. Be aware that despite its type and name, the <em>d_off</em> field is seldom any kind of directory offset on modern filesystems. Applications should treat this field as an opaque value, making no assumptions about its contents; see also <a href="../man3/telldir.3.html"><strong>telldir</strong>(3)</a>.</p>
+  </dd>
+  <dt>
+    <p><em>d_reclen</em></p>
+  </dt>
+  <dd>
+    <p>This is the size (in bytes) of the returned record. This may not match the size of the structure definition shown above; see NOTES.</p>
+  </dd>
+  <dt>
+    <p><em>d_type</em></p>
+  </dt>
+  <dd>
+    <p>This field contains a value indicating the file type, making it possible to avoid the expense of calling <a href="../man2/lstat.2.html"><strong>lstat</strong>(2)</a> if further actions depend on the type of the file.</p><ul>
+<li><p>When a suitable feature test macro is defined (<strong>_DEFAULT_SOURCE</strong> on glibc versions since 2.19, or <strong>_BSD_SOURCE</strong> on glibc versions 2.19 and earlier), glibc defines the following macro constants for the value returned in <em>d_type</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>DT_BLK</strong></p>
+  </dt>
+  <dd>
+    <p>This is a block device.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_CHR</strong></p>
+  </dt>
+  <dd>
+    <p>This is a character device.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_DIR</strong></p>
+  </dt>
+  <dd>
+    <p>This is a directory.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_FIFO</strong></p>
+  </dt>
+  <dd>
+    <p>This is a named pipe (FIFO).</p>
+  </dd>
+  <dt>
+    <p><strong>DT_LNK</strong></p>
+  </dt>
+  <dd>
+    <p>This is a symbolic link.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_REG</strong></p>
+  </dt>
+  <dd>
+    <p>This is a regular file.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_SOCK</strong></p>
+  </dt>
+  <dd>
+    <p>This is a UNIX domain socket.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_UNKNOWN</strong></p>
+  </dt>
+  <dd>
+    <p>The file type could not be determined.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
+</li><li><p>Currently, only some filesystems (among them: Btrfs, ext2, ext3, and ext4) have full support for returning the file type in <em>d_type</em>. All applications must properly handle a return of <strong>DT_UNKNOWN</strong>.</p></li>
+</ul>
+  </dd>
+  <dt>
+    <p><em>d_name</em></p>
+  </dt>
+  <dd>
+    <p>This field contains the null terminated filename. <em>See NOTES</em>.</p>
+  </dd>
 
-<p>The only fields in the <em>dirent</em> structure that are mandated by POSIX.1 are <em>d_name</em> and <em>d_ino</em>. The other fields are unstandardized, and not present on all systems; see NOTES below for some further details.</p>
-<p class='spacer'>
-
-  <p>The fields of the <em>dirent</em> structure are as follows:</p>
-  <dl class='dl-vertical'>
-    <dt><em>d_ino</em></dt>
-    <dd>
-  <p>This is the inode number of the file.</p>
-    </dd>
-    <dt><em>d_off</em></dt>
-    <dd>
-  <p>The value returned in <em>d_off</em> is the same as would be returned by calling <a href="../man3/telldir.3.html"><strong>telldir</strong>(3)</a> at the current position in the directory stream. Be aware that despite its type and name, the <em>d_off</em> field is seldom any kind of directory offset on modern filesystems. Applications should treat this field as an opaque value, making no assumptions about its contents; see also <a href="../man3/telldir.3.html"><strong>telldir</strong>(3)</a>.</p>
-    </dd>
-    <dt><em>d_reclen</em></dt>
-    <dd>
-  <p>This is the size (in bytes) of the returned record. This may not match the size of the structure definition shown above; see NOTES.</p>
-    </dd>
-    <dt><em>d_type</em></dt>
-    <dd>
-  <p>This field contains a value indicating the file type, making it possible to avoid the expense of calling <a href="../man2/lstat.2.html"><strong>lstat</strong>(2)</a> if further actions depend on the type of the file.</p>
-<p class='spacer'>
-
-      <p>When a suitable feature test macro is defined (<strong>_DEFAULT_SOURCE</strong> on glibc versions since 2.19, or <strong>_BSD_SOURCE</strong> on glibc versions 2.19 and earlier), glibc defines the following macro constants for the value returned in <em>d_type</em>:</p>
-      <dl class='dl-vertical'>
-        <dt><strong>DT_BLK</strong></dt>
-        <dd>
-      <p>This is a block device.</p>
-        </dd>
-        <dt><strong>DT_CHR</strong></dt>
-        <dd>
-      <p>This is a character device.</p>
-        </dd>
-        <dt><strong>DT_DIR</strong></dt>
-        <dd>
-      <p>This is a directory.</p>
-        </dd>
-        <dt><strong>DT_FIFO</strong></dt>
-        <dd>
-      <p>This is a named pipe (FIFO).</p>
-        </dd>
-        <dt><strong>DT_LNK</strong></dt>
-        <dd>
-      <p>This is a symbolic link.</p>
-        </dd>
-        <dt><strong>DT_REG</strong></dt>
-        <dd>
-      <p>This is a regular file.</p>
-        </dd>
-        <dt><strong>DT_SOCK</strong></dt>
-        <dd>
-      <p>This is a UNIX domain socket.</p>
-        </dd>
-        <dt><strong>DT_UNKNOWN</strong></dt>
-        <dd>
-      <p>The file type could not be determined.</p>
-        </dd>
-      </dl>
-<p class='spacer'>
-
-  <p>Currently, only some filesystems (among them: Btrfs, ext2, ext3, and ext4) have full support for returning the file type in <em>d_type</em>. All applications must properly handle a return of <strong>DT_UNKNOWN</strong>.</p>
-    </dd>
-    <dt><em>d_name</em></dt>
-    <dd>
-  <p>This field contains the null terminated filename. <em>See NOTES</em>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>The data returned by <strong>readdir</strong>() may be overwritten by subsequent calls to <strong>readdir</strong>() for the same directory stream.</p>
         </div>
       </section>
@@ -194,11 +209,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
-<p>On success, <strong>readdir</strong>() returns a pointer to a <em>dirent</em> structure. (This structure may be statically allocated; do not attempt to <a href="../man3/free.3.html"><strong>free</strong>(3)</a> it.)</p>
-<p class='spacer'>
-
-<p>If the end of the directory stream is reached, NULL is returned and <em>errno</em> is not changed. If an error occurs, NULL is returned and <em>errno</em> is set appropriately. To distinguish end of stream and from an error, set <em>errno</em> to zero before calling <strong>readdir</strong>() and then check the value of <em>errno</em> if NULL is returned.</p>
+<p>On success, <strong>readdir</strong>() returns a pointer to a <em>dirent</em> structure. (This structure may be statically allocated; do not attempt to <a href="../man3/free.3.html"><strong>free</strong>(3)</a> it.)</p><p>If the end of the directory stream is reached, NULL is returned and <em>errno</em> is not changed. If an error occurs, NULL is returned and <em>errno</em> is set appropriately. To distinguish end of stream and from an error, set <em>errno</em> to zero before calling <strong>readdir</strong>() and then check the value of <em>errno</em> if NULL is returned.</p>
         </div>
       </section>
 
@@ -206,21 +217,23 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p>Invalid directory stream descriptor <em>dirp</em>.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p>Invalid directory stream descriptor <em>dirp</em>.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -230,20 +243,13 @@
 <td><strong>readdir</strong>()  </td>
 <td>Thread safety</td>
 <td>MT-Unsafe race:dirstream</td></tr>
-</table>
-
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>In the current POSIX.1 specification (POSIX.1-2008), <strong>readdir</strong>() is not required to be thread-safe. However, in modern implementations (including the glibc implementation), concurrent calls to <strong>readdir</strong>() that specify different directory streams are thread-safe. In cases where multiple threads must read from the same directory stream, using <strong>readdir</strong>() with external synchronization is still preferable to the use of the deprecated <a href="../man3/readdir_r.3.html"><strong>readdir_r</strong>(3)</a> function. It is expected that a future version of POSIX.1 will require that <strong>readdir</strong>() be thread-safe when concurrently employed on different directory streams.</p>
+</table><p>In the current POSIX.1 specification (POSIX.1-2008), <strong>readdir</strong>() is not required to be thread-safe. However, in modern implementations (including the glibc implementation), concurrent calls to <strong>readdir</strong>() that specify different directory streams are thread-safe. In cases where multiple threads must read from the same directory stream, using <strong>readdir</strong>() with external synchronization is still preferable to the use of the deprecated <a href="../man3/readdir_r.3.html"><strong>readdir_r</strong>(3)</a> function. It is expected that a future version of POSIX.1 will require that <strong>readdir</strong>() be thread-safe when concurrently employed on different directory streams.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>POSIX.1-2001, POSIX.1-2008, SVr4, 4.3BSD.</p>
         </div>
       </section>
@@ -251,43 +257,22 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>A directory stream is opened using <a href="../man3/opendir.3.html"><strong>opendir</strong>(3)</a>.</p>
-<p class='spacer'>
-
-<p>The order in which filenames are read by successive calls to <strong>readdir</strong>() depends on the filesystem implementation; it us unlikely that the names will be sorted in any fashion.</p>
-<p class='spacer'>
-
-<p>Only the fields <em>d_name</em> and (as an XSI extension) <em>d_ino</em> are specified in POSIX.1. Other than Linux, the <em>d_type</em> field is available mainly only on BSD systems. The remaining fields are available on many, but not all systems. Under glibc, programs can check for the availability of the fields not defined in POSIX.1 by testing whether the macros <strong>_DIRENT_HAVE_D_NAMLEN</strong>, <strong>_DIRENT_HAVE_D_RECLEN</strong>, <strong>_DIRENT_HAVE_D_OFF</strong>, or <strong>_DIRENT_HAVE_D_TYPE</strong> are defined.</p>
-  <h3>The d_name field</h3>
-<p>The <em>dirent</em> structure definition shown above is taken from the glibc headers, and shows the <em>d_name</em> field with a fixed size.</p>
-<p class='spacer'>
-
-<p><em>Warning</em>: applications should avoid any dependence on the size of the <em>d_name</em> field. POSIX defines it as <em>char&nbsp;d_name[],</em> a character array of unspecified size, with at most <strong>NAME_MAX</strong> characters preceding the terminating null byte (&apos;nbsp;&apos;).</p>
-<p class='spacer'>
-
-<p>POSIX.1 explicitly notes that this field should not be used as an lvalue. The standard also notes that the use of <em>sizeof(d_name)</em> is incorrect; use <em>strlen(d_name)</em> instead. (On some systems, this field is defined as <em>char&nbsp;d_name[1]</em>!) By implication, the use <em>sizeof(struct dirent)</em> to capture the size of the record including the size of <em>d_name</em> is also incorrect.</p>
-<p class='spacer'>
-
-<p>Note that while the call</p>
-<p class='spacer'>
-
-<pre>    fpathconf(fd, _PC_NAME_MAX)</pre>
-
-<p class='spacer'>
-
+<p>A directory stream is opened using <a href="../man3/opendir.3.html"><strong>opendir</strong>(3)</a>.</p><p>The order in which filenames are read by successive calls to <strong>readdir</strong>() depends on the filesystem implementation; it us unlikely that the names will be sorted in any fashion.</p><p>Only the fields <em>d_name</em> and (as an XSI extension) <em>d_ino</em> are specified in POSIX.1. Other than Linux, the <em>d_type</em> field is available mainly only on BSD systems. The remaining fields are available on many, but not all systems. Under glibc, programs can check for the availability of the fields not defined in POSIX.1 by testing whether the macros <strong>_DIRENT_HAVE_D_NAMLEN</strong>, <strong>_DIRENT_HAVE_D_RECLEN</strong>, <strong>_DIRENT_HAVE_D_OFF</strong>, or <strong>_DIRENT_HAVE_D_TYPE</strong> are defined.</p><h3>The d_name field</h3>
+<p>The <em>dirent</em> structure definition shown above is taken from the glibc headers, and shows the <em>d_name</em> field with a fixed size.</p><p><em>Warning</em>: applications should avoid any dependence on the size of the <em>d_name</em> field. POSIX defines it as <em>char&nbsp;d_name[]</em>, a character array of unspecified size, with at most <strong>NAME_MAX</strong> characters preceding the terminating null byte (&apos;nbsp;&apos;).</p><p>POSIX.1 explicitly notes that this field should not be used as an lvalue. The standard also notes that the use of <em>sizeof(d_name)</em> is incorrect; use <em>strlen(d_name)</em> instead. (On some systems, this field is defined as <em>char</em>d_name[1]<em>!)</em> By implication, the use <em>sizeof(struct dirent)</em> to capture the size of the record including the size of <em>d_name</em> is also incorrect.</p><p>Note that while the call</p>
+<pre>
+    fpathconf(fd, _PC_NAME_MAX)
+</pre>
 <p>returns the value 255 for most filesystems, on some filesystems (e.g., CIFS, Windows SMB servers), the null-terminated filename that is (correctly) returned in <em>d_name</em> can actually exceed this size. In such cases, the <em>d_reclen</em> field will contain a value that exceeds the size of the glibc <em>dirent</em> structure shown above.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO readdir&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/getdents.2.html"><strong>getdents</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man3/closedir.3.html"><strong>closedir</strong>(3)</a>, <a href="../man3/dirfd.3.html"><strong>dirfd</strong>(3)</a>, <a href="../man3/ftw.3.html"><strong>ftw</strong>(3)</a>, <a href="../man3/offsetof.3.html"><strong>offsetof</strong>(3)</a>, <a href="../man3/opendir.3.html"><strong>opendir</strong>(3)</a>, <a href="../man3/readdir_r.3.html"><strong>readdir_r</strong>(3)</a>, <a href="../man3/rewinddir.3.html"><strong>rewinddir</strong>(3)</a>, <a href="../man3/scandir.3.html"><strong>scandir</strong>(3)</a>, <a href="../man3/seekdir.3.html"><strong>seekdir</strong>(3)</a>, <a href="../man3/telldir.3.html"><strong>telldir</strong>(3)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="re_exec.3.html"><span aria-hidden="true">&larr;</span> re_exec.3: Bsd regex functions</a></li>

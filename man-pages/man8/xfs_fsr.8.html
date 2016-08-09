@@ -91,10 +91,12 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre>\f3xfs_fsr\f1 [\f3-vdg\f1]  [\f3-t\f1 seconds] [\f3-p\f1 passes] [\f3-f\f1 leftoff] [\f3-m\f1 mtab]
-\f3xfs_fsr\f1 [\f3-vdg\f1]  [xfsdev | file] ...
+<pre>
+<strong>xfs_fsr</strong> [<strong>-vdg</strong>]  [<strong>-t</strong> seconds] [<strong>-p</strong> passes] [<strong>-f</strong> leftoff] [<strong>-m</strong> mtab]
+<strong>xfs_fsr</strong> [<strong>-vdg</strong>]  [xfsdev | file] ...
 
-<strong>xfs_fsr -V</strong></pre>
+<strong>xfs_fsr -V</strong>
+</pre>
 
         </div>
       </section>
@@ -102,59 +104,59 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p><em>xfs_fsr</em> is applicable only to XFS filesystems.</p><p><em>xfs_fsr</em> improves the organization of mounted filesystems. The reorganization algorithm operates on one file at a time, compacting or otherwise improving the layout of the file extents (contiguous blocks of file data).</p><p>The following options are accepted by <em>xfs_fsr</em>. The <strong>-m</strong>, <strong>-t</strong>, and <strong>-f</strong> options have no meaning if any filesystems or files are specified on the command line.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>-m</strong><em> mtab</em></p>
+  </dt>
+  <dd>
+    <p>Use this file for the list of filesystems to reorganize. The default is to use <em>/etc/mtab</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>-t</strong><em> seconds</em></p>
+  </dt>
+  <dd>
+    <p>How long to reorganize. The default is 7200 seconds (2 hours).</p>
+  </dd>
+  <dt>
+    <p><strong>-p</strong><em> passes</em></p>
+  </dt>
+  <dd>
+    <p>Number of passes before terminating global re-org. The default is 10 passes.</p>
+  </dd>
+  <dt>
+    <p><strong>-f</strong><em> leftoff</em></p>
+  </dt>
+  <dd>
+    <p>Use this file instead of <em>/var/tmp/.fsrlast</em> to read the state of where to start and as the file to store the state of where reorganization left off.</p>
+  </dd>
+  <dt>
+    <p><strong>-v</strong></p>
+  </dt>
+  <dd>
+    <p>Verbose. Print cryptic information about each file being reorganized.</p>
+  </dd>
+  <dt>
+    <p><strong>-d</strong></p>
+  </dt>
+  <dd>
+    <p>Debug.  Print even more cryptic information.</p>
+  </dd>
+  <dt>
+    <p><strong>-g</strong></p>
+  </dt>
+  <dd>
+    <p>Print to syslog (default if stdout not a tty).</p>
+  </dd>
+  <dt>
+    <p><strong>-V</strong></p>
+  </dt>
+  <dd>
+    <p>Prints the version number and exits.</p>
+  </dd>
 
-<p><em>xfs_fsr</em> is applicable only to XFS filesystems.</p>
-<p class='spacer'>
-
-<p><em>xfs_fsr</em> improves the organization of mounted filesystems. The reorganization algorithm operates on one file at a time, compacting or otherwise improving the layout of the file extents (contiguous blocks of file data).</p>
-<p class='spacer'>
-
-  <p>The following options are accepted by <em>xfs_fsr</em>. The <strong>-m</strong>, <strong>-t</strong>, and <strong>-f</strong> options have no meaning if any filesystems or files are specified on the command line.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>-m</strong><em> mtab</em></dt>
-    <dd>
-  <p>Use this file for the list of filesystems to reorganize. The default is to use <em>/etc/mtab</em>.</p>
-    </dd>
-    <dt><strong>-t</strong><em> seconds</em></dt>
-    <dd>
-  <p>How long to reorganize. The default is 7200 seconds (2 hours).</p>
-    </dd>
-    <dt><strong>-p</strong><em> passes</em></dt>
-    <dd>
-  <p>Number of passes before terminating global re-org. The default is 10 passes.</p>
-    </dd>
-    <dt><strong>-f</strong><em> leftoff</em></dt>
-    <dd>
-  <p>Use this file instead of <em>/var/tmp/.fsrlast</em> to read the state of where to start and as the file to store the state of where reorganization left off.</p>
-    </dd>
-    <dt><strong>-v</strong></dt>
-    <dd>
-  <p>Verbose. Print cryptic information about each file being reorganized.</p>
-    </dd>
-    <dt><strong>-d</strong></dt>
-    <dd>
-  <p>Debug.  Print even more cryptic information.</p>
-    </dd>
-    <dt><strong>-g</strong></dt>
-    <dd>
-  <p>Print to syslog (default if stdout not a tty).</p>
-    </dd>
-    <dt><strong>-V</strong></dt>
-    <dd>
-  <p>Prints the version number and exits.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>When invoked with no arguments <em>xfs_fsr</em> reorganizes all regular files in all mounted filesystems. <em>xfs_fsr</em> makes many cycles over <em>/etc/mtab</em> each time making a single pass over each XFS filesystem. Each pass goes through and selects files that have the largest number of extents.  It attempts to defragment the top 10% of these files on each pass.</p>
-<p class='spacer'>
-
-<p>It runs for up to two hours after which it records the filesystem where it left off, so it can start there the next time. This information is stored in the file <em>/var/tmp/.fsrlast_xfs.</em> If the information found here is somehow inconsistent or out of date it is ignored and reorganization starts at the beginning of the first filesystem found in <em>/etc/mtab</em>.</p>
-<p class='spacer'>
-
-<p><em>xfs_fsr</em> can be called with one or more arguments naming filesystems (block device name), and files to reorganize. In this mode <em>xfs_fsr</em> does not read or write <em>/var/tmp/.fsrlast_xfs</em> nor does it run for a fixed time interval. It makes one pass through each specified regular file and all regular files in each specified filesystem. A command line name referring to a symbolic link (except to a file system device), FIFO, or UNIX domain socket generates a warning message, but is otherwise ignored. While traversing the filesystem these types of files are silently skipped.</p>
+</dl>
+<p>When invoked with no arguments <em>xfs_fsr</em> reorganizes all regular files in all mounted filesystems. <em>xfs_fsr</em> makes many cycles over <em>/etc/mtab</em> each time making a single pass over each XFS filesystem. Each pass goes through and selects files that have the largest number of extents.  It attempts to defragment the top 10% of these files on each pass.</p><p>It runs for up to two hours after which it records the filesystem where it left off, so it can start there the next time. This information is stored in the file <em>/var/tmp/.fsrlast_xfs.</em> If the information found here is somehow inconsistent or out of date it is ignored and reorganization starts at the beginning of the first filesystem found in <em>/etc/mtab</em>.</p><p><em>xfs_fsr</em> can be called with one or more arguments naming filesystems (block device name), and files to reorganize. In this mode <em>xfs_fsr</em> does not read or write <em>/var/tmp/.fsrlast_xfs</em> nor does it run for a fixed time interval. It makes one pass through each specified regular file and all regular files in each specified filesystem. A command line name referring to a symbolic link (except to a file system device), FIFO, or UNIX domain socket generates a warning message, but is otherwise ignored. While traversing the filesystem these types of files are silently skipped.</p>
         </div>
       </section>
 
@@ -162,50 +164,38 @@
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt>/etc/mtab</dt>
-    <dd>
-  <p>contains default list of filesystems to reorganize.</p>
-    </dd>
-    <dt>/var/tmp/.fsrlast_xfs</dt>
-    <dd>
-  <p>records the state where reorganization left off.</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
+<dl class='dl-vertical'>
+  <dt>
+    <p>/etc/mtab</p>
+  </dt>
+  <dd>
+    <p>contains default list of filesystems to reorganize.</p>
+  </dd>
+  <dt>
+    <p>/var/tmp/.fsrlast_xfs</p>
+  </dt>
+  <dd>
+    <p>records the state where reorganization left off.</p>
+  </dd>
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">NOTES</h2>
-        <div class="sectioncontent">
+</dl>
 
-<p><em>xfs_fsr</em> improves the layout of extents for each file by copying the entire file to a temporary location and then interchanging the data extents of the target and temporary files in an atomic manner. This method requires that enough free disk space be available to copy any given file and that the space be less fragmented than the original file. It also requires the owner of the file to have enough remaining filespace quota to do the copy on systems running quotas. <em>xfs_fsr</em> generates a warning message if space is not sufficient to improve the target file.</p>
-<p class='spacer'>
-
-<p>A temporary file used in improving a file given on the command line is created in the same parent directory of the target file and is prefixed by the string '\f3.fsr\f1'. The temporary files used in improving an entire XFS device are stored in a directory at the root of the target device and use the same naming scheme. The temporary files are unlinked upon creation so data will not be readable by any other process.</p>
-<p class='spacer'>
-
-<p><em>xfs_fsr</em> does not operate on files that are currently mapped in memory. A 'file busy' error can be seen for these files if the verbose flag (\f3-v\f1) is set.</p>
-<p class='spacer'>
-
-<p>Files marked as no-defrag will be skipped. The <a href="../man8/xfs_io.8.html"><strong>xfs_io</strong>(8)</a> chattr command with the f attribute can be used to set or clear this flag. Files and directories created in a directory with the no-defrag flag will inherit the attribute.</p>
-<p class='spacer'>
-
-<p>An entry in <em>/etc/mtab</em> or the file specified using the <strong>-m</strong> option must have the <strong>rw</strong> option specified for read and write access. If this option is not present, then <em>xfs_fsr</em> skips the filesystem described by that line. See the <a href="../man5/fstab.5.html"><strong>fstab</strong>(5)</a> reference page for more details.</p>
-<p class='spacer'>
-
-<p>In general we do not foresee the need to run <em>xfs_fsr</em> on system partitions such as <em>/</em>, <em>/boot</em> and <em>/usr</em> as in general these will not suffer from fragmentation. There are also issues with defragmenting files <strong>lilo</strong>(8) uses to boot your system. It is recommended that these files should be flagged as no-defrag with the <a href="../man8/xfs_io.8.html"><strong>xfs_io</strong>(8)</a> chattr command. Should these files be moved by <em>xfs_fsr</em> then you must rerun <em>lilo</em> before you reboot or you may have an unbootable system.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO xfs_fsr&hellip;</h2>
         <div class="sectioncontent">
-
 <a href="../man8/xfs_fsr.8.html"><strong>xfs_fsr</strong>(8)</a>, <a href="../man8/mkfs.xfs.8.html"><strong>mkfs.xfs</strong>(8)</a>, <a href="../man8/xfs_ncheck.8.html"><strong>xfs_ncheck</strong>(8)</a>, <a href="../man5/xfs.5.html"><strong>xfs</strong>(5)</a>.</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+<p><em>xfs_fsr</em> improves the layout of extents for each file by copying the entire file to a temporary location and then interchanging the data extents of the target and temporary files in an atomic manner. This method requires that enough free disk space be available to copy any given file and that the space be less fragmented than the original file. It also requires the owner of the file to have enough remaining filespace quota to do the copy on systems running quotas. <em>xfs_fsr</em> generates a warning message if space is not sufficient to improve the target file.</p><p>A temporary file used in improving a file given on the command line is created in the same parent directory of the target file and is prefixed by the string '<strong>.fsr</strong>'. The temporary files used in improving an entire XFS device are stored in a directory at the root of the target device and use the same naming scheme. The temporary files are unlinked upon creation so data will not be readable by any other process.</p><p><em>xfs_fsr</em> does not operate on files that are currently mapped in memory. A 'file busy' error can be seen for these files if the verbose flag (<strong>-v</strong>) is set.</p><p>Files marked as no-defrag will be skipped. The <a href="../man8/xfs_io.8.html"><strong>xfs_io</strong>(8)</a> chattr command with the f attribute can be used to set or clear this flag. Files and directories created in a directory with the no-defrag flag will inherit the attribute.</p><p>An entry in <em>/etc/mtab</em> or the file specified using the <strong>-m</strong> option must have the <strong>rw</strong> option specified for read and write access. If this option is not present, then <em>xfs_fsr</em> skips the filesystem described by that line. See the <a href="../man5/fstab.5.html"><strong>fstab</strong>(5)</a> reference page for more details.</p><p>In general we do not foresee the need to run <em>xfs_fsr</em> on system partitions such as <em>/</em>, <em>/boot</em> and <em>/usr</em> as in general these will not suffer from fragmentation. There are also issues with defragmenting files <strong>lilo</strong>(8) uses to boot your system. It is recommended that these files should be flagged as no-defrag with the <a href="../man8/xfs_io.8.html"><strong>xfs_io</strong>(8)</a> chattr command. Should these files be moved by <em>xfs_fsr</em> then you must rerun <em>lilo</em> before you reboot or you may have an unbootable system.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="xfs_freeze.8.html"><span aria-hidden="true">&larr;</span> xfs_freeze.8: Suspend access to an xfs filesystem</a></li>

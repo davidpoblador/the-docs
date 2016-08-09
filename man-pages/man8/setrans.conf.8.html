@@ -90,142 +90,145 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <em>/etc/selinux/{SELINUXTYPE}/setrans.conf</em> configuration file specifies the way that SELinux MCS/MLS labels are translated into human readable form by the mcstransd daemon.  The default policies support 16 sensitivity levels (s0 through s15) and 1024 categories (c0 through c1023). Multiple categories can be separated with commas (c0,c1,c3,c5) and a range of categories can be shortened using dot notation (c0.c3,c5).</p><h3>Keywords</h3>
 
-<p>The <em>/etc/selinux/{SELINUXTYPE}/setrans.conf</em> configuration file specifies the way that SELinux MCS/MLS labels are translated into human readable form by the mcstransd daemon.  The default policies support 16 sensitivity levels (s0 through s15) and 1024 categories (c0 through c1023). Multiple categories can be separated with commas (c0,c1,c3,c5) and a range of categories can be shortened using dot notation (c0.c3,c5).</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p>Base</p>
+  </dt>
+  <dd>
+    <p>once a base is declared, subsequent sensitivity label definitions will have all modifiers applied to them during translation. Sensitivity labels defined before the base declaration are immediately cached and no modifiers will be applied these are used as direct translations.</p>
+  </dd>
+  <dt>
+    <p>Default</p>
+  </dt>
+  <dd>
+    <p>defines the category bit range that will be used for inverse bits.</p>
+  </dd>
+  <dt>
+    <p>Domain</p>
+  </dt>
+  <dd>
+    <p>creates a new domain with the supplied name.</p>
+  </dd>
+  <dt>
+    <p>Include</p>
+  </dt>
+  <dd>
+    <p>read and process the contents of the specified configuration file.</p>
+  </dd>
+  <dt>
+    <p>Join</p>
+  </dt>
+  <dd>
+    <p>defines a character used to separate members of a modifier group when more than one is specified (ex. USA/AUS).</p>
+  </dd>
+  <dt>
+    <p>ModifierGroup</p>
+  </dt>
+  <dd>
+    <p>a means of grouping category bit definitions by how they modify the sensitivity label.</p>
+  </dd>
+  <dt>
+    <p>Prefix</p>
+  </dt>
+  <dd>
+    <p>word(s) that may proceed member(s) of a modifier group (ex. REL USA).</p>
+  </dd>
+  <dt>
+    <p>Suffix</p>
+  </dt>
+  <dd>
+    <p>word(s) that may follow member(s) of a modifier group (ex. USA EYES ONLY).</p>
+  </dd>
+  <dt>
+    <p>Whitespace</p>
+  </dt>
+  <dd>
+    <p>defines the set of acceptable white space characters that may be used in label being translated.</p>
+  </dd>
 
-  <h3>Keywords</h3>
-<p class='spacer'>
+</dl>
 
-  <dl class='dl-vertical'>
-    <dt>Base</dt>
-    <dd>
-  <p>once a base is declared, subsequent sensitivity label definitions will have all modifiers applied to them during translation. Sensitivity labels defined before the base declaration are immediately cached and no modifiers will be applied these are used as direct translations.</p>
-<p class='spacer'>
+<h3>Sensitivity Level Definition Examples</h3>
 
-    </dd>
-    <dt>Default</dt>
-    <dd>
-  <p>defines the category bit range that will be used for inverse bits.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p>s0=SystemLow</p>
+  </dt>
+  <dd>
+    <p>defines a translation of s0 (the lowest sensitivity level) with no categories to SystemLow.</p>
+  </dd>
+  <dt>
+    <p>s15:c0.c1023=SystemHigh</p>
+  </dt>
+  <dd>
+    <p>defines a translation of s15:c0.c1023 to SystemHigh. c0.c1023 is shorthand for all categories. A colon separates the sensitivity level and categories.</p>
+  </dd>
+  <dt>
+    <p>s0-s15:c0.c1023=SystemLow-SystemHigh</p>
+  </dt>
+  <dd>
+    <p>defines a range translation of of s0-s15:c0.c1023 to SystemLow-SystemHigh. The two range components are separated by a dash.</p>
+  </dd>
+  <dt>
+    <p>s0:c0=PatientRecord</p>
+  </dt>
+  <dd>
+    <p>defines a translation of sensitivity s0 with category c0 to PatientRecord.</p>
+  </dd>
+  <dt>
+    <p>s0:c1=Accounting</p>
+  </dt>
+  <dd>
+    <p>defines a translation of sensitivity s0 with category c1 to Accounting.</p>
+  </dd>
+  <dt>
+    <p>s2:c1,c2,c3=Confidential3Categories</p>
+  </dt>
+  <dd>
+    
+  </dd>
+  <dt>
+    <p>s2:c1.c3=Confidential3Categories</p>
+  </dt>
+  <dd>
+    <p>both define a translation of sensitivity s2 with categories c1, c2 and c3 to Confidential3Categories.</p>
+  </dd>
+  <dt>
+    <p>s5=TopSecret</p>
+  </dt>
+  <dd>
+    <p>defines a translation of sensitivity s5 with no categories to TopSecret.</p>
+  </dd>
 
-    </dd>
-    <dt>Domain</dt>
-    <dd>
-  <p>creates a new domain with the supplied name.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-    <dt>Include</dt>
-    <dd>
-  <p>read and process the contents of the specified configuration file.</p>
-<p class='spacer'>
+<h3>Constraint Examples</h3>
 
-    </dd>
-    <dt>Join</dt>
-    <dd>
-  <p>defines a character used to separate members of a modifier group when more than one is specified (ex. USA/AUS).</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p>c0!c1</p>
+  </dt>
+  <dd>
+    <p>if category bits 0 and 1 are both set, the constraint will fail and the original context will be returned.</p>
+  </dd>
+  <dt>
+    <p>c5.c9&gt;c1</p>
+  </dt>
+  <dd>
+    <p>if category bits 5 through 9 are set, bit 1 must also be set or the constraint will fail and the original context will be returned.</p>
+  </dd>
+  <dt>
+    <p>s1!c5,c9</p>
+  </dt>
+  <dd>
+    <p>if category bits 5 and 9 are set and the sensitivity level is s1, the constraint will fail and the original context will be returned.</p>
+  </dd>
 
-    </dd>
-    <dt>ModifierGroup</dt>
-    <dd>
-  <p>a means of grouping category bit definitions by how they modify the sensitivity label.</p>
-<p class='spacer'>
+</dl>
 
-    </dd>
-    <dt>Prefix</dt>
-    <dd>
-  <p>word(s) that may proceed member(s) of a modifier group (ex. REL USA).</p>
-<p class='spacer'>
 
-    </dd>
-    <dt>Suffix</dt>
-    <dd>
-  <p>word(s) that may follow member(s) of a modifier group (ex. USA EYES ONLY).</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>Whitespace</dt>
-    <dd>
-  <p>defines the set of acceptable white space characters that may be used in label being translated.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-  <h3>Sensitivity Level Definition Examples</h3>
-<p class='spacer'>
-
-  <dl class='dl-vertical'>
-    <dt>s0=SystemLow</dt>
-    <dd>
-  <p>defines a translation of s0 (the lowest sensitivity level) with no categories to SystemLow.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>s15:c0.c1023=SystemHigh</dt>
-    <dd>
-  <p>defines a translation of s15:c0.c1023 to SystemHigh. c0.c1023 is shorthand for all categories. A colon separates the sensitivity level and categories.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>s0-s15:c0.c1023=SystemLow-SystemHigh</dt>
-    <dd>
-  <p>defines a range translation of of s0-s15:c0.c1023 to SystemLow-SystemHigh. The two range components are separated by a dash.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>s0:c0=PatientRecord</dt>
-    <dd>
-  <p>defines a translation of sensitivity s0 with category c0 to PatientRecord.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>s0:c1=Accounting</dt>
-    <dd>
-  <p>defines a translation of sensitivity s0 with category c1 to Accounting.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>s2:c1,c2,c3=Confidential3Categories</dt>
-    <dd>
-    </dd>
-    <dt>s2:c1.c3=Confidential3Categories</dt>
-    <dd>
-  <p>both define a translation of sensitivity s2 with categories c1, c2 and c3 to Confidential3Categories.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>s5=TopSecret</dt>
-    <dd>
-  <p>defines a translation of sensitivity s5 with no categories to TopSecret.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
-  <h3>Constraint Examples</h3>
-<p class='spacer'>
-
-  <dl class='dl-horizontal'>
-    <dt>c0!c1</dt>
-    <dd>
-  <p>if category bits 0 and 1 are both set, the constraint will fail and the original context will be returned.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>c5.c9&gt;c1</dt>
-    <dd>
-  <p>if category bits 5 through 9 are set, bit 1 must also be set or the constraint will fail and the original context will be returned.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt>s1!c5,c9</dt>
-    <dd>
-  <p>if category bits 5 and 9 are set and the sensitivity level is s1, the constraint will fail and the original context will be returned.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
         </div>
       </section>
 
@@ -233,35 +236,27 @@
         <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
 
-<pre>    Written by Joe Nall &lt;joe@nall.com&gt;.
-    Updated by Ted X. Toth &lt;txtoth@gmail.com&gt;.</pre>
+<pre>
+    Written by Joe Nall &lt;joe@nall.com&gt;.
+    Updated by Ted X. Toth &lt;txtoth@gmail.com&gt;.
+</pre>
 
-<p class='spacer'>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">FILES</h2>
-        <div class="sectioncontent">
-
-<p>/etc/selinux/{SELINUXTYPE}/setrans.conf</p>
-<p class='spacer'>
-
-<p>/usr/share/mcstrans/examples</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO setrans.conf&hellip;</h2>
         <div class="sectioncontent">
-
 <a href="../man8/selinux.8.html"><strong>selinux</strong>(8)</a>, <a href="../man8/mcs.8.html"><strong>mcs</strong>(8)</a>, <strong>mls</strong>(8), <strong>chcon</strong>(1)</p>
-<p class='spacer'>
-
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+<p>/etc/selinux/{SELINUXTYPE}/setrans.conf</p><p>/usr/share/mcstrans/examples</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="setquota.8.html"><span aria-hidden="true">&larr;</span> setquota.8: Set disk quotas</a></li>

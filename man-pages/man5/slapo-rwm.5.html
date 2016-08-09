@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p>ETCDIR/slapd.conf</p>
         </div>
       </section>
@@ -98,60 +97,56 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The <strong>rwm</strong> overlay to <strong>slapd</strong>(8) performs basic DN/data rewrite and objectClass/attributeType mapping. Its usage is mostly intended to provide virtual views of existing data either remotely, in conjunction with the proxy backend described in <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, or locally, in conjunction with the relay backend described in <a href="../man5/slapd-relay.5.html"><strong>slapd-relay</strong>(5)</a>.</p>
-<p class='spacer'>
-
-<p>This overlay is experimental.</p>
+<p>The <strong>rwm</strong> overlay to <strong>slapd</strong>(8) performs basic DN/data rewrite and objectClass/attributeType mapping. Its usage is mostly intended to provide virtual views of existing data either remotely, in conjunction with the proxy backend described in <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, or locally, in conjunction with the relay backend described in <a href="../man5/slapd-relay.5.html"><strong>slapd-relay</strong>(5)</a>.</p><p>This overlay is experimental.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">MAPPING</h2>
         <div class="sectioncontent">
+<p>An important feature of the <strong>rwm</strong> overlay is the capability to map objectClasses and attributeTypes from the local set (or a subset of it) to a foreign set, and vice versa. This is accomplished by means of the <strong>rwm-map</strong> directive.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>rwm-map {attribute | objectclass} [<local name> | *] {<foreign name> | *}</strong></p>
+  </dt>
+  <dd>
+    <p>Map attributeTypes and objectClasses from the foreign server to different values on the local slapd. The reason is that some attributes might not be part of the local slapd's schema, some attribute names might be different but serve the same purpose, etc. If local or foreign name is `*', the name is preserved. If local name is omitted, the foreign name is removed. Unmapped names are preserved if both local and foreign name are `*', and removed if local name is omitted and foreign name is `*'.</p>
+  </dd>
 
-  <p>An important feature of the <strong>rwm</strong> overlay is the capability to map objectClasses and attributeTypes from the local set (or a subset of it) to a foreign set, and vice versa. This is accomplished by means of the <strong>rwm-map</strong> directive.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>rwm-map {attribute | objectclass} [&lt;local name&gt; | *] {&lt;foreign name&gt; | *}</strong></dt>
-    <dd>
-  <p>Map attributeTypes and objectClasses from the foreign server to different values on the local slapd. The reason is that some attributes might not be part of the local slapd's schema, some attribute names might be different but serve the same purpose, etc. If local or foreign name is `*', the name is preserved. If local name is omitted, the foreign name is removed. Unmapped names are preserved if both local and foreign name are `*', and removed if local name is omitted and foreign name is `*'.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+</dl>
+<p>The local <em>objectClasses</em> and <em>attributeTypes</em> must be defined in the local schema; the foreign ones do not have to, but users are encouraged to explicitly define the remote attributeTypes and the objectClasses they intend to map.  All in all, when remapping a remote server via back-ldap (<a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>) or back-meta (<a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>) their definition can be easily obtained by querying the <em>subschemaSubentry</em> of the remote server; the problem should not exist when remapping a local database. Note, however, that the decision whether to rewrite or not attributeTypes with <em>distinguishedName syntax</em>, requires the knowledge of the attributeType syntax. See the REWRITING section for details.</p><p>Note that when mapping DN-valued attributes from local to remote, first the DN is rewritten, and then the attributeType is mapped; while mapping from remote to local, first the attributeType is mapped, and then the DN is rewritten. As such, it is important that the local attributeType is appropriately defined as using the distinguishedName syntax. Also, note that there are DN-related syntaxes (i.e. compound types with a portion that is DN-valued), like nameAndOptionalUID, whose values are currently not rewritten.</p><p>If the foreign type of an attribute mapping is not defined on the local server, it might be desirable to have the attribute values normalized after the mapping process. Not normalizing the values can lead to wrong results, when the <strong>rwm</strong> overlay is used together with e.g. the <strong>pcache</strong> overlay. This normalization can be enabled by means of the <strong>rwm-normalize-mapped-attrs</strong> directive.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>rwm-normalize-mapped-attrs {yes|no}</strong></p>
+  </dt>
+  <dd>
+    <p>Set this to "yes", if the <strong>rwm</strong> overlay should try to normalize the values of attributes that are mapped from an attribute type that is unknown to the local server. The default value of this setting is "no".</p>
+  </dd>
+  <dt>
+    <p><strong>rwm-drop-unrequested-attrs {yes|no}</strong></p>
+  </dt>
+  <dd>
+    <p>Set this to "yes", if the <strong>rwm</strong> overlay should drop attributes that are not explicitly requested by a search operation. When this is set to "no", the <strong>rwm</strong> overlay will leave all attributes in place, so that subsequent modules can further manipulate them. In any case, unrequested attributes will be omitted from search results by the frontend, when the search entry response package is encoded. The default value of this setting is "yes".</p>
+  </dd>
 
-<p>The local <em>objectClasses</em> and <em>attributeTypes</em> must be defined in the local schema; the foreign ones do not have to, but users are encouraged to explicitly define the remote attributeTypes and the objectClasses they intend to map.  All in all, when remapping a remote server via back-ldap (<a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>) or back-meta (<a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>) their definition can be easily obtained by querying the <em>subschemaSubentry</em> of the remote server; the problem should not exist when remapping a local database. Note, however, that the decision whether to rewrite or not attributeTypes with <em>distinguishedName syntax</em>, requires the knowledge of the attributeType syntax. See the REWRITING section for details.</p>
-<p class='spacer'>
+</dl>
 
-<p>Note that when mapping DN-valued attributes from local to remote, first the DN is rewritten, and then the attributeType is mapped; while mapping from remote to local, first the attributeType is mapped, and then the DN is rewritten. As such, it is important that the local attributeType is appropriately defined as using the distinguishedName syntax. Also, note that there are DN-related syntaxes (i.e. compound types with a portion that is DN-valued), like nameAndOptionalUID, whose values are currently not rewritten.</p>
-<p class='spacer'>
-
-  <p>If the foreign type of an attribute mapping is not defined on the local server, it might be desirable to have the attribute values normalized after the mapping process. Not normalizing the values can lead to wrong results, when the <strong>rwm</strong> overlay is used together with e.g. the <strong>pcache</strong> overlay. This normalization can be enabled by means of the <strong>rwm-normalize-mapped-attrs</strong> directive.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>rwm-normalize-mapped-attrs {yes|no}</strong></dt>
-    <dd>
-  <p>Set this to "yes", if the <strong>rwm</strong> overlay should try to normalize the values of attributes that are mapped from an attribute type that is unknown to the local server. The default value of this setting is "no".</p>
-    </dd>
-    <dt><strong>rwm-drop-unrequested-attrs {yes|no}</strong></dt>
-    <dd>
-  <p>Set this to "yes", if the <strong>rwm</strong> overlay should drop attributes that are not explicitly requested by a search operation. When this is set to "no", the <strong>rwm</strong> overlay will leave all attributes in place, so that subsequent modules can further manipulate them. In any case, unrequested attributes will be omitted from search results by the frontend, when the search entry response package is encoded. The default value of this setting is "yes".</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">SUFFIX MASSAGING</h2>
         <div class="sectioncontent">
+<p>A basic feature of the <strong>rwm</strong> overlay is the capability to perform suffix massaging between a virtual and a real naming context by means of the <strong>rwm-suffixmassage</strong> directive. This, in conjunction with proxy backends, <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> and <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>, or with the relay backend, <a href="../man5/slapd-relay.5.html"><strong>slapd-relay</strong>(5)</a>, allows to create virtual views of databases. A distinguishing feature of this overlay is that, when instantiated before any database, it can modify the DN of requests <em>before</em> database selection. For this reason, rules that rewrite the empty DN ("") or the subschemaSubentry DN (usually "cn=subschema"), would prevent clients from reading the root DSE or the DSA's schema.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>rwm-suffixmassage [<virtual naming context>] <real naming context></strong></p>
+  </dt>
+  <dd>
+    <p>Shortcut to implement naming context rewriting; the trailing part of the DN is rewritten from the virtual to the real naming context in the bindDN, searchDN, searchFilterAttrDN, compareDN, compareAttrDN, addDN, addAttrDN, modifyDN, modifyAttrDN, modrDN, newSuperiorDN, deleteDN, exopPasswdDN, and from the real to the virtual naming context in the searchEntryDN, searchAttrDN and matchedDN rewrite contexts. By default no rewriting occurs for the searchFilter and for the referralAttrDN and referralDN rewrite contexts. If no <em>&lt;virtual naming context&gt;</em> is given, the first suffix of the database is used; this requires the <strong>rwm-suffixmassage</strong> directive be defined <em>after</em> the database <strong>suffix</strong> directive. The <strong>rwm-suffixmassage</strong> directive automatically sets the <strong>rwm-rewriteEngine</strong> to <strong>ON</strong>.</p>
+  </dd>
 
-  <p>A basic feature of the <strong>rwm</strong> overlay is the capability to perform suffix massaging between a virtual and a real naming context by means of the <strong>rwm-suffixmassage</strong> directive. This, in conjunction with proxy backends, <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> and <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>, or with the relay backend, <a href="../man5/slapd-relay.5.html"><strong>slapd-relay</strong>(5)</a>, allows to create virtual views of databases. A distinguishing feature of this overlay is that, when instantiated before any database, it can modify the DN of requests <em>before</em> database selection. For this reason, rules that rewrite the empty DN ("") or the subschemaSubentry DN (usually "cn=subschema"), would prevent clients from reading the root DSE or the DSA's schema.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>rwm-suffixmassage [&lt;virtual naming context&gt;] &lt;real naming context&gt;</strong></dt>
-    <dd>
-  <p>Shortcut to implement naming context rewriting; the trailing part of the DN is rewritten from the virtual to the real naming context in the bindDN, searchDN, searchFilterAttrDN, compareDN, compareAttrDN, addDN, addAttrDN, modifyDN, modifyAttrDN, modrDN, newSuperiorDN, deleteDN, exopPasswdDN, and from the real to the virtual naming context in the searchEntryDN, searchAttrDN and matchedDN rewrite contexts. By default no rewriting occurs for the searchFilter and for the referralAttrDN and referralDN rewrite contexts. If no <em>&lt;virtual naming context&gt;</em> is given, the first suffix of the database is used; this requires the <strong>rwm-suffixmassage</strong> directive be defined <em>after</em> the database <strong>suffix</strong> directive. The <strong>rwm-suffixmassage</strong> directive automatically sets the <strong>rwm-rewriteEngine</strong> to <strong>ON</strong>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>See the REWRITING section for details.</p>
         </div>
       </section>
@@ -159,25 +154,18 @@
       <section>
         <h2 class="font-effect-shadow-multiple">REWRITING</h2>
         <div class="sectioncontent">
-
 <p>A string is rewritten according to a set of rules, called a `rewrite context'. The rules are based on POSIX (''extended'') regular expressions with substring matching; basic variable substitution and map resolution of substrings is allowed by specific mechanisms detailed in the following. The behavior of pattern matching/substitution can be altered by a set of flags.</p>
-<p class='spacer'>
-
-<pre>&lt;rewrite context&gt; ::= &lt;rewrite rule&gt; [...]
-&lt;rewrite rule&gt; ::= &lt;pattern&gt; &lt;action&gt; [&lt;flags&gt;]</pre>
-
-<p class='spacer'>
-
+<pre>
+&lt;rewrite context&gt; ::= &lt;rewrite rule&gt; [...]
+&lt;rewrite rule&gt; ::= &lt;pattern&gt; &lt;action&gt; [&lt;flags&gt;]
+</pre>
 <p>The underlying concept is to build a lightweight rewrite module for the slapd server (initially dedicated to the LDAP backend):</p>
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">Passes</h2>
         <div class="sectioncontent">
-
 <p>An incoming string is matched against a set of <em>rewriteRules</em>. Rules are made of a <em>regex match pattern</em>, a <em>substitution pattern</em> and a set of actions, described by a set of <em>optional flags</em>. In case of match, string rewriting is performed according to the substitution pattern that allows to refer to substrings matched in the incoming string. The actions, if any, are finally performed. Each rule is executed recursively, unless altered by specific action flags; see "Action Flags" for details. A default limit on the recursion level is set, and can be altered by the <strong>rwm-rewriteMaxPasses</strong> directive, as detailed in the "Additional Configuration Syntax" section. The substitution pattern allows map resolution of substrings. A map is a generic object that maps a substitution pattern to a value. The flags are divided in "Pattern Matching Flags" and "Action Flags"; the former alter the regex match pattern behavior, while the latter alter the actions that are taken after substitution.</p>
         </div>
       </section>
@@ -186,20 +174,28 @@
         <h2 class="font-effect-shadow-multiple">Pattern Matching Flags</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>`C'</strong></dt>
-    <dd>
-  <p>honors case in matching (default is case insensitive)</p>
-    </dd>
-    <dt><strong>`R'</strong></dt>
-    <dd>
-  <p>use POSIX ''basic'' regular expressions (default is ''extended'')</p>
-    </dd>
-    <dt><strong>`M{n}'</strong></dt>
-    <dd>
-  <p>allow no more than <strong>n</strong> recursive passes for a specific rule; does not alter the max total count of passes, so it can only enforce a stricter limit for a specific rule.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>`C'</strong></p>
+  </dt>
+  <dd>
+    <p>honors case in matching (default is case insensitive)</p>
+  </dd>
+  <dt>
+    <p><strong>`R'</strong></p>
+  </dt>
+  <dd>
+    <p>use POSIX ''basic'' regular expressions (default is ''extended'')</p>
+  </dd>
+  <dt>
+    <p><strong>`M{n}'</strong></p>
+  </dt>
+  <dd>
+    <p>allow no more than <strong>n</strong> recursive passes for a specific rule; does not alter the max total count of passes, so it can only enforce a stricter limit for a specific rule.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
@@ -207,45 +203,52 @@
         <h2 class="font-effect-shadow-multiple">Action Flags</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>`:'</strong></dt>
-    <dd>
-  <p>apply the rule once only (default is recursive)</p>
-    </dd>
-    <dt><strong>`@'</strong></dt>
-    <dd>
-  <p>stop applying rules in case of match; the current rule is still applied recursively; combine with `:' to apply the current rule only once and then stop.</p>
-    </dd>
-    <dt><strong>`#'</strong></dt>
-    <dd>
-  <p>stop current operation if the rule matches, and issue an `unwilling to perform' error.</p>
-    </dd>
-    <dt><strong>`G{n}'</strong></dt>
-    <dd>
-  <p>jump <strong>n</strong> rules back and forth (watch for loops!). Note that `G{1}' is implicit in every rule.</p>
-    </dd>
-    <dt><strong>`I'</strong></dt>
-    <dd>
-  <p>ignores errors in rule; this means, in case of error, e.g. issued by a map, the error is treated as a missed match. The `unwilling to perform' is not overridden.</p>
-    </dd>
-    <dt><strong>`U{n}'</strong></dt>
-    <dd>
-  <p>uses n as return code if the rule matches; the flag does not alter the recursive behavior of the rule, so, to have it performed only once, it must be used in combination with `:', e.g. <strong>`:U{32}'</strong> returns the value `32' (indicating noSuchObject) after exactly one execution of the rule, if the pattern matches. As a consequence, its behavior is equivalent to `@', with the return code set to <strong>n</strong>; or, in other words, `@' is equivalent to `U{0}'. Positive errors are allowed, indicating the related LDAP error codes as specified in <em>draft-ietf-ldapbis-protocol</em>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>`:'</strong></p>
+  </dt>
+  <dd>
+    <p>apply the rule once only (default is recursive)</p>
+  </dd>
+  <dt>
+    <p><strong>`@'</strong></p>
+  </dt>
+  <dd>
+    <p>stop applying rules in case of match; the current rule is still applied recursively; combine with `:' to apply the current rule only once and then stop.</p>
+  </dd>
+  <dt>
+    <p><strong>`#'</strong></p>
+  </dt>
+  <dd>
+    <p>stop current operation if the rule matches, and issue an `unwilling to perform' error.</p>
+  </dd>
+  <dt>
+    <p><strong>`G{n}'</strong></p>
+  </dt>
+  <dd>
+    <p>jump <strong>n</strong> rules back and forth (watch for loops!). Note that `G{1}' is implicit in every rule.</p>
+  </dd>
+  <dt>
+    <p><strong>`I'</strong></p>
+  </dt>
+  <dd>
+    <p>ignores errors in rule; this means, in case of error, e.g. issued by a map, the error is treated as a missed match. The `unwilling to perform' is not overridden.</p>
+  </dd>
+  <dt>
+    <p><strong>`U{n}'</strong></p>
+  </dt>
+  <dd>
+    <p>uses <strong></strong> n as return code if the rule matches; the flag does not alter the recursive behavior of the rule, so, to have it performed only once, it must be used in combination with `:', e.g. <strong>`:U{32}'</strong> returns the value `32' (indicating noSuchObject) after exactly one execution of the rule, if the pattern matches. As a consequence, its behavior is equivalent to `@', with the return code set to <strong>n</strong>; or, in other words, `@' is equivalent to `U{0}'. Positive errors are allowed, indicating the related LDAP error codes as specified in <em>draft-ietf-ldapbis-protocol</em>.</p>
+  </dd>
 
-<p>The ordering of the flags can be significant. For instance: `IG{2}' means ignore errors and jump two lines ahead both in case of match and in case of error, while `G{2}I' means ignore errors, but jump two lines ahead only in case of match.</p>
-<p class='spacer'>
-
-<p>More flags (mainly Action Flags) will be added as needed.</p>
+</dl>
+<p>The ordering of the flags can be significant. For instance: `IG{2}' means ignore errors and jump two lines ahead both in case of match and in case of error, while `G{2}I' means ignore errors, but jump two lines ahead only in case of match.</p><p>More flags (mainly Action Flags) will be added as needed.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">Pattern Matching</h2>
         <div class="sectioncontent">
-
 <p>See <a href="../man7/regex.7.html"><strong>regex</strong>(7)</a> and/or <strong>re_format</strong>(7).</p>
         </div>
       </section>
@@ -253,58 +256,45 @@
       <section>
         <h2 class="font-effect-shadow-multiple">Substitution Pattern Syntax</h2>
         <div class="sectioncontent">
+<p>Everything starting with `$' requires substitution;</p><p>the only obvious exception is `$$', which is turned into a single `$';</p><p>the basic substitution is `$&lt;d&gt;', where `&lt;d&gt;' is a digit; 0 means the whole string, while 1-9 is a submatch, as discussed in <a href="../man7/regex.7.html"><strong>regex</strong>(7)</a> and/or <strong>re_format</strong>(7).</p><p>a `$' followed by a `{' invokes an advanced substitution. The pattern is:</p><p>`$' `{' [ &lt;operator&gt; ] &lt;name&gt; `(' &lt;substitution&gt; `)' `}'</p><p>where &lt;name&gt; must be a legal name for the map, i.e.</p>
+<pre>
+&lt;name&gt; ::= [a-z][a-z0-9]* (case insensitive)
+&lt;operator&gt; ::= `&gt;' `|' `&' `&&' `*' `**' `$'
+</pre>
+<p>and &lt;substitution&gt; must be a legal substitution pattern, with no limits on the nesting level.</p><p>The operators are:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>></strong></p>
+  </dt>
+  <dd>
+    <p>sub-context invocation; &lt;name&gt; must be a legal, already defined rewrite context name</p>
+  </dd>
+  <dt>
+    <p><strong>|</strong></p>
+  </dt>
+  <dd>
+    <p>external command invocation; &lt;name&gt; must refer to a legal, already defined command name (NOT IMPLEMENTED YET)</p>
+  </dd>
+  <dt>
+    <p><strong>&</strong></p>
+  </dt>
+  <dd>
+    <p>variable assignment; &lt;name&gt; defines a variable in the running operation structure which can be dereferenced later; operator <strong>&</strong> assigns a variable in the rewrite context scope; operator <strong>&&</strong> assigns a variable that scopes the entire session, e.g. its value can be dereferenced later by other rewrite contexts</p>
+  </dd>
+  <dt>
+    <p><strong>*</strong></p>
+  </dt>
+  <dd>
+    <p>variable dereferencing; &lt;name&gt; must refer to a variable that is defined and assigned for the running operation; operator <strong>*</strong> dereferences a variable scoping the rewrite context; operator <strong>**</strong> dereferences a variable scoping the whole session, e.g. the value is passed across rewrite contexts</p>
+  </dd>
+  <dt>
+    <p><strong>$</strong></p>
+  </dt>
+  <dd>
+    <p>parameter dereferencing; &lt;name&gt; must refer to an existing parameter; the idea is to make some run-time parameters set by the system available to the rewrite engine, as the client host name, the bind DN if any, constant parameters initialized at config time, and so on; no parameter is currently set by either <strong>back-ldap</strong> or <strong>back-meta</strong>, but constant parameters can be defined in the configuration file by using the <strong>rewriteParam</strong> directive.</p>
+  </dd>
 
-<p>Everything starting with `$' requires substitution;</p>
-<p class='spacer'>
-
-<p>the only obvious exception is `$$', which is turned into a single `$';</p>
-<p class='spacer'>
-
-<p>the basic substitution is `$&lt;d&gt;', where `&lt;d&gt;' is a digit; 0 means the whole string, while 1-9 is a submatch, as discussed in <a href="../man7/regex.7.html"><strong>regex</strong>(7)</a> and/or <strong>re_format</strong>(7).</p>
-<p class='spacer'>
-
-<p>a `$' followed by a `{' invokes an advanced substitution. The pattern is:</p>
-<p class='spacer'>
-
-<p>`$' `{' [ &lt;operator&gt; ] &lt;name&gt; `(' &lt;substitution&gt; `)' `}'</p>
-<p class='spacer'>
-
-<p>where &lt;name&gt; must be a legal name for the map, i.e.</p>
-<p class='spacer'>
-
-<pre>&lt;name&gt; ::= [a-z][a-z0-9]* (case insensitive)
-&lt;operator&gt; ::= `&gt;' `|' `&' `&&' `*' `**' `$'</pre>
-
-<p class='spacer'>
-
-<p>and &lt;substitution&gt; must be a legal substitution pattern, with no limits on the nesting level.</p>
-<p class='spacer'>
-
-  <p>The operators are:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>&gt;</strong></dt>
-    <dd>
-  <p>sub-context invocation; &lt;name&gt; must be a legal, already defined rewrite context name</p>
-    </dd>
-    <dt><strong>|</strong></dt>
-    <dd>
-  <p>external command invocation; &lt;name&gt; must refer to a legal, already defined command name (NOT IMPLEMENTED YET)</p>
-    </dd>
-    <dt><strong>&</strong></dt>
-    <dd>
-  <p>variable assignment; &lt;name&gt; defines a variable in the running operation structure which can be dereferenced later; operator <strong>&</strong> assigns a variable in the rewrite context scope; operator <strong>&&</strong> assigns a variable that scopes the entire session, e.g. its value can be dereferenced later by other rewrite contexts</p>
-    </dd>
-    <dt><strong>*</strong></dt>
-    <dd>
-  <p>variable dereferencing; &lt;name&gt; must refer to a variable that is defined and assigned for the running operation; operator <strong>*</strong> dereferences a variable scoping the rewrite context; operator <strong>**</strong> dereferences a variable scoping the whole session, e.g. the value is passed across rewrite contexts</p>
-    </dd>
-    <dt><strong>$</strong></dt>
-    <dd>
-  <p>parameter dereferencing; &lt;name&gt; must refer to an existing parameter; the idea is to make some run-time parameters set by the system available to the rewrite engine, as the client host name, the bind DN if any, constant parameters initialized at config time, and so on; no parameter is currently set by either <strong>back-ldap</strong> or <strong>back-meta</strong>, but constant parameters can be defined in the configuration file by using the <strong>rewriteParam</strong> directive.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>Substitution escaping has been delegated to the `$' symbol, which is used instead of `&#92;' in string substitution patterns because `&#92;' is already escaped by slapd's low level parsing routines; as a consequence, regex escaping requires two `&#92;' symbols, e.g. `<strong>.*&#92;.foo&#92;.bar</strong>' must be written as `<strong>.*&#92;&#92;.foo&#92;&#92;.bar</strong>'.</p>
         </div>
       </section>
@@ -312,17 +302,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">Rewrite Context</h2>
         <div class="sectioncontent">
-
-<p>A rewrite context is a set of rules which are applied in sequence. The basic idea is to have an application initialize a rewrite engine (think of Apache's mod_rewrite ...) with a set of rewrite contexts; when string rewriting is required, one invokes the appropriate rewrite context with the input string and obtains the newly rewritten one if no errors occur.</p>
-<p class='spacer'>
-
-<p>Each basic server operation is associated to a rewrite context; they are divided in two main groups: client -&gt; server and server -&gt; client rewriting.</p>
-<p class='spacer'>
-
-<p>client -&gt; server:</p>
-<p class='spacer'>
-
-<pre>(default)            if defined and no specific context
+<p>A rewrite context is a set of rules which are applied in sequence. The basic idea is to have an application initialize a rewrite engine (think of Apache's mod_rewrite ...) with a set of rewrite contexts; when string rewriting is required, one invokes the appropriate rewrite context with the input string and obtains the newly rewritten one if no errors occur.</p><p>Each basic server operation is associated to a rewrite context; they are divided in two main groups: client -&gt; server and server -&gt; client rewriting.</p><p>client -&gt; server:</p>
+<pre>
+(default)            if defined and no specific context
                      is available
 bindDN               bind
 searchDN             search
@@ -340,14 +322,11 @@ renameDN             modrdn (the old DN)
 newSuperiorDN        modrdn (the new parent DN, if any)
 newRDN               modrdn (the new relative DN)
 deleteDN             delete
-exopPasswdDN         password modify extended operation DN</pre>
-
-<p class='spacer'>
-
+exopPasswdDN         password modify extended operation DN
+</pre>
 <p>server -&gt; client:</p>
-<p class='spacer'>
-
-<pre>searchEntryDN        search (only if defined; no default;
+<pre>
+searchEntryDN        search (only if defined; no default;
                      acts on DN of search entries)
 searchAttrDN         search AVA (only if defined; defaults
                      to searchEntryDN; acts on DN-syntax
@@ -355,9 +334,8 @@ searchAttrDN         search AVA (only if defined; defaults
 matchedDN            all ops (only if applicable; defaults
                      to searchEntryDN)
 referralDN           all ops (only if applicable; defaults
-                     to none)</pre>
-
-<p class='spacer'>
+                     to none)
+</pre>
 
         </div>
       </section>
@@ -365,22 +343,29 @@ referralDN           all ops (only if applicable; defaults
       <section>
         <h2 class="font-effect-shadow-multiple">Basic Configuration Syntax</h2>
         <div class="sectioncontent">
+<p>All rewrite/remap directives start with the prefix <strong>rwm-</strong>; for backwards compatibility with the historical <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> and <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a> builtin rewrite/remap capabilities, the prefix may be omitted, but this practice is strongly discouraged.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>rwm-rewriteEngine { on | off }</strong></p>
+  </dt>
+  <dd>
+    <p>If `on', the requested rewriting is performed; if `off', no rewriting takes place (an easy way to stop rewriting without altering too much the configuration file).</p>
+  </dd>
+  <dt>
+    <p><strong>rwm-rewriteContext <context name> [ alias <aliased context name> ]</strong></p>
+  </dt>
+  <dd>
+    <p>&lt;Context name&gt; is the name that identifies the context, i.e. the name used by the application to refer to the set of rules it contains. It is used also to reference sub contexts in string rewriting. A context may alias another one. In this case the alias context contains no rule, and any reference to it will result in accessing the aliased one.</p>
+  </dd>
+  <dt>
+    <p><strong>rwm-rewriteRule <regex match pattern> <substitution pattern> [ <flags> ]</strong></p>
+  </dt>
+  <dd>
+    <p>Determines how a string can be rewritten if a pattern is matched. Examples are reported below.</p>
+  </dd>
 
-  <p>All rewrite/remap directives start with the prefix <strong>rwm-</strong>; for backwards compatibility with the historical <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> and <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a> builtin rewrite/remap capabilities, the prefix may be omitted, but this practice is strongly discouraged.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>rwm-rewriteEngine { on | off }</strong></dt>
-    <dd>
-  <p>If `on', the requested rewriting is performed; if `off', no rewriting takes place (an easy way to stop rewriting without altering too much the configuration file).</p>
-    </dd>
-    <dt><strong>rwm-rewriteContext &lt;context name&gt; [ alias &lt;aliased context name&gt; ]</strong></dt>
-    <dd>
-  <p>&lt;Context name&gt; is the name that identifies the context, i.e. the name used by the application to refer to the set of rules it contains. It is used also to reference sub contexts in string rewriting. A context may alias another one. In this case the alias context contains no rule, and any reference to it will result in accessing the aliased one.</p>
-    </dd>
-    <dt><strong>rwm-rewriteRule &lt;regex match pattern&gt; &lt;substitution pattern&gt; [ &lt;flags&gt; ]</strong></dt>
-    <dd>
-  <p>Determines how a string can be rewritten if a pattern is matched. Examples are reported below.</p>
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
@@ -388,56 +373,51 @@ referralDN           all ops (only if applicable; defaults
         <h2 class="font-effect-shadow-multiple">Additional Configuration Syntax</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>rwm-rewriteMap &lt;map type&gt; &lt;map name&gt; [ &lt;map attrs&gt; ]</strong></dt>
-    <dd>
-  <p>Allows to define a map that transforms substring rewriting into something else. The map is referenced inside the substitution pattern of a rule.</p>
-    </dd>
-    <dt><strong>rwm-rewriteParam &lt;param name&gt; &lt;param value&gt;</strong></dt>
-    <dd>
-  <p>Sets a value with global scope, that can be dereferenced by the command `${$paramName}'.</p>
-    </dd>
-    <dt><strong>rwm-rewriteMaxPasses &lt;number of passes&gt; [&lt;number of passes per rule&gt;]</strong></dt>
-    <dd>
-  <p>Sets the maximum number of total rewriting passes that can be performed in a single rewrite operation (to avoid loops). A safe default is set to 100; note that reaching this limit is still treated as a success; recursive invocation of rules is simply interrupted. The count applies to the rewriting operation as a whole, not to any single rule; an optional per-rule limit can be set. This limit is overridden by setting specific per-rule limits with the `M{n}' flag.</p>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>rwm-rewriteMap <map type> <map name> [ <map attrs> ]</strong></p>
+  </dt>
+  <dd>
+    <p>Allows to define a map that transforms substring rewriting into something else. The map is referenced inside the substitution pattern of a rule.</p>
+  </dd>
+  <dt>
+    <p><strong>rwm-rewriteParam <param name> <param value></strong></p>
+  </dt>
+  <dd>
+    <p>Sets a value with global scope, that can be dereferenced by the command `${$paramName}'.</p>
+  </dd>
+  <dt>
+    <p><strong>rwm-rewriteMaxPasses <number of passes> [<number of passes per rule>]</strong></p>
+  </dt>
+  <dd>
+    <p>Sets the maximum number of total rewriting passes that can be performed in a single rewrite operation (to avoid loops). A safe default is set to 100; note that reaching this limit is still treated as a success; recursive invocation of rules is simply interrupted. The count applies to the rewriting operation as a whole, not to any single rule; an optional per-rule limit can be set. This limit is overridden by setting specific per-rule limits with the `M{n}' flag.</p>
+  </dd>
 
-    </dd>
-  </dl>
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">MAPS</h2>
         <div class="sectioncontent">
+<p>Currently, few maps are builtin but additional map types may be registered at runtime.</p><p>Supported maps are:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>LDAP <URI> [bindwhen=<when>] [version=<version>] [binddn=<DN>] [credentials=<cred>]</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>LDAP</strong> map expands a value by performing a simple LDAP search. Its configuration is based on a mandatory URI, whose <strong>attrs</strong> portion must contain exactly one attribute (use <strong>entryDN</strong> to fetch the DN of an entry). If a multi-valued attribute is used, only the first value is considered.</p><p>The parameter <strong>bindwhen</strong> determines when the connection is established. It can take the values <strong>now</strong>, <strong>later</strong>, and <strong>everytime</strong>, respectively indicating that the connection should be created at startup, when required, or any time it is used. In the former two cases, the connection is cached, while in the latter a fresh new one is used all times.  This is the default.</p><p>The parameters <strong>binddn</strong> and <strong>credentials</strong> represent the DN and the password that is used to perform an authenticated simple bind before performing the search operation; if not given, an anonymous connection is used.</p><p>The parameter <strong>version</strong> can be 2 or 3 to indicate the protocol version that must be used. The default is 3.</p>
+  </dd>
+  <dt>
+    <p><strong>slapd <URI></strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>slapd</strong> map expands a value by performing an internal LDAP search. Its configuration is based on a mandatory URI, which must begin with <strong>ldap:///</strong> (i.e., it must be an LDAP URI and it must not specify a host). As with the LDAP map, the <strong>attrs</strong> portion must contain exactly one attribute, and if a multi-valued attribute is used, only the first value is considered.</p>
+  </dd>
 
-<p>Currently, few maps are builtin but additional map types may be registered at runtime.</p>
-<p class='spacer'>
+</dl>
 
-  <p>Supported maps are:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>LDAP &lt;URI&gt; [bindwhen=&lt;when&gt;] [version=&lt;version&gt;] [binddn=&lt;DN&gt;] [credentials=&lt;cred&gt;]</strong></dt>
-    <dd>
-  <p>The <strong>LDAP</strong> map expands a value by performing a simple LDAP search. Its configuration is based on a mandatory URI, whose <strong>attrs</strong> portion must contain exactly one attribute (use <strong>entryDN</strong> to fetch the DN of an entry). If a multi-valued attribute is used, only the first value is considered.</p>
-<p class='spacer'>
-
-  <p>The parameter <strong>bindwhen</strong> determines when the connection is established. It can take the values <strong>now</strong>, <strong>later</strong>, and <strong>everytime</strong>, respectively indicating that the connection should be created at startup, when required, or any time it is used. In the former two cases, the connection is cached, while in the latter a fresh new one is used all times.  This is the default.</p>
-<p class='spacer'>
-
-  <p>The parameters <strong>binddn</strong> and <strong>credentials</strong> represent the DN and the password that is used to perform an authenticated simple bind before performing the search operation; if not given, an anonymous connection is used.</p>
-<p class='spacer'>
-
-  <p>The parameter <strong>version</strong> can be 2 or 3 to indicate the protocol version that must be used. The default is 3.</p>
-<p class='spacer'>
-
-    </dd>
-    <dt><strong>slapd &lt;URI&gt;</strong></dt>
-    <dd>
-  <p>The <strong>slapd</strong> map expands a value by performing an internal LDAP search. Its configuration is based on a mandatory URI, which must begin with <strong>ldap:///</strong> (i.e., it must be an LDAP URI and it must not specify a host). As with the LDAP map, the <strong>attrs</strong> portion must contain exactly one attribute, and if a multi-valued attribute is used, only the first value is considered.</p>
-<p class='spacer'>
-
-    </dd>
-  </dl>
         </div>
       </section>
 
@@ -445,7 +425,8 @@ referralDN           all ops (only if applicable; defaults
         <h2 class="font-effect-shadow-multiple">REWRITE CONFIGURATION EXAMPLES</h2>
         <div class="sectioncontent">
 
-<pre># set to `off' to disable rewriting
+<pre>
+# set to `off' to disable rewriting
 rwm-rewriteEngine on
 
 # the rules the "suffixmassage" directive implies
@@ -555,7 +536,8 @@ rwm-rewriteRule ".*&lt;&gt;$" "${*prefix}uid=${*arg}${*suffix}" ":"
 # the value to be rejected.
 rwm-rewriteContext searchEntryDN
 rwm-rewriteRule ".+,ou=People,dc=example,dc=com$" "$0" ":@"
-rwm-rewriteRule ".*" "" "#"</pre>
+rwm-rewriteRule ".*" "" "#"
+</pre>
 
         </div>
       </section>
@@ -563,26 +545,19 @@ rwm-rewriteRule ".*" "" "#"</pre>
       <section>
         <h2 class="font-effect-shadow-multiple">MAPPING EXAMPLES</h2>
         <div class="sectioncontent">
-
 <p>The following directives map the object class `groupOfNames' to the object class `groupOfUniqueNames' and the attribute type `member' to the attribute type `uniqueMember':</p>
-<p class='spacer'>
-
-<pre>map objectclass groupOfNames groupOfUniqueNames
-map attribute uniqueMember member</pre>
-
-<p class='spacer'>
-
+<pre>
+map objectclass groupOfNames groupOfUniqueNames
+map attribute uniqueMember member
+</pre>
 <p>This presents a limited attribute set from the foreign server:</p>
-<p class='spacer'>
-
-<pre>map attribute cn *
+<pre>
+map attribute cn *
 map attribute sn *
 map attribute manager *
 map attribute description *
-map attribute *</pre>
-
-<p class='spacer'>
-
+map attribute *
+</pre>
 <p>These lines map cn, sn, manager, and description to themselves, and any other attribute gets "removed" from the object before it is sent to the client (or sent up to the LDAP server).  This is obviously a simplistic example, but you get the point.</p>
         </div>
       </section>
@@ -591,31 +566,32 @@ map attribute *</pre>
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt>ETCDIR/slapd.conf</dt>
-    <dd>
-  <p>default slapd configuration file</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
+<dl class='dl-vertical'>
+  <dt>
+    <p>ETCDIR/slapd.conf</p>
+  </dt>
+  <dd>
+    <p>default slapd configuration file</p>
+  </dd>
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
+</dl>
 
-<p>Pierangelo Masarati; based on back-ldap rewrite/remap features by Howard Chu, Pierangelo Masarati.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO slapo-rwm&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>slapd.conf</strong>(5), <strong>slapd-config</strong>(5), <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, <a href="../man5/slapd-meta.5.html"><strong>slapd-meta</strong>(5)</a>, <a href="../man5/slapd-relay.5.html"><strong>slapd-relay</strong>(5)</a>, <strong>slapd</strong>(8), <a href="../man7/regex.7.html"><strong>regex</strong>(7)</a>, <strong>re_format</strong>(7).</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>Pierangelo Masarati; based on back-ldap rewrite/remap features by Howard Chu, Pierangelo Masarati.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="slapo-retcode.5.html"><span aria-hidden="true">&larr;</span> slapo-retcode.5: Return code overlay to slapd</a></li>

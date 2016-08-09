@@ -90,70 +90,42 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>For an overview of namespaces, see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>.</p>
-<p class='spacer'>
-
-<p>Cgroup namespaces virtualize the view of a process's cgroups (see <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a>) as seen via <em>/proc/[pid]/cgroup</em> and <em>/proc/[pid]/mountinfo</em>.</p>
-<p class='spacer'>
-
-<p>Each cgroup namespace has its own set of cgroup root directories, which are the base points for the relative locations displayed in <em>/proc/[pid]/cgroup</em>. When a process creates a new cgroup namespace using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWCGROUP</strong> flag, it enters a new cgroup namespace in which its current cgroups directories become the cgroup root directories of the new namespace. (This applies both for the cgroups version 1 hierarchies and the cgroups version 2 unified hierarchy.)</p>
-<p class='spacer'>
-
-<p>When viewing <em>/proc/[pid]/cgroup</em>, the pathname shown in the third field of each record will be relative to the reading process's cgroup root directory. If the cgroup directory of the target process lies outside the root directory of the reading process's cgroup namespace, then the pathname will show <em>../</em> entries for each ancestor level in the cgroup hierarchy.</p>
-<p class='spacer'>
-
-<p>The following shell session demonstrates the effect of creating a new cgroup namespace. First, (as superuser) we create a child cgroup in the <em>freezer</em> hierarchy, and put the shell into that cgroup:</p>
-<p class='spacer'>
-
-<pre># <strong>mkdir -p /sys/fs/cgroup/freezer/sub</strong>
+<p>For an overview of namespaces, see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>.</p><p>Cgroup namespaces virtualize the view of a process's cgroups (see <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a>) as seen via <em>/proc/[pid]/cgroup</em> and <em>/proc/[pid]/mountinfo</em>.</p><p>Each cgroup namespace has its own set of cgroup root directories, which are the base points for the relative locations displayed in <em>/proc/[pid]/cgroup</em>. When a process creates a new cgroup namespace using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWCGROUP</strong> flag, it enters a new cgroup namespace in which its current cgroups directories become the cgroup root directories of the new namespace. (This applies both for the cgroups version 1 hierarchies and the cgroups version 2 unified hierarchy.)</p><p>When viewing <em>/proc/[pid]/cgroup</em>, the pathname shown in the third field of each record will be relative to the reading process's cgroup root directory. If the cgroup directory of the target process lies outside the root directory of the reading process's cgroup namespace, then the pathname will show <em>../</em> entries for each ancestor level in the cgroup hierarchy.</p><p>The following shell session demonstrates the effect of creating a new cgroup namespace. First, (as superuser) we create a child cgroup in the <em>freezer</em> hierarchy, and put the shell into that cgroup:</p>
+<pre>
+# <strong>mkdir -p /sys/fs/cgroup/freezer/sub</strong>
 # <strong>echo $$</strong>                      # Show PID of this shell
 30655
 # <strong>sh -c 'echo 30655 &gt; /sys/fs/cgroup/sub'</strong>
 # <strong>cat /proc/self/cgroup | grep freezer</strong>
-7:freezer:/sub</pre>
-
-<p class='spacer'>
-
-<p>Next, we use <strong>unshare</strong>(1) to create a process running a new shell in new cgroup and mount namespaces:</p>
-<p class='spacer'>
-
-<pre># <strong>unshare -Cm bash</strong></pre>
-
-<p class='spacer'>
-
-<p>We then inspect the <em>/proc/[pid]/cgroup</em> files of, respectively, the new shell process started by the <strong>unshare</strong>(1) command, a process that is in the original cgroup namespace (<em>init</em>, with PID 1), and a process in a sibling cgroup:</p>
-<p class='spacer'>
-
-<pre>$ <strong>cat /proc/self/cgroup | grep freezer</strong>
+7:freezer:/sub
+</pre>
+<p>Next, we use <a href="../man1/unshare.1.html"><strong>unshare</strong>(1)</a> to create a process running a new shell in new cgroup and mount namespaces:</p>
+<pre>
+# <strong>unshare -Cm bash</strong>
+</pre>
+<p>We then inspect the <em>/proc/[pid]/cgroup</em> files of, respectively, the new shell process started by the <a href="../man1/unshare.1.html"><strong>unshare</strong>(1)</a> command, a process that is in the original cgroup namespace (<em>init</em>, with PID 1), and a process in a sibling cgroup:</p>
+<pre>
+$ <strong>cat /proc/self/cgroup | grep freezer</strong>
 7:freezer:/
 $ <strong>cat /proc/1/cgroup | grep freezer</strong>
 7:freezer:/..
 $ <strong>cat /proc/20124/cgroup | grep freezer</strong>
-7:freezer:/../sub2</pre>
-
-<p class='spacer'>
-
+7:freezer:/../sub2
+</pre>
 <p>However, when we look in <em>/proc/self/mountinfo</em> we see the following anomaly:</p>
-<p class='spacer'>
-
-<pre># <strong>cat /proc/self/mountinfo | grep freezer</strong>
-155 145 0:32 /.. /sys/fs/cgroup/freezer ...</pre>
-
-<p class='spacer'>
-
+<pre>
+# <strong>cat /proc/self/mountinfo | grep freezer</strong>
+155 145 0:32 /.. /sys/fs/cgroup/freezer ...
+</pre>
 <p>The fourth field of this file should show the directory in the cgroup filesystem which forms the root of this mount. Since by the definition of cgroup namespaces, the process's current freezer cgroup directory became its root freezer cgroup directory, we should see &apos;/&apos; in this field. The problem here is that we are seeing a mount entry for the cgroup filesystem corresponding to our initial shell process's cgroup namespace (whose cgroup filesystem is indeed rooted in the parent directory of <em>sub</em>). We need to remount the freezer cgroup filesystem inside this cgroup namespace, after which we see the expected results:</p>
-<p class='spacer'>
-
-<pre># <strong>mount --make-rslave /</strong>     # Don't propagate mount events
+<pre>
+# <strong>mount --make-rslave /</strong>     # Don't propagate mount events
                             # to other namespaces
 # <strong>umount /sys/fs/cgroup/freezer</strong>
 # <strong>mount -t cgroup -o freezer freezer /sys/fs/cgroup/freezer</strong>
 # <strong>cat /proc/self/mountinfo | grep freezer</strong>
-155 145 0:32 / /sys/fs/cgroup/freezer rw,relatime ...</pre>
-
-<p class='spacer'>
-
+155 145 0:32 / /sys/fs/cgroup/freezer rw,relatime ...
+</pre>
 <p>Use of cgroup namespaces requires a kernel that is configured with the <strong>CONFIG_CGROUPS</strong> option.</p>
         </div>
       </section>
@@ -161,43 +133,43 @@ $ <strong>cat /proc/20124/cgroup | grep freezer</strong>
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
+<p>Among the purposes served by the virtualization provided by cgroup namespaces are the following:</p>
+<dl class='dl-vertical'>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p>It prevents information leaks whereby cgroup directory paths outside of a container would otherwise be visible to processes in the container. Such leakages could, for example, reveal information about the container framework to containerized applications.</p>
+  </dd>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p>It eases tasks such as container migration. The virtualization provided by cgroup namespaces allows containers to be isolated from knowledge of the pathnames of ancestor cgroups. Without such isolation, the full cgroup pathnames (displayed in <em>/proc/self/cgroups</em>) would need to be replicated on the target system when migrating a container; those pathnames would also need to be unique, so that they don't conflict with other pathnames on the target system.</p>
+  </dd>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p>It allows better confinement of containerized processes, because it is possible to mount the container's cgroup filesystems such that the container processes can't gain access to ancestor cgroup directories. Consider, for example, the following scenario:</p><ul>
+<li><p>We have a cgroup directory, <em>/cg/1</em>, that is owned by user ID 9000.</p></li><li><p>We have a process, <em>X</em>, also owned by user ID 9000, that is namespaced under the cgroup <em>/cg/1/2</em> (i.e., <em>X</em> was placed in a new cgroup namespace via <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWCGROUP</strong> flag).</p></li>
+</ul>
+  </dd>
+  <dt>
+    
+  </dt>
+  <dd>
+    <p>In the absence of cgroup namespacing, because the cgroup directory <em>/cg/1</em> is owned (and writable) by UID 9000 and process <em>X</em> is also owned by user ID 9000, then process <em>X</em> would be able to modify the contents of cgroups files (i.e., change cgroup settings) not only in <em>/cg/1/2</em> but also in the ancestor cgroup directory <em>/cg/1</em>. Namespacing process <em>X</em> under the cgroup directory <em>/cg/1/2</em>, in combination with suitable mount operations for the cgroup filesystem (as shown above), prevents it modifying files in <em>/cg/1</em>, since it cannot even see the contents of that directory (or of further removed cgroup ancestor directories). Combined with correct enforcement of hierarchical limits, this prevents process <em>X</em> from escaping the limits imposed by ancestor cgroups.</p>
+  </dd>
 
-  <p>Among the purposes served by the virtualization provided by cgroup namespaces are the following:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>It prevents information leaks whereby cgroup directory paths outside of a container would otherwise be visible to processes in the container. Such leakages could, for example, reveal information about the container framework to containerized applications.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>It eases tasks such as container migration. The virtualization provided by cgroup namespaces allows containers to be isolated from knowledge of the pathnames of ancestor cgroups. Without such isolation, the full cgroup pathnames (displayed in <em>/proc/self/cgroups</em>) would need to be replicated on the target system when migrating a container; those pathnames would also need to be unique, so that they don't conflict with other pathnames on the target system.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-      <p>It allows better confinement of containerized processes, because it is possible to mount the container's cgroup filesystems such that the container processes can't gain access to ancestor cgroup directories. Consider, for example, the following scenario:</p>
-      <dl class='dl-horizontal'>
-        <dt>&bull;</dt>
-        <dd>
-      <p>We have a cgroup directory, <em>/cg/1</em>, that is owned by user ID 9000.</p>
-        </dd>
-        <dt>&bull;</dt>
-        <dd>
-      <p>We have a process, <em>X</em>, also owned by user ID 9000, that is namespaced under the cgroup <em>/cg/1/2</em> (i.e., <em>X</em> was placed in a new cgroup namespace via <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> or <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a> with the <strong>CLONE_NEWCGROUP</strong> flag).</p>
-        </dd>
-      </dl>
-    </dd>
-<p class='spacer'>
+</dl>
 
-  <p>In the absence of cgroup namespacing, because the cgroup directory <em>/cg/1</em> is owned (and writable) by UID 9000 and process <em>X</em> is also owned by user ID 9000, then process <em>X</em> would be able to modify the contents of cgroups files (i.e., change cgroup settings) not only in <em>/cg/1/2</em> but also in the ancestor cgroup directory <em>/cg/1</em>. Namespacing process <em>X</em> under the cgroup directory <em>/cg/1/2</em>, in combination with suitable mount operations for the cgroup filesystem (as shown above), prevents it modifying files in <em>/cg/1</em>, since it cannot even see the contents of that directory (or of further removed cgroup ancestor directories). Combined with correct enforcement of hierarchical limits, this prevents process <em>X</em> from escaping the limits imposed by ancestor cgroups.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>Namespaces are a Linux-specific feature.</p>
         </div>
       </section>
@@ -205,11 +177,9 @@ $ <strong>cat /proc/20124/cgroup | grep freezer</strong>
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO cgroup_namespaces&hellip;</h2>
         <div class="sectioncontent">
-
-<p><strong>unshare</strong>(1), <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a></p>
+<p><a href="../man1/unshare.1.html"><strong>unshare</strong>(1)</a>, <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="capabilities.7.html"><span aria-hidden="true">&larr;</span> capabilities.7: Overview of linux capabilities</a></li>

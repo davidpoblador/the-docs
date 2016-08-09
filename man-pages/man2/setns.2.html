@@ -91,10 +91,12 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
-<strong>#include &lt;sched.h&gt;</strong>
+<pre>
+<strong>#define _GNU_SOURCE</strong>             /* See <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a> */
+<strong>#include <sched.h></strong>
 
-<strong>int setns(int </strong><em>fd</em><strong>, int </strong><em>nstype</em><strong>);</strong></pre>
+<strong>int setns(int </strong><em>fd</em><strong>, int </strong><em>nstype</em><strong>);</strong>
+</pre>
 
         </div>
       </section>
@@ -102,70 +104,65 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>Given a file descriptor referring to a namespace, reassociate the calling thread with that namespace.</p><p>The <em>fd</em> argument is a file descriptor referring to one of the namespace entries in a <em>/proc/[pid]/ns/</em> directory; see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a> for further information on <em>/proc/[pid]/ns/</em>. The calling thread will be reassociated with the corresponding namespace, subject to any constraints imposed by the <em>nstype</em> argument.</p><p>The <em>nstype</em> argument specifies which type of namespace the calling thread may be reassociated with. This argument can have one of the following values:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>0</strong></p>
+  </dt>
+  <dd>
+    <p>Allow any type of namespace to be joined.</p>
+  </dd>
+  <dt>
+    <p><strong>CLONE_NEWCGROUP</strong> (since Linux 4.6)</p>
+  </dt>
+  <dd>
+    <p><em>fd</em> must refer to a cgroup namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>CLONE_NEWIPC</strong> (since Linux 3.0)</p>
+  </dt>
+  <dd>
+    <p><em>fd</em> must refer to an IPC namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>CLONE_NEWNET</strong> (since Linux 3.0)</p>
+  </dt>
+  <dd>
+    <p><em>fd</em> must refer to a network namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>CLONE_NEWNS</strong> (since Linux 3.8)</p>
+  </dt>
+  <dd>
+    <p><em>fd</em> must refer to a mount namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>CLONE_NEWPID</strong> (since Linux 3.8)</p>
+  </dt>
+  <dd>
+    <p><em>fd</em> must refer to a descendant PID namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>CLONE_NEWUSER</strong> (since Linux 3.8)</p>
+  </dt>
+  <dd>
+    <p><em>fd</em> must refer to a user namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>CLONE_NEWUTS</strong> (since Linux 3.0)</p>
+  </dt>
+  <dd>
+    <p><em>fd</em> must refer to a UTS namespace.</p>
+  </dd>
 
-<p>Given a file descriptor referring to a namespace, reassociate the calling thread with that namespace.</p>
-<p class='spacer'>
-
-<p>The <em>fd</em> argument is a file descriptor referring to one of the namespace entries in a <em>/proc/[pid]/ns/</em> directory; see <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a> for further information on <em>/proc/[pid]/ns/</em>. The calling thread will be reassociated with the corresponding namespace, subject to any constraints imposed by the <em>nstype</em> argument.</p>
-<p class='spacer'>
-
-  <p>The <em>nstype</em> argument specifies which type of namespace the calling thread may be reassociated with. This argument can have one of the following values:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>0</strong></dt>
-    <dd>
-  <p>Allow any type of namespace to be joined.</p>
-    </dd>
-    <dt><strong>CLONE_NEWCGROUP</strong> (since Linux 4.6)</dt>
-    <dd>
-  <p><em>fd</em> must refer to a cgroup namespace.</p>
-    </dd>
-    <dt><strong>CLONE_NEWIPC</strong> (since Linux 3.0)</dt>
-    <dd>
-  <p><em>fd</em> must refer to an IPC namespace.</p>
-    </dd>
-    <dt><strong>CLONE_NEWNET</strong> (since Linux 3.0)</dt>
-    <dd>
-  <p><em>fd</em> must refer to a network namespace.</p>
-    </dd>
-    <dt><strong>CLONE_NEWNS</strong> (since Linux 3.8)</dt>
-    <dd>
-  <p><em>fd</em> must refer to a mount namespace.</p>
-    </dd>
-    <dt><strong>CLONE_NEWPID</strong> (since Linux 3.8)</dt>
-    <dd>
-  <p><em>fd</em> must refer to a descendant PID namespace.</p>
-    </dd>
-    <dt><strong>CLONE_NEWUSER</strong> (since Linux 3.8)</dt>
-    <dd>
-  <p><em>fd</em> must refer to a user namespace.</p>
-    </dd>
-    <dt><strong>CLONE_NEWUTS</strong> (since Linux 3.0)</dt>
-    <dd>
-  <p><em>fd</em> must refer to a UTS namespace.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>Specifying <em>nstype</em> as 0 suffices if the caller knows (or does not care) what type of namespace is referred to by <em>fd</em>. Specifying a nonzero value for <em>nstype</em> is useful if the caller does not know what type of namespace is referred to by <em>fd</em> and wants to ensure that the namespace is of a particular type. (The caller might not know the type of the namespace referred to by <em>fd</em> if the file descriptor was opened by another process and, for example, passed to the caller via a UNIX domain socket.)</p>
-<p class='spacer'>
-
-<p><strong>CLONE_NEWPID</strong> behaves somewhat differently from the other <em>nstype</em> values: reassociating the calling thread with a PID namespace changes only the PID namespace that child processes of the caller will be created in; it does not change the PID namespace of the caller itself. Reassociating with a PID namespace is allowed only if the PID namespace specified by <em>fd</em> is a descendant (child, grandchild, etc.) of the PID namespace of the caller. For further details on PID namespaces, see <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a>.</p>
-<p class='spacer'>
-
-<p>A process reassociating itself with a user namespace must have the <strong>CAP_SYS_ADMIN</strong> capability in the target user namespace. Upon successfully joining a user namespace, a process is granted all capabilities in that namespace, regardless of its user and group IDs. A multithreaded process may not change user namespace with <strong>setns</strong>(). It is not permitted to use <strong>setns</strong>() to reenter the caller's current user namespace. This prevents a caller that has dropped capabilities from regaining those capabilities via a call to <strong>setns</strong>(). For security reasons, a process can't join a new user namespace if it is sharing filesystem-related attributes (the attributes whose sharing is controlled by the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_FS</strong> flag) with another process. For further details on user namespaces, see <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>.</p>
-<p class='spacer'>
-
-<p>A process may not be reassociated with a new mount namespace if it is multithreaded. Changing the mount namespace requires that the caller possess both <strong>CAP_SYS_CHROOT</strong> and <strong>CAP_SYS_ADMIN</strong> capabilities in its own user namespace and <strong>CAP_SYS_ADMIN</strong> in the target mount namespace. See <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a> for details on the interaction of user namespaces and mount namespaces.</p>
-<p class='spacer'>
-
-<p>Using <strong>setns</strong>() to change the caller's cgroup namespace does not change the caller's cgroup memberships.</p>
+</dl>
+<p>Specifying <em>nstype</em> as 0 suffices if the caller knows (or does not care) what type of namespace is referred to by <em>fd</em>. Specifying a nonzero value for <em>nstype</em> is useful if the caller does not know what type of namespace is referred to by <em>fd</em> and wants to ensure that the namespace is of a particular type. (The caller might not know the type of the namespace referred to by <em>fd</em> if the file descriptor was opened by another process and, for example, passed to the caller via a UNIX domain socket.)</p><p><strong>CLONE_NEWPID</strong> behaves somewhat differently from the other <em>nstype</em> values: reassociating the calling thread with a PID namespace changes only the PID namespace that child processes of the caller will be created in; it does not change the PID namespace of the caller itself. Reassociating with a PID namespace is allowed only if the PID namespace specified by <em>fd</em> is a descendant (child, grandchild, etc.) of the PID namespace of the caller. For further details on PID namespaces, see <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a>.</p><p>A process reassociating itself with a user namespace must have the <strong>CAP_SYS_ADMIN</strong> capability in the target user namespace. Upon successfully joining a user namespace, a process is granted all capabilities in that namespace, regardless of its user and group IDs. A multithreaded process may not change user namespace with <strong>setns</strong>(). It is not permitted to use <strong>setns</strong>() to reenter the caller's current user namespace. This prevents a caller that has dropped capabilities from regaining those capabilities via a call to <strong>setns</strong>(). For security reasons, a process can't join a new user namespace if it is sharing filesystem-related attributes (the attributes whose sharing is controlled by the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> <strong>CLONE_FS</strong> flag) with another process. For further details on user namespaces, see <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>.</p><p>A process may not be reassociated with a new mount namespace if it is multithreaded. Changing the mount namespace requires that the caller possess both <strong>CAP_SYS_CHROOT</strong> and <strong>CAP_SYS_ADMIN</strong> capabilities in its own user namespace and <strong>CAP_SYS_ADMIN</strong> in the target mount namespace. See <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a> for details on the interaction of user namespaces and mount namespaces.</p><p>Using <strong>setns</strong>() to change the caller's cgroup namespace does not change the caller's cgroup memberships.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, <strong>setns</strong>() returns 0. On failure, -1 is returned and <em>errno</em> is set to indicate the error.</p>
         </div>
       </section>
@@ -174,51 +171,70 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EBADF</strong></dt>
-    <dd>
-  <p><em>fd</em> is not a valid file descriptor.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>fd</em> refers to a namespace whose type does not match that specified in <em>nstype</em>.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>There is problem with reassociating the thread with the specified namespace.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The caller tried to join an ancestor (parent, grandparent, and so on) PID namespace.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The caller attempted to join the user namespace in which it is already a member.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The caller shares filesystem (<strong>CLONE_FS</strong>) state (in particular, the root directory) with other processes and tried to join a new user namespace.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The caller is multithreaded and tried to join a new user namespace.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Cannot allocate sufficient memory to change the specified namespace.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>The calling thread did not have the required capability for this operation.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EBADF</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> is not a valid file descriptor.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>fd</em> refers to a namespace whose type does not match that specified in <em>nstype</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>There is problem with reassociating the thread with the specified namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The caller tried to join an ancestor (parent, grandparent, and so on) PID namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The caller attempted to join the user namespace in which it is already a member.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The caller shares filesystem (<strong>CLONE_FS</strong>) state (in particular, the root directory) with other processes and tried to join a new user namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The caller is multithreaded and tried to join a new user namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Cannot allocate sufficient memory to change the specified namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>The calling thread did not have the required capability for this operation.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>setns</strong>() system call first appeared in Linux in kernel 3.0; library support was added to glibc in version 2.14.</p>
         </div>
       </section>
@@ -226,7 +242,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>The <strong>setns</strong>() system call is Linux-specific.</p>
         </div>
       </section>
@@ -234,7 +249,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
 <p>Not all of the attributes that can be shared when a new thread is created using <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> can be changed using <strong>setns</strong>().</p>
         </div>
       </section>
@@ -242,17 +256,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
-<p>The program below takes two or more arguments. The first argument specifies the pathname of a namespace file in an existing <em>/proc/[pid]/ns/</em> directory. The remaining arguments specify a command and its arguments. The program opens the namespace file, joins that namespace using <strong>setns</strong>(), and executes the specified command inside that namespace.</p>
-<p class='spacer'>
-
-<p>The following shell session demonstrates the use of this program (compiled as a binary named <em>ns_exec</em>) in conjunction with the <strong>CLONE_NEWUTS</strong> example program in the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> man page (complied as a binary named <em>newuts</em>).</p>
-<p class='spacer'>
-
-<p>We begin by executing the example program in <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> in the background. That program creates a child in a separate UTS namespace. The child changes the hostname in its namespace, and then both processes display the hostnames in their UTS namespaces, so that we can see that they are different.</p>
-<p class='spacer'>
-
-<pre>$ <strong>su</strong>                   # Need privilege for namespace operations
+<p>The program below takes two or more arguments. The first argument specifies the pathname of a namespace file in an existing <em>/proc/[pid]/ns/</em> directory. The remaining arguments specify a command and its arguments. The program opens the namespace file, joins that namespace using <strong>setns</strong>(), and executes the specified command inside that namespace.</p><p>The following shell session demonstrates the use of this program (compiled as a binary named <em>ns_exec</em>) in conjunction with the <strong>CLONE_NEWUTS</strong> example program in the <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> man page (complied as a binary named <em>newuts</em>).</p><p>We begin by executing the example program in <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> in the background. That program creates a child in a separate UTS namespace. The child changes the hostname in its namespace, and then both processes display the hostnames in their UTS namespaces, so that we can see that they are different.</p>
+<pre>
+$ <strong>su</strong>                   # Need privilege for namespace operations
 Password:
 # <strong>./newuts bizarro &</strong>
 [1] 3549
@@ -260,19 +266,18 @@ clone() returned 3550
 uts.nodename in child:  bizarro
 uts.nodename in parent: antero
 # <strong>uname -n</strong>             # Verify hostname in the shell
-antero</pre>
-
-<p class='spacer'>
-
+antero
+</pre>
 <p>We then run the program shown below, using it to execute a shell. Inside that shell, we verify that the hostname is the one set by the child created by the first program:</p>
-<p class='spacer'>
-
-<pre># <strong>./ns_exec /proc/3550/ns/uts /bin/bash</strong>
+<pre>
+# <strong>./ns_exec /proc/3550/ns/uts /bin/bash</strong>
 # <strong>uname -n</strong>             # Executed in shell started by ns_exec
-bizarro</pre>
+bizarro
+</pre>
+<h3>Program source</h3>
 
-  <h3>Program source</h3>
-<pre>#define _GNU_SOURCE
+<pre>
+#define _GNU_SOURCE
 #include &lt;fcntl.h&gt;
 #include &lt;sched.h&gt;
 #include &lt;unistd.h&gt;
@@ -301,7 +306,9 @@ main(int argc, char *argv[])
 
     execvp(argv[2], &argv[2]);     /* Execute a command in namespace */
     errExit("execvp");
-}</pre>
+}
+</pre>
+
 
         </div>
       </section>
@@ -309,11 +316,9 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO setns&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man2/vfork.2.html"><strong>vfork</strong>(2)</a>, <a href="../man7/namespaces.7.html"><strong>namespaces</strong>(7)</a>, <a href="../man7/unix.7.html"><strong>unix</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="setitimer.2.html"><span aria-hidden="true">&larr;</span> setitimer.2: Get or set value of an interval timer</a></li>

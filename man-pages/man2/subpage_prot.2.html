@@ -91,11 +91,10 @@
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
 
-<pre><strong>long subpage_prot(unsigned long </strong><em>addr</em><strong>, unsigned long </strong><em>len</em><strong>,</strong>
-<strong>                  uint32_t *</strong><em>map</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
+<pre>
+<strong>long subpage_prot(unsigned long </strong><em>addr</em><strong>, unsigned long </strong><em>len</em><strong>,</strong>
+<strong>                  uint32_t *</strong><em>map</em><strong>);</strong>
+</pre>
 <p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
         </div>
       </section>
@@ -103,21 +102,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The PowerPC-specific <strong>subpage_prot</strong>() system call provides the facility to control the access permissions on individual 4kB subpages on systems configured with a page size of 64kB.</p>
-<p class='spacer'>
-
-<p>The protection map is applied to the memory pages in the region starting at <em>addr</em> and continuing for <em>len</em> bytes. Both of these arguments must be aligned to a 64-kB boundary.</p>
-<p class='spacer'>
-
-<p>The protection map is specified in the buffer pointed to by <em>map</em>. The map has 2 bits per 4kB subpage; thus each 32-bit word specifies the protections of 16 4kB subpages inside a 64kB page (so, the number of 32-bit words pointed to by <em>map</em> should equate to the number of 64-kB pages specified by <em>len</em>). Each 2-bit field in the protection map is either 0 to allow any access, 1 to prevent writes, or 2 or 3 to prevent all accesses.</p>
+<p>The PowerPC-specific <strong>subpage_prot</strong>() system call provides the facility to control the access permissions on individual 4kB subpages on systems configured with a page size of 64kB.</p><p>The protection map is applied to the memory pages in the region starting at <em>addr</em> and continuing for <em>len</em> bytes. Both of these arguments must be aligned to a 64-kB boundary.</p><p>The protection map is specified in the buffer pointed to by <em>map</em>. The map has 2 bits per 4kB subpage; thus each 32-bit word specifies the protections of 16 4kB subpages inside a 64kB page (so, the number of 32-bit words pointed to by <em>map</em> should equate to the number of 64-kB pages specified by <em>len</em>). Each 2-bit field in the protection map is either 0 to allow any access, 1 to prevent writes, or 2 or 3 to prevent all accesses.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
 <p>On success, <strong>subpage_prot</strong>() returns 0. Otherwise, one of the error codes specified below is returned.</p>
         </div>
       </section>
@@ -126,27 +117,34 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p>The buffer referred to by <em>map</em> is not accessible.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>The <em>addr</em> or <em>len</em> arguments are incorrect. Both of these arguments must be aligned to a multiple of the system page size, and they must not refer to a region outside of the address space of the process or to a region that consists of huge pages.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Out of memory.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p>The buffer referred to by <em>map</em> is not accessible.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The <em>addr</em> or <em>len</em> arguments are incorrect. Both of these arguments must be aligned to a multiple of the system page size, and they must not refer to a region outside of the address space of the process or to a region that consists of huge pages.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Out of memory.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>This system call is provided on the PowerPC architecture since Linux 2.6.25. The system call is provided only if the kernel is configured with <strong>CONFIG_PPC_64K_PAGES</strong>. No library support is provided.</p>
         </div>
       </section>
@@ -154,7 +152,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p>This system call is Linux-specific.</p>
         </div>
       </section>
@@ -162,27 +159,18 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>Normal page protections (at the 64-kB page level) also apply; the subpage protection mechanism is an additional constraint, so putting 0 in a 2-bit field won't allow writes to a page that is otherwise write-protected.</p>
-  <h3>Rationale</h3>
+<p>Glibc does not provide a wrapper for this system call; call it using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p><p>Normal page protections (at the 64-kB page level) also apply; the subpage protection mechanism is an additional constraint, so putting 0 in a 2-bit field won't allow writes to a page that is otherwise write-protected.</p><h3>Rationale</h3>
 <p>This system call is provided to assist writing emulators that operate using 64-kB pages on PowerPC systems. When emulating systems such as x86, which uses a smaller page size, the emulator can no longer use the memory-management unit (MMU) and normal system calls for controlling page protections. (The emulator could emulate the MMU by checking and possibly remapping the address for each memory access in software, but that is slow.) The idea is that the emulator supplies an array of protection masks to apply to a specified range of virtual addresses. These masks are applied at the level where hardware page-table entries (PTEs) are inserted into the hardware page table based on the Linux PTEs, so the Linux PTEs are not affected. Implicit in this is that the regions of the address space that are protected are switched to use 4-kB hardware pages rather than 64-kB hardware pages (on machines with hardware 64-kB page support).</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO subpage_prot&hellip;</h2>
         <div class="sectioncontent">
-
-<p><a href="../man2/mprotect.2.html"><strong>mprotect</strong>(2)</a>, <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a></p>
-<p class='spacer'>
-
-<p><em>Documentation/vm/hugetlbpage.txt</em> in the Linux kernel source tree</p>
+<p><a href="../man2/mprotect.2.html"><strong>mprotect</strong>(2)</a>, <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a></p><p><em>Documentation/vm/hugetlbpage.txt</em> in the Linux kernel source tree</p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="stty.2.html"><span aria-hidden="true">&larr;</span> stty.2: Unimplemented system calls</a></li>

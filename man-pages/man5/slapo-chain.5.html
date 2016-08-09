@@ -90,7 +90,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
 <p>ETCDIR/slapd.conf</p>
         </div>
       </section>
@@ -98,55 +97,49 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>chain</strong> overlay to <strong>slapd</strong>(8) allows automatic referral chasing. Any time a referral is returned (except for bind operations), it is chased by using an instance of the ldap backend. If operations are performed with an identity (i.e. after a bind), that identity can be asserted while chasing the referrals by means of the <em>identity assertion</em> feature of back-ldap (see <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> for details), which is essentially based on the <strong>proxied authorization</strong> control [RFC 4370]. Referral chasing can be controlled by the client by issuing the <strong>chaining</strong> control (see <em>draft-sermersheim-ldap-chaining</em> for details.)</p><p>The config directives that are specific to the <strong>chain</strong> overlay are prefixed by <strong>chain-</strong>, to avoid potential conflicts with directives specific to the underlying database or to other stacked overlays.</p><p>There are very few chain overlay specific directives; however, directives related to the instances of the <em>ldap</em> backend that may be implicitly instantiated by the overlay may assume a special meaning when used in conjunction with this overlay.  They are described in <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, and they also need to be prefixed by <strong>chain-</strong>.</p><p>Note: this overlay is built into the <em>ldap</em> backend; it is not a separate module.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>overlay chain</strong></p>
+  </dt>
+  <dd>
+    <p>This directive adds the chain overlay to the current backend. The chain overlay may be used with any backend, but it is mainly intended for use with local storage backends that may return referrals. It is useless in conjunction with the <em>slapd-ldap</em> and <em>slapd-meta</em> backends because they already exploit the libldap specific referral chase feature. [Note: this may change in the future, as the <strong>ldap</strong>(5) and <strong>meta</strong>(5) backends might no longer chase referrals on their own.]</p>
+  </dd>
+  <dt>
+    <p><strong>chain-cache-uri {FALSE|true}</strong></p>
+  </dt>
+  <dd>
+    <p>This directive instructs the <em>chain</em> overlay to cache connections to URIs parsed out of referrals that are not predefined, to be reused for later chaining. These URIs inherit the properties configured for the underlying <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> before any occurrence of the <strong>chain-uri</strong> directive; basically, they are chained anonymously.</p>
+  </dd>
+  <dt>
+    <p><strong>chain-chaining [resolve=<r>] [continuation=<c>] [critical]</strong></p>
+  </dt>
+  <dd>
+    <p>This directive enables the <em>chaining</em> control (see <em>draft-sermersheim-ldap-chaining</em> for details) with the desired resolve and continuation behaviors and criticality. The <strong>resolve</strong> parameter refers to the behavior while discovering a resource, namely when accessing the object indicated by the request DN; the <strong>continuation</strong> parameter refers to the behavior while handling intermediate responses, which is mostly significant for the search operation, but may affect extended operations that return intermediate responses. The values <strong>r</strong> and <strong>c</strong> can be any of <strong>chainingPreferred</strong>, <strong>chainingRequired</strong>, <strong>referralsPreferred</strong>, <strong>referralsRequired</strong>. If the <strong>critical</strong> flag affects the control criticality if provided. [This control is experimental and its support may change in the future.]</p>
+  </dd>
+  <dt>
+    <p><strong>chain-max-depth <n></strong></p>
+  </dt>
+  <dd>
+    <p>In case a referral is returned during referral chasing, further chasing occurs at most <strong>&lt;n&gt;</strong> levels deep.  Set to <strong>1</strong> (the default) to disable further referral chasing.</p>
+  </dd>
+  <dt>
+    <p><strong>chain-return-error {FALSE|true}</strong></p>
+  </dt>
+  <dd>
+    <p>In case referral chasing fails, the real error is returned instead of the original referral.  In case multiple referral URIs are present, only the first error is returned.  This behavior may not be always appropriate nor desirable, since failures in referral chasing might be better resolved by the client (e.g. when caused by distributed authentication issues).</p>
+  </dd>
+  <dt>
+    <p><strong>chain-uri <ldapuri></strong></p>
+  </dt>
+  <dd>
+    <p>This directive instantiates a new underlying <em>ldap</em> database and instructs it about which URI to contact to chase referrals. As opposed to what stated in <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, only one URI can appear after this directive; all subsequent <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> directives prefixed by <strong>chain-</strong> refer to this specific instance of a remote server.</p>
+  </dd>
 
-<p>The <strong>chain</strong> overlay to <strong>slapd</strong>(8) allows automatic referral chasing. Any time a referral is returned (except for bind operations), it is chased by using an instance of the ldap backend. If operations are performed with an identity (i.e. after a bind), that identity can be asserted while chasing the referrals by means of the <em>identity assertion</em> feature of back-ldap (see <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> for details), which is essentially based on the <strong>proxied authorization</strong> control [RFC 4370]. Referral chasing can be controlled by the client by issuing the <strong>chaining</strong> control (see <em>draft-sermersheim-ldap-chaining</em> for details.)</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>The config directives that are specific to the <strong>chain</strong> overlay are prefixed by <strong>chain-</strong>, to avoid potential conflicts with directives specific to the underlying database or to other stacked overlays.</p>
-<p class='spacer'>
-
-<p class='spacer'>
-
-<p>There are very few chain overlay specific directives; however, directives related to the instances of the <em>ldap</em> backend that may be implicitly instantiated by the overlay may assume a special meaning when used in conjunction with this overlay.  They are described in <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, and they also need to be prefixed by <strong>chain-</strong>.</p>
-<p class='spacer'>
-
-<p>Note: this overlay is built into the <em>ldap</em> backend; it is not a separate module.</p>
-<p class='spacer'>
-
-  <dl class='dl-vertical'>
-    <dt><strong>overlay chain</strong></dt>
-    <dd>
-  <p>This directive adds the chain overlay to the current backend. The chain overlay may be used with any backend, but it is mainly intended for use with local storage backends that may return referrals. It is useless in conjunction with the <em>slapd-ldap</em> and <em>slapd-meta</em> backends because they already exploit the libldap specific referral chase feature. [Note: this may change in the future, as the <strong>ldap</strong>(5) and <strong>meta</strong>(5) backends might no longer chase referrals on their own.]</p>
-    </dd>
-    <dt><strong>chain-cache-uri {FALSE|true}</strong></dt>
-    <dd>
-  <p>This directive instructs the <em>chain</em> overlay to cache connections to URIs parsed out of referrals that are not predefined, to be reused for later chaining. These URIs inherit the properties configured for the underlying <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> before any occurrence of the <strong>chain-uri</strong> directive; basically, they are chained anonymously.</p>
-    </dd>
-    <dt><strong>chain-chaining [resolve=&lt;r&gt;] [continuation=&lt;c&gt;] [critical]</strong></dt>
-    <dd>
-  <p>This directive enables the <em>chaining</em> control (see <em>draft-sermersheim-ldap-chaining</em> for details) with the desired resolve and continuation behaviors and criticality. The <strong>resolve</strong> parameter refers to the behavior while discovering a resource, namely when accessing the object indicated by the request DN; the <strong>continuation</strong> parameter refers to the behavior while handling intermediate responses, which is mostly significant for the search operation, but may affect extended operations that return intermediate responses. The values <strong>r</strong> and <strong>c</strong> can be any of <strong>chainingPreferred</strong>, <strong>chainingRequired</strong>, <strong>referralsPreferred</strong>, <strong>referralsRequired</strong>. If the <strong>critical</strong> flag affects the control criticality if provided. [This control is experimental and its support may change in the future.]</p>
-    </dd>
-    <dt><strong>chain-max-depth &lt;n&gt;</strong></dt>
-    <dd>
-  <p>In case a referral is returned during referral chasing, further chasing occurs at most <strong>&lt;n&gt;</strong> levels deep.  Set to <strong>1</strong> (the default) to disable further referral chasing.</p>
-    </dd>
-    <dt><strong>chain-return-error {FALSE|true}</strong></dt>
-    <dd>
-  <p>In case referral chasing fails, the real error is returned instead of the original referral.  In case multiple referral URIs are present, only the first error is returned.  This behavior may not be always appropriate nor desirable, since failures in referral chasing might be better resolved by the client (e.g. when caused by distributed authentication issues).</p>
-    </dd>
-    <dt><strong>chain-uri &lt;ldapuri&gt;</strong></dt>
-    <dd>
-  <p>This directive instantiates a new underlying <em>ldap</em> database and instructs it about which URI to contact to chase referrals. As opposed to what stated in <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, only one URI can appear after this directive; all subsequent <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> directives prefixed by <strong>chain-</strong> refer to this specific instance of a remote server.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
+</dl>
 <p>Directives for configuring the underlying ldap database may also be required, as shown in this example:</p>
-<p class='spacer'>
-
-<pre>overlay                 chain
+<pre>
+overlay                 chain
 chain-rebind-as-user    FALSE
 
 chain-uri               "ldap://ldap1.example.com"
@@ -161,10 +154,8 @@ chain-idassert-bind     bindmethod="simple"
                         binddn="cn=Auth,dc=example,dc=com"
                         credentials="secret"
                         mode="none"
+
 </pre>
-
-<p class='spacer'>
-
 <p>Any valid directives for the ldap database may be used; see <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> for details. Multiple occurrences of the <strong>chain-uri</strong> directive may appear, to define multiple "trusted" URIs where operations with <em>identity assertion</em> are chained. All URIs not listed in the configuration are chained anonymously. All <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a> directives appearing before the first occurrence of <strong>chain-uri</strong> are inherited by all URIs, unless specifically overridden inside each URI configuration.</p>
         </div>
       </section>
@@ -173,31 +164,32 @@ chain-idassert-bind     bindmethod="simple"
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt>ETCDIR/slapd.conf</dt>
-    <dd>
-  <p>default slapd configuration file</p>
-    </dd>
-  </dl>
-        </div>
-      </section>
+<dl class='dl-vertical'>
+  <dt>
+    <p>ETCDIR/slapd.conf</p>
+  </dt>
+  <dd>
+    <p>default slapd configuration file</p>
+  </dd>
 
-      <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
-        <div class="sectioncontent">
+</dl>
 
-<p>Originally implemented by Howard Chu; extended by Pierangelo Masarati.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO slapo-chain&hellip;</h2>
         <div class="sectioncontent">
-
 <p><strong>slapd.conf</strong>(5), <strong>slapd-config</strong>(5), <a href="../man5/slapd-ldap.5.html"><strong>slapd-ldap</strong>(5)</a>, <strong>slapd</strong>(8).</p>
         </div>
       </section>
 
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>Originally implemented by Howard Chu; extended by Pierangelo Masarati.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="slapo-auditlog.5.html"><span aria-hidden="true">&larr;</span> slapo-auditlog.5: Audit logging overlay to slapd</a></li>

@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>sigsetjmp: Performing a nonlocal goto</title>
+  <title>setjmp: Performing a nonlocal goto</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -30,7 +30,7 @@
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">sigsetjmp<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">setjmp<small> (3)</small></h1>
         <p class="lead">Performing a nonlocal goto</p>
       </div>
 
@@ -54,8 +54,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/sigsetjmp.3.html">
-      <span itemprop="name">sigsetjmp: Performing a nonlocal goto</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/setjmp.3.html">
+      <span itemprop="name">setjmp: Performing a nonlocal goto</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -80,8 +80,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/sigsetjmp.3.html">
-      <span itemprop="name">sigsetjmp: Performing a nonlocal goto</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/setjmp.3.html">
+      <span itemprop="name">setjmp: Performing a nonlocal goto</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -90,26 +90,18 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;setjmp.h&gt;</strong></p>
-<p class='spacer'>
-
-<pre><strong>int setjmp(jmp_buf </strong><em>env</em><strong>);</strong>
+<p><strong>#include <setjmp.h></strong></p>
+<pre>
+<strong>int setjmp(jmp_buf </strong><em>env</em><strong>);</strong>
 <strong>int sigsetjmp(sigjmp_buf </strong><em>env</em><strong>, int </strong><em>savesigs</em><strong>);</strong>
 
 <strong>void longjmp(jmp_buf </strong><em>env</em><strong>, int </strong><em>val</em><strong>);</strong>
-<strong>void siglongjmp(sigjmp_buf </strong><em>env</em><strong>, int </strong><em>val</em><strong>);</strong></pre>
-
-<p class='spacer'>
-
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p>
-<p class='spacer'>
-
-<p><strong>setjmp</strong>():</p>
-<pre>    see NOTES.</pre>
-
-<p class='spacer'>
-
+<strong>void siglongjmp(sigjmp_buf </strong><em>env</em><strong>, int </strong><em>val</em><strong>);</strong>
+</pre>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>setjmp</strong>():</p>
+<pre>
+    see NOTES.
+</pre>
 <p><strong>sigsetjmp</strong>(): _POSIX_C_SOURCE</p>
         </div>
       </section>
@@ -117,44 +109,23 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The functions described on this page are used for performing "nonlocal gotos": transferring execution from one function to a predetermined location in another function. The <strong>setjmp</strong>() function dynamically establishes the target to which control will later be transferred, and <strong>longjmp</strong>() performs the transfer of execution.</p><p>The <strong>setjmp</strong>() function saves various information about the calling environment (typically, the stack pointer, the instruction pointer, possibly the values of other registers and the signal mask) in the buffer <em>env</em> for later use by <strong>longjmp</strong>(). In this case, <strong>setjmp</strong>() returns 0.</p><p>The <strong>longjmp</strong>() function uses the information saved in <em>env</em> to transfer control back to the point where <strong>setjmp</strong>() was called and to restore ("rewind") the stack to its state at the time of the <strong>setjmp</strong>() call. In addition, and depending on the implementation (see NOTES), the values of some other registers and the process signal mask may be restored to their state at the time of the <strong>setjmp</strong>() call.</p><p>Following a successful <strong>longjmp</strong>(), execution continues as if <strong>setjmp</strong>() had returned for a second time. This "fake" return can be distinguished from a true <strong>setjmp</strong>() call because the "fake" return returns the value provided in <em>val</em>. If the programmer mistakenly passes the value 0 in <em>val</em>, the "fake" return will instead return 1.</p><h3>sigsetjmp() and siglongjmp()</h3>
+<p><strong>sigsetjmp</strong>() and <strong>siglongjmp</strong>() also perform nonlocal gotos, but provide predictable handling of the process signal mask.</p><p>If, and only if, the <em>savesigs</em> argument provided to <strong>sigsetjmp</strong>() is nonzero, the process's current signal mask is saved in <em>env</em> and will be restored if a <strong>siglongjmp</strong>() is later performed with this <em>env</em>.</p>
 
-<p>The functions described on this page are used for performing "nonlocal gotos": transferring execution from one function to a predetermined location in another function. The <strong>setjmp</strong>() function dynamically establishes the target to which control will later be transferred, and <strong>longjmp</strong>() performs the transfer of execution.</p>
-<p class='spacer'>
-
-<p>The <strong>setjmp</strong>() function saves various information about the calling environment (typically, the stack pointer, the instruction pointer, possibly the values of other registers and the signal mask) in the buffer <em>env</em> for later use by <strong>longjmp</strong>(). In this case, <strong>setjmp</strong>() returns 0.</p>
-<p class='spacer'>
-
-<p>The <strong>longjmp</strong>() function uses the information saved in <em>env</em> to transfer control back to the point where <strong>setjmp</strong>() was called and to restore ("rewind") the stack to its state at the time of the <strong>setjmp</strong>() call. In addition, and depending on the implementation (see NOTES), the values of some other registers and the process signal mask may be restored to their state at the time of the <strong>setjmp</strong>() call.</p>
-<p class='spacer'>
-
-<p>Following a successful <strong>longjmp</strong>(), execution continues as if <strong>setjmp</strong>() had returned for a second time. This "fake" return can be distinguished from a true <strong>setjmp</strong>() call because the "fake" return returns the value provided in <em>val</em>. If the programmer mistakenly passes the value 0 in <em>val</em>, the "fake" return will instead return 1.</p>
-<p class='spacer'>
-
-  <h3>sigsetjmp() and siglongjmp()</h3>
-<p><strong>sigsetjmp</strong>() and <strong>siglongjmp</strong>() also perform nonlocal gotos, but provide predictable handling of the process signal mask.</p>
-<p class='spacer'>
-
-<p>If, and only if, the <em>savesigs</em> argument provided to <strong>sigsetjmp</strong>() is nonzero, the process's current signal mask is saved in <em>env</em> and will be restored if a <strong>siglongjmp</strong>() is later performed with this <em>env</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
-<p><strong>setjmp</strong>() and <strong>sigsetjmp</strong>() return 0 when called directly; on the "fake" return that occurs after <strong>longjmp</strong>() or <strong>siglongjmp</strong>(), the nonzero value specified in <em>val</em> is returned.</p>
-<p class='spacer'>
-
-<p>The <strong>longjmp</strong>() or <strong>siglongjmp</strong>() functions do not return.</p>
+<p><strong>setjmp</strong>() and <strong>sigsetjmp</strong>() return 0 when called directly; on the "fake" return that occurs after <strong>longjmp</strong>() or <strong>siglongjmp</strong>(), the nonzero value specified in <em>val</em> is returned.</p><p>The <strong>longjmp</strong>() or <strong>siglongjmp</strong>() functions do not return.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p>
-<table class="table table-striped">
+<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
 <tr>
 <th>Interface</th>
 <th>Attribute</th>
@@ -170,88 +141,37 @@
 <td>Thread safety</td>
 <td>MT-Safe</td></tr>
 </table>
-
-<p class='spacer'>
-
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
-<p><strong>setjmp</strong>(), <strong>longjmp</strong>(): POSIX.1-2001, POSIX.1-2008, C89, C99.</p>
-<p class='spacer'>
-
-<p><strong>sigsetjmp</strong>(), <strong>siglongjmp</strong>(): POSIX.1-2001, POSIX.1-2008.</p>
+<p><strong>setjmp</strong>(), <strong>longjmp</strong>(): POSIX.1-2001, POSIX.1-2008, C89, C99.</p><p><strong>sigsetjmp</strong>(), <strong>siglongjmp</strong>(): POSIX.1-2001, POSIX.1-2008.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
+<p>POSIX does not specify whether <strong>setjmp</strong>() will save the signal mask (to be later restored during <strong>longjmp</strong>(). In System V it will not. In 4.3BSD it will, and there is a function <strong>_setjmp</strong> that will not. On Linux with glibc versions before 2.19, <strong>setjmp</strong>() follows the System V behavior by default, but the BSD behavior is provided if the <strong>_BSD_SOURCE</strong> feature test macro is defined and none of <strong>_POSIX_SOURCE</strong>, <strong>_POSIX_C_SOURCE</strong>, <strong>_XOPEN_SOURCE</strong>, <strong>_GNU_SOURCE</strong>, or <strong>_SVID_SOURCE</strong> is defined. Since glibc 2.19, <em><setjmp.h></em> exposes only the System V version of <strong>setjmp</strong>(). Programs that need the BSD semantics should replace calls to <strong>setjmp</strong>() with calls to <strong>sigsetjmp</strong>() with a nonzero <em>savesigs</em> argument.</p><p><strong>setjmp</strong>() and <a href="../man3/longjmp.3.html"><strong>longjmp</strong>(3)</a> can be useful for dealing with errors inside deeply nested function calls or to allow a signal handler to pass control to a specific point in the program, rather than returning to the point where the handler interrupted the main program. In the latter case, if you want to portably save and restore signal masks, use <strong>sigsetjmp</strong>() and <strong>siglongjmp</strong>(). See also the discussion of program readability below.</p><p>The compiler may optimize variables into registers, and <strong>longjmp</strong>() may restore the values of other registers in addition to the stack pointer and program counter. Consequently, the values of automatic variables are unspecified after a call to <strong>longjmp</strong>() if they meet all the following criteria:</p><ul>
+<li><p>they are local to the function that made the corresponding <a href="../man3/setjmp.3.html"><strong>setjmp</strong>(3)</a> call;</p></li><li><p>their values are changed between the calls to <a href="../man3/setjmp.3.html"><strong>setjmp</strong>(3)</a> and <strong>longjmp</strong>(); and</p></li><li><p>they are not declared as <em>volatile</em>.</p></li>
+</ul><p>Analogous remarks apply for <strong>siglongjmp</strong>().</p><h3>Nonlocal gotos and program readability</h3>
+<p>While it can be abused, the traditional C "goto" statement at least has the benefit that lexical cues (the goto statement and the target label) allow the programmer to easily perceive the flow of control. Nonlocal gotos provide no such cues: multiple <strong>setjmp</strong>() calls might employ the same <em>jmp_buf</em> variable so that the content of the variable may change over the lifetime of the application. Consequently, the programmer may be forced to perform detailed reading of the code to determine the dynamic target of a particular <strong>longjmp</strong>() call. (To make the programmer's life easier, each <strong>setjmp</strong>() call should employ a unique <em>jmp_buf</em> variable.)</p><p>Adding further difficulty, the <strong>setjmp</strong>() and <strong>longjmp</strong>() calls may not even be in the same source code module.</p><p>In summary, nonlocal gotos can make programs harder to understand and maintain, and an alternative should be used if possible.</p>
+<h3>Caveats</h3>
+<p>If the function which called <strong>setjmp</strong>() returns before <strong>longjmp</strong>() is called, the behavior is undefined. Some kind of subtle or unsubtle chaos is sure to result.</p><p>If, in a multithreaded program, a <strong>longjmp</strong>() call employs an <em>env</em> buffer that was initialized by a call to <strong>setjmp</strong>() in a different thread, the behavior is undefined.</p><p>POSIX.1-2008 Technical Corrigendum 2 adds <strong>longjmp</strong>() and <strong>siglongjmp</strong>() to the list of async-signal-safe functions. However, the standard recommends avoiding the use of these functions from signal handlers and goes on to point out that if these functions are called from a signal handler that interrupted a call to a non-async-signal-safe function (or some equivalent, such as the steps equivalent to <a href="../man3/exit.3.html"><strong>exit</strong>(3)</a> that occur upon a return from the initial call to <em>main</em>()), the behavior is undefined if the program subsequently makes a call to a non-async-signal-safe function. The only way of avoiding undefined behavior is to ensure one of the following:</p><ul>
+<li><p>After long jumping from the signal handler, the program does not call any non-async-signal-safe functions and does not return from the initial call to <em>main</em>().</p></li><li><p>Any signal whose handler performs a long jump must be blocked during <em>every</em> call to a non-async-signal-safe function and no non-async-signal-safe functions are called after returning from the initial call to <em>main</em>().</p></li>
+</ul>
 
-<p>POSIX does not specify whether <strong>setjmp</strong>() will save the signal mask (to be later restored during <strong>longjmp</strong>(). In System V it will not. In 4.3BSD it will, and there is a function <strong>_setjmp</strong> that will not. On Linux with glibc versions before 2.19, <strong>setjmp</strong>() follows the System V behavior by default, but the BSD behavior is provided if the <strong>_BSD_SOURCE</strong> feature test macro is defined and none of <strong>_POSIX_SOURCE</strong>, <strong>_POSIX_C_SOURCE</strong>, <strong>_XOPEN_SOURCE</strong>, <strong>_GNU_SOURCE</strong>, or <strong>_SVID_SOURCE</strong> is defined. Since glibc 2.19, <em>&lt;setjmp.h&gt;</em> exposes only the System V version of <strong>setjmp</strong>(). Programs that need the BSD semantics should replace calls to <strong>setjmp</strong>() with calls to <strong>sigsetjmp</strong>() with a nonzero <em>savesigs</em> argument.</p>
-<p class='spacer'>
-
-<p><strong>setjmp</strong>() and <a href="../man3/longjmp.3.html"><strong>longjmp</strong>(3)</a> can be useful for dealing with errors inside deeply nested function calls or to allow a signal handler to pass control to a specific point in the program, rather than returning to the point where the handler interrupted the main program. In the latter case, if you want to portably save and restore signal masks, use <strong>sigsetjmp</strong>() and <strong>siglongjmp</strong>(). See also the discussion of program readability below.</p>
-<p class='spacer'>
-
-  <p>The compiler may optimize variables into registers, and <strong>longjmp</strong>() may restore the values of other registers in addition to the stack pointer and program counter. Consequently, the values of automatic variables are unspecified after a call to <strong>longjmp</strong>() if they meet all the following criteria:</p>
-  <dl class='dl-horizontal'>
-    <dt>&bull;</dt>
-    <dd>
-  <p>they are local to the function that made the corresponding <a href="../man3/setjmp.3.html"><strong>setjmp</strong>(3)</a> call;</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>their values are changed between the calls to <a href="../man3/setjmp.3.html"><strong>setjmp</strong>(3)</a> and <strong>longjmp</strong>(); and</p>
-    </dd>
-    <dt>&bull;</dt>
-    <dd>
-  <p>they are not declared as <em>volatile</em>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>Analogous remarks apply for <strong>siglongjmp</strong>().</p>
-  <h3>Nonlocal gotos and program readability</h3>
-<p>While it can be abused, the traditional C "goto" statement at least has the benefit that lexical cues (the goto statement and the target label) allow the programmer to easily perceive the flow of control. Nonlocal gotos provide no such cues: multiple <strong>setjmp</strong>() calls might employ the same <em>jmp_buf</em> variable so that the content of the variable may change over the lifetime of the application. Consequently, the programmer may be forced to perform detailed reading of the code to determine the dynamic target of a particular <strong>longjmp</strong>() call. (To make the programmer's life easier, each <strong>setjmp</strong>() call should employ a unique <em>jmp_buf</em> variable.)</p>
-<p class='spacer'>
-
-<p>Adding further difficulty, the <strong>setjmp</strong>() and <strong>longjmp</strong>() calls may not even be in the same source code module.</p>
-<p class='spacer'>
-
-<p>In summary, nonlocal gotos can make programs harder to understand and maintain, and an alternative should be used if possible.</p>
-  <h3>Caveats</h3>
-<p>If the function which called <strong>setjmp</strong>() returns before <strong>longjmp</strong>() is called, the behavior is undefined. Some kind of subtle or unsubtle chaos is sure to result.</p>
-<p class='spacer'>
-
-<p>If, in a multithreaded program, a <strong>longjmp</strong>() call employs an <em>env</em> buffer that was initialized by a call to <strong>setjmp</strong>() in a different thread, the behavior is undefined.</p>
-<p class='spacer'>
-
-  <p>POSIX.1-2008 Technical Corrigendum 2 adds <strong>longjmp</strong>() and <strong>siglongjmp</strong>() to the list of async-signal-safe functions. However, the standard recommends avoiding the use of these functions from signal handlers and goes on to point out that if these functions are called from a signal handler that interrupted a call to a non-async-signal-safe function (or some equivalent, such as the steps equivalent to <a href="../man3/exit.3.html"><strong>exit</strong>(3)</a> that occur upon a return from the initial call to <em>main</em>()), the behavior is undefined if the program subsequently makes a call to a non-async-signal-safe function. The only way of avoiding undefined behavior is to ensure one of the following:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>After long jumping from the signal handler, the program does not call any non-async-signal-safe functions and does not return from the initial call to <em>main</em>().</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>Any signal whose handler performs a long jump must be blocked during <em>every</em> call to a non-async-signal-safe function and no non-async-signal-safe functions are called after returning from the initial call to <em>main</em>().</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO sigsetjmp&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO setjmp&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man7/signal.7.html"><strong>signal</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="sigset.3.html"><span aria-hidden="true">&larr;</span> sigset.3: System v signal api</a></li>

@@ -90,63 +90,40 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;linux/membarrier.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>int membarrier(int </strong><em>cmd</em><strong>, int </strong><em>flags</em><strong>);</strong></p>
+<p><strong>#include <linux/membarrier.h></strong></p><p><strong>int membarrier(int </strong><em>cmd</em><strong>, int </strong><em>flags</em><strong>);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
+<p>The <strong>membarrier</strong>() system call helps reducing the overhead of the memory barrier instructions required to order memory accesses on multi-core systems. However, this system call is heavier than a memory barrier, so using it effectively is <em>not</em> as simple as replacing memory barriers with this system call, but requires understanding of the details below.</p><p>Use of memory barriers needs to be done taking into account that a memory barrier always needs to be either matched with its memory barrier counterparts, or that the architecture's memory model doesn't require the matching barriers.</p><p>There are cases where one side of the matching barriers (which we will refer to as "fast side") is executed much more often than the other (which we will refer to as "slow side"). This is a prime target for the use of <strong>membarrier</strong>(). The key idea is to replace, for these matching barriers, the fast-side memory barriers by simple compiler barriers, for example:</p>
+<pre>
+    asm volatile ("" : : : "memory")
+</pre>
+<p>and replace the slow-side memory barriers by calls to <strong>membarrier</strong>().</p><p>This will add overhead to the slow side, and remove overhead from the fast side, thus resulting in an overall performance increase as long as the slow side is infrequent enough that the overhead of the <strong>membarrier</strong>() calls does not outweigh the performance gain on the fast side.</p><p>The <em>cmd</em> argument is one of the following:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>MEMBARRIER_CMD_QUERY</strong></p>
+  </dt>
+  <dd>
+    <p>Query the set of supported commands. The return value of the call is a bit mask of supported commands. <strong>MEMBARRIER_CMD_QUERY</strong>, which has the value 0, is not itself included in this bit mask. This command is always supported (on kernels where <strong>membarrier</strong>() is provided).</p>
+  </dd>
+  <dt>
+    <p><strong>MEMBARRIER_CMD_SHARED</strong></p>
+  </dt>
+  <dd>
+    <p>Ensure that all threads from all processes on the system pass through a state where all memory accesses to user-space addresses match program order between entry to and return from the <strong>membarrier</strong>() system call. All threads on the system are targeted by this command.</p>
+  </dd>
 
-<p>The <strong>membarrier</strong>() system call helps reducing the overhead of the memory barrier instructions required to order memory accesses on multi-core systems. However, this system call is heavier than a memory barrier, so using it effectively is <em>not</em> as simple as replacing memory barriers with this system call, but requires understanding of the details below.</p>
-<p class='spacer'>
-
-<p>Use of memory barriers needs to be done taking into account that a memory barrier always needs to be either matched with its memory barrier counterparts, or that the architecture's memory model doesn't require the matching barriers.</p>
-<p class='spacer'>
-
-<p>There are cases where one side of the matching barriers (which we will refer to as "fast side") is executed much more often than the other (which we will refer to as "slow side"). This is a prime target for the use of <strong>membarrier</strong>(). The key idea is to replace, for these matching barriers, the fast-side memory barriers by simple compiler barriers, for example:</p>
-<p class='spacer'>
-
-<pre>    asm volatile ("" : : : "memory")</pre>
-
-<p class='spacer'>
-
-<p>and replace the slow-side memory barriers by calls to <strong>membarrier</strong>().</p>
-<p class='spacer'>
-
-<p>This will add overhead to the slow side, and remove overhead from the fast side, thus resulting in an overall performance increase as long as the slow side is infrequent enough that the overhead of the <strong>membarrier</strong>() calls does not outweigh the performance gain on the fast side.</p>
-<p class='spacer'>
-
-  <p>The <em>cmd</em> argument is one of the following:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>MEMBARRIER_CMD_QUERY</strong></dt>
-    <dd>
-  <p>Query the set of supported commands. The return value of the call is a bit mask of supported commands. <strong>MEMBARRIER_CMD_QUERY</strong>, which has the value 0, is not itself included in this bit mask. This command is always supported (on kernels where <strong>membarrier</strong>() is provided).</p>
-    </dd>
-    <dt><strong>MEMBARRIER_CMD_SHARED</strong></dt>
-    <dd>
-  <p>Ensure that all threads from all processes on the system pass through a state where all memory accesses to user-space addresses match program order between entry to and return from the <strong>membarrier</strong>() system call. All threads on the system are targeted by this command.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>The <em>flags</em> argument is currently unused and must be specified as 0.</p>
-<p class='spacer'>
-
-<p>All memory accesses performed in program order from each targeted thread are guaranteed to be ordered with respect to <strong>membarrier</strong>().</p>
-<p class='spacer'>
-
-<p>If we use the semantic <em>barrier()</em> to represent a compiler barrier forcing memory accesses to be performed in program order across the barrier, and <em>smp_mb()</em> to represent explicit memory barriers forcing full memory ordering across the barrier, we have the following ordering table for each pairing of <em>barrier()</em>, <strong>membarrier</strong>() and <em>smp_mb()</em>. The pair ordering is detailed as (O: ordered, X: not ordered):</p>
-<p class='spacer'>
-
-<pre>                       barrier()  smp_mb()  membarrier()
+</dl>
+<p>The <em>flags</em> argument is currently unused and must be specified as 0.</p><p>All memory accesses performed in program order from each targeted thread are guaranteed to be ordered with respect to <strong>membarrier</strong>().</p><p>If we use the semantic <em>barrier()</em> to represent a compiler barrier forcing memory accesses to be performed in program order across the barrier, and <em>smp_mb()</em> to represent explicit memory barriers forcing full memory ordering across the barrier, we have the following ordering table for each pairing of <em>barrier()</em>, <strong>membarrier</strong>() and <em>smp_mb()</em>. The pair ordering is detailed as (O: ordered, X: not ordered):</p>
+<pre>
+                       barrier()  smp_mb()  membarrier()
        barrier()          X          X          O
        smp_mb()           X          O          O
-       membarrier()       O          O          O</pre>
+       membarrier()       O          O          O
+</pre>
 
         </div>
       </section>
@@ -154,11 +131,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-
-<p>On success, the <strong>MEMBARRIER_CMD_QUERY</strong> operation returns a bit mask of supported commands and the <strong>MEMBARRIER_CMD_SHARED</strong> operation returns zero. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
-<p class='spacer'>
-
-<p>For a given command, with <em>flags</em> set to 0, this system call is guaranteed to always return the same value until reboot. Further calls with the same arguments will lead to the same result. Therefore, with <em>flags</em> set to 0, error handling is required only for the first call to <strong>membarrier</strong>().</p>
+<p>On success, the <strong>MEMBARRIER_CMD_QUERY</strong> operation returns a bit mask of supported commands and the <strong>MEMBARRIER_CMD_SHARED</strong> operation returns zero. On error, -1 is returned, and <em>errno</em> is set appropriately.</p><p>For a given command, with <em>flags</em> set to 0, this system call is guaranteed to always return the same value until reboot. Further calls with the same arguments will lead to the same result. Therefore, with <em>flags</em> set to 0, error handling is required only for the first call to <strong>membarrier</strong>().</p>
         </div>
       </section>
 
@@ -166,23 +139,28 @@
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p><em>cmd</em> is invalid or <em>flags</em> is non-zero.</p>
-    </dd>
-    <dt><strong>ENOSYS</strong></dt>
-    <dd>
-  <p>The <strong>membarrier</strong>() system call is not implemented by this kernel.</p>
-    </dd>
-  </dl>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p><em>cmd</em> is invalid or <em>flags</em> is non-zero.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOSYS</strong></p>
+  </dt>
+  <dd>
+    <p>The <strong>membarrier</strong>() system call is not implemented by this kernel.</p>
+  </dd>
+
+</dl>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p>The <strong>membarrier</strong>() system call was added in Linux 4.3.</p>
         </div>
       </section>
@@ -190,7 +168,6 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-
 <p><strong>membarrier</strong>() is Linux-specific.</p>
         </div>
       </section>
@@ -198,25 +175,16 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>A memory barrier instruction is part of the instruction set of architectures with weakly-ordered memory models. It orders memory accesses prior to the barrier and after the barrier with respect to matching barriers on other cores. For instance, a load fence can order loads prior to and following that fence with respect to stores ordered by store fences.</p>
-<p class='spacer'>
-
-<p>Program order is the order in which instructions are ordered in the program assembly code.</p>
-<p class='spacer'>
-
-<p>Examples where <strong>membarrier</strong>() can be useful include implementations of Read-Copy-Update libraries and garbage collectors.</p>
+<p>A memory barrier instruction is part of the instruction set of architectures with weakly-ordered memory models. It orders memory accesses prior to the barrier and after the barrier with respect to matching barriers on other cores. For instance, a load fence can order loads prior to and following that fence with respect to stores ordered by store fences.</p><p>Program order is the order in which instructions are ordered in the program assembly code.</p><p>Examples where <strong>membarrier</strong>() can be useful include implementations of Read-Copy-Update libraries and garbage collectors.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
 <p>Assuming a multithreaded application where "fast_path()" is executed very frequently, and where "slow_path()" is executed infrequently, the following code (x86) can be transformed using <strong>membarrier</strong>():</p>
-<p class='spacer'>
-
-<pre>#include &lt;stdlib.h&gt;
+<pre>
+#include &lt;stdlib.h&gt;
 
 static volatile int a, b;
 
@@ -256,14 +224,11 @@ main(int argc, char **argv)
     fast_path();
 
     exit(EXIT_SUCCESS);
-}</pre>
-
-<p class='spacer'>
-
+}
+</pre>
 <p>The code above transformed to use <strong>membarrier</strong>() becomes:</p>
-<p class='spacer'>
-
-<pre>#define _GNU_SOURCE
+<pre>
+#define _GNU_SOURCE
 #include &lt;stdlib.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;unistd.h&gt;
@@ -339,7 +304,8 @@ main(int argc, char **argv)
     fast_path();
 
     exit(EXIT_SUCCESS);
-}</pre>
+}
+</pre>
 
         </div>
       </section>

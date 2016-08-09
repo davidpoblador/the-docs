@@ -90,191 +90,153 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<p><strong>#include &lt;sys/socket.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><strong>#include &lt;sys/un.h&gt;</strong></p>
-<p class='spacer'>
-
-<p><em>unix_socket</em><strong> = socket(AF_UNIX, type, 0);</strong></p>
-<p class='spacer'>
-
-<p><em>error</em><strong> = socketpair(AF_UNIX, type, 0, int *</strong><em>sv</em><strong>);</strong></p>
+<p><strong>#include <sys/socket.h></strong></p><p><strong>#include <sys/un.h></strong></p><p><em>unix_socket</em><strong> = socket(AF_UNIX, type, 0);</strong></p><p><em>error</em><strong> = socketpair(AF_UNIX, type, 0, int *</strong><em>sv</em><strong>);</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-
-<p>The <strong>AF_UNIX</strong> (also known as <strong>AF_LOCAL</strong>) socket family is used to communicate between processes on the same machine efficiently. Traditionally, UNIX domain sockets can be either unnamed, or bound to a filesystem pathname (marked as being of type socket). Linux also supports an abstract namespace which is independent of the filesystem.</p>
-<p class='spacer'>
-
-<p>Valid socket types in the UNIX domain are: <strong>SOCK_STREAM</strong>, for a stream-oriented socket; <strong>SOCK_DGRAM</strong>, for a datagram-oriented socket that preserves message boundaries (as on most UNIX implementations, UNIX domain datagram sockets are always reliable and don't reorder datagrams); and (since Linux 2.6.4) <strong>SOCK_SEQPACKET</strong>, for a sequenced-packet socket that is connection-oriented, preserves message boundaries, and delivers messages in the order that they were sent.</p>
-<p class='spacer'>
-
-<p>UNIX domain sockets support passing file descriptors or process credentials to other processes using ancillary data.</p>
-  <h3>Address format</h3>
-  <p>A UNIX domain socket address is represented in the following structure:</p>
+<p>The <strong>AF_UNIX</strong> (also known as <strong>AF_LOCAL</strong>) socket family is used to communicate between processes on the same machine efficiently. Traditionally, UNIX domain sockets can be either unnamed, or bound to a filesystem pathname (marked as being of type socket). Linux also supports an abstract namespace which is independent of the filesystem.</p><p>Valid socket types in the UNIX domain are: <strong>SOCK_STREAM</strong>, for a stream-oriented socket; <strong>SOCK_DGRAM</strong>, for a datagram-oriented socket that preserves message boundaries (as on most UNIX implementations, UNIX domain datagram sockets are always reliable and don't reorder datagrams); and (since Linux 2.6.4) <strong>SOCK_SEQPACKET</strong>, for a sequenced-packet socket that is connection-oriented, preserves message boundaries, and delivers messages in the order that they were sent.</p><p>UNIX domain sockets support passing file descriptors or process credentials to other processes using ancillary data.</p><h3>Address format</h3>
+<p>A UNIX domain socket address is represented in the following structure:</p>
 <pre>
+
 struct sockaddr_un {
     sa_family_t sun_family;               /* AF_UNIX */
     char        sun_path[108];            /* pathname */
-};</pre>
+};
+</pre>
+<p>The <em>sun_family</em> field always contains <strong>AF_UNIX</strong>. On Linux <em>sun_path</em> is 108 bytes in size; see also NOTES, below.</p><p>Various systems calls (for example, <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a>, <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a>, and <a href="../man2/sendto.2.html"><strong>sendto</strong>(2)</a>) take a <em>sockaddr_un</em> argument as input. Some other system calls (for example, <a href="../man2/getsockname.2.html"><strong>getsockname</strong>(2)</a>, <a href="../man2/getpeername.2.html"><strong>getpeername</strong>(2)</a>, <a href="../man2/recvfrom.2.html"><strong>recvfrom</strong>(2)</a>, and <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>) return an argument of this type.</p><p>Three types of address are distinguished in the <em>sockaddr_un</em> structure:</p>
+<dl class='dl-vertical'>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p><em>pathname</em>: a UNIX domain socket can be bound to a null-terminated filesystem pathname using <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a>. When the address of a pathname socket is returned (by one of the system calls noted above), its length is</p>
+<pre>
+    offsetof(struct sockaddr_un, sun_path) + strlen(sun_path) + 1
+</pre>
+<p>and <em>sun_path</em> contains the null-terminated pathname. (On Linux, the above <strong>offsetof</strong>() expression equates to the same value as <em>sizeof(sa_family_t)</em>, but some other implementations include other fields before <em>sun_path</em>, so the <strong>offsetof</strong>() expression more portably describes the size of the address structure.)</p>
+  </dd>
+  <dt>
+    
+  </dt>
+  <dd>
+    <p>For further details of pathname sockets, see below.</p>
+  </dd>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p><em>unnamed</em>: A stream socket that has not been bound to a pathname using <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a> has no name. Likewise, the two sockets created by <a href="../man2/socketpair.2.html"><strong>socketpair</strong>(2)</a> are unnamed. When the address of an unnamed socket is returned, its length is <em>sizeof(sa_family_t)</em>, and <em>sun_path</em> should not be inspected.</p>
+  </dd>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p><em>abstract</em>: an abstract socket address is distinguished (from a pathname socket) by the fact that <em>sun_path[0]</em> is a null byte (&apos;nbsp;&apos;). The socket's address in this namespace is given by the additional bytes in <em>sun_path</em> that are covered by the specified length of the address structure. (Null bytes in the name have no special significance.) The name has no connection with filesystem pathnames. When the address of an abstract socket is returned, the returned <em>addrlen</em> is greater than <em>sizeof(sa_family_t)</em> (i.e., greater than 2), and the name of the socket is contained in the first <em>(addrlen - sizeof(sa_family_t))</em> bytes of <em>sun_path</em>.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-<p>The <em>sun_family</em> field always contains <strong>AF_UNIX</strong>. On Linux <em>sun_path</em> is 108 bytes in size; see also NOTES, below.</p>
-<p class='spacer'>
+<h3>Pathname sockets</h3>
+<p>When binding a socket to a pathname, a few rules should be observed for maximum portability and ease of coding:</p>
+<dl class='dl-vertical'>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p>The pathname in <em>sun_path</em> should be null-terminated.</p>
+  </dd>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p>The length of the pathname, including the terminating null byte, should not exceed the size of <em>sun_path</em>.</p>
+  </dd>
+  <dt>
+    *
+  </dt>
+  <dd>
+    <p>The <em>addrlen</em> argument that describes the enclosing <em>sockaddr_un</em> structure should have a value of at least:</p>
+<pre>
+    offsetof(struct sockaddr_un, sun_path)+strlen(addr.sun_path)+1
+</pre>
 
-<p>Various systems calls (for example, <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a>, <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a>, and <a href="../man2/sendto.2.html"><strong>sendto</strong>(2)</a>) take a <em>sockaddr_un</em> argument as input. Some other system calls (for example, <a href="../man2/getsockname.2.html"><strong>getsockname</strong>(2)</a>, <a href="../man2/getpeername.2.html"><strong>getpeername</strong>(2)</a>, <a href="../man2/recvfrom.2.html"><strong>recvfrom</strong>(2)</a>, and <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>) return an argument of this type.</p>
-<p class='spacer'>
+  </dd>
+  <dt>
+    
+  </dt>
+  <dd>
+    <p>or, more simply, <em>addrlen</em> can be specified as <em>sizeof(struct sockaddr_un)</em>.</p>
+  </dd>
 
-  <p>Three types of address are distinguished in the <em>sockaddr_un</em> structure:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p><em>pathname</em>: a UNIX domain socket can be bound to a null-terminated filesystem pathname using <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a>. When the address of a pathname socket is returned (by one of the system calls noted above), its length is</p>
-<p class='spacer'>
+</dl>
+<p>There is some variation in how implementations handle UNIX domain socket addresses that do not follow the above rules. For example, some (but not all) implementations append a null terminator if none is present in the supplied <em>sun_path</em>.</p><p>When coding portable applications, keep in mind that some implementations have <em>sun_path</em> as short as 92 bytes.</p><p>Various system calls (<a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>, <a href="../man2/recvfrom.2.html"><strong>recvfrom</strong>(2)</a>, <a href="../man2/getsockname.2.html"><strong>getsockname</strong>(2)</a>, <a href="../man2/getpeername.2.html"><strong>getpeername</strong>(2)</a>) return socket address structures. When applied to UNIX domain sockets, the value-result <em>addrlen</em> argument supplied to the call should be initialized as above. Upon return, the argument is set to indicate the <em>actual</em> size of the address structure. The caller should check the value returned in this argument: if the output value exceeds the input value, then there is no guarantee that a null terminator is present in <em>sun_path</em>. (See BUGS.)</p>
+<h3>Pathname socket ownership and permissions</h3>
+<p>In the Linux implementation, pathname sockets honor the permissions of the directory they are in. Creation of a new socket will fail if the process does not have write and search (execute) permission on the directory in which the socket is created.</p><p>On Linux, connecting to a stream socket object requires write permission on that socket; sending a datagram to a datagram socket likewise requires write permission on that socket. POSIX does not make any statement about the effect of the permissions on a socket file, and on some systems (e.g., older BSDs), the socket permissions are ignored. Portable programs should not rely on this feature for security.</p><p>When creating a new socket, the owner and group of the socket file are set according to the usual rules. The socket file has all permissions enabled, other than those that are turned off by the process <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a>.</p><p>The owner, group, and permissions of a pathname socket can be changed (using <a href="../man2/chown.2.html"><strong>chown</strong>(2)</a> and <a href="../man2/chmod.2.html"><strong>chmod</strong>(2)</a>).</p>
+<h3>Abstract sockets</h3>
+<p>Socket permissions have no meaning for abstract sockets: the process <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a> has no effect when binding an abstract socket, and changing the ownership and permissions of the object (via <a href="../man2/fchown.2.html"><strong>fchown</strong>(2)</a> and <a href="../man2/fchmod.2.html"><strong>fchmod</strong>(2)</a>) has no effect on the accessibility of the socket.</p><p>Abstract sockets automatically disappear when all open references to the socket are closed.</p><p>The abstract socket namespace is a nonportable Linux extension.</p>
+<h3>Socket options</h3>
+<p>For historical reasons, these socket options are specified with a <strong>SOL_SOCKET</strong> type even though they are <strong>AF_UNIX</strong> specific. They can be set with <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> and read with <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> by specifying <strong>SOL_SOCKET</strong> as the socket family.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SO_PASSCRED</strong></p>
+  </dt>
+  <dd>
+    <p>Enables the receiving of the credentials of the sending process in an ancillary message. When this option is set and the socket is not yet connected a unique name in the abstract namespace will be generated automatically. Expects an integer boolean flag.</p>
+  </dd>
 
-<pre>    offsetof(struct sockaddr_un, sun_path) + strlen(sun_path) + 1</pre>
+</dl>
 
-<p class='spacer'>
-
-  <p>and <em>sun_path</em> contains the null-terminated pathname. (On Linux, the above <strong>offsetof</strong>() expression equates to the same value as <em>sizeof(sa_family_t)</em>, but some other implementations include other fields before <em>sun_path</em>, so the <strong>offsetof</strong>() expression more portably describes the size of the address structure.)</p>
-    </dd>
-<p class='spacer'>
-
-  <p>For further details of pathname sockets, see below.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p><em>unnamed</em>: A stream socket that has not been bound to a pathname using <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a> has no name. Likewise, the two sockets created by <a href="../man2/socketpair.2.html"><strong>socketpair</strong>(2)</a> are unnamed. When the address of an unnamed socket is returned, its length is <em>sizeof(sa_family_t)</em>, and <em>sun_path</em> should not be inspected.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p><em>abstract</em>: an abstract socket address is distinguished (from a pathname socket) by the fact that <em>sun_path[0]</em> is a null byte (&apos;nbsp;&apos;). The socket's address in this namespace is given by the additional bytes in <em>sun_path</em> that are covered by the specified length of the address structure. (Null bytes in the name have no special significance.) The name has no connection with filesystem pathnames. When the address of an abstract socket is returned, the returned <em>addrlen</em> is greater than <em>sizeof(sa_family_t)</em> (i.e., greater than 2), and the name of the socket is contained in the first <em>(addrlen - sizeof(sa_family_t))</em> bytes of <em>sun_path</em>.</p>
-    </dd>
-  </dl>
-  <h3>Pathname sockets</h3>
-  <p>When binding a socket to a pathname, a few rules should be observed for maximum portability and ease of coding:</p>
-  <dl class='dl-horizontal'>
-    <dt>*</dt>
-    <dd>
-  <p>The pathname in <em>sun_path</em> should be null-terminated.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>The length of the pathname, including the terminating null byte, should not exceed the size of <em>sun_path</em>.</p>
-    </dd>
-    <dt>*</dt>
-    <dd>
-  <p>The <em>addrlen</em> argument that describes the enclosing <em>sockaddr_un</em> structure should have a value of at least:</p>
-<p class='spacer'>
-
-<pre>    offsetof(struct sockaddr_un, sun_path)+strlen(addr.sun_path)+1</pre>
-
-    </dd>
-<p class='spacer'>
-
-  <p>or, more simply, <em>addrlen</em> can be specified as <em>sizeof(struct sockaddr_un)</em>.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
-
-<p>There is some variation in how implementations handle UNIX domain socket addresses that do not follow the above rules. For example, some (but not all) implementations append a null terminator if none is present in the supplied <em>sun_path</em>.</p>
-<p class='spacer'>
-
-<p>When coding portable applications, keep in mind that some implementations have <em>sun_path</em> as short as 92 bytes.</p>
-<p class='spacer'>
-
-<p>Various system calls (<a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>, <a href="../man2/recvfrom.2.html"><strong>recvfrom</strong>(2)</a>, <a href="../man2/getsockname.2.html"><strong>getsockname</strong>(2)</a>, <a href="../man2/getpeername.2.html"><strong>getpeername</strong>(2)</a>) return socket address structures. When applied to UNIX domain sockets, the value-result <em>addrlen</em> argument supplied to the call should be initialized as above. Upon return, the argument is set to indicate the <em>actual</em> size of the address structure. The caller should check the value returned in this argument: if the output value exceeds the input value, then there is no guarantee that a null terminator is present in <em>sun_path</em>. (See BUGS.)</p>
-  <h3>Pathname socket ownership and permissions</h3>
-<p>In the Linux implementation, pathname sockets honor the permissions of the directory they are in. Creation of a new socket will fail if the process does not have write and search (execute) permission on the directory in which the socket is created.</p>
-<p class='spacer'>
-
-<p>On Linux, connecting to a stream socket object requires write permission on that socket; sending a datagram to a datagram socket likewise requires write permission on that socket. POSIX does not make any statement about the effect of the permissions on a socket file, and on some systems (e.g., older BSDs), the socket permissions are ignored. Portable programs should not rely on this feature for security.</p>
-<p class='spacer'>
-
-<p>When creating a new socket, the owner and group of the socket file are set according to the usual rules. The socket file has all permissions enabled, other than those that are turned off by the process <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a>.</p>
-<p class='spacer'>
-
-<p>The owner, group, and permissions of a pathname socket can be changed (using <a href="../man2/chown.2.html"><strong>chown</strong>(2)</a> and <a href="../man2/chmod.2.html"><strong>chmod</strong>(2)</a>).</p>
-  <h3>Abstract sockets</h3>
-<p>Socket permissions have no meaning for abstract sockets: the process <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a> has no effect when binding an abstract socket, and changing the ownership and permissions of the object (via <a href="../man2/fchown.2.html"><strong>fchown</strong>(2)</a> and <a href="../man2/fchmod.2.html"><strong>fchmod</strong>(2)</a>) has no effect on the accessibility of the socket.</p>
-<p class='spacer'>
-
-<p>Abstract sockets automatically disappear when all open references to the socket are closed.</p>
-<p class='spacer'>
-
-<p>The abstract socket namespace is a nonportable Linux extension.</p>
-  <h3>Socket options</h3>
-  <p>For historical reasons, these socket options are specified with a <strong>SOL_SOCKET</strong> type even though they are <strong>AF_UNIX</strong> specific. They can be set with <a href="../man2/setsockopt.2.html"><strong>setsockopt</strong>(2)</a> and read with <a href="../man2/getsockopt.2.html"><strong>getsockopt</strong>(2)</a> by specifying <strong>SOL_SOCKET</strong> as the socket family.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SO_PASSCRED</strong></dt>
-    <dd>
-  <p>Enables the receiving of the credentials of the sending process in an ancillary message. When this option is set and the socket is not yet connected a unique name in the abstract namespace will be generated automatically. Expects an integer boolean flag.</p>
-    </dd>
-  </dl>
-  <h3>Autobind feature</h3>
+<h3>Autobind feature</h3>
 <p>If a <a href="../man2/bind.2.html"><strong>bind</strong>(2)</a> call specifies <em>addrlen</em> as <em>sizeof(sa_family_t)</em>, or the <strong>SO_PASSCRED</strong> socket option was specified for a socket that was not explicitly bound to an address, then the socket is autobound to an abstract address. The address consists of a null byte followed by 5 bytes in the character set <em>[0-9a-f]</em>. Thus, there is a limit of 2^20 autobind addresses. (From Linux 2.1.15, when the autobind feature was added, 8 bytes were used, and the limit was thus 2^32 autobind addresses. The change to 5 bytes came in Linux 2.3.15.)</p>
-  <h3>Sockets API</h3>
-<p>The following paragraphs describe domain-specific details and unsupported features of the sockets API for UNIX domain sockets on Linux.</p>
-<p class='spacer'>
-
-<p>UNIX domain sockets do not support the transmission of out-of-band data (the <strong>MSG_OOB</strong> flag for <a href="../man2/send.2.html"><strong>send</strong>(2)</a> and <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>).</p>
-<p class='spacer'>
-
-<p>The <a href="../man2/send.2.html"><strong>send</strong>(2)</a> <strong>MSG_MORE</strong> flag is not supported by UNIX domain sockets.</p>
-<p class='spacer'>
-
-<p>The use of <strong>MSG_TRUNC</strong> in the <em>flags</em> argument of <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a> is not supported by UNIX domain sockets.</p>
-<p class='spacer'>
-
-<p>The <strong>SO_SNDBUF</strong> socket option does have an effect for UNIX domain sockets, but the <strong>SO_RCVBUF</strong> option does not. For datagram sockets, the <strong>SO_SNDBUF</strong> value imposes an upper limit on the size of outgoing datagrams. This limit is calculated as the doubled (see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>) option value less 32 bytes used for overhead.</p>
-  <h3>Ancillary messages</h3>
-  <p>Ancillary data is sent and received using <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> and <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. For historical reasons the ancillary message types listed below are specified with a <strong>SOL_SOCKET</strong> type even though they are <strong>AF_UNIX</strong> specific. To send them set the <em>cmsg_level</em> field of the struct <em>cmsghdr</em> to <strong>SOL_SOCKET</strong> and the <em>cmsg_type</em> field to the type. For more information see <a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>.</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SCM_RIGHTS</strong></dt>
-    <dd>
-  <p>Send or receive a set of open file descriptors from another process. The data portion contains an integer array of the file descriptors. The passed file descriptors behave as though they have been created with <a href="../man2/dup.2.html"><strong>dup</strong>(2)</a>.</p>
-    </dd>
-    <dt><strong>SCM_CREDENTIALS</strong></dt>
-    <dd>
-  <p>Send or receive UNIX credentials. This can be used for authentication. The credentials are passed as a <em>struct ucred</em> ancillary message. Thus structure is defined in <em>&lt;sys/socket.h&gt;</em> as follows:</p>
-<p class='spacer'>
-
-<pre>struct ucred {
+<h3>Sockets API</h3>
+<p>The following paragraphs describe domain-specific details and unsupported features of the sockets API for UNIX domain sockets on Linux.</p><p>UNIX domain sockets do not support the transmission of out-of-band data (the <strong>MSG_OOB</strong> flag for <a href="../man2/send.2.html"><strong>send</strong>(2)</a> and <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>).</p><p>The <a href="../man2/send.2.html"><strong>send</strong>(2)</a> <strong>MSG_MORE</strong> flag is not supported by UNIX domain sockets.</p><p>The use of <strong>MSG_TRUNC</strong> in the <em>flags</em> argument of <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a> is not supported by UNIX domain sockets.</p><p>The <strong>SO_SNDBUF</strong> socket option does have an effect for UNIX domain sockets, but the <strong>SO_RCVBUF</strong> option does not. For datagram sockets, the <strong>SO_SNDBUF</strong> value imposes an upper limit on the size of outgoing datagrams. This limit is calculated as the doubled (see <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>) option value less 32 bytes used for overhead.</p>
+<h3>Ancillary messages</h3>
+<p>Ancillary data is sent and received using <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> and <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>. For historical reasons the ancillary message types listed below are specified with a <strong>SOL_SOCKET</strong> type even though they are <strong>AF_UNIX</strong> specific. To send them set the <em>cmsg_level</em> field of the struct <em>cmsghdr</em> to <strong>SOL_SOCKET</strong> and the <em>cmsg_type</em> field to the type. For more information see <a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>.</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SCM_RIGHTS</strong></p>
+  </dt>
+  <dd>
+    <p>Send or receive a set of open file descriptors from another process. The data portion contains an integer array of the file descriptors. The passed file descriptors behave as though they have been created with <a href="../man2/dup.2.html"><strong>dup</strong>(2)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>SCM_CREDENTIALS</strong></p>
+  </dt>
+  <dd>
+    <p>Send or receive UNIX credentials. This can be used for authentication. The credentials are passed as a <em>struct ucred</em> ancillary message. Thus structure is defined in <em><sys/socket.h></em> as follows:</p>
+<pre>
+struct ucred {
     pid_t pid;    /* process ID of the sending process */
     uid_t uid;    /* user ID of the sending process */
     gid_t gid;    /* group ID of the sending process */
-};</pre>
+};
+</pre>
+<p>Since glibc 2.8, the <strong>_GNU_SOURCE</strong> feature test macro must be defined (before including <em>any</em> header files) in order to obtain the definition of this structure.</p><p>The credentials which the sender specifies are checked by the kernel. A process with effective user ID 0 is allowed to specify values that do not match its own. The sender must specify its own process ID (unless it has the capability <strong>CAP_SYS_ADMIN</strong>), its user ID, effective user ID, or saved set-user-ID (unless it has <strong>CAP_SETUID</strong>), and its group ID, effective group ID, or saved set-group-ID (unless it has <strong>CAP_SETGID</strong>). To receive a <em>struct ucred</em> message the <strong>SO_PASSCRED</strong> option must be enabled on the socket.</p>
+  </dd>
 
-<p class='spacer'>
+</dl>
 
-  <p>Since glibc 2.8, the <strong>_GNU_SOURCE</strong> feature test macro must be defined (before including <em>any</em> header files) in order to obtain the definition of this structure.</p>
-<p class='spacer'>
-
-  <p>The credentials which the sender specifies are checked by the kernel. A process with effective user ID 0 is allowed to specify values that do not match its own. The sender must specify its own process ID (unless it has the capability <strong>CAP_SYS_ADMIN</strong>), its user ID, effective user ID, or saved set-user-ID (unless it has <strong>CAP_SETUID</strong>), and its group ID, effective group ID, or saved set-group-ID (unless it has <strong>CAP_SETGID</strong>). To receive a <em>struct ucred</em> message the <strong>SO_PASSCRED</strong> option must be enabled on the socket.</p>
-    </dd>
-  </dl>
-  <h3>Ioctls</h3>
+<h3>Ioctls</h3>
 <p>The following <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> calls return information in <em>value</em>. The correct syntax is:</p>
-<p class='spacer'>
+<pre>
+<strong>int</strong><em> value</em><strong>;</strong>
+<em>error</em><strong> = ioctl(</strong><em>unix_socket</em><strong>, </strong><em>ioctl_type</em><strong>, &</strong><em>value</em><strong>);</strong>
+</pre>
+<p><em>ioctl_type</em> can be:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>SIOCINQ</strong></p>
+  </dt>
+  <dd>
+    <p>For <strong>SOCK_STREAM</strong> socket the function returns the amount of queued unread data in the receive buffer. The socket must not be in LISTEN state, otherwise an error (<strong>EINVAL</strong>) is returned. <strong>SIOCINQ</strong> is defined in <em><linux/sockios.h></em>. Alternatively, you can use the synonymous <strong>FIONREAD</strong>, defined in <em><sys/ioctl.h></em>. For <strong>SOCK_DGRAM</strong> socket, the returned value is the same as for Internet domain datagram socket; see <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a>.</p>
+  </dd>
 
-<pre><strong>int</strong><em> value;</em>
-<em>error</em><strong> = ioctl(</strong><em>unix_socket</em><strong>, </strong><em>ioctl_type</em><strong>, &</strong><em>value</em><strong>);</strong></pre>
+</dl>
 
-<p class='spacer'>
 
-  <p><em>ioctl_type</em> can be:</p>
-  <dl class='dl-vertical'>
-    <dt><strong>SIOCINQ</strong></dt>
-    <dd>
-  <p>For <strong>SOCK_STREAM</strong> socket the function returns the amount of queued unread data in the receive buffer. The socket must not be in LISTEN state, otherwise an error (<strong>EINVAL</strong>) is returned. <strong>SIOCINQ</strong> is defined in <em>&lt;linux/sockios.h&gt;</em>. Alternatively, you can use the synonymous <strong>FIONREAD</strong>, defined in <em>&lt;sys/ioctl.h&gt;</em>. For <strong>SOCK_DGRAM</strong> socket, the returned value is the same as for Internet domain datagram socket; see <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a>.</p>
-    </dd>
-  </dl>
         </div>
       </section>
 
@@ -282,70 +244,99 @@ struct sockaddr_un {
         <h2 class="font-effect-shadow-multiple">ERRORS</h2>
         <div class="sectioncontent">
 
-  <dl class='dl-vertical'>
-    <dt><strong>EADDRINUSE</strong></dt>
-    <dd>
-  <p>The specified local address is already in use or the filesystem socket object already exists.</p>
-    </dd>
-    <dt><strong>ECONNREFUSED</strong></dt>
-    <dd>
-  <p>The remote address specified by <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> was not a listening socket. This error can also occur if the target pathname is not a socket.</p>
-    </dd>
-    <dt><strong>ECONNRESET</strong></dt>
-    <dd>
-  <p>Remote socket was unexpectedly closed.</p>
-    </dd>
-    <dt><strong>EFAULT</strong></dt>
-    <dd>
-  <p>User memory address was not valid.</p>
-    </dd>
-    <dt><strong>EINVAL</strong></dt>
-    <dd>
-  <p>Invalid argument passed. A common cause is that the value <strong>AF_UNIX</strong> was not specified in the <em>sun_type</em> field of passed addresses, or the socket was in an invalid state for the applied operation.</p>
-    </dd>
-    <dt><strong>EISCONN</strong></dt>
-    <dd>
-  <p><a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> called on an already connected socket or a target address was specified on a connected socket.</p>
-    </dd>
-    <dt><strong>ENOENT</strong></dt>
-    <dd>
-  <p>The pathname in the remote address specified to <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> did not exist.</p>
-    </dd>
-    <dt><strong>ENOMEM</strong></dt>
-    <dd>
-  <p>Out of memory.</p>
-    </dd>
-    <dt><strong>ENOTCONN</strong></dt>
-    <dd>
-  <p>Socket operation needs a target address, but the socket is not connected.</p>
-    </dd>
-    <dt><strong>EOPNOTSUPP</strong></dt>
-    <dd>
-  <p>Stream operation called on non-stream oriented socket or tried to use the out-of-band data option.</p>
-    </dd>
-    <dt><strong>EPERM</strong></dt>
-    <dd>
-  <p>The sender passed invalid credentials in the <em>struct ucred</em>.</p>
-    </dd>
-    <dt><strong>EPIPE</strong></dt>
-    <dd>
-  <p>Remote socket was closed on a stream socket. If enabled, a <strong>SIGPIPE</strong> is sent as well. This can be avoided by passing the <strong>MSG_NOSIGNAL</strong> flag to <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> or <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>.</p>
-    </dd>
-    <dt><strong>EPROTONOSUPPORT</strong></dt>
-    <dd>
-  <p>Passed protocol is not <strong>AF_UNIX</strong>.</p>
-    </dd>
-    <dt><strong>EPROTOTYPE</strong></dt>
-    <dd>
-  <p>Remote socket does not match the local socket type (<strong>SOCK_DGRAM</strong> versus <strong>SOCK_STREAM</strong>)</p>
-    </dd>
-    <dt><strong>ESOCKTNOSUPPORT</strong></dt>
-    <dd>
-  <p>Unknown socket type.</p>
-    </dd>
-  </dl>
-<p class='spacer'>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EADDRINUSE</strong></p>
+  </dt>
+  <dd>
+    <p>The specified local address is already in use or the filesystem socket object already exists.</p>
+  </dd>
+  <dt>
+    <p><strong>ECONNREFUSED</strong></p>
+  </dt>
+  <dd>
+    <p>The remote address specified by <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> was not a listening socket. This error can also occur if the target pathname is not a socket.</p>
+  </dd>
+  <dt>
+    <p><strong>ECONNRESET</strong></p>
+  </dt>
+  <dd>
+    <p>Remote socket was unexpectedly closed.</p>
+  </dd>
+  <dt>
+    <p><strong>EFAULT</strong></p>
+  </dt>
+  <dd>
+    <p>User memory address was not valid.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>Invalid argument passed. A common cause is that the value <strong>AF_UNIX</strong> was not specified in the <em>sun_type</em> field of passed addresses, or the socket was in an invalid state for the applied operation.</p>
+  </dd>
+  <dt>
+    <p><strong>EISCONN</strong></p>
+  </dt>
+  <dd>
+    <p><a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> called on an already connected socket or a target address was specified on a connected socket.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOENT</strong></p>
+  </dt>
+  <dd>
+    <p>The pathname in the remote address specified to <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a> did not exist.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOMEM</strong></p>
+  </dt>
+  <dd>
+    <p>Out of memory.</p>
+  </dd>
+  <dt>
+    <p><strong>ENOTCONN</strong></p>
+  </dt>
+  <dd>
+    <p>Socket operation needs a target address, but the socket is not connected.</p>
+  </dd>
+  <dt>
+    <p><strong>EOPNOTSUPP</strong></p>
+  </dt>
+  <dd>
+    <p>Stream operation called on non-stream oriented socket or tried to use the out-of-band data option.</p>
+  </dd>
+  <dt>
+    <p><strong>EPERM</strong></p>
+  </dt>
+  <dd>
+    <p>The sender passed invalid credentials in the <em>struct ucred</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>EPIPE</strong></p>
+  </dt>
+  <dd>
+    <p>Remote socket was closed on a stream socket. If enabled, a <strong>SIGPIPE</strong> is sent as well. This can be avoided by passing the <strong>MSG_NOSIGNAL</strong> flag to <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> or <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>.</p>
+  </dd>
+  <dt>
+    <p><strong>EPROTONOSUPPORT</strong></p>
+  </dt>
+  <dd>
+    <p>Passed protocol is not <strong>AF_UNIX</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong>EPROTOTYPE</strong></p>
+  </dt>
+  <dd>
+    <p>Remote socket does not match the local socket type (<strong>SOCK_DGRAM</strong> versus <strong>SOCK_STREAM</strong>)</p>
+  </dd>
+  <dt>
+    <p><strong>ESOCKTNOSUPPORT</strong></p>
+  </dt>
+  <dd>
+    <p>Unknown socket type.</p>
+  </dd>
 
+</dl>
 <p>Other errors can be generated by the generic socket layer or by the filesystem while generating a filesystem socket object. See the appropriate manual pages for more information.</p>
         </div>
       </section>
@@ -353,7 +344,6 @@ struct sockaddr_un {
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-
 <p><strong>SCM_CREDENTIALS</strong> and the abstract namespace were introduced with Linux 2.2 and should not be used in portable programs. (Some BSD-derived systems also support credential passing, but the implementation details differ.)</p>
         </div>
       </section>
@@ -361,38 +351,20 @@ struct sockaddr_un {
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-
-<p>Binding to a socket with a filename creates a socket in the filesystem that must be deleted by the caller when it is no longer needed (using <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>). The usual UNIX close-behind semantics apply; the socket can be unlinked at any time and will be finally removed from the filesystem when the last reference to it is closed.</p>
-<p class='spacer'>
-
-<p>To pass file descriptors or credentials over a <strong>SOCK_STREAM</strong>, you need to send or receive at least one byte of nonancillary data in the same <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> or <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> call.</p>
-<p class='spacer'>
-
-<p>UNIX domain stream sockets do not support the notion of out-of-band data.</p>
+<p>Binding to a socket with a filename creates a socket in the filesystem that must be deleted by the caller when it is no longer needed (using <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>). The usual UNIX close-behind semantics apply; the socket can be unlinked at any time and will be finally removed from the filesystem when the last reference to it is closed.</p><p>To pass file descriptors or credentials over a <strong>SOCK_STREAM</strong>, you need to send or receive at least one byte of nonancillary data in the same <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a> or <a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a> call.</p><p>UNIX domain stream sockets do not support the notion of out-of-band data.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-
-<p>When binding a socket to an address, Linux is one of the implementations that appends a null terminator if none is supplied in <em>sun_path</em>. In most cases this is unproblematic: when the socket address is retrieved, it will be one byte longer than that supplied when the socket was bound. However, there is one case where confusing behavior can result: if 108 non-null bytes are supplied when a socket is bound, then the addition of the null terminator takes the length of the pathname beyond <em>sizeof(sun_path)</em>. Consequently, when retrieving the socket address (for example, via <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>), if the input <em>addrlen</em> argument for the retrieving call is specified as <em>sizeof(struct sockaddr_un)</em>, then the returned address structure <em>won't</em> have a null terminator in <em>sun_path</em>.</p>
-<p class='spacer'>
-
-<p>In addition, some implementations don't require a null terminator when binding a socket (the <em>addrlen</em> argument is used to determine the length of <em>sun_path</em>) and when the socket address is retrieved on these implementations, there is no null terminator in <em>sun_path</em>.</p>
-<p class='spacer'>
-
-<p>Applications that retrieve socket addresses can (portably) code to handle the possibility that there is no null terminator in <em>sun_path</em> by respecting the fact that the number of valid bytes in the pathname is:</p>
-<p class='spacer'>
-
-<pre>    strnlen(addr.sun_path, addrlen - offsetof(sockaddr_un, sun_path))</pre>
-
-<p class='spacer'>
-
+<p>When binding a socket to an address, Linux is one of the implementations that appends a null terminator if none is supplied in <em>sun_path</em>. In most cases this is unproblematic: when the socket address is retrieved, it will be one byte longer than that supplied when the socket was bound. However, there is one case where confusing behavior can result: if 108 non-null bytes are supplied when a socket is bound, then the addition of the null terminator takes the length of the pathname beyond <em>sizeof(sun_path)</em>. Consequently, when retrieving the socket address (for example, via <a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>), if the input <em>addrlen</em> argument for the retrieving call is specified as <em>sizeof(struct sockaddr_un)</em>, then the returned address structure <em>won't</em> have a null terminator in <em>sun_path</em>.</p><p>In addition, some implementations don't require a null terminator when binding a socket (the <em>addrlen</em> argument is used to determine the length of <em>sun_path</em>) and when the socket address is retrieved on these implementations, there is no null terminator in <em>sun_path</em>.</p><p>Applications that retrieve socket addresses can (portably) code to handle the possibility that there is no null terminator in <em>sun_path</em> by respecting the fact that the number of valid bytes in the pathname is:</p>
+<pre>
+    strnlen(addr.sun_path, addrlen - offsetof(sockaddr_un, sun_path))
+</pre>
 <p>Alternatively, an application can retrieve the socket address by allocating a buffer of size <em>sizeof(struct sockaddr_un)+1</em> that is zeroed out before the retrieval. The retrieving call can specify <em>addrlen</em> as <em>sizeof(struct sockaddr_un)</em>, and the extra zero byte ensures that there will be a null terminator for the string returned in <em>sun_path</em>:</p>
-<p class='spacer'>
-
-<pre>void *addrp;
+<pre>
+void *addrp;
 
 addrlen = sizeof(struct sockaddr_un);
 addrp = malloc(addrlen + 1);
@@ -403,10 +375,8 @@ memset(addrp, 0, addrlen + 1);
 if (getsockname(sfd, (struct sockaddr *) addrp, &addrlen)) == -1)
     /* handle error */ ;
 
-printf("sun_path = %s&#92;n", ((struct sockaddr_un *) addrp)-&gt;sun_path);</pre>
-
-<p class='spacer'>
-
+printf("sun_path = %s&#92;n", ((struct sockaddr_un *) addrp)-&gt;sun_path);
+</pre>
 <p>This sort of messiness can be avoided if it is guaranteed that the applications that <em>create</em> pathname sockets follow the rules outlined above under <em>Pathname sockets</em>.</p>
         </div>
       </section>
@@ -414,13 +384,10 @@ printf("sun_path = %s&#92;n", ((struct sockaddr_un *) addrp)-&gt;sun_path);</pre
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
+<p>The following code demonstrates the use of sequenced-packet sockets for local interprocess communication. It consists of two programs. The server program waits for a connection from the client program. The client sends each of its command-line arguments in separate messages. The server treats the incoming messages as integers and adds them up. The client sends the command string "END". The server sends back a message containing the sum of the client's integers. The client prints the sum and exits. The server waits for the next client to connect. To stop the server, the client is called with the command-line argument "DOWN".</p><p>The following output was recorded while running the server in the background and repeatedly executing the client. Execution of the server program ends when it receives the "DOWN" command.</p><h3>Example output</h3>
 
-<p>The following code demonstrates the use of sequenced-packet sockets for local interprocess communication. It consists of two programs. The server program waits for a connection from the client program. The client sends each of its command-line arguments in separate messages. The server treats the incoming messages as integers and adds them up. The client sends the command string "END". The server sends back a message containing the sum of the client's integers. The client prints the sum and exits. The server waits for the next client to connect. To stop the server, the client is called with the command-line argument "DOWN".</p>
-<p class='spacer'>
-
-<p>The following output was recorded while running the server in the background and repeatedly executing the client. Execution of the server program ends when it receives the "DOWN" command.</p>
-  <h3>Example output</h3>
-<pre>$ <strong>./server &</strong>
+<pre>
+$ <strong>./server &</strong>
 [1] 25887
 $ <strong>./client 3 4</strong>
 Result = 7
@@ -429,10 +396,13 @@ Result = 6
 $ <strong>./client DOWN</strong>
 Result = 0
 [1]+  Done                    ./server
-$</pre>
+$
+</pre>
 
-  <h3>Program source</h3>
-<pre>/*
+<h3>Program source</h3>
+
+<pre>
+/*
  * File connection.h
  */
 
@@ -670,22 +640,19 @@ main(int argc, char *argv[])
     close(data_socket);
 
     exit(EXIT_SUCCESS);
-}</pre>
-
-<p class='spacer'>
-
+}
+</pre>
 <p>For an example of the use of <strong>SCM_RIGHTS</strong> see <a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>.</p>
+
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO unix&hellip;</h2>
         <div class="sectioncontent">
-
 <p><a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a>, <a href="../man2/socket.2.html"><strong>socket</strong>(2)</a>, <a href="../man2/socketpair.2.html"><strong>socketpair</strong>(2)</a>, <a href="../man3/cmsg.3.html"><strong>cmsg</strong>(3)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/socket.7.html"><strong>socket</strong>(7)</a>, <a href="../man7/udp.7.html"><strong>udp</strong>(7)</a></p>
         </div>
       </section>
-
 <nav>
   <ul class="pager">
    <li class="previous"><a href="units.7.html"><span aria-hidden="true">&larr;</span> units.7: Decimal and binary prefixes</a></li>
