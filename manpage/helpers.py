@@ -4,6 +4,7 @@ from string import Template
 from repoze.lru import lru_cache
 import collections
 from itertools import islice
+from HTMLParser import HTMLParser
 
 try:
     import re2 as re
@@ -123,6 +124,20 @@ def populate_breadcrumb_item(order, text, url):
     return load_template('breadcrumb-item').substitute(
         url=url, text=text, order=order)
 
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
 
 pjoin = os.path.join
 dname = os.path.dirname

@@ -10,8 +10,6 @@ from helpers import pjoin, dname, bname
 from helpers import SECTIONS
 from helpers import load_template, get_breadcrumb
 
-from html import ManPageHTMLDB
-
 from parser import ManpageParser
 from parser import NotSupportedFormat, UnexpectedMacro, RedirectedPage
 
@@ -22,6 +20,7 @@ class DirectoryIterator(object):
         self.items = [(file, None) for file in iterator]
         self.current = 0
         self.high = len(self.items)
+        self.extra_items = []
 
     def __iter__(self):
         return self
@@ -30,6 +29,9 @@ class DirectoryIterator(object):
         return self.next()
 
     def next(self):
+        if self.extra_items:
+            return self.extra_items.pop(0)
+
         if self.current == self.high:
             raise StopIteration
         else:
@@ -37,7 +39,7 @@ class DirectoryIterator(object):
             return self.items[self.current - 1]
 
     def add_item(self, file, redirection):
-        self.items.insert(self.current, [file, redirection])
+        self.extra_items.append((file, redirection))
 
 
 class ManDirectoryParser(object):
@@ -84,14 +86,9 @@ class ManDirectoryParser(object):
         iterator = DirectoryIterator(glob.iglob("%s/*/man?/*.?" % source_dir))
 
         for page_file, redirected_from in iterator:
-            package = bname(dname(dname(page_file)))
-
             logging.debug("Processing man page %s ...", page_file)
             try:
-                parser = ManpageParser(
-                    page_file,
-                    redirected_from=redirected_from,
-                    package=package)
+                parser = ManpageParser(page_file)
                 manpage = parser.process()
             except NotSupportedFormat:
                 logging.info("Skipping %s, not supported format...", page_file)
@@ -119,6 +116,7 @@ class ManDirectoryParser(object):
             except IOError:
                 logging.info("Skipping %s, file (%s) does not exist",
                              redirected_from, page_file)
+                continue
             except UnexpectedMacro as e:
                 macro = str(e).split('(', 1)[1].split(')', 1)[0]
                 logging.info("Skipping %s, missing macro (%s)", page_file,
@@ -132,11 +130,11 @@ class ManDirectoryParser(object):
                 name, ext = os.path.splitext(bname(redirected_from))
                 section = ext[1:]
 
-            relative_file = page_file.split(source_dir, 1)[1][1:]
+            package = bname(dname(dname(page_file)))
 
             self.conn.execute(
                 "INSERT INTO manpages (package, name, section, subtitle, file) VALUES (?, ?, ?, ?, ?)",
-                (package, name, section, manpage.title, relative_file))
+                (package, name, section, manpage.title, page_file))
 
             logging.debug("Man page %s processed correctly...", page_file)
 
@@ -171,14 +169,15 @@ class ManDirectoryParser(object):
         query = """SELECT name,
                           section,
                           count(package) as amount,
-                          group_concat(package) as packages
+                          group_concat(package) as packages,
+                          file
                    FROM manpages
                    GROUP by name, section
                    ORDER by section ASC, name ASC"""
 
         pages = []
         current_section = None
-        for name, section, amount, packages in self.conn.execute(query):
+        for name, section, amount, packages, file in self.conn.execute(query):
             first_page_in_section = (section != current_section)
             if first_page_in_section:
                 current_section = section
@@ -190,6 +189,7 @@ class ManDirectoryParser(object):
                 "name": name,
                 "section": section,
                 "parent_dir": parent_dir,
+                "file" : file
             }
 
             if amount > 1:
@@ -235,6 +235,7 @@ class ManDirectoryParser(object):
                    name,
                    section,
                    parent_dir,
+                   file,
                    prefix=None,
                    prev_page=None,
                    next_page=None):
@@ -245,16 +246,19 @@ class ManDirectoryParser(object):
 
         full_path = pjoin(self.manpages_dir, parent_dir, filename)
 
-        mp = ManPageHTMLDB(self.conn, self.available_pages, self.subtitles,
-                           package, name, section, prev_page, next_page)
+        mp = ManpageParser(file).process()
+        mp.package = package
+        mp.prev_page = prev_page
+        mp.next_page = next_page
+        mp.available_pages = self.available_pages
 
         logging.debug("Writing %s" % full_path)
         f = open(full_path, 'w')
-        f.write(mp.get())
+        f.write(mp.html())
         f.close()
 
-        self.missing_links.update(mp.broken_links)
-        self.section_counters.update(mp.section_titles)
+        # FIXME: self.missing_links.update(mp.broken_links)
+        # FIXME: self.section_counters.update(mp.section_titles)
 
         return ("man%s" % section, filename)
 
@@ -589,11 +593,6 @@ class ManDirectoryParser(object):
 
         # Generate package indexes
         self.generate_package_indexes()
-
-        return
-
-        #self.write_pages()
-        #self.generate_sitemap_indexes(sm_urls=sm_urls)
 
     @staticmethod
     def generate_sitemap_indexes(sm_urls):

@@ -175,7 +175,7 @@ class FileMacroIterator(object):
 class ManpageParser(object):
     """Man Page Parser Class"""
 
-    def __init__(self, path, redirected_from=None, package=None):
+    def __init__(self, path):
         basename = os.path.basename(path)
 
         self.name, ext = os.path.splitext(basename)
@@ -185,8 +185,6 @@ class ManpageParser(object):
         self.lines = []
         self.parser = None
         self.custom_macros = CustomMacros()
-        self.redirected_from = redirected_from
-        self.package = package
 
         self.readfile()
 
@@ -374,8 +372,7 @@ class ManpageParser(object):
                 if not content:
                     content = Manpage(
                         name=self.name,
-                        section=self.numeric_section,
-                        redirected_from=self.redirected_from)
+                        section=self.numeric_section)
 
                 # ROOT
                 if macro == 'TH':
@@ -411,6 +408,9 @@ class ManpageParser(object):
                             continue
                         else:
                             return i - 1, content
+                    elif macro in {'RS', 'IP'} and content.title == "NAME":
+                        # Very nasty bug in yum-copr.8
+                        continue
                     elif macro in {'RE', 'fi'}:
                         # Plenty of pages with bugs
                         continue

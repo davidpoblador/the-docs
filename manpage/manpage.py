@@ -1,4 +1,5 @@
-from helpers import load_template, get_breadcrumb
+from helpers import load_template, get_breadcrumb, strip_tags, linkifier
+from helpers import get_pagination
 from cached_property import cached_property
 from helpers import SECTIONS
 
@@ -117,14 +118,26 @@ class Section(BaseContainer):
 class Manpage(BaseContainer):
     """docstring for Manpage"""
 
-    def __init__(self, name, section, redirected_from=None, package=None):
+    def __init__(self, name, section):
         super(Manpage, self).__init__()
         self.name = name
         self.section = section
 
         self.title = None
-        self.redirected_from = redirected_from
-        self.package = package
+
+        self.package = None
+        self.prev_page = None
+        self.next_page = None
+
+        self.available_pages = None
+
+    @cached_property
+    def pager_contents(self):
+        pager = get_pagination(self.prev_page, self.next_page)
+        if not pager:
+            return ""
+        else:
+            return pager
 
     @cached_property
     def descriptive_title(self):
@@ -143,7 +156,11 @@ class Manpage(BaseContainer):
 
     def process_sections(self, section):
         if section.title == 'NAME':
-            content = ' '.join(section.contents)
+            try:
+                content = strip_tags(' '.join(section.contents))
+            except:
+                print section.contents 
+                raise
             chunks = content.split(' - ', 1)
 
             if len(chunks) == 1:
@@ -153,7 +170,6 @@ class Manpage(BaseContainer):
                 self.title = content.strip().capitalize()
             else:
                 self.title = chunks[-1].strip().capitalize()
-
             return False
         elif section.title == 'SEE ALSO':
             section.title = "RELATED TO %s&hellip;" % self.name
@@ -194,22 +210,43 @@ class Manpage(BaseContainer):
 
         return '\n'.join(breadcrumbs)
 
+    def linkify(self, contents):
+        def repl(m):
+            manpage = m.groupdict()['page']
+            section = m.groupdict()['section']
+            page = '.'.join([manpage, section])
+
+            out = "<strong>%s</strong>(%s)" % (manpage,
+                                               section, )
+
+            if page in self.available_pages:
+                out = "<a href=\"../man%s/%s.%s.html\">%s</a>" % (section,
+                                                                  manpage,
+                                                                  section,
+                                                                  out, )
+            else:
+                #self._broken_links.add(page) #FIXME
+                pass
+
+            return out
+
+        if self.available_pages:
+            return linkifier.sub(repl, contents)
+        else:
+            return contents
+
     def html(self):
-        content = super(Manpage, self).html()
+        content = self.linkify(super(Manpage, self).html())
 
         return load_template('base').substitute(
             breadcrumb=self.breadcrumbs,
             title=self.descriptive_title,
             metadescription=self.title,
             header=self.page_header,
-            content=content, )
-
-        pass
-
+            content=content + self.pager_contents, )
 
 class IndentedBlock(BaseContainer):
     pass
-
 
 class PreformattedBlock(BaseContainer):
     def html(self):
