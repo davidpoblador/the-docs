@@ -121,6 +121,154 @@ class Macro(object):
         "R": Template("${content}"),
     }
 
+    @staticmethod
+    def process_fonts(content, current_tag = None):
+        #print content, current_tag
+
+        if current_tag == 'R':
+            current_tag = None
+
+        translate_font = {
+        '1': 'R',
+        '2': 'I',
+        '3': 'B',
+        '4': 'B',
+        'b': 'B',
+        'r': 'R',
+        'i': 'I',
+        }
+
+        style_map = {
+        'B' : "strong",
+        'I' : "em",
+        'SM' : "small",
+        'S' : "small",
+        }
+
+        previous_tag = None
+        if not current_tag:
+            out = ""
+        elif current_tag in style_map:
+            out = "<%s>" % style_map[current_tag]
+        else:
+            raise Exception("Current tag %s" % current_tag)
+
+        state = "start"
+        for c in content:
+            if state == "start":
+                if c != '\\':
+                    out += c
+                elif c == '\\':
+                    state = "slash"
+            elif state == "slash":
+                if c == 'f':
+                    state = "fontslash"
+                else:
+                    state = "start"
+                    out += '\\' + c
+            elif state in {"fontslash", "fontsquare"}:
+                if state == "fontsquare":
+                    if c != ']':
+                        tmp_tag = c
+                        continue
+                    else:
+                        if not tmp_tag:
+                            tmp_tag = "R"
+
+                        c = tmp_tag
+
+                if c in translate_font:
+                    c = translate_font[c]
+                if c in style_map:
+                    if current_tag:
+                        out += "</%s>" % style_map[current_tag]
+
+                    previous_tag, current_tag = current_tag, c
+                    out += "<%s>" % style_map[c]
+                    state = "start"
+                elif c in {'P'}:
+                    if current_tag:
+                        out += "</%s>" % style_map[current_tag]
+                    previous_tag, current_tag = current_tag, previous_tag
+
+                    if current_tag:
+                        out += "<%s>" % style_map[current_tag]
+
+                    state = "start"
+                elif c in {'R'}:
+                    if current_tag:
+                        out += "</%s>" % style_map[current_tag]
+                    previous_tag, current_tag = current_tag, None
+                    state = "start"
+                elif c in {'$', 'C', '7', 'N'}:
+                    # So many bugs...
+                    state = "start"
+                elif c in {'('}:
+                    state = "fontparentheses"
+                elif c in {'['}:
+                    tmp_tag = None
+                    state = "fontsquare"
+                else:
+                    raise Exception()
+            elif state == "fontparentheses":
+                if c == "C":
+                    state = "fontparentheses1"
+                elif c == "B":
+                    state = "fontparentheses2"
+                else:
+                    raise Exception()
+            elif state == "fontparentheses1":
+                if c == "W":
+                    state = "start"
+                elif c in {"B", "O"}:
+                    if current_tag:
+                        out += "</%s>" % style_map[current_tag]
+
+                    previous_tag, current_tag = current_tag, "B"
+
+                    out += "<%s>" % style_map["B"]
+                    state = "start"
+                else:
+                    raise Exception()
+            elif state == "fontparentheses2":
+                if c == "I":
+                    if current_tag:
+                        out += "</%s>" % style_map[current_tag]
+
+                    previous_tag, current_tag = current_tag, "B"
+
+                    out += "<%s>" % style_map["B"]
+                    state = "start"
+                else:
+                    raise Exception()
+        else:
+            if current_tag:
+                out += "</%s>" % style_map[current_tag]
+
+        return out
+
+    @staticmethod
+    def stylize(macro, args):
+        if macro in Macro.single_style:
+            content = ' '.join(args)
+
+            try:
+                return Macro.process_fonts(content, macro)
+            except:
+                raise Exception("error")
+
+        elif macro in Macro.compound_style:
+            out = []
+            for i, chunk in enumerate(args):
+                style = macro[i % 2]
+                try:
+                    out.append(Macro.process_fonts(chunk, style))
+                except:
+                    raise Exception("error")
+
+            return ''.join(out)
+        else:
+            raise UnexpectedMacro("STYLE", macro, args, "path")
 
 class RedirectedPage(Exception):
     def __init__(self, page, redirect):
@@ -187,102 +335,6 @@ class ManpageParser(object):
         self.custom_macros = CustomMacros()
 
         self.readfile()
-
-    def process_fonts(self, content, current_tag = None):
-        #print content, current_tag
-
-        if current_tag == 'R':
-            current_tag = None
-
-        translate_font = {
-        '1': 'R',
-        '2': 'I',
-        '3': 'B',
-        }
-
-        style_map = {
-        'B' : "strong",
-        'I' : "em",
-        'SM' : "small",
-        'S' : "small",
-        }
-
-        previous_tag = None
-        if not current_tag:
-            out = ""
-        elif current_tag in style_map:
-            out = "<%s>" % style_map[current_tag]
-        else:
-            print current_tag
-            raise
-
-        state = "start"
-        for c in content:
-            if state == "start":
-                if c != '\\':
-                    out += c
-                elif c == '\\':
-                    state = "slash"
-            elif state == "slash":
-                if c == 'f':
-                    state = "fontslash"
-                else:
-                    state = "start"
-                    out += '\\' + c
-            elif state == "fontslash":
-                if c in translate_font:
-                    c = translate_font[c]
-                if c in style_map:
-                    if current_tag:
-                        out += "</%s>" % style_map[current_tag]
-
-                    previous_tag, current_tag = current_tag, c
-                    out += "<%s>" % style_map[c]
-                    state = "start"
-                elif c in {'P'}:
-                    if current_tag:
-                        out += "</%s>" % style_map[current_tag]
-                    previous_tag, current_tag = current_tag, previous_tag
-
-                    if current_tag:
-                        out += "<%s>" % style_map[current_tag]
-
-                    state = "start"
-                elif c in {'R'}:
-                    if current_tag:
-                        out += "</%s>" % style_map[current_tag]
-                    previous_tag, current_tag = current_tag, None
-                    state = "start"
-                else:
-                    raise
-        else:
-            if current_tag:
-                out += "</%s>" % style_map[current_tag]
-
-        return out
-
-    def stylize(self, macro, args):
-        if macro in Macro.single_style:
-            content = ' '.join(args)
-
-            try:
-                return self.process_fonts(content, macro)
-            except:
-                raise Exception(self.path)
-
-        elif macro in Macro.compound_style:
-            out = []
-            for i, chunk in enumerate(args):
-                style = macro[i % 2]
-                try:
-                    out.append(self.process_fonts(chunk, style))
-                except:
-                    print self.path
-                    raise
-
-            return ''.join(out)
-        else:
-            raise UnexpectedMacro("STYLE", macro, args, self.path)
 
     def url(self, data):
         if re.match(r"[^@]+@[^@]+\.[^@]+", data):
@@ -447,7 +499,6 @@ class ManpageParser(object):
         for i, (macro, args) in iter:
             logging.debug("LINE (CP: %s): (%s: %s) [%s]", parser, macro, args,
                           repr(content))
-            #print ">> %s" % (content,)
 
             if parser == "ROOT":
                 if not content:
@@ -475,7 +526,7 @@ class ManpageParser(object):
                     continue
             else:
                 if macro in Macro.styles:
-                    args = self.stylize(macro, args)
+                    args = Macro.stylize(macro, args)
                     macro = ''
                 elif macro in {'CW', 'R'}:
                     macro = ''
@@ -626,7 +677,7 @@ class ManpageParser(object):
                         content = SpacedBlock()
 
                     if not macro and args.startswith('  '):
-                        content.append(args)
+                        content.append(Macro.process_fonts(unescape(args)))
                         continue
                     else:
                         return i - 1, content
@@ -638,7 +689,7 @@ class ManpageParser(object):
                         content.append(spaced_content)
                         consume(iter, inc)
                     else:
-                        content.append(unescape(args))
+                        content.append(Macro.process_fonts(unescape(args)))
                 elif macro in Macro.new_paragraph:
                     content.append('')
                 elif macro == 'RS':

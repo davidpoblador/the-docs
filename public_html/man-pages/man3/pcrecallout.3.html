@@ -103,7 +103,7 @@
 </pre>
 <p>If the PCRE_AUTO_CALLOUT option bit is set when a pattern is compiled, PCRE automatically inserts callouts, all with number 255, before each item in the pattern. For example, if PCRE_AUTO_CALLOUT is used with the pattern</p>
 <pre>
-  A(\ed{2}|--)
+  A(&#92;d{2}|--)
 </pre>
 <p>it is processed as if it were</p><p>(?C255)A(?C255)((?C255)&#92;d{2}(?C255)|(?C255)-(?C255)-(?C255))(?C255)</p><p>Notice that there is a callout before and after each parenthesis and alternation bar. If the pattern contains a conditional group whose condition is an assertion, an automatic callout is inserted immediately before the condition. Such a callout may also be inserted explicitly, for example:</p>
 <pre>
@@ -148,23 +148,23 @@
         <div class="sectioncontent">
 <p>During matching, when PCRE reaches a callout point, the external function defined by <em>pcre_callout</em> or <em>pcre[16|32]_callout</em> is called (if it is set). This applies to both normal and DFA matching. The only argument to the callout function is a pointer to a <strong>pcre_callout</strong> or <strong>pcre[16|32]_callout</strong> block. These structures contains the following fields:</p>
 <pre>
-  int           \fIversion\fP;
-  int           \fIcallout_number\fP;
-  int          *\fIoffset_vector\fP;
-  const char   *\fIsubject\fP;           (8-bit version)
-  PCRE_SPTR16   \fIsubject\fP;           (16-bit version)
-  PCRE_SPTR32   \fIsubject\fP;           (32-bit version)
-  int           \fIsubject_length\fP;
-  int           \fIstart_match\fP;
-  int           \fIcurrent_position\fP;
-  int           \fIcapture_top\fP;
-  int           \fIcapture_last\fP;
-  void         *\fIcallout_data\fP;
-  int           \fIpattern_position\fP;
-  int           \fInext_item_length\fP;
-  const unsigned char *\fImark\fP;       (8-bit version)
-  const PCRE_UCHAR16  *\fImark\fP;       (16-bit version)
-  const PCRE_UCHAR32  *\fImark\fP;       (32-bit version)
+  int           <em>version</em>;
+  int           <em>callout_number</em>;
+  int          *<em>offset_vector</em>;
+  const char   *<em>subject</em>;           (8-bit version)
+  PCRE_SPTR16   <em>subject</em>;           (16-bit version)
+  PCRE_SPTR32   <em>subject</em>;           (32-bit version)
+  int           <em>subject_length</em>;
+  int           <em>start_match</em>;
+  int           <em>current_position</em>;
+  int           <em>capture_top</em>;
+  int           <em>capture_last</em>;
+  void         *<em>callout_data</em>;
+  int           <em>pattern_position</em>;
+  int           <em>next_item_length</em>;
+  const unsigned char *<em>mark</em>;       (8-bit version)
+  const PCRE_UCHAR16  *<em>mark</em>;       (16-bit version)
+  const PCRE_UCHAR32  *<em>mark</em>;       (32-bit version)
 </pre>
 <p>The <em>version</em> field is an integer containing the version number of the block format. The initial version was 0; the current version is 2. The version number will change again in future if additional fields are added, but the intention is never to remove any of the existing fields.</p><p>The <em>callout_number</em> field contains the number of the callout, as compiled into the pattern (that is, the number after ?C for manual callouts, and 255 for automatically generated callouts).</p><p>The <em>offset_vector</em> field is a pointer to the vector of offsets that was passed by the caller to the matching function. When <strong>pcre_exec()</strong> or <strong>pcre[16|32]_exec()</strong> is used, the contents can be inspected, in order to extract substrings that have been matched so far, in the same way as for extracting substrings after a match has completed. For the DFA matching functions, this field is not useful.</p><p>The <em>subject</em> and <em>subject_length</em> fields contain copies of the values that were passed to the matching function.</p><p>The <em>start_match</em> field normally contains the offset within the subject at which the current match attempt started. However, if the escape sequence &#92;K has been encountered, this value is changed to reflect the modified starting point. If the pattern is not anchored, the callout function may be called several times from the same point in the pattern for different starting points in the subject.</p><p>The <em>current_position</em> field contains the offset within the subject of the current match pointer.</p><p>When the <strong>pcre_exec()</strong> or <strong>pcre[16|32]_exec()</strong> is used, the <em>capture_top</em> field contains one more than the number of the highest numbered captured substring so far. If no substrings have been captured, the value of <em>capture_top</em> is one. This is always the case when the DFA functions are used, because they do not support captured substrings.</p><p>The <em>capture_last</em> field contains the number of the most recently captured substring. However, when a recursion exits, the value reverts to what it was outside the recursion, as do the values of all captured substrings. If no substrings have been captured, the value of <em>capture_last</em> is -1. This is always the case for the DFA matching functions.</p><p>The <em>callout_data</em> field contains a value that is passed to a matching function specifically so that it can be passed back in callouts. It is passed in the <em>callout_data</em> field of a <strong>pcre_extra</strong> or <strong>pcre[16|32]_extra</strong> data structure. If no such data was passed, the value of <em>callout_data</em> in a callout block is NULL. There is a description of the <strong>pcre_extra</strong> structure in the <strong>pcreapi</strong> documentation.</p><p>The <em>pattern_position</em> field is present from version 1 of the callout structure. It contains the offset to the next item to be matched in the pattern string.</p><p>The <em>next_item_length</em> field is present from version 1 of the callout structure. It contains the length of the next item to be matched in the pattern string. When the callout immediately precedes an alternation bar, a closing parenthesis, or the end of the pattern, the length is zero. When the callout precedes an opening parenthesis, the length is that of the entire subpattern.</p><p>The <em>pattern_position</em> and <em>next_item_length</em> fields are intended to help in distinguishing between different automatic callouts, which all have the same callout number. However, they are set for all callouts.</p><p>The <em>mark</em> field is present from version 2 of the callout structure. In callouts from <strong>pcre_exec()</strong> or <strong>pcre[16|32]_exec()</strong> it contains a pointer to the zero-terminated name of the most recently passed (*MARK), (*PRUNE), or (*THEN) item in the match, or NULL if no such items have been passed. Instances of (*PRUNE) or (*THEN) without a name do not obliterate a previous (*MARK). In callouts from the DFA matching functions this field always contains NULL.</p>
         </div>

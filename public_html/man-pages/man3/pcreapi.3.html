@@ -227,13 +227,13 @@
         <div class="sectioncontent">
 <p>PCRE has its own native API, which is described in this document. There are also some wrapper functions (for the 8-bit library only) that correspond to the POSIX regular expression API, but they do not give access to all the functionality. They are described in the <strong>pcreposix</strong> documentation. Both of these APIs define a set of C function calls. A C++ wrapper (again for the 8-bit library only) is also distributed with PCRE. It is documented in the <strong>pcrecpp</strong> page.</p><p>The native API C function prototypes are defined in the header file <strong>pcre.h</strong>, and on Unix-like systems the (8-bit) library itself is called <strong>libpcre</strong>. It can normally be accessed by adding <strong>-lpcre</strong> to the command for linking an application that uses PCRE. The header file defines the macros PCRE_MAJOR and PCRE_MINOR to contain the major and minor release numbers for the library. Applications can use these to include support for different releases of PCRE.</p><p>In a Windows environment, if you want to statically link an application program against a non-dll <strong>pcre.a</strong> file, you must define PCRE_STATIC before including <strong>pcre.h</strong> or <strong>pcrecpp.h</strong>, because otherwise the <strong>pcre_malloc()</strong> and <strong>pcre_free()</strong> exported functions will be declared <strong>__declspec(dllimport)</strong>, with unwanted results.</p><p>The functions <strong>pcre_compile()</strong>, <strong>pcre_compile2()</strong>, <strong>pcre_study()</strong>, and <strong>pcre_exec()</strong> are used for compiling and matching regular expressions in a Perl-compatible manner. A sample program that demonstrates the simplest way of using them is provided in the file called <em>pcredemo.c</em> in the PCRE source distribution. A listing of this program is given in the <strong>pcredemo</strong> documentation, and the <strong>pcresample</strong> documentation describes how to compile and run it.</p><p>Just-in-time compiler support is an optional feature of PCRE that can be built in appropriate hardware environments. It greatly speeds up the matching performance of many patterns. Simple programs can easily request that it be used if available, by setting an option that is ignored when it is not relevant. More complicated programs might need to make use of the functions <strong>pcre_jit_stack_alloc()</strong>, <strong>pcre_jit_stack_free()</strong>, and <strong>pcre_assign_jit_stack()</strong> in order to control the JIT code's memory usage.</p><p>From release 8.32 there is also a direct interface for JIT execution, which gives improved performance. The JIT-specific functions are discussed in the <strong>pcrejit</strong> documentation.</p><p>A second matching function, <strong>pcre_dfa_exec()</strong>, which is not Perl-compatible, is also provided. This uses a different algorithm for the matching. The alternative algorithm finds all possible matches (at a given point in the subject), and scans the subject just once (unless there are lookbehind assertions). However, this algorithm does not return captured substrings. A description of the two matching algorithms and their advantages and disadvantages is given in the <strong>pcrematching</strong> documentation.</p><p>In addition to the main compiling and matching functions, there are convenience functions for extracting captured substrings from a subject string that is matched by <strong>pcre_exec()</strong>. They are:</p>
 <pre>
-  \fBpcre_copy_substring()\fP
-  \fBpcre_copy_named_substring()\fP
-  \fBpcre_get_substring()\fP
-  \fBpcre_get_named_substring()\fP
-  \fBpcre_get_substring_list()\fP
-  \fBpcre_get_stringnumber()\fP
-  \fBpcre_get_stringtable_entries()\fP
+  <strong>pcre_copy_substring()</strong>
+  <strong>pcre_copy_named_substring()</strong>
+  <strong>pcre_get_substring()</strong>
+  <strong>pcre_get_named_substring()</strong>
+  <strong>pcre_get_substring_list()</strong>
+  <strong>pcre_get_stringnumber()</strong>
+  <strong>pcre_get_stringtable_entries()</strong>
 </pre>
 <p><strong>pcre_free_substring()</strong> and <strong>pcre_free_substring_list()</strong> are also provided, to free the memory used for extracted strings.</p><p>The function <strong>pcre_maketables()</strong> is used to build a set of character tables in the current locale for passing to <strong>pcre_compile()</strong>, <strong>pcre_exec()</strong>, or <strong>pcre_dfa_exec()</strong>. This is an optional facility that is provided for specialist use. Most commonly, no special tables are passed, in which case internal tables that are generated when PCRE is built are used.</p><p>The function <strong>pcre_fullinfo()</strong> is used to find out information about a compiled pattern. The function <strong>pcre_version()</strong> returns a pointer to a string containing the version of PCRE and its date of release.</p><p>The function <strong>pcre_refcount()</strong> maintains a reference count in a data block containing a compiled pattern. This is provided for the benefit of object-oriented applications.</p><p>The global variables <strong>pcre_malloc</strong> and <strong>pcre_free</strong> initially contain the entry points of the standard <strong>malloc()</strong> and <strong>free()</strong> functions, respectively. PCRE calls the memory management functions via these variables, so a calling program can replace them if it wishes to intercept the calls. This should be done before calling any PCRE functions.</p><p>The global variables <strong>pcre_stack_malloc</strong> and <strong>pcre_stack_free</strong> are also indirections to memory management functions. These special functions are used only when PCRE is compiled to use the heap for remembering data, instead of recursive function calls, when running the <strong>pcre_exec()</strong> function. See the <strong>pcrebuild</strong> documentation for details of how to do this. It is a non-standard way of building PCRE, for use in environments that have limited stacks. Because of the greater use of memory management, it runs more slowly. Separate functions are provided so that special-purpose external code can be used for this case. When used, these functions always allocate memory blocks of the same size. There is a discussion about PCRE's stack usage in the <strong>pcrestack</strong> documentation.</p><p>The global variable <strong>pcre_callout</strong> initially contains NULL. It can be set by the caller to a "callout" function, which PCRE will then call at specified points during a matching operation. Details are given in the <strong>pcrecallout</strong> documentation.</p><p>The global variable <strong>pcre_stack_guard</strong> initially contains NULL. It can be set by the caller to a function that is called by PCRE whenever it starts to compile a parenthesized part of a pattern. When parentheses are nested, PCRE uses recursive function calls, which use up the system stack. This function is provided so that applications with restricted stacks can force a compilation error if the stack runs out. The function should return zero if all is well, or non-zero to force an error.</p>
         </div>
@@ -448,9 +448,9 @@
 <p>The following table lists the error codes than may be returned by <strong>pcre_compile2()</strong>, along with the error messages that may be returned by both compiling functions. Note that error messages are always 8-bit ASCII strings, even in 16-bit or 32-bit mode. As PCRE has developed, some error codes have fallen out of use. To avoid confusion, they have not been re-used.</p>
 <pre>
    0  no error
-   1  \e at end of pattern
-   2  \ec at end of pattern
-   3  unrecognized character follows \e
+   1  &#92; at end of pattern
+   2  &#92;c at end of pattern
+   3  unrecognized character follows &#92;
    4  numbers out of order in {} quantifier
    5  number too big in {} quantifier
    6  missing terminating ] for character class
@@ -481,10 +481,10 @@
   31  POSIX collating elements are not supported
   32  this version of PCRE is compiled without UTF support
   33  [this code is not in use]
-  34  character value in \ex{} or \eo{} is too large
+  34  character value in &#92;x{} or &#92;o{} is too large
   35  invalid condition (?(0)
-  36  \eC not allowed in lookbehind assertion
-  37  PCRE does not support \eL, \el, \eN{name}, \eU, or \eu
+  36  &#92;C not allowed in lookbehind assertion
+  37  PCRE does not support &#92;L, &#92;l, &#92;N{name}, &#92;U, or &#92;u
   38  number after (?C is &gt; 255
   39  closing ) for (?C expected
   40  recursive call could loop indefinitely
@@ -492,20 +492,20 @@
   42  syntax error in subpattern name (missing terminator)
   43  two named subpatterns have the same name
   44  invalid UTF-8 string (specifically UTF-8)
-  45  support for \eP, \ep, and \eX has not been compiled
-  46  malformed \eP or \ep sequence
-  47  unknown property name after \eP or \ep
+  45  support for &#92;P, &#92;p, and &#92;X has not been compiled
+  46  malformed &#92;P or &#92;p sequence
+  47  unknown property name after &#92;P or &#92;p
   48  subpattern name is too long (maximum 32 characters)
   49  too many named subpatterns (maximum 10000)
   50  [this code is not in use]
-  51  octal value is greater than \e377 in 8-bit non-UTF-8 mode
+  51  octal value is greater than &#92;377 in 8-bit non-UTF-8 mode
   52  internal error: overran compiling workspace
   53  internal error: previously-checked referenced subpattern
         not found
   54  DEFINE group contains more than one branch
   55  repeating a DEFINE group is not allowed
   56  inconsistent NEWLINE options
-  57  \eg is not followed by a braced, angle-bracketed, or quoted
+  57  &#92;g is not followed by a braced, angle-bracketed, or quoted
         name/number or by a plain number
   58  a numbered reference must not be zero
   59  an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT)
@@ -519,20 +519,20 @@
   66  (*MARK) must have an argument
   67  this version of PCRE is not compiled with Unicode property
         support
-  68  \ec must be followed by an ASCII character
-  69  \ek is not followed by a braced, angle-bracketed, or quoted name
+  68  &#92;c must be followed by an ASCII character
+  69  &#92;k is not followed by a braced, angle-bracketed, or quoted name
   70  internal error: unknown opcode in find_fixedlength()
-  71  \eN is not supported in a class
+  71  &#92;N is not supported in a class
   72  too many forward references
   73  disallowed Unicode code point (&gt;= 0xd800 && &lt;= 0xdfff)
   74  invalid UTF-16 string (specifically UTF-16)
   75  name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)
-  76  character value in \eu.... sequence is too large
+  76  character value in &#92;u.... sequence is too large
   77  invalid UTF-32 string (specifically UTF-32)
   78  setting UTF is disabled by the application
-  79  non-hex character in \ex{} (closing brace missing?)
-  80  non-octal character in \eo{} (closing brace missing?)
-  81  missing opening brace after \eo
+  79  non-hex character in &#92;x{} (closing brace missing?)
+  80  non-octal character in &#92;o{} (closing brace missing?)
+  81  missing opening brace after &#92;o
   82  parentheses are too deeply nested
   83  invalid range in character class
   84  group name must start with a non-digit
@@ -599,12 +599,12 @@
 </pre>
 <p>The <strong>pcre_fullinfo()</strong> function returns information about a compiled pattern. It replaces the <strong>pcre_info()</strong> function, which was removed from the library at version 8.30, after more than 10 years of obsolescence.</p><p>The first argument for <strong>pcre_fullinfo()</strong> is a pointer to the compiled pattern. The second argument is the result of <strong>pcre_study()</strong>, or NULL if the pattern was not studied. The third argument specifies which piece of information is required, and the fourth argument is a pointer to a variable to receive the data. The yield of the function is zero for success, or one of the following negative numbers:</p>
 <pre>
-  PCRE_ERROR_NULL           the argument \fIcode\fP was NULL
-                            the argument \fIwhere\fP was NULL
+  PCRE_ERROR_NULL           the argument <em>code</em> was NULL
+                            the argument <em>where</em> was NULL
   PCRE_ERROR_BADMAGIC       the "magic number" was not found
   PCRE_ERROR_BADENDIANNESS  the pattern was compiled with different
                             endianness
-  PCRE_ERROR_BADOPTION      the value of \fIwhat\fP was invalid
+  PCRE_ERROR_BADOPTION      the value of <em>what</em> was invalid
   PCRE_ERROR_UNSET          the requested field is not set
 </pre>
 <p>The "magic number" is placed at the start of each compiled pattern as an simple check against passing an arbitrary memory pointer. The endianness error can occur if a compiled pattern is saved and reloaded on a different host. Here is a typical call of <strong>pcre_fullinfo()</strong>, to obtain the length of the compiled pattern:</p>
@@ -689,8 +689,8 @@
 </pre>
 <p>PCRE supports the use of named as well as numbered capturing parentheses. The names are just an additional way of identifying the parentheses, which still acquire numbers. Several convenience functions such as <strong>pcre_get_named_substring()</strong> are provided for extracting captured substrings by name. It is also possible to extract the data directly, by first converting the name to a number in order to access the correct pointers in the output vector (described with <strong>pcre_exec()</strong> below). To do the conversion, you need to use the name-to-number map, which is described by these three values.</p><p>The map consists of a number of fixed-size entries. PCRE_INFO_NAMECOUNT gives the number of entries, and PCRE_INFO_NAMEENTRYSIZE gives the size of each entry; both of these return an <strong>int</strong> value. The entry size depends on the length of the longest name. PCRE_INFO_NAMETABLE returns a pointer to the first entry of the table. This is a pointer to <strong>char</strong> in the 8-bit library, where the first two bytes of each entry are the number of the capturing parenthesis, most significant byte first. In the 16-bit library, the pointer points to 16-bit data units, the first of which contains the parenthesis number. In the 32-bit library, the pointer points to 32-bit data units, the first of which contains the parenthesis number. The rest of the entry is the corresponding name, zero terminated.</p><p>The names are in alphabetical order. If (?| is used to create multiple groups with the same number, as described in the section on duplicate subpattern numbers in the <strong>pcrepattern</strong> page, the groups may be given the same name, but there is only one entry in the table. Different names for groups of the same number are not permitted. Duplicate names for subpatterns with different numbers are permitted, but only if PCRE_DUPNAMES is set. They appear in the table in the order in which they were found in the pattern. In the absence of (?| this is the order of increasing number; when (?| is used this is not necessarily the case because later subpatterns may have lower numbers.</p><p>As a simple example of the name/number table, consider the following pattern after compilation by the 8-bit library (assume PCRE_EXTENDED is set, so white space - including newlines - is ignored):</p>
 <pre>
-  (?&lt;date&gt; (?&lt;year&gt;(\ed\ed)?\ed\ed) -
-  (?&lt;month&gt;\ed\ed) - (?&lt;day&gt;\ed\ed) )
+  (?&lt;date&gt; (?&lt;year&gt;(&#92;d&#92;d)?&#92;d&#92;d) -
+  (?&lt;month&gt;&#92;d&#92;d) - (?&lt;day&gt;&#92;d&#92;d) )
 </pre>
 <p>There are four named subpatterns, so the table has four entries, and each entry in the table is eight bytes long. The table is as follows, with non-printing bytes shows in hexadecimal, and undefined bytes shown as ??:</p>
 <pre>
@@ -710,8 +710,8 @@
 <p>Return a copy of the options with which the pattern was compiled. The fourth argument should point to an <strong>unsigned long int</strong> variable. These option bits are those specified in the call to <strong>pcre_compile()</strong>, modified by any top-level option settings at the start of the pattern itself. In other words, they are the options that will be in force when matching starts. For example, if the pattern /(?im)abc(?-i)d/ is compiled with the PCRE_EXTENDED option, the result is PCRE_CASELESS, PCRE_MULTILINE, and PCRE_EXTENDED.</p><p>A pattern is automatically anchored by PCRE if all of its top-level alternatives begin with one of the following:</p>
 <pre>
   ^     unless PCRE_MULTILINE is set
-  \eA    always
-  \eG    always
+  &#92;A    always
+  &#92;G    always
   .*    if PCRE_DOTALL is set and there are no back
           references to the subpattern in which .* appears
 </pre>
@@ -772,14 +772,14 @@
 <h3>Extra data for \fBpcre_exec()\fR</h3>
 <p>If the <em>extra</em> argument is not NULL, it must point to a <strong>pcre_extra</strong> data block. The <strong>pcre_study()</strong> function returns such a block (when it doesn't return NULL), but you can also create one for yourself, and pass additional information in it. The <strong>pcre_extra</strong> block contains the following fields (not necessarily in this order):</p>
 <pre>
-  unsigned long int \fIflags\fP;
-  void *\fIstudy_data\fP;
-  void *\fIexecutable_jit\fP;
-  unsigned long int \fImatch_limit\fP;
-  unsigned long int \fImatch_limit_recursion\fP;
-  void *\fIcallout_data\fP;
-  const unsigned char *\fItables\fP;
-  unsigned char **\fImark\fP;
+  unsigned long int <em>flags</em>;
+  void *<em>study_data</em>;
+  void *<em>executable_jit</em>;
+  unsigned long int <em>match_limit</em>;
+  unsigned long int <em>match_limit_recursion</em>;
+  void *<em>callout_data</em>;
+  const unsigned char *<em>tables</em>;
+  unsigned char **<em>mark</em>;
 </pre>
 <p>In the 16-bit version of this structure, the <em>mark</em> field has type "PCRE_UCHAR16 **".</p><p>In the 32-bit version of this structure, the <em>mark</em> field has type "PCRE_UCHAR32 **".</p><p>The <em>flags</em> field is used to specify which of the other fields are set. The flag bits are:</p>
 <pre>
@@ -854,7 +854,7 @@
 <pre>
   PCRE_NO_UTF8_CHECK
 </pre>
-<p>When PCRE_UTF8 is set at compile time, the validity of the subject as a UTF-8 string is automatically checked when <strong>pcre_exec()</strong> is subsequently called. The entire string is checked before any other processing takes place. The value of <em>startoffset</em> is also checked to ensure that it points to the start of a UTF-8 character. There is a discussion about the validity of UTF-8 strings in the <strong>pcreunicode</strong> page. If an invalid sequence of bytes is found, <strong>pcre_exec()</strong> returns the error PCRE_ERROR_BADUTF8 or, if PCRE_PARTIAL_HARD is set and the problem is a truncated character at the end of the subject, PCRE_ERROR_SHORTUTF8. In both cases, information about the precise nature of the error may also be returned (see the descriptions of these errors in the section entitled Error return values from <strong>pcre_exec()</strong> below). If <em>startoffset</em> contains a value that does not point to the start of a UTF-8 character (or to the end of the subject), PCRE_ERROR_BADUTF8_OFFSET is returned.</p><p>If you already know that your subject is valid, and you want to skip these checks for performance reasons, you can set the PCRE_NO_UTF8_CHECK option when calling <strong>pcre_exec()</strong>. You might want to do this for the second and subsequent calls to <strong>pcre_exec()</strong> if you are making repeated calls to find all the matches in a single subject string. However, you should be sure that the value of <em>startoffset</em> points to the start of a character (or the end of the subject). When PCRE_NO_UTF8_CHECK is set, the effect of passing an invalid string as a subject or an invalid value of <em>startoffset</em> is undefined. Your program may crash or loop.</p>
+<p>When PCRE_UTF8 is set at compile time, the validity of the subject as a UTF-8 string is automatically checked when <strong>pcre_exec()</strong> is subsequently called. The entire string is checked before any other processing takes place. The value of <em>startoffset</em> is also checked to ensure that it points to the start of a UTF-8 character. There is a discussion about the validity of UTF-8 strings in the <strong>pcreunicode</strong> page. If an invalid sequence of bytes is found, <strong>pcre_exec()</strong> returns the error PCRE_ERROR_BADUTF8 or, if PCRE_PARTIAL_HARD is set and the problem is a truncated character at the end of the subject, PCRE_ERROR_SHORTUTF8. In both cases, information about the precise nature of the error may also be returned (see the descriptions of these errors in the section entitled <em>Error return</em> values from <strong>pcre_exec()</strong> below). If <em>startoffset</em> contains a value that does not point to the start of a UTF-8 character (or to the end of the subject), PCRE_ERROR_BADUTF8_OFFSET is returned.</p><p>If you already know that your subject is valid, and you want to skip these checks for performance reasons, you can set the PCRE_NO_UTF8_CHECK option when calling <strong>pcre_exec()</strong>. You might want to do this for the second and subsequent calls to <strong>pcre_exec()</strong> if you are making repeated calls to find all the matches in a single subject string. However, you should be sure that the value of <em>startoffset</em> points to the start of a character (or the end of the subject). When PCRE_NO_UTF8_CHECK is set, the effect of passing an invalid string as a subject or an invalid value of <em>startoffset</em> is undefined. Your program may crash or loop.</p>
 <pre>
   PCRE_PARTIAL_HARD
   PCRE_PARTIAL_SOFT
@@ -863,7 +863,7 @@
 <h3>The string to be matched by \fBpcre_exec()\fP</h3>
 <p>The subject string is passed to <strong>pcre_exec()</strong> as a pointer in <em>subject</em>, a length in <em>length</em>, and a starting offset in <em>startoffset</em>. The units for <em>length</em> and <em>startoffset</em> are bytes for the 8-bit library, 16-bit data items for the 16-bit library, and 32-bit data items for the 32-bit library.</p><p>If <em>startoffset</em> is negative or greater than the length of the subject, <strong>pcre_exec()</strong> returns PCRE_ERROR_BADOFFSET. When the starting offset is zero, the search for a match starts at the beginning of the subject, and this is by far the most common case. In UTF-8 or UTF-16 mode, the offset must point to the start of a character, or the end of the subject (in UTF-32 mode, one data unit equals one character, so all offsets are valid). Unlike the pattern string, the subject may contain binary zeroes.</p><p>A non-zero starting offset is useful when searching for another match in the same subject by calling <strong>pcre_exec()</strong> again after a previous success. Setting <em>startoffset</em> differs from just passing over a shortened string and setting PCRE_NOTBOL in the case of a pattern that begins with any kind of lookbehind. For example, consider the pattern</p>
 <pre>
-  \eBiss\eB
+  &#92;Biss&#92;B
 </pre>
 <p>which finds occurrences of "iss" in the middle of words. (&#92;B matches only if the current position in the subject is not a word boundary.) When applied to the string "Mississipi" the first call to <strong>pcre_exec()</strong> finds the first occurrence. If <strong>pcre_exec()</strong> is called again with just the remainder of the subject, namely "issipi", it does not match, because &#92;B is always false at the start of the subject, which is deemed to be a word boundary. However, if <strong>pcre_exec()</strong> is passed the entire string again, but with <em>startoffset</em> set to 4, it finds the second occurrence of "iss" because it is able to look behind the starting point to discover that it is preceded by a letter.</p><p>Finding all the matches in a subject is tricky when the pattern can match an empty string. It is possible to emulate Perl's /g behaviour by first trying the match again at the same offset, with the PCRE_NOTEMPTY_ATSTART and PCRE_ANCHORED options, and then if that fails, advancing the starting offset and trying an ordinary match again. There is some code that demonstrates how to do this in the <strong>pcredemo</strong> sample program. In the most general case, you have to check to see if the newline convention recognizes CRLF as a newline, and if so, and the current character is CR followed by LF, advance the starting offset by two characters instead of one.</p><p>If a non-zero starting offset is passed when the pattern is anchored, one attempt to match at the given offset is made. This can only succeed if the pattern does not require the match to be at the start of the subject.</p>
 <h3>How \fBpcre_exec()\fP returns captured substrings</h3>
@@ -1081,7 +1081,7 @@
 </pre>
 <p>To extract a substring by name, you first have to find associated number. For example, for this pattern</p>
 <pre>
-  (a+)b(?&lt;xxx&gt;\ed+)...
+  (a+)b(?&lt;xxx&gt;&#92;d+)...
 </pre>
 <p>the number of the subpattern called "xxx" is 2. If the name is known to be unique (PCRE_DUPNAMES was not set), you can find the number from the name by calling <strong>pcre_get_stringnumber()</strong>. The first argument is the compiled pattern, and the second is the name. The yield of the function is the subpattern number, or PCRE_ERROR_NOSUBSTRING (-7) if there is no subpattern of that name.</p><p>Given the number, you can extract the substring directly, or use one of the functions described in the previous section. For convenience, there are also two functions that do the whole job.</p><p>Most of the arguments of <strong>pcre_copy_named_substring()</strong> and <strong>pcre_get_named_substring()</strong> are the same as those for the similarly named functions that extract by number. As these are described in the previous section, they are not re-described here. There are just two differences:</p><p>First, instead of a substring number, a substring name is given. Second, there is an extra argument, given at the start, which is a pointer to the compiled pattern. This is needed in order to gain access to the name-to-number translation table.</p><p>These functions call <strong>pcre_get_stringnumber()</strong>, and if it succeeds, they then call <strong>pcre_copy_substring()</strong> or <strong>pcre_get_substring()</strong>, as appropriate. <strong>NOTE:</strong> If PCRE_DUPNAMES is set and there are duplicate names, the behaviour may not be what you want (see the next section).</p><p><strong>Warning:</strong> If the pattern uses the (?| feature to set up multiple subpatterns with the same number, as described in the section on duplicate subpattern numbers in the <strong>pcrepattern</strong> page, you cannot use names to distinguish the different subpatterns, because names are not included in the compiled code. The matching process uses only numbers. For this reason, the use of different names for subpatterns of the same number causes an error at compile time.</p>
         </div>

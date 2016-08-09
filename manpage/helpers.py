@@ -238,22 +238,4 @@ def unescape(t):
     t = t.replace("\\*(rq", "&rdquo;").replace("\\(rq", "&rdquo;")
 
     t = t.replace("\\e", "&#92;")
-    t = tagify(t)
-
-    return t
-
-
-def tagify(t):
-    # Fixme (when we have time dir_colors.5 shows why this needs fixing)
-    t = re.sub(r'\\fI(.*?)\\f[PR]', r'<em>\1</em>', t)
-
-    t = re.sub(r'\\fB(.*?)\\f[PR]', r'<strong>\1</strong>', t)
-
-    t = t.replace("\\fB", "")
-    t = t.replace("\\fI", "")
-    t = t.replace("\\fR", "")
-    t = t.replace("\\fP", "")
-
-    t = t.replace('*NEWLINE*', "\n")
-
     return t

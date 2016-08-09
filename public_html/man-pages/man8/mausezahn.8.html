@@ -203,11 +203,11 @@
 <h3>Telnet:</h3>
 <p>Using the interactive mode requires starting mausezahn as a server:</p>
 <pre>
-  # mausezahn \-x
+  # mausezahn -x
 </pre>
 <p>Now you can <strong>telnet</strong>(1) to that server using the default port number 25542, but also an arbitrary port number can be specified:</p>
 <pre>
-  # mausezahn \-x 99
+  # mausezahn -x 99
   mausezahn accepts incoming telnet connections on port 99.
   mz: Problems opening config file. Will use defaults
 </pre>
@@ -540,61 +540,61 @@
 <h3>Basic operations:</h3>
 <p>All major command line options are listed when you execute mausezahn without arguments. For practical usage, keep the following special (not so widely known) options in mind:</p>
 <pre>
-  \-r                    Multiplies the specified delay with a random value.
-  \-p &lt;length&gt;           Pad the raw frame to specified length (using random bytes).
-  \-P &lt;ASCII Payload&gt;    Use the specified ASCII payload.
-  \-f &lt;filename&gt;         Read the ASCII payload from a file.
-  \-F &lt;filename&gt;         Read the hexadecimal payload from a file.
-  \-S                    Simulation mode: DOES NOT put anything on the wire.
+  -r                    Multiplies the specified delay with a random value.
+  -p &lt;length&gt;           Pad the raw frame to specified length (using random bytes).
+  -P &lt;ASCII Payload&gt;    Use the specified ASCII payload.
+  -f &lt;filename&gt;         Read the ASCII payload from a file.
+  -F &lt;filename&gt;         Read the hexadecimal payload from a file.
+  -S                    Simulation mode: DOES NOT put anything on the wire.
                         This is typically combined with one of the verbose
-                        modes (\-v or V).
+                        modes (-v or V).
 </pre>
 <p>Many options require a keyword or a number but the -t option is an exception since it requires both a packet type (such as ip, udp, dns, etc) and an argument string which is specific for that packet type. Here are some simple examples:</p>
 <pre>
-  mausezahn \-t help
-  mausezahn \-t tcp help
-  mausezahn eth3 \-t udp sp=69,dp=69,p=ca:fe:ba:be
+  mausezahn -t help
+  mausezahn -t tcp help
+  mausezahn eth3 -t udp sp=69,dp=69,p=ca:fe:ba:be
 </pre>
 <p>Note: Don't forget that on the CLI the Linux shell (usually the Bash) interprets spaces as a delimiting character. That is, if you are specifying an argument that consists of multiple words with spaces in between, you MUST group these within quotes. For example, instead of</p>
 <pre>
-  mausezahn eth0 \-t udp sp=1,dp=80,p=00:11:22:33
+  mausezahn eth0 -t udp sp=1,dp=80,p=00:11:22:33
 </pre>
 <p> you could either omit the spaces</p>
 <pre>
-  mausezahn eth0 \-t udp sp=1,dp=80,p=00:11:22:33
+  mausezahn eth0 -t udp sp=1,dp=80,p=00:11:22:33
 </pre>
 <p> or, for greater safety, use quotes:</p>
 <pre>
-  mausezahn eth0 \-t udp "sp=1,dp=80,p=00:11:22:33"
+  mausezahn eth0 -t udp "sp=1,dp=80,p=00:11:22:33"
 </pre>
 <p>In order to monitor what's going on, you can enable the verbose mode using the -v option. The opposite is the quiet mode (-q) which will keep mausezahn absolutely quiet (except for error messages and warnings.)</p><p>Don't confuse the payload argument p=... with the padding option -p. The latter is used outside the quotes!</p>
 <h3>The automatic packet builder:</h3>
 <p>An important argument is -t which invokes a packet builder. Currently there are packet builders for ARP, BPDU, CDP, IP, partly ICMP, UDP, TCP, RTP, DNS, and SYSLOG. (Additionally you can insert a VLAN tag or a MPLS label stack but this works independently of the packet builder.)</p><p>You get context specific help for every packet builder using the help keyword, such as:</p>
 <pre>
-  mausezahn \-t bpdu help
-  mausezahn \-t tcp help
+  mausezahn -t bpdu help
+  mausezahn -t tcp help
 </pre>
 <p>For every packet you may specify an optional payload. This can be done either via hexadecimal notation using the payload (or short p) argument or directly as ASCII text using the -P option:</p>
 <pre>
-  mausezahn eth0 \-t ip \-P "Hello World"                        # ASCII payload
-  mausezahn eth0 \-t ip p=68:65:6c:6c:6f:20:77:6f:72:6c:64       # hex payload
-  mausezahn eth0 \-t ip "proto=89,                           \\
-                        p=68:65:6c:6c:6f:20:77:6f:72:6c:64, \\   # same with other
+  mausezahn eth0 -t ip -P "Hello World"                        # ASCII payload
+  mausezahn eth0 -t ip p=68:65:6c:6c:6f:20:77:6f:72:6c:64       # hex payload
+  mausezahn eth0 -t ip "proto=89,                           &#92;
+                        p=68:65:6c:6c:6f:20:77:6f:72:6c:64, nbsp;  # same with other
                         ttl=1"                                   # IP arguments
 </pre>
 <p>Note: The raw link access mode only accepts hexadecimal payloads (because you specify everything in hexadecimal here.)</p>
 <h3>Packet count and delay:</h3>
 <p>By default only one packet is sent. If you want to send more packets then use the count option -c &lt;count&gt;. When count is zero then mausezahn will send forever. By default, mausezahn sends at maximum speed (and this is really fast ;-)). If you don't want to overwhelm your network devices or have other reasons to send at a slower rate then you might want to specify a delay using the -d &lt;delay&gt; option.</p><p>If you only specify a numeric value it is interpreted in microsecond units. Alternatively, for easier use, you might specify units such as seconds, sec, milliseconds, or msec. (You can also abbreviate this with s or m.) Note: Don't use spaces between the value and the unit! Here are typical examples:</p><p>Send an infinite number of frames as fast as possible:</p>
 <pre>
-  mausezahn \-c 0  "aa bb cc dd ...."
+  mausezahn -c 0  "aa bb cc dd ...."
 </pre>
 <p>Send 100,000 frames with a 50 msec interval:</p>
 <pre>
-  mausezahn \-c 100000 \-d 50msec "aa bb cc dd ...."
+  mausezahn -c 100000 -d 50msec "aa bb cc dd ...."
 </pre>
 <p>Send an unlimited number of BPDU frames in a 2 second interval:</p>
 <pre>
-  mausezahn \-c 0 \-d 2s \-t bpdu conf
+  mausezahn -c 0 -d 2s -t bpdu conf
 </pre>
 <p>Note: mausezahn does not support fractional numbers. If you want to specify for example 2.5 seconds then express this in milliseconds (2500 msec).</p>
 <h3>Source and destination addresses:</h3>
@@ -608,71 +608,71 @@
 </pre>
 <p>This way you can craft every packet you want but you must do it by hand. Note: On Wi-Fi interfaces the header is much more complicated and automatically created by the Wi-Fi driver. As an example to introduce some interesting options, lets continuously send frames at max speed with random source MAC address and broadcast destination address, additionally pad the frame to 1000 bytes:</p>
 <pre>
-  mausezahn eth0 \-c 0 \-a rand \-b bcast \-p 1000 "08 00 aa bb cc dd"
+  mausezahn eth0 -c 0 -a rand -b bcast -p 1000 "08 00 aa bb cc dd"
 </pre>
 <p>The direct link access supports automatic padding using the -p &lt;total frame length&gt; option. This allows you to pad a raw L2 frame to the desired length. You must specify the total length, and the total frame length must have at least 15 bytes for technical reasons. Zero bytes are used for padding.</p>
 <h3>`-- ARP:</h3>
 <p>mausezahn provides a simple interface to the ARP packet. You can specify the ARP method (request|reply) and up to four arguments: sendermac, targetmac, senderip, targetip, or short smac, tmac, sip, tip. By default, an ARP reply is sent with your own interface addresses as source MAC and IP address, and a broadcast destination MAC and IP address. Send a gratuitous ARP request (as used for duplicate IP address detection):</p>
 <pre>
-  mausezahn eth0 \-t arp
+  mausezahn eth0 -t arp
 </pre>
 <p>ARP cache poisoning:</p>
 <pre>
-  mausezahn eth0 \-t arp "reply, senderip=192.168.0.1, targetmac=00:00:0c:01:02:03, \\
+  mausezahn eth0 -t arp "reply, senderip=192.168.0.1, targetmac=00:00:0c:01:02:03, &#92;
                           targetip=172.16.1.50"
 </pre>
 <p> where by default your interface MAC address will be used as sendermac, senderip denotes the spoofed IP address, targetmac and targetip identifies the receiver. By default, the Ethernet source address is your interface MAC and the destination address is the broadcast address. You can change this using the flags -a and -b.</p>
 <h3>`-- BPDU:</h3>
 <p>mausezahn provides a simple interface to the 802.1D BPDU frame format (used to create the Spanning Tree in bridged networks). By default, standard IEEE 802.1D BPDUs are sent and it is assumed that your computer wants to become the root bridge (rid=bid). Optionally the 802.3 destination address can be a specified MAC address, broadcast, own MAC, or Cisco's PVST+ MAC address. The destination MAC can be specified using the -b command which, besides MAC addresses, accepts keywords such as bcast, own, pvst, or stp (default). PVST+ is supported as well. Simply specify the VLAN for which you want to send a BPDU:</p>
 <pre>
-  mausezahn eth0 \-t bpdu "vlan=123, rid=2000"
+  mausezahn eth0 -t bpdu "vlan=123, rid=2000"
 </pre>
 <p>See mausezahn -t bpdu help for more details.</p>
 <h3>`-- CDP:</h3>
 <p>mausezahn can send Cisco Discovery Protocol (CDP) messages since this protocol has security relevance. Of course lots of dirty tricks are possible; for example arbitrary TLVs can be created (using the hex-payload argument for example p=00:0e:00:07:01:01:90) and if you want to stress the CDP database of some device, mausezahn can send each CDP message with another system-id using the change keyword:</p>
 <pre>
-  mausezahn \-t cdp change \-c 0
+  mausezahn -t cdp change -c 0
 </pre>
 <p>Some routers and switches may run into deep problems ;-) See mausezahn -t cdp help for more details.</p>
 <h3>`-- 802.1Q VLAN Tags:</h3>
 <p>mausezahn allows simple VLAN tagging for IP (and other higher layer) packets. Simply use the option -Q &lt;[CoS:]VLAN&gt;, such as -Q 10 or -Q 3:921. By default CoS=0. For example send a TCP packet in VLAN 500 using CoS=7:</p>
 <pre>
-  mausezahn eth0 \-t tcp \-Q 7:500 "dp=80, flags=rst, p=aa:aa:aa"
+  mausezahn eth0 -t tcp -Q 7:500 "dp=80, flags=rst, p=aa:aa:aa"
 </pre>
 <p>You can create as many VLAN tags as you want! This is interesting to create QinQ encapsulations or VLAN hopping: Send a UDP packet with VLAN tags 100 (outer) and 651 (inner):</p>
 <pre>
-  mausezahn eth0 \-t udp "dp=8888, sp=13442" \-P "Mausezahn is great" \-Q 100,651
+  mausezahn eth0 -t udp "dp=8888, sp=13442" -P "Mausezahn is great" -Q 100,651
 </pre>
 <p>Don't know if this is useful anywhere but at least it is possible:</p>
 <pre>
-  mausezahn eth0 \-t udp "dp=8888, sp=13442" \-P "Mausezahn is great"  \\
-                 \-Q 6:5,7:732,5:331,5,6
+  mausezahn eth0 -t udp "dp=8888, sp=13442" -P "Mausezahn is great"  &#92;
+                 -Q 6:5,7:732,5:331,5,6
 </pre>
 <p>Mix it with MPLS:</p>
 <pre>
-  mausezahn eth0 \-t udp "dp=8888, sp=13442" \-P "Mausezahn is great" \-Q 100,651 \-M 314
+  mausezahn eth0 -t udp "dp=8888, sp=13442" -P "Mausezahn is great" -Q 100,651 -M 314
 </pre>
 <p>When in raw Layer 2 mode you must create the VLAN tag completely by yourself. For example if you want to send a frame in VLAN 5 using CoS 0 simply specify 81:00 as type field and for the next two bytes the CoS (PCP), DEI (CFI), and VLAN ID values (all together known as TCI):</p>
 <pre>
-  mausezahn eth0 \-b bc \-a rand "81:00 00:05 08:00 aa-aa-aa-aa-aa-aa-aa-aa-aa"
+  mausezahn eth0 -b bc -a rand "81:00 00:05 08:00 aa-aa-aa-aa-aa-aa-aa-aa-aa"
 </pre>
 
 <h3>`-- MPLS labels:</h3>
 <p>mausezahn allows you to insert one or more MPLS headers. Simply use the option -M &lt;label:CoS:TTL:BoS&gt; where only the label is mandatory. If you specify a second number it is interpreted as the experimental bits (the CoS usually). If you specify a third number it is interpreted as TTL. By default the TTL is set to 255. The Bottom of Stack flag is set automatically, otherwise the frame would be invalid, but if you want you can also set or unset it using the S (set) and s (unset) argument. Note that the BoS must be the last argument in each MPLS header definition. Here are some examples:</p><p>Use MPLS label 214:</p>
 <pre>
-  mausezahn eth0 \-M 214 \-t tcp "dp=80" \-P "HTTP..." \-B myhost.com
+  mausezahn eth0 -M 214 -t tcp "dp=80" -P "HTTP..." -B myhost.com
 </pre>
 <p>Use three labels (the 214 is now the outer):</p>
 <pre>
-  mausezahn eth0 \-M 9999,51,214 \-t tcp "dp=80" \-P "HTTP..." \-B myhost.com
+  mausezahn eth0 -M 9999,51,214 -t tcp "dp=80" -P "HTTP..." -B myhost.com
 </pre>
 <p>Use two labels, one with CoS=5 and TTL=1, the other with CoS=7:</p>
 <pre>
-  mausezahn eth0 \-M 100:5:1,500:7 \-t tcp "dp=80" \-P "HTTP..." \-B myhost.com
+  mausezahn eth0 -M 100:5:1,500:7 -t tcp "dp=80" -P "HTTP..." -B myhost.com
 </pre>
 <p>Unset the BoS flag (which will result in an invalid frame):</p>
 <pre>
-  mausezahn eth0 \-M 214:s \-t tcp "dp=80" \-P "HTTP..." \-B myhost.com
+  mausezahn eth0 -M 214:s -t tcp "dp=80" -P "HTTP..." -B myhost.com
 </pre>
 
 <h3>Layer 3-7:</h3>
@@ -680,30 +680,30 @@
 <h3>`-- IP:</h3>
 <p>mausezahn allows you to send any malformed or correct IP packet. Every field in the IP header can be manipulated. The IP addresses can be specified via the -A and -B options, denoting the source and destination address, respectively. You can also specify an address range or a host name (FQDN). Additionally, the source address can also be random. By default the source address is your interface IP address and the destination address is a broadcast address. Here are some examples:</p><p>ASCII payload:</p>
 <pre>
-  mausezahn eth0 \-t ip \-A rand \-B 192.168.1.0/24  \-P "hello world"
+  mausezahn eth0 -t ip -A rand -B 192.168.1.0/24  -P "hello world"
 </pre>
 <p>Hexadecimal payload:</p>
 <pre>
-  mausezahn eth0 \-t ip \-A 10.1.0.1-10.1.255.254 \-B 255.255.255.255 p=ca:fe:ba:be
+  mausezahn eth0 -t ip -A 10.1.0.1-10.1.255.254 -B 255.255.255.255 p=ca:fe:ba:be
 </pre>
 <p>Will use correct source IP address:</p>
 <pre>
-  mausezahn eth0 \-t ip \-B www.xyz.com
+  mausezahn eth0 -t ip -B www.xyz.com
 </pre>
 <p>The Type of Service (ToS) byte can either be specified directly by two hexadecimal digits, which means you can also easily set the Explicit Congestion Notification (ECN) bits (LSB 1 and 2), or you may only want to specify a common DSCP value (bits 3-8) using a decimal number (0..63):</p><p>Packet sent with DSCP = Expedited Forwarding (EF):</p>
 <pre>
-  mausezahn eth0 \-t ip dscp=46,ttl=1,proto=1,p=08:00:5a:a2:de:ad:be:af
+  mausezahn eth0 -t ip dscp=46,ttl=1,proto=1,p=08:00:5a:a2:de:ad:be:af
 </pre>
 <p>If you leave the checksum as zero (or unspecified) the correct checksum will be automatically computed. Note that you can only use a wrong checksum when you also specify at least one L2 field manually.</p>
 <h3>`-- UDP:</h3>
 <p>mausezahn supports easy UDP datagram generation. Simply specify the destination address (-B option) and optionally an arbitrary source address (-A option) and as arguments you may specify the port numbers using the dp (destination port) and sp (source port) arguments and a payload. You can also easily specify a whole port range which will result in sending multiple packets. Here are some examples:</p><p>Send test packets to the RTP port range:</p>
 <pre>
-  mausezahn eth0 \-B 192.168.1.1 \-t udp "dp=16384-32767, \\
+  mausezahn eth0 -B 192.168.1.1 -t udp "dp=16384-32767, &#92;
                    p=A1:00:CC:00:00:AB:CD:EE:EE:DD:DD:00"
 </pre>
 <p>Send a DNS request as local broadcast (often a local router replies):</p>
 <pre>
-  mausezahn eth0 \-t udp dp=53,p=c5-2f-01-00-00-01-00-00-00-00-00-00-03-77-77-\\
+  mausezahn eth0 -t udp dp=53,p=c5-2f-01-00-00-01-00-00-00-00-00-00-03-77-77-&#92;
                                  77-03-78-79-7a-03-63-6f-6d-00-00-01-00-01"
 </pre>
 <p>Additionally you may specify the length and checksum using the len and sum arguments (will be set correctly by default). Note: several protocols have same arguments such as len (length) and sum (checksum). If you specified a UDP type packet (via -t udp) and want to modify the IP length, then use the alternate keyword iplen and ipsum. Also note that you must specify at least one L2 field which tells mausezahn to build everything without the help of your kernel (the kernel would not allow modifying the IP checksum and the IP length).</p>
@@ -712,29 +712,29 @@
 <h3>`-- TCP:</h3>
 <p>mausezahn allows you to easily tailor any TCP packet. Similarly as with UDP you can specify source and destination port (ranges) using the sp and dp arguments. Then you can directly specify the desired flags using an "|" as delimiter if you want to specify multiple flags. For example, a SYN-Flood attack against host 1.1.1.1 using a random source IP address and periodically using all 1023 well-known ports could be created via:</p>
 <pre>
-  mausezahn eth0 \-A rand \-B 1.1.1.1 \-c 0 \-t tcp "dp=1-1023, flags=syn"  \\
-                 \-P "Good morning! This is a SYN Flood Attack.             \\
+  mausezahn eth0 -A rand -B 1.1.1.1 -c 0 -t tcp "dp=1-1023, flags=syn"  &#92;
+                 -P "Good morning! This is a SYN Flood Attack.             &#92;
                      We apologize for any inconvenience."
 </pre>
 <p>Be careful with such SYN floods and only use them for firewall testing. Check your legal position! Remember that a host with an open TCP session only accepts packets with correct socket information (addresses and ports) and a valid TCP sequence number (SQNR). If you want to try a DoS attack by sending a RST-flood and you do NOT know the target's initial SQNR (which is normally the case) then you may want to sweep through a range of sequence numbers:</p>
 <pre>
-  mausezahn eth0 \-A legal.host.com \-B target.host.com \\
-                 \-t tcp "sp=80,dp=80,s=1-4294967295"
+  mausezahn eth0 -A legal.host.com -B target.host.com &#92;
+                 -t tcp "sp=80,dp=80,s=1-4294967295"
 </pre>
 <p>Fortunately, the SQNR must match the target host's acknowledgement number plus the announced window size. Since the typical window size is something between 40000 and 65535 you are MUCH quicker when using an increment via the ds argument:</p>
 <pre>
-  mausezahn eth0 \-A legal.host.com \-B target.host.com \\
-                 \-t tcp "sp=80, dp=80, s=1-4294967295, ds=40000"
+  mausezahn eth0 -A legal.host.com -B target.host.com &#92;
+                 -t tcp "sp=80, dp=80, s=1-4294967295, ds=40000"
 </pre>
 <p>In the latter case mausezahn will only send 107375 packets instead of 4294967295 (which results in a duration of approximately 1 second compared to 11 hours!). Of course you can tailor any TCP packet you like. As with other L4 protocols mausezahn builds a correct IP header but you can additionally access every field in the IP packet (also in the Ethernet frame).</p>
 <h3>`-- DNS:</h3>
 <p>mausezahn supports UDP-based DNS requests or responses. Typically you may want to send a query or an answer. As usual, you can modify every flag in the header. Here is an example of a simple query:</p>
 <pre>
-  mausezahn eth0 \-B mydns-server.com \-t dns "q=www.ibm.com"
+  mausezahn eth0 -B mydns-server.com -t dns "q=www.ibm.com"
 </pre>
 <p>You can also create server-type messages:</p>
 <pre>
-  mausezahn eth0 \-A spoofed.dns-server.com \-B target.host.com \\
+  mausezahn eth0 -A spoofed.dns-server.com -B target.host.com &#92;
                  "q=www.topsecret.com, a=172.16.1.1"
 </pre>
 <p>The syntax according to the online help (-t dns help) is:</p>
@@ -755,21 +755,21 @@
 <h3>`-- RTP and VoIP path measurements:</h3>
 <p>mausezahn can send arbitrary Real Time Protocol (RTP) packets. By default a classical G.711 codec packet of 20 ms segment size and 160 bytes is assumed. You can measure jitter, packet loss, and reordering along a path between two hosts running mausezahn. The jitter measurement is either done following the variance low-pass filtered estimation specified in RFC 3550 or using an alternative "real-time" method which is even more precise (the RFC-method is used by default). For example on Host1 you start a transmission process:</p>
 <pre>
-  mausezahn \-t rtp \-B 192.168.1.19
+  mausezahn -t rtp -B 192.168.1.19
 </pre>
 <p>And on Host2 (192.168.1.19) a receiving process which performs the measurement:</p>
 <pre>
-  mausezahn \-T rtp
+  mausezahn -T rtp
 </pre>
 <p>Note that the option flag with the capital "T" means that it is a server RTP process, waiting for incoming RTP packets from any mausezahn source. In case you want to restrict the measurement to a specific source or you want to perform a bidirectional measurement, you must specify a stream identifier. Here is an example for bidirectional measurements which logs the running jitter average in a file:</p>
 <pre>
-  Host1# mausezahn \-t rtp id=11:11:11:11 \-B 192.168.2.2 &
-  Host1# mausezahn \-T rtp id=22:22:22:22 "log, path=/tmp/mz/"
+  Host1# mausezahn -t rtp id=11:11:11:11 -B 192.168.2.2 &
+  Host1# mausezahn -T rtp id=22:22:22:22 "log, path=/tmp/mz/"
 </pre>
 
 <pre>
-  Host2# mausezahn \-t rtp id=22:22:22:22 \-B 192.168.1.1 &
-  Host2# mausezahn \-T rtp id=11:11:11:11 "log, path=/tmp/mz/"
+  Host2# mausezahn -t rtp id=22:22:22:22 -B 192.168.1.1 &
+  Host2# mausezahn -T rtp id=11:11:11:11 "log, path=/tmp/mz/"
 </pre>
 <p>In any case the measurements are printed continuously onto the screen; by default it looks like this:</p>
 <pre>
@@ -795,7 +795,7 @@
 </pre>
 <p>More information is shown using the txt keyword:</p>
 <pre>
-  mausezahn \-T rtp txt
+  mausezahn -T rtp txt
   Got 100 packets from host 192.168.0.3: 0 lost (0 absolute lost), 1 out of order
     Jitter_RFC (low pass filtered) = 30 usec
     Samples jitter (min/avg/max)   = 1/186/2527 usec
@@ -813,7 +813,7 @@
 <h3>`-- Syslog:</h3>
 <p>The traditional Syslog protocol is widely used even in professional networks and is sometimes vulnerable. For example you might insert forged Syslog messages by spoofing your source address (e.g. impersonate the address of a legit network device):</p>
 <pre>
-  mausezahn \-t syslog sev=3 \-P "You have been mausezahned." \-A 10.1.1.109 \-B 192.168.7.7
+  mausezahn -t syslog sev=3 -P "You have been mausezahned." -A 10.1.1.109 -B 192.168.7.7
 </pre>
 <p>See mausezahn -t syslog help for more details.</p>
 

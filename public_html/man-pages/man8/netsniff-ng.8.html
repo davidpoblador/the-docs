@@ -250,7 +250,7 @@
 <p>netsniff-ng supports both, low-level and high-level filters that are attached to its <a href="../man7/packet.7.html"><strong>packet</strong>(7)</a> socket. Low-level filters are described in the <a href="../man8/bpfc.8.html"><strong>bpfc</strong>(8)</a> man page.</p><p>Low-level filters can be used with netsniff-ng in the following way:</p>
 <pre>
     1. bpfc foo &gt; bar
-    2. netsniff-ng \-f bar
+    2. netsniff-ng -f bar
     3. bpfc foo | netsniff-ng -i nlmon0 -f -
 </pre>
 <p>Here, foo is the bpfc program that will be translated into a netsniff-ng readable \[lq]opcodes\[rq] file and passed to netsniff-ng through the -f option.</p><p>Similarly, high-level filter can be either passed through the -f option, e.g. -f "tcp or udp" or at the end of all options without the \[lq]-f\[rq].</p><p>The filter syntax is the same as in <strong>tcpdump</strong>(8), which is described in the man page <strong>pcap-filter</strong>(7). Just to quote some examples from <strong>pcap-filter</strong>(7):</p><h3>host sundown</h3>
@@ -313,20 +313,20 @@
 <p>When replaying pcap files, the timing information from the pcap packet header is currently ignored.</p><p>Also, when replaying pcap files, demultiplexing traffic among multiple networking interfaces does not work. Currently, it is only sent via the interface that is given by the --out parameter.</p><p>When performing traffic capture on the Ethernet interface, the pcap file is created and packets are received but without a 802.1Q header. When one uses tshark, all headers are visible, but netsniff-ng removes 802.1Q headers. Is that normal behavior?</p><p>Yes and no. The way VLAN headers are handled in PF_PACKET sockets by the kernel is somewhat \[lq]problematic\[rq] [1]. The problem in the Linux kernel is that some drivers already handle VLANs, others do not. Those who handle it can have different implementations, such as hardware acceleration and so on. So in some cases the VLAN tag is even stripped before entering the protocol stack, in some cases probably not. The bottom line is that a "hack" was introduced in PF_PACKET so that a VLAN ID is visible in some helper data structure that is accessible from the RX_RING.</p><p>Then it gets really messy in the user space to artificially put the VLAN header back into the right place. Not to mention the resulting performance implications on all of <strong>libpcap</strong>(3) tools since parts of the packet need to be copied for reassembly via <a href="../man3/memmove.3.html"><strong>memmove</strong>(3)</a>.</p><p>A user reported the following, just to demonstrate this mess: some tests were made with two machines, and it seems that results depend on the driver ...</p>
 <pre>
     AR8131:
-      ethtool \-k eth0 gives "rx-vlan-offload: on"
+      ethtool -k eth0 gives "rx-vlan-offload: on"
       - wireshark gets the vlan header
       - netsniff-ng doesn't get the vlan header
-      ethtool \-K eth0 rxvlan off
+      ethtool -K eth0 rxvlan off
       - wireshark gets a QinQ header even though no one sent QinQ
       - netsniff-ng gets the vlan header
 </pre>
 
 <pre>
     RTL8111/8168B:
-      ethtool \-k eth0 gives "rx-vlan-offload: on"
+      ethtool -k eth0 gives "rx-vlan-offload: on"
       - wireshark gets the vlan header
       - netsniff-ng doesn't get the vlan header
-      ethtool \-K eth0 rxvlan off
+      ethtool -K eth0 rxvlan off
       - wireshark gets the vlan header
       - netsniff-ng doesn't get the vlan header
 </pre>

@@ -126,7 +126,7 @@
   Example: extracts "ruby" into "s" and 1234 into "i"
      int i;
      string s;
-     pcrecpp::RE re("(\e\ew+):(\e\ed+)");
+     pcrecpp::RE re("(&#92;&#92;w+):(&#92;&#92;d+)");
      re.FullMatch("ruby:1234", &s, &i);
 </pre>
 
@@ -147,7 +147,7 @@
 
 <pre>
   Example: fails because there aren't enough sub-patterns:
-     !pcrecpp::RE("\e\ew+:\e\ed+").FullMatch("ruby:1234", &s);
+     !pcrecpp::RE("&#92;&#92;w+:&#92;&#92;d+").FullMatch("ruby:1234", &s);
 </pre>
 
 <pre>
@@ -182,7 +182,7 @@
 <p>CAVEAT: An optional sub-pattern that does not exist in the matched string is assigned the empty string. Therefore, the following will return false (because the empty string is not a valid number):</p>
 <pre>
    int number;
-   pcrecpp::RE::FullMatch("abc", "[a-z]+(\e\ed+)?", &number);
+   pcrecpp::RE::FullMatch("abc", "[a-z]+(&#92;&#92;d+)?", &number);
 </pre>
 <p>The matching interface supports at most 16 arguments per call. If you need more, consider using the more general interface <strong>pcrecpp::RE::DoMatch</strong>. See <strong>pcrecpp.h</strong> for the signature for <strong>DoMatch</strong>.</p><p>NOTE: Do not use <strong>no_arg</strong>, which is used internally to mark the end of a list of optional arguments, as a placeholder for missing arguments, as this can lead to segfaults.</p>
         </div>
@@ -212,7 +212,7 @@
 <pre>
   Example: find first number in a string:
      int number;
-     pcrecpp::RE re("(\e\ed+)");
+     pcrecpp::RE re("(&#92;&#92;d+)");
      re.PartialMatch("x*100 + 20", &number);
      assert(number == 100);
 </pre>
@@ -291,7 +291,7 @@
 </pre>
 <p>If you are going to pass one of the most used modifiers, there are some convenience functions that return a RE_Options class with the appropriate modifier already set: <strong>CASELESS()</strong>, <strong>UTF8()</strong>, <strong>MULTILINE()</strong>, <strong>DOTALL</strong>(), and <strong>EXTENDED()</strong>.</p><p>If you need to set several options at once, and you don't want to go through the pains of declaring a RE_Options object and setting several options, there is a parallel method that give you such ability on the fly. You can concatenate several <strong>set_xxxxx()</strong> member functions, since each of them returns a reference to its class object. For example, to pass PCRE_CASELESS, PCRE_EXTENDED, and PCRE_MULTILINE to a RE with one statement, you may write:</p>
 <pre>
-   RE(" ^ xyz \e\es+ .* blah$",
+   RE(" ^ xyz &#92;&#92;s+ .* blah$",
      RE_Options()
        .set_caseless(true)
        .set_extended(true)
@@ -314,14 +314,14 @@
 <pre>
      string var;
      int value;
-     pcrecpp::RE re("(\e\ew+) = (\e\ed+)\en");
+     pcrecpp::RE re("(&#92;&#92;w+) = (&#92;&#92;d+)&#92;n");
      while (re.Consume(&input, &var, &value)) {
        ...;
      }
 </pre>
 <p>Each successful call to "Consume" will set "var/value", and also advance "input" so it points past the matched text.</p><p>The "FindAndConsume" operation is similar to "Consume" but does not anchor your match at the beginning of the string. For example, you could extract all words from a string by repeatedly calling</p>
 <pre>
-  pcrecpp::RE("(\e\ew+)").FindAndConsume(&input, &word)
+  pcrecpp::RE("(&#92;&#92;w+)").FindAndConsume(&input, &word)
 </pre>
 
         </div>

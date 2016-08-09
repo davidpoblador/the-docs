@@ -121,13 +121,13 @@
         <div class="sectioncontent">
 <p>You have to do two things to make use of the JIT support in the simplest way:</p>
 <pre>
-  (1) Call \fBpcre_study()\fP with the PCRE_STUDY_JIT_COMPILE option for
-      each compiled pattern, and pass the resulting \fBpcre_extra\fP block to
-      \fBpcre_exec()\fP.
+  (1) Call <strong>pcre_study()</strong> with the PCRE_STUDY_JIT_COMPILE option for
+      each compiled pattern, and pass the resulting <strong>pcre_extra</strong> block to
+      <strong>pcre_exec()</strong>.
 </pre>
 
 <pre>
-  (2) Use \fBpcre_free_study()\fP to free the \fBpcre_extra\fP block when it is
+  (2) Use <strong>pcre_free_study()</strong> to free the <strong>pcre_extra</strong> block when it is
       no longer needed, instead of just freeing it yourself. This ensures that
       any JIT data is also freed.
 </pre>
@@ -186,22 +186,22 @@
 </pre>
 <p>The <em>extra</em> argument must be the result of studying a pattern with PCRE_STUDY_JIT_COMPILE etc. There are three cases for the values of the other two options:</p>
 <pre>
-  (1) If \fIcallback\fP is NULL and \fIdata\fP is NULL, an internal 32K block
+  (1) If <em>callback</em> is NULL and <em>data</em> is NULL, an internal 32K block
       on the machine stack is used.
 </pre>
 
 <pre>
-  (2) If \fIcallback\fP is NULL and \fIdata\fP is not NULL, \fIdata\fP must be
-      a valid JIT stack, the result of calling \fBpcre_jit_stack_alloc()\fP.
+  (2) If <em>callback</em> is NULL and <em>data</em> is not NULL, <em>data</em> must be
+      a valid JIT stack, the result of calling <strong>pcre_jit_stack_alloc()</strong>.
 </pre>
 
 <pre>
-  (3) If \fIcallback\fP is not NULL, it must point to a function that is
-      called with \fIdata\fP as an argument at the start of matching, in
+  (3) If <em>callback</em> is not NULL, it must point to a function that is
+      called with <em>data</em> as an argument at the start of matching, in
       order to set up a JIT stack. If the return from the callback
       function is NULL, the internal 32K stack is used; otherwise the
       return value must be a valid JIT stack, the result of calling
-      \fBpcre_jit_stack_alloc()\fP.
+      <strong>pcre_jit_stack_alloc()</strong>.
 </pre>
 <p>A callback function is obeyed whenever JIT code is about to be run; it is not obeyed when <strong>pcre_exec()</strong> is called with options that are incompatible for JIT execution. A callback function can therefore be used to determine whether a match operation was executed by JIT or by the interpreter.</p><p>You may safely use the same JIT stack for more than one pattern (either by assigning directly or by callback), as long as the patterns are all matched sequentially in the same thread. In a multithread application, if you do not specify a JIT stack, or if you assign or pass back NULL from a callback, that is thread-safe, because each thread has its own machine stack. However, if you assign or pass back a non-NULL JIT stack, this must be a different stack for each thread so that the application is thread-safe.</p><p>Strictly speaking, even more is allowed. You can assign the same non-NULL stack to any number of patterns as long as they are not used for matching by multiple threads at the same time. For example, you can assign the same stack to all compiled patterns, and use a global mutex in the callback to wait until the stack is available for use. However, this is an inefficient solution, and not recommended.</p><p>This is a suggestion for how a multithreaded program that needs to set up non-default JIT stacks might operate:</p>
 <pre>
