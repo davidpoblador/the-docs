@@ -120,19 +120,16 @@
 <p>The functions in the <strong>printf</strong>() family produce output according to a <em>format</em> as described below. The functions <strong>printf</strong>() and <strong>vprintf</strong>() write output to <em>stdout</em>, the standard output stream; <strong>fprintf</strong>() and <strong>vfprintf</strong>() write output to the given output <em>stream</em>; <strong>sprintf</strong>(), <strong>snprintf</strong>(), <strong>vsprintf</strong>() and <strong>vsnprintf</strong>() write to the character string <em>str</em>.</p><p>The function <strong>dprintf</strong>() is the same as <a href="../man3/fprintf.3.html"><strong>fprintf</strong>(3)</a> except that it outputs to a file descriptor, <em>fd</em>, instead of to a <em>stdio</em> stream.</p><p>The functions <strong>snprintf</strong>() and <strong>vsnprintf</strong>() write at most <em>size</em> bytes (including the terminating null byte (&apos;&#92;0&apos;)) to <em>str</em>.</p><p>The functions <strong>vprintf</strong>(), <strong>vfprintf</strong>(), <strong>vdprintf</strong>(), <strong>vsprintf</strong>(), <strong>vsnprintf</strong>() are equivalent to the functions <strong>printf</strong>(), <strong>fprintf</strong>(), <strong>dprintf</strong>(), <strong>sprintf</strong>(), <strong>snprintf</strong>(), respectively, except that they are called with a <em>va_list</em> instead of a variable number of arguments. These functions do not call the <em>va_end</em> macro. Because they invoke the <em>va_arg</em> macro, the value of <em>ap</em> is undefined after the call. See <a href="../man3/stdarg.3.html"><strong>stdarg</strong>(3)</a>.</p><p>All of these functions write the output under the control of a <em>format</em> string that specifies how subsequent arguments (or arguments accessed via the variable-length argument facilities of <a href="../man3/stdarg.3.html"><strong>stdarg</strong>(3)</a>) are converted for output.</p><p>C99 and POSIX.1-2001 specify that the results are undefined if a call to <strong>sprintf</strong>(), <strong>snprintf</strong>(), <strong>vsprintf</strong>(), or <strong>vsnprintf</strong>() would cause copying to take place between objects that overlap (e.g., if the target string array and one of the supplied input arguments refer to the same buffer). See NOTES.</p><h3>Format of the format string</h3>
 <p>The format string is a character string, beginning and ending in its initial shift state, if any. The format string is composed of zero or more directives: ordinary characters (not <strong>%</strong>), which are copied unchanged to the output stream; and conversion specifications, each of which results in fetching zero or more subsequent arguments. Each conversion specification is introduced by the character <strong>%</strong>, and ends with a <em>conversion specifier</em>. In between there may be (in this order) zero or more <em>flags</em>, an optional minimum <em>field width</em>, an optional <em>precision</em> and an optional <em>length modifier</em>.</p><p>The arguments must correspond properly (after type promotion) with the conversion specifier. By default, the arguments are used in the order given, where each &apos;*&apos; (see <em>Field width</em> and <em>Precision</em> below) and each conversion specifier asks for the next argument (and it is an error if insufficiently many arguments are given). One can also specify explicitly which argument is taken, at each place where an argument is required, by writing "%m$" instead of &apos;%&apos; and "*m$" instead of &apos;*&apos;, where the decimal integer <em>m</em> denotes the position in the argument list of the desired argument, indexed starting from 1. Thus,</p>
 <pre>
-
 printf("%*d", width, num);
 
 </pre>
 <p>and</p>
 <pre>
-
 printf("%2$*1$d", width, num);
 
 </pre>
 <p>are equivalent. The second style allows repeated references to the same argument. The C99 standard does not include the style using &apos;$&apos;, which comes from the Single UNIX Specification. If the style using &apos;$&apos; is used, it must be used throughout for all conversions taking an argument and all width and precision arguments, but it may be mixed with "%%" formats, which do not consume an argument. There may be no gaps in the numbers of arguments specified using &apos;$&apos;; for example, if arguments 1 and 3 are specified, argument 2 must also be specified somewhere in the format string.</p><p>For some numeric conversions a radix character ("decimal point") or thousands' grouping character is used. The actual character used depends on the <strong>LC_NUMERIC</strong> part of the locale. The POSIX locale uses &apos;.&apos; as radix character, and does not have a grouping character. Thus,</p>
 <pre>
-
     printf("%&apos;.2f", 1234567.89);
 
 </pre>
@@ -399,21 +396,18 @@ printf("%2$*1$d", width, num);
         <div class="sectioncontent">
 <p>To print <em>Pi</em> to five decimal places:</p>
 <pre>
-
 #include &lt;math.h&gt;
 #include &lt;stdio.h&gt;
 fprintf(stdout, "pi = %.5f&#92;n", 4 * atan(1.0));
 </pre>
 <p>To print a date and time in the form "Sunday, July 3, 10:02", where <em>weekday</em> and <em>month</em> are pointers to strings:</p>
 <pre>
-
 #include &lt;stdio.h&gt;
 fprintf(stdout, "%s, %s %d, %.2d:%.2d&#92;n",
         weekday, month, day, hour, min);
 </pre>
 <p>Many countries use the day-month-year order. Hence, an internationalized version must be able to print the arguments in an order specified by the format:</p>
 <pre>
-
 #include &lt;stdio.h&gt;
 fprintf(stdout, format,
         weekday, month, day, hour, min);
@@ -421,13 +415,11 @@ fprintf(stdout, format,
 </pre>
 <p>where <em>format</em> depends on locale, and may permute the arguments. With the value:</p>
 <pre>
-
 "%1$s, %3$d. %2$s, %4$d:%5$.2d&#92;n"
 
 </pre>
 <p>one might obtain "Sonntag, 3. Juli, 10:02".</p><p>To allocate a sufficiently large string and print into it (code correct for both glibc 2.0 and glibc 2.1):</p>
 <pre>
-
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
 #include &lt;stdarg.h&gt;

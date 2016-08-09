@@ -274,6 +274,11 @@ class PreformattedBlock(BaseContainer):
         out = [linkify(item) for item in self.contents]
         return load_template('pre').substitute(content='\n'.join(out))
 
+    def append(self, object):
+        if not self.contents and not object.strip():
+            return
+
+        super(PreformattedBlock, self).append(object)
 
 class SpacedBlock(BaseContainer):
     def html(self):
