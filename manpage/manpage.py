@@ -2,6 +2,7 @@ from helpers import load_template, get_breadcrumb, strip_tags, linkifier
 from helpers import get_pagination, unescape
 from cached_property import cached_property
 from helpers import SECTIONS
+from collections import Counter
 
 try:
     import re2 as re
@@ -44,7 +45,7 @@ def linkify(item):
             out = "<strong>%s</strong>(%s)%s" % (manpage,
                                                  section,
                                                  append, )
-            # self._broken_links.add(page) #FIXME
+            AvailablePages.unavailable[page] += 1
 
         return out
 
@@ -53,6 +54,7 @@ def linkify(item):
 
 class AvailablePages(object):
     pages = None
+    unavailable = Counter()
 
 
 class BaseContainer(object):

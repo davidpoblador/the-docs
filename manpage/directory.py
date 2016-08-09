@@ -59,8 +59,11 @@ class ManDirectoryParser(object):
         self.pages = dict()
 
         self.missing_parsers = Counter()
-        self.missing_links = Counter()
         self.section_counters = Counter()
+
+    @property
+    def missing_links(self):
+        return AvailablePages.unavailable
 
     def get_pages_without_errors(self):
         manpages = set()
@@ -262,7 +265,6 @@ class ManDirectoryParser(object):
         f.write(mp.html())
         f.close()
 
-        # FIXME: self.missing_links.update(mp.broken_links)
         # FIXME: self.section_counters.update(mp.section_titles)
 
         return ("man%s" % section, filename)
