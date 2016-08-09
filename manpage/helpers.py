@@ -129,15 +129,19 @@ class MLStripper(HTMLParser):
     def __init__(self):
         self.reset()
         self.fed = []
+
     def handle_data(self, d):
         self.fed.append(d)
+
     def get_data(self):
         return ''.join(self.fed)
+
 
 def strip_tags(html):
     s = MLStripper()
     s.feed(html)
     return s.get_data()
+
 
 pjoin = os.path.join
 dname = os.path.dirname
@@ -147,8 +151,7 @@ bname = os.path.basename
 #    r"(?:<\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?:</\w+?>)?[(](?P<section>\d)[)]")
 
 linkifier = re.compile(
-    r"(?P<pretag><\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?P<posttag></\w+?>)?[(](?P<section>\d)[)]"
-    )
+    r"(?P<pretag><\w+?>)?(?P<page>\w+[\w\.-]+\w+)(?P<posttag></\w+?>)?[(](?P<section>\d)[)]")
 
 SECTIONS = {
     'man1': "Executable programs or shell commands",

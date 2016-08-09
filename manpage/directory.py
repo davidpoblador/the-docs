@@ -17,6 +17,7 @@ from manpage import AvailablePages
 
 package_directory = dname(os.path.abspath(__file__))
 
+
 class DirectoryIterator(object):
     def __init__(self, iterator):
         self.items = [(file, None) for file in iterator]
@@ -191,7 +192,7 @@ class ManDirectoryParser(object):
                 "name": name,
                 "section": section,
                 "parent_dir": parent_dir,
-                "file" : file
+                "file": file
             }
 
             if amount > 1:

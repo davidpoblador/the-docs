@@ -122,27 +122,27 @@ class Macro(object):
     }
 
     @staticmethod
-    def process_fonts(content, current_tag = None):
+    def process_fonts(content, current_tag=None):
         #print content, current_tag
 
         if current_tag == 'R':
             current_tag = None
 
         translate_font = {
-        '1': 'R',
-        '2': 'I',
-        '3': 'B',
-        '4': 'B',
-        'b': 'B',
-        'r': 'R',
-        'i': 'I',
+            '1': 'R',
+            '2': 'I',
+            '3': 'B',
+            '4': 'B',
+            'b': 'B',
+            'r': 'R',
+            'i': 'I',
         }
 
         style_map = {
-        'B' : "strong",
-        'I' : "em",
-        'SM' : "small",
-        'S' : "small",
+            'B': "strong",
+            'I': "em",
+            'SM': "small",
+            'S': "small",
         }
 
         previous_tag = None
@@ -269,6 +269,7 @@ class Macro(object):
             return ''.join(out)
         else:
             raise UnexpectedMacro("STYLE", macro, args, "path")
+
 
 class RedirectedPage(Exception):
     def __init__(self, page, redirect):
@@ -503,8 +504,7 @@ class ManpageParser(object):
             if parser == "ROOT":
                 if not content:
                     content = Manpage(
-                        name=self.name,
-                        section=self.numeric_section)
+                        name=self.name, section=self.numeric_section)
 
                 # ROOT
                 if macro == 'TH':
@@ -536,7 +536,7 @@ class ManpageParser(object):
                     if macro == 'SH':
                         if content is None:
                             content = Section()
-                            content.title = ' '.join(args)
+                            content.title = unescape(' '.join(args))
                             continue
                         else:
                             return i - 1, content
@@ -550,7 +550,7 @@ class ManpageParser(object):
                     if macro == 'SS':
                         if content is None:
                             content = Section()
-                            content.title = ' '.join(args)
+                            content.title = unescape(' '.join(args))
                             continue
                         else:
                             return i - 1, content
@@ -561,7 +561,7 @@ class ManpageParser(object):
                     if macro == 'SS':
                         if content is None:
                             content = SubSection()
-                            content.title = ' '.join(args)
+                            content.title = unescape(' '.join(args))
                             continue
                         else:
                             return i - 1, content
@@ -682,10 +682,12 @@ class ManpageParser(object):
                     else:
                         return i - 1, content
 
-
                 if not macro:
-                    if args.startswith('  ') and parser not in {'PRE', 'EXAMPLE', 'TABLE'}:
-                        inc, spaced_content = self.process(start + i, 'SPACEDBLOCK')
+                    if args.startswith('  ') and parser not in {
+                            'PRE', 'EXAMPLE', 'TABLE'
+                    }:
+                        inc, spaced_content = self.process(start + i,
+                                                           'SPACEDBLOCK')
                         content.append(spaced_content)
                         consume(iter, inc)
                     else:

@@ -1,5 +1,5 @@
 from helpers import load_template, get_breadcrumb, strip_tags, linkifier
-from helpers import get_pagination
+from helpers import get_pagination, unescape
 from cached_property import cached_property
 from helpers import SECTIONS
 
@@ -7,6 +7,7 @@ try:
     import re2 as re
 except ImportError:
     import re
+
 
 def linkify(item):
     if not AvailablePages.pages:
@@ -21,7 +22,7 @@ def linkify(item):
         manpage = m.groupdict()['page']
         section = m.groupdict()['section']
 
-        page = '.'.join([manpage, section]) 
+        page = '.'.join([manpage, section])
 
         pretag = m.groupdict()['pretag']
         posttag = m.groupdict()['posttag']
@@ -32,18 +33,27 @@ def linkify(item):
             append = ""
 
         if page in AvailablePages.pages:
-            out = "<strong>%s</strong>(%s)" % (manpage, section, )
-            out = "<a href=\"../man%s/%s.%s.html\">%s</a>%s" % (section, manpage, section, out, append, )
+            out = "<strong>%s</strong>(%s)" % (manpage,
+                                               section, )
+            out = "<a href=\"../man%s/%s.%s.html\">%s</a>%s" % (section,
+                                                                manpage,
+                                                                section,
+                                                                out,
+                                                                append, )
         else:
-            out = "<strong>%s</strong>(%s)%s" % (manpage, section, append, )
+            out = "<strong>%s</strong>(%s)%s" % (manpage,
+                                                 section,
+                                                 append, )
             # self._broken_links.add(page) #FIXME
 
         return out
 
     return linkifier.sub(repl, item)
 
+
 class AvailablePages(object):
-    pages = None        
+    pages = None
+
 
 class BaseContainer(object):
     def __init__(self):
@@ -127,9 +137,9 @@ class Table(BaseContainer):
             for cell in cells[0:columns]:
                 cell = cell.replace("\\0", "")
                 if first:
-                    out += "\n<th>%s</th>" % cell
+                    out += "\n<th>%s</th>" % linkify(cell)
                 else:
-                    out += "\n<td>%s</td>" % cell
+                    out += "\n<td>%s</td>" % linkify(cell)
             del cells[0:columns]
             first = False
             out += "</tr>\n"
@@ -149,7 +159,7 @@ class Section(BaseContainer):
     def html(self):
         out = super(Section, self).html()
 
-        return self.tpl.substitute(title=self.title, content=out)
+        return self.tpl.substitute(title=linkify(self.title), content=out)
 
 
 class Manpage(BaseContainer):
@@ -254,18 +264,22 @@ class Manpage(BaseContainer):
             header=self.page_header,
             content=content + self.pager_contents, )
 
+
 class IndentedBlock(BaseContainer):
     pass
 
+
 class PreformattedBlock(BaseContainer):
     def html(self):
-        out = [item for item in self.contents]
+        out = [linkify(item) for item in self.contents]
         return load_template('pre').substitute(content='\n'.join(out))
+
 
 class SpacedBlock(BaseContainer):
     def html(self):
-        out = [item for item in self.contents]
+        out = [linkify(item) for item in self.contents]
         return load_template('pre').substitute(content='\n'.join(out))
+
 
 class SubSection(Section):
     tpl = load_template('subsection')
