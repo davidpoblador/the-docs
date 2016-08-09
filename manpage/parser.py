@@ -122,13 +122,13 @@ class Macro(object):
     }
 
 
-class RedirectedPage2(Exception):
+class RedirectedPage(Exception):
     def __init__(self, page, redirect):
         message = "Page %s redirects to %s" % (page,
                                                redirect, )
         self.redirect = redirect
 
-        super(RedirectedPage2, self).__init__(message)
+        super(RedirectedPage, self).__init__(message)
 
 
 class UnexpectedMacro(Exception):
@@ -139,11 +139,11 @@ class UnexpectedMacro(Exception):
         super(UnexpectedMacro, self).__init__(message)
 
 
-class NotSupportedFormat2(Exception):
+class NotSupportedFormat(Exception):
     def __init__(self, file):
         message = "Not Supported Format in file (%s)" % (file, )
 
-        super(NotSupportedFormat2, self).__init__(message)
+        super(NotSupportedFormat, self).__init__(message)
 
 
 class FileMacroIterator(object):
@@ -287,7 +287,7 @@ class ManpageParser(object):
                         rest = ""
 
                     if macro == 'so':
-                        raise RedirectedPage2(self.path, rest)
+                        raise RedirectedPage(self.path, rest)
 
                     if line.startswith(".el\\{\\"):
                         # There is a lot of crap in pages (isag.1, for instance)
@@ -356,9 +356,9 @@ class ManpageParser(object):
 
     def process(self, *args, **kwargs):
         if self.parser is None:
-            raise NotSupportedFormat2(self.path)
+            raise NotSupportedFormat(self.path)
         elif not callable(self.parser):
-            raise NotSupportedFormat2(self.path)
+            raise NotSupportedFormat(self.path)
 
         return self.parser(self, *args, **kwargs)
 

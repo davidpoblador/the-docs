@@ -124,22 +124,6 @@ def populate_breadcrumb_item(order, text, url):
         url=url, text=text, order=order)
 
 
-class UnexpectedState(Exception):
-    pass
-
-
-class MissingParser(Exception):
-    pass
-
-
-class NotSupportedFormat(Exception):
-    pass
-
-
-class RedirectedPage(Exception):
-    pass
-
-
 pjoin = os.path.join
 dname = os.path.dirname
 bname = os.path.basename

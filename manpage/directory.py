@@ -6,19 +6,16 @@ import datetime
 from cached_property import cached_property
 from collections import Counter, defaultdict
 
-from legacymanpage import ManPage
 from helpers import pjoin, dname, bname
-from helpers import MissingParser, NotSupportedFormat
 from helpers import SECTIONS
 from helpers import load_template, get_breadcrumb
 
 from html import ManPageHTMLDB
 
-from ngparser import ManpageParser
-from ngparser import NotSupportedFormat2, UnexpectedMacro, RedirectedPage2
+from parser import ManpageParser
+from parser import NotSupportedFormat, UnexpectedMacro, RedirectedPage
 
 package_directory = dname(os.path.abspath(__file__))
-
 
 class DirectoryIterator(object):
     def __init__(self, iterator):
@@ -81,9 +78,8 @@ class ManDirectoryParser(object):
 
         return pages_with_missing_parsers
 
-    def parse_directory2(self, source_dir):
+    def parse_directory(self, source_dir):
         self.conn.execute("DELETE FROM manpages")
-        self.conn.execute("DELETE FROM manpage_sections")
 
         iterator = DirectoryIterator(glob.iglob("%s/*/man?/*.?" % source_dir))
 
@@ -97,10 +93,10 @@ class ManDirectoryParser(object):
                     redirected_from=redirected_from,
                     package=package)
                 manpage = parser.process()
-            except NotSupportedFormat2:
+            except NotSupportedFormat:
                 logging.info("Skipping %s, not supported format...", page_file)
                 continue
-            except RedirectedPage2 as e:
+            except RedirectedPage as e:
                 redirect_to = e.redirect
                 logging.info("Page %s, has a redirection to %s...", page_file,
                              redirect_to)
@@ -130,82 +126,19 @@ class ManDirectoryParser(object):
                 self.missing_parsers[macro] += 1
                 continue
 
-            #name = "public_html/man-pages/man%s/%s.%s.html" % (parsed.section, parsed.name, parsed.section, )
-            #fp = open(name, 'w')
-            #fp.write(parsed.html())
-            #fp.close()
-
             if not redirected_from:
                 name, section = manpage.name, manpage.section
             else:
                 name, ext = os.path.splitext(bname(redirected_from))
                 section = ext[1:]
 
+            relative_file = page_file.split(source_dir, 1)[1][1:]
+
             self.conn.execute(
-                "INSERT INTO manpages (package, name, section, subtitle) VALUES (?, ?, ?, ?)",
-                (package, name, section, manpage.title))
+                "INSERT INTO manpages (package, name, section, subtitle, file) VALUES (?, ?, ?, ?, ?)",
+                (package, name, section, manpage.title, relative_file))
 
             logging.debug("Man page %s processed correctly...", page_file)
-
-        #for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
-        #    logging.debug("Processing man page %s ..." % page_file)
-        #    manpage = ManPage(page_file)
-        #    try:
-        #        manpage.parse()
-        #    except NotSupportedFormat:
-        #        logging.warning(" * Not supported format: %s" % page_file)
-        #        continue
-        #    except IOError:
-        #        logging.warning(" * IOError: %s" % page_file)
-        #        continue
-        #    except:
-        #        raise
-        #
-        #    self.conn.execute(
-        #        "INSERT INTO manpages (package, name, section, subtitle) VALUES (?, ?, ?, ?)",
-        #        (manpage.package, manpage.name, manpage.section,
-        #         manpage.subtitle))
-        #
-        #    for i, (title, contents) in enumerate(manpage.get_sections()):
-        #        self.conn.execute(
-        #            "INSERT INTO manpage_sections (package, name, section, position, title, content) VALUES (?, ?, ?, ?, ?, ?)",
-        #            (manpage.package, manpage.name, manpage.section, i, title,
-        #             contents))
-
-    def parse_directory(self, source_dir):
-        self.conn.execute("DELETE FROM manpages")
-        self.conn.execute("DELETE FROM manpage_sections")
-
-        for page_file in glob.iglob("%s/*/man?/*.?" % source_dir):
-            logging.debug("Processing man page %s ..." % page_file)
-            manpage = ManPage(page_file)
-            try:
-                manpage.parse()
-            except MissingParser as e:
-                macro = str(e).split(" ", 2)[1]
-                logging.warning(" * Missing Parser (%s): %s" % (macro,
-                                                                page_file, ))
-                self.missing_parsers[macro] += 1
-                continue
-            except NotSupportedFormat:
-                logging.warning(" * Not supported format: %s" % page_file)
-                continue
-            except IOError:
-                logging.warning(" * IOError: %s" % page_file)
-                continue
-            except:
-                raise
-
-            self.conn.execute(
-                "INSERT INTO manpages (package, name, section, subtitle) VALUES (?, ?, ?, ?)",
-                (manpage.package, manpage.name, manpage.section,
-                 manpage.subtitle))
-
-            for i, (title, contents) in enumerate(manpage.get_sections()):
-                self.conn.execute(
-                    "INSERT INTO manpage_sections (package, name, section, position, title, content) VALUES (?, ?, ?, ?, ?, ?)",
-                    (manpage.package, manpage.name, manpage.section, i, title,
-                     contents))
 
     def empty_output_directories(self):
         import shutil
