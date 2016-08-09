@@ -202,6 +202,8 @@ def unescape(t):
 
     t = t.replace("\{", "{")
 
+    t = t.replace("\\\\0", "&#92;0")
+
     t = t.replace("\-", "-")
     t = t.replace("\ ", "&nbsp;")
     t = t.replace("\\0", "&nbsp;")
@@ -212,8 +214,6 @@ def unescape(t):
     t = t.replace("\\(bu", "&bull;")
 
     t = t.replace("\`", "&#96;")  # Backtick
-
-    t = t.replace("\&", "")
 
     t = t.replace("\\\\", "&#92;")
 
@@ -245,4 +245,7 @@ def unescape(t):
     t = t.replace("\\*(rq", "&rdquo;").replace("\\(rq", "&rdquo;")
 
     t = t.replace("\\e", "&#92;")
+
+    t = t.replace("\&", "")
+
     return t
