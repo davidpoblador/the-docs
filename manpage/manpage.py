@@ -187,6 +187,8 @@ class Manpage(BaseContainer):
         self.prev_page = None
         self.next_page = None
 
+        self.url = None
+
     @cached_property
     def pager_contents(self):
         pager = get_pagination(self.prev_page, self.next_page)
@@ -268,17 +270,21 @@ class Manpage(BaseContainer):
     def html(self):
         content = super(Manpage, self).html()
 
-        twitter_headers = load_template('twitter-card').substitute(
-                title = "%s (%s) manual" % (self.name, self.section, ),
-                description = self.title,
-            )
+        if self.url:
+            twitter_headers = load_template('twitter-card').substitute(
+                    title = "%s (%s) manual" % (self.name, self.section, ),
+                    description = self.title,
+                )
 
-        og_headers = load_template('og-card').substitute(
-                title = "%s (%s) manual" % (self.name, self.section, ),
-                description = self.title,
-            )
+            og_headers = load_template('og-card').substitute(
+                    title = "%s (%s) manual" % (self.name, self.section, ),
+                    description = self.title,
+                    url = self.url,
+                )
 
-        extraheaders = twitter_headers + og_headers
+            extraheaders = twitter_headers + og_headers
+        else:
+            extraheaders = ""
 
         return load_template('base').substitute(
             breadcrumb=self.breadcrumbs,

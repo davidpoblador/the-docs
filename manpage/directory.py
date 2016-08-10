@@ -258,6 +258,7 @@ class ManDirectoryParser(object):
         mp.package = package
         mp.prev_page = prev_page
         mp.next_page = next_page
+        mp.url = "https://www.carta.tech/man-pages/man%s/%s" % (section, filename,)
         AvailablePages.pages = self.available_pages
 
         logging.debug("Writing %s" % full_path)
