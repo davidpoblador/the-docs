@@ -65,6 +65,7 @@ class AvailablePages(object):
     pages = None
     unavailable = Counter()
 
+
 class AvailableSections(object):
     titles = Counter()
 
@@ -193,6 +194,12 @@ class Manpage(BaseContainer):
         self.url = None
 
     @cached_property
+    def image_url(self):
+        return "https://www.carta.tech/images/%s-%s-%s.png" % (self.package,
+                                                               self.name,
+                                                               self.section, )
+
+    @cached_property
     def pager_contents(self):
         pager = get_pagination(self.prev_page, self.next_page)
         if not pager:
@@ -275,17 +282,19 @@ class Manpage(BaseContainer):
     def html(self):
         content = super(Manpage, self).html()
 
-        if self.url:
+        if self.url and self.package:
             twitter_headers = load_template('twitter-card').substitute(
-                    title = "%s (%s) manual" % (self.name, self.section, ),
-                    description = self.title,
-                )
+                title="%s (%s) manual" % (self.name,
+                                          self.section, ),
+                description=self.title,
+                image_url=self.image_url, )
 
             og_headers = load_template('og-card').substitute(
-                    title = "%s (%s) manual" % (self.name, self.section, ),
-                    description = self.title,
-                    url = self.url,
-                )
+                title="%s (%s) manual" % (self.name,
+                                          self.section, ),
+                description=self.title,
+                url=self.url,
+                image_url=self.image_url, )
 
             extraheaders = twitter_headers + og_headers
         else:
@@ -294,7 +303,7 @@ class Manpage(BaseContainer):
         return load_template('base').substitute(
             breadcrumb=self.breadcrumbs,
             title=self.descriptive_title,
-            extraheaders = extraheaders,
+            extraheaders=extraheaders,
             metadescription=self.title,
             header=self.page_header,
             content=content + self.pager_contents, )

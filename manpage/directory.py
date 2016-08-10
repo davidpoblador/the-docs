@@ -596,7 +596,6 @@ class ManDirectoryParser(object):
 
     @staticmethod
     def write_image(filename, name, section, description):
-
         if not description:
             description = ""
         else:
