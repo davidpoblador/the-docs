@@ -20,6 +20,10 @@ def dirparse(args):
             mps, parser.missing_parsers.most_common(mps))
 
 
+def imaging(args):
+    parser = ManDirectoryParser(database=args.database)
+    parser.generate_images(output_dir=args.output_dir)
+
 def generate(args):
     parser = ManDirectoryParser(database=args.database)
     parser.generate_output(output_dir=args.output_dir, base_url=args.base_url)
@@ -83,6 +87,17 @@ if __name__ == '__main__':
         default=0)
 
     parser_generate.set_defaults(func=generate)
+
+
+    # parser_imaging
+    parser_imaging = subparsers.add_parser(
+        'imaging',
+        help='Generates images for each manpage',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_imaging.add_argument(
+        "output_dir", help="the directory you want to use as a destination")
+
+    parser_imaging.set_defaults(func=imaging)
 
     # Set bash autocompletion
     argcomplete.autocomplete(parser)

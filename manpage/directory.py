@@ -1,10 +1,13 @@
 import glob
+import shutil
 import logging
 import os.path
 import sqlite3
 import datetime
 from cached_property import cached_property
 from collections import Counter, defaultdict
+from PIL import Image, ImageDraw, ImageFont
+from textwrap import wrap
 
 from helpers import pjoin, dname, bname
 from helpers import SECTIONS
@@ -148,7 +151,6 @@ class ManDirectoryParser(object):
             logging.debug("Man page %s processed correctly...", page_file)
 
     def empty_output_directories(self):
-        import shutil
         shutil.rmtree(self.manpages_dir, ignore_errors=True)
         shutil.rmtree(self.packages_dir, ignore_errors=True)
 
@@ -261,7 +263,8 @@ class ManDirectoryParser(object):
         mp.package = package
         mp.prev_page = prev_page
         mp.next_page = next_page
-        mp.url = "https://www.carta.tech/man-pages/man%s/%s" % (section, filename,)
+        mp.url = "https://www.carta.tech/man-pages/man%s/%s" % (section,
+                                                                filename, )
         AvailablePages.pages = self.available_pages
 
         logging.debug("Writing %s" % full_path)
@@ -413,7 +416,7 @@ class ManDirectoryParser(object):
             out = load_template('base').substitute(
                 title="Man Pages in %s" % package,
                 canonical="",
-                extraheaders = "",
+                extraheaders="",
                 header=load_template('header-package').substitute(
                     title=package),
                 breadcrumb=get_breadcrumb(breadcrumb),
@@ -448,7 +451,7 @@ class ManDirectoryParser(object):
         out = load_template('base').substitute(
             title="Packages with man pages",
             canonical="",
-            extraheaders = "",
+            extraheaders="",
             header=load_template('header-package-index').substitute(
                 title="Packages with man pages"),
             breadcrumb=get_breadcrumb(breadcrumb),
@@ -528,7 +531,7 @@ class ManDirectoryParser(object):
             out = load_template('base').substitute(
                 title="Linux Man Pages - %s" % section_description,
                 canonical="",
-                extraheaders = "",
+                extraheaders="",
                 header=load_template('header').substitute(
                     title=section_description, section=section, subtitle=""),
                 breadcrumb=get_breadcrumb(breadcrumb),
@@ -549,7 +552,7 @@ class ManDirectoryParser(object):
             metadescription="Linux Man Pages",
             title="Linux Man Pages",
             canonical="",
-            extraheaders = "",
+            extraheaders="",
             header="",
             breadcrumb="",
             content=index_tpl.substitute(), )
@@ -567,7 +570,7 @@ class ManDirectoryParser(object):
             metadescription="Carta.tech: The home for open documentation",
             title="Carta.tech: The home for open documentation",
             canonical="",
-            extraheaders = "",
+            extraheaders="",
             header="",
             breadcrumb="",
             content=index_tpl.substitute(), )
@@ -575,6 +578,45 @@ class ManDirectoryParser(object):
         f = open(pjoin(self.root_html, "index.html"), 'w')
         f.write(index)
         f.close()
+
+    def generate_images(self, output_dir):
+        images_dir = pjoin(output_dir, "images")
+
+        shutil.rmtree(images_dir, ignore_errors=True)
+        ManDirectoryParser.makedirs(images_dir)
+
+        for (package, name,
+             section), description in self.subtitles.iteritems():
+
+            filename = "%s-%s-%s.png" % (package,
+                                         name,
+                                         section, )
+            ManDirectoryParser.write_image(
+                pjoin(images_dir, filename), name, section, description)
+
+    @staticmethod
+    def write_image(filename, name, section, description):
+
+        if not description:
+            description = ""
+        else:
+            description = '\n'.join(wrap(description, 46))
+
+        title = wrap( "%s (%s)" % (name, section,), 24)[0]
+
+        base = Image.open('imaging/base-image.png').convert('RGBA')
+        txt = Image.new('RGBA', base.size, (255,255,255,0))
+
+        # get a font
+        fnt = ImageFont.truetype('imaging/FiraMono-Medium.ttf', 36)
+        fnt2 = ImageFont.truetype('imaging/FiraMono-Medium.ttf', 18)
+
+        d = ImageDraw.Draw(txt)
+        d.text((30,30), title, font=fnt, fill=(173,52,62,255))
+        d.text((30,100), description, font=fnt2, fill=(0,0,0,255))
+
+        out = Image.alpha_composite(base, txt)
+        out.save(filename)
 
     def generate_output(self, output_dir, base_url):
         self.root_html = output_dir
