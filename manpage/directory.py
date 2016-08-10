@@ -408,7 +408,7 @@ class ManDirectoryParser(object):
                 ("/packages/%s/" % package, package),
             ]
 
-            out = load_template('base').safe_substitute(
+            out = load_template('base').substitute(
                 title="Man Pages in %s" % package,
                 canonical="",
                 header=load_template('header-package').substitute(
@@ -442,7 +442,7 @@ class ManDirectoryParser(object):
             content="\n".join(package_list_items))
         index_path = pjoin(self.packages_dir, "index.html")
 
-        out = load_template('base').safe_substitute(
+        out = load_template('base').substitute(
             title="Packages with man pages",
             canonical="",
             header=load_template('header-package-index').substitute(
@@ -521,10 +521,10 @@ class ManDirectoryParser(object):
                 ("/man-pages/man%s/" % section, section_description),
             ]
 
-            out = load_template('base').safe_substitute(
+            out = load_template('base').substitute(
                 title="Linux Man Pages - %s" % section_description,
                 canonical="",
-                header=load_template('header').safe_substitute(
+                header=load_template('header').substitute(
                     title=section_description, section=section, subtitle=""),
                 breadcrumb=get_breadcrumb(breadcrumb),
                 content=section_content,
@@ -540,7 +540,7 @@ class ManDirectoryParser(object):
         base_tpl = load_template('base')
         index_tpl = load_template('index-manpage')
 
-        index = base_tpl.safe_substitute(
+        index = base_tpl.substitute(
             metadescription="Linux Man Pages",
             title="Linux Man Pages",
             canonical="",
@@ -557,7 +557,7 @@ class ManDirectoryParser(object):
         base_tpl = load_template('base')
         index_tpl = load_template('index-contents')
 
-        index = base_tpl.safe_substitute(
+        index = base_tpl.substitute(
             metadescription="Carta.tech: The home for open documentation",
             title="Carta.tech: The home for open documentation",
             canonical="",

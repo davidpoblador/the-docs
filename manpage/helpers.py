@@ -393,6 +393,7 @@ class Macro(object):
         else:
             raise UnexpectedMacro("STYLE", macro, args, "path")
 
+
 # Helper functions
 def entitize(line):
     return line.replace("<", "&lt;").replace(">", "&gt;")

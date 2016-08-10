@@ -43,6 +43,7 @@ class CustomMacros(object):
         self.macros[macro] = []
         self.current_macro = macro
 
+
 class RedirectedPage(Exception):
     def __init__(self, page, redirect):
         message = "Page %s redirects to %s" % (page,
