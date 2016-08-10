@@ -411,6 +411,7 @@ class ManDirectoryParser(object):
             out = load_template('base').substitute(
                 title="Man Pages in %s" % package,
                 canonical="",
+                extraheaders = "",
                 header=load_template('header-package').substitute(
                     title=package),
                 breadcrumb=get_breadcrumb(breadcrumb),
@@ -445,6 +446,7 @@ class ManDirectoryParser(object):
         out = load_template('base').substitute(
             title="Packages with man pages",
             canonical="",
+            extraheaders = "",
             header=load_template('header-package-index').substitute(
                 title="Packages with man pages"),
             breadcrumb=get_breadcrumb(breadcrumb),
@@ -524,6 +526,7 @@ class ManDirectoryParser(object):
             out = load_template('base').substitute(
                 title="Linux Man Pages - %s" % section_description,
                 canonical="",
+                extraheaders = "",
                 header=load_template('header').substitute(
                     title=section_description, section=section, subtitle=""),
                 breadcrumb=get_breadcrumb(breadcrumb),
@@ -544,6 +547,7 @@ class ManDirectoryParser(object):
             metadescription="Linux Man Pages",
             title="Linux Man Pages",
             canonical="",
+            extraheaders = "",
             header="",
             breadcrumb="",
             content=index_tpl.substitute(), )
@@ -561,6 +565,7 @@ class ManDirectoryParser(object):
             metadescription="Carta.tech: The home for open documentation",
             title="Carta.tech: The home for open documentation",
             canonical="",
+            extraheaders = "",
             header="",
             breadcrumb="",
             content=index_tpl.substitute(), )

@@ -26,7 +26,7 @@
   <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
   <meta name="theme-color" content="#ffffff">
   <meta name="description" content="${metadescription}">
-</head>
+${extraheaders}</head>
 <body>
   <div class="container final">
     ${header}

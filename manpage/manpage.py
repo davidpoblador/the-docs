@@ -268,9 +268,15 @@ class Manpage(BaseContainer):
     def html(self):
         content = super(Manpage, self).html()
 
+        twitter_headers = load_template('twitter-card').substitute(
+                title = "%s (%s) manual" % (self.name, self.section, ),
+                description = self.title,
+            )
+
         return load_template('base').substitute(
             breadcrumb=self.breadcrumbs,
             title=self.descriptive_title,
+            extraheaders = twitter_headers,
             metadescription=self.title,
             header=self.page_header,
             content=content + self.pager_contents, )
