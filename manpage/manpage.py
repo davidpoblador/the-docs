@@ -273,10 +273,17 @@ class Manpage(BaseContainer):
                 description = self.title,
             )
 
+        og_headers = load_template('og-card').substitute(
+                title = "%s (%s) manual" % (self.name, self.section, ),
+                description = self.title,
+            )
+
+        extraheaders = twitter_headers + og_headers
+
         return load_template('base').substitute(
             breadcrumb=self.breadcrumbs,
             title=self.descriptive_title,
-            extraheaders = twitter_headers,
+            extraheaders = extraheaders,
             metadescription=self.title,
             header=self.page_header,
             content=content + self.pager_contents, )
