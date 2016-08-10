@@ -4,7 +4,6 @@ from cached_property import cached_property
 from helpers import SECTIONS
 from collections import Counter
 from helpers import Macro
-
 try:
     import re2 as re
 except ImportError:
@@ -282,8 +281,9 @@ class IndentedBlock(BaseContainer):
 
 class PreformattedBlock(BaseContainer):
     def html(self):
-        out = [linkify(item) for item in self.contents]
-        return load_template('pre').substitute(content='\n'.join(out))
+        content = '\n'.join([linkify(item) for item in self.contents])
+
+        return load_template('pre').substitute(content=content)
 
     def append(self, object):
         if not self.contents and not object.strip():
