@@ -13,7 +13,7 @@ from helpers import load_template, get_breadcrumb
 from parser import ManpageParser
 from parser import NotSupportedFormat, UnexpectedMacro, RedirectedPage
 
-from manpage import AvailablePages
+from manpage import AvailablePages, AvailableSections
 
 package_directory = dname(os.path.abspath(__file__))
 
@@ -59,11 +59,14 @@ class ManDirectoryParser(object):
         self.pages = dict()
 
         self.missing_parsers = Counter()
-        self.section_counters = Counter()
 
     @property
     def missing_links(self):
         return AvailablePages.unavailable
+
+    @property
+    def section_counters(self):
+        return AvailableSections.titles
 
     def get_pages_without_errors(self):
         manpages = set()
@@ -265,8 +268,6 @@ class ManDirectoryParser(object):
         f = open(full_path, 'w')
         f.write(mp.html())
         f.close()
-
-        # FIXME: self.section_counters.update(mp.section_titles)
 
         return ("man%s" % section, filename)
 

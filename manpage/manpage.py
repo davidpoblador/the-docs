@@ -65,6 +65,9 @@ class AvailablePages(object):
     pages = None
     unavailable = Counter()
 
+class AvailableSections(object):
+    titles = Counter()
+
 
 class BaseContainer(object):
     def __init__(self):
@@ -213,6 +216,8 @@ class Manpage(BaseContainer):
         self.contents = filter(self.process_sections, self.contents)
 
     def process_sections(self, section):
+        AvailableSections.titles[section.title] += 1
+
         if section.title == 'NAME':
             try:
                 content = strip_tags(' '.join(section.contents))
