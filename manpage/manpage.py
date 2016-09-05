@@ -227,7 +227,14 @@ class Manpage(BaseContainer):
 
         if section.title == 'NAME':
             try:
-                content = strip_tags(' '.join(section.html()))
+                contents = []
+                for c in section.contents:
+                    if not isinstance(c, str):
+                        break
+
+                    contents.append(c)
+
+                content = strip_tags(' '.join(contents))
             except:
                 raise
             chunks = content.split(' - ', 1)
