@@ -258,6 +258,7 @@ class Macro(object):
             '4': 'B',
             'b': 'B',
             'r': 'R',
+            'p': 'P',
             'i': 'I',
             'L': 'B',
         }
