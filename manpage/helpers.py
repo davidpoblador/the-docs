@@ -347,7 +347,7 @@ class Macro(object):
             elif state == "fontparentheses1":
                 if c == "W":
                     state = "start"
-                elif c in {"B", "O"}:
+                elif c in {"B", "O", "I"}:
                     if current_tag:
                         out += "</%s>" % style_map[current_tag]
 
@@ -356,6 +356,7 @@ class Macro(object):
                     out += "<%s>" % style_map["B"]
                     state = "start"
                 else:
+                    print (state, c)
                     raise Exception()
             elif state == "fontparentheses2":
                 if c == "I":
