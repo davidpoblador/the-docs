@@ -335,7 +335,6 @@ class Macro(object):
                     tmp_tag = None
                     state = "fontsquare"
                 else:
-                    print(state, c)
                     raise Exception()
             elif state == "fontparentheses":
                 if c == "C":
@@ -356,7 +355,6 @@ class Macro(object):
                     out += "<%s>" % style_map["B"]
                     state = "start"
                 else:
-                    print (state, c)
                     raise Exception()
             elif state == "fontparentheses2":
                 if c == "I":

@@ -98,7 +98,6 @@ class ManDirectoryParser(object):
         iterator = DirectoryIterator(glob.iglob("%s/*/*.*" % source_dir))
 
         for page_file, redirected_from in iterator:
-            print(page_file)
             logging.debug("Processing man page %s ...", page_file)
             try:
                 parser = ManpageParser(page_file)
@@ -135,6 +134,9 @@ class ManDirectoryParser(object):
                 logging.info("Skipping %s, missing macro (%s)", page_file,
                              macro)
                 self.missing_parsers[macro] += 1
+                continue
+            except:
+                print "Error in %s" % page_file
                 continue
 
             if not redirected_from:
