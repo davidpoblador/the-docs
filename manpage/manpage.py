@@ -247,7 +247,8 @@ class Manpage(BaseContainer):
 
     @cached_property
     def section_description(self):
-        return SECTIONS[self.full_section]
+        # TODO: Fix missing sections
+        return SECTIONS.get(self.full_section,"MISSING SECTION")
 
     @cached_property
     def full_section(self):

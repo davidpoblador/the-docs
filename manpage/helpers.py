@@ -166,8 +166,8 @@ SECTIONS = {
 
 
 class Macro(object):
-    single_style = {'B', 'I', 'SM'}
-    compound_style = {'BI', 'BR', 'IR', 'RI', 'RB', 'IB', 'SB'}
+    single_style = {'B', 'I', 'SM', 'L'}
+    compound_style = {'BI', 'BR', 'IR', 'RI', 'RB', 'IB', 'SB', 'LR'}
 
     styles = single_style | compound_style
 
@@ -248,7 +248,7 @@ class Macro(object):
     def process_fonts(content, current_tag=None):
         #print content, current_tag
 
-        if current_tag == 'R':
+        if current_tag in {'R'}:
             current_tag = None
 
         translate_font = {
@@ -259,9 +259,11 @@ class Macro(object):
             'b': 'B',
             'r': 'R',
             'i': 'I',
+            'L': 'B',
         }
 
         style_map = {
+            'L': "strong",
             'B': "strong",
             'I': "em",
             'SM': "small",
@@ -332,6 +334,7 @@ class Macro(object):
                     tmp_tag = None
                     state = "fontsquare"
                 else:
+                    print(state, c)
                     raise Exception()
             elif state == "fontparentheses":
                 if c == "C":
@@ -375,10 +378,7 @@ class Macro(object):
         if macro in Macro.single_style:
             content = ' '.join(args)
 
-            try:
-                return Macro.process_fonts(content, macro)
-            except:
-                raise Exception("error")
+            return Macro.process_fonts(content, macro)
 
         elif macro in Macro.compound_style:
             out = []
