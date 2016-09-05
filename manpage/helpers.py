@@ -326,7 +326,7 @@ class Macro(object):
                         out += "</%s>" % style_map[current_tag]
                     previous_tag, current_tag = current_tag, None
                     state = "start"
-                elif c in {'$', 'C', '7', 'N'}:
+                elif c in {'$', 'C', '7', 'N', 's'}:
                     # So many bugs...
                     state = "start"
                 elif c in {'('}:
