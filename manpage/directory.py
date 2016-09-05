@@ -95,9 +95,10 @@ class ManDirectoryParser(object):
     def parse_directory(self, source_dir):
         self.conn.execute("DELETE FROM manpages")
 
-        iterator = DirectoryIterator(glob.iglob("%s/*/man?/*.?" % source_dir))
+        iterator = DirectoryIterator(glob.iglob("%s/*/*.*" % source_dir))
 
         for page_file, redirected_from in iterator:
+            print(page_file)
             logging.debug("Processing man page %s ...", page_file)
             try:
                 parser = ManpageParser(page_file)
@@ -142,7 +143,7 @@ class ManDirectoryParser(object):
                 name, ext = os.path.splitext(bname(redirected_from))
                 section = ext[1:]
 
-            package = bname(dname(dname(page_file)))
+            package = bname(dname(page_file))
 
             self.conn.execute(
                 "INSERT INTO manpages (package, name, section, subtitle, file) VALUES (?, ?, ?, ?, ?)",
