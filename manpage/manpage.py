@@ -129,7 +129,7 @@ class Table(BaseContainer):
                 columns = len(row[0].split())
                 state = 2
             elif state == 0 and 'tab(' in row[0]:
-                splitter = re.sub(r'^.*tab\((.+)\);', r'\1', row[0])
+                splitter = row[0].split('tab(')[1].split(')')[0]
             elif state == 2:
                 if len(row) == 1 and row[0] == '_':
                     pass
@@ -138,6 +138,7 @@ class Table(BaseContainer):
                         while len(row) < columns:
                             row.append('')
                     cells.extend(row)
+
         try:
             while True:
                 s, e = cells.index('T{'), cells.index('T}')

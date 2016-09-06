@@ -38,6 +38,9 @@ def generate(args):
         print "Top %s missing links: %s" % (
             mls, parser.missing_links.most_common(mls))
 
+def generate_indexes(args):
+    parser = ManDirectoryParser(database=args.database)
+    parser.generate_indexes(output_dir=args.output_dir, base_url=args.base_url)
 
 if __name__ == '__main__':
     start_time = time.time()
@@ -87,6 +90,28 @@ if __name__ == '__main__':
         default=0)
 
     parser_generate.set_defaults(func=generate)
+
+    # generate_indexes option
+    parser_generate_indexes = subparsers.add_parser(
+        'generate-indexes',
+        help='Generates pages from database',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_generate_indexes.add_argument(
+        "--base-url", help="Base URL", default="https://www.carta.tech/")
+    parser_generate_indexes.add_argument(
+        "output_dir", help="the directory you want to use as a destination")
+    parser_generate_indexes.add_argument(
+        "--missing-links",
+        help="choose the amount of broken links to display",
+        type=int,
+        default=0)
+    parser_generate_indexes.add_argument(
+        "--section-counters",
+        help="choose the amount of section titles to display",
+        type=int,
+        default=0)
+
+    parser_generate_indexes.set_defaults(func=generate_indexes)
 
 
     # parser_imaging

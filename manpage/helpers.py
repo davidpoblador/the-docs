@@ -162,6 +162,7 @@ SECTIONS = {
     'man6': "Games",
     'man7': "Miscellaneous",
     'man8': "System administration commands",
+    'man9': "Kernel routines",
 }
 
 

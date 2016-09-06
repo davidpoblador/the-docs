@@ -197,7 +197,7 @@ class ManDirectoryParser(object):
                 current_section = section
                 prev_page = None
 
-            parent_dir = "man%s" % section
+            parent_dir = "man%s" % section[0]
 
             page_dict = {
                 "name": name,
@@ -242,7 +242,7 @@ class ManDirectoryParser(object):
 
                 pages.append(page_dict)
 
-        return map(lambda page: self.write_page(**page), pages)
+        map(lambda page: self.write_page(**page), pages)
 
     def write_page(self,
                    package,
@@ -275,8 +275,6 @@ class ManDirectoryParser(object):
         f.write(mp.html())
         f.close()
 
-        return ("man%s" % section, filename)
-
     def write_aliases_page(self, name, section, parent_dir, packages):
         filename = "%s.%s.html" % (name, section)
         full_path = pjoin(self.manpages_dir, parent_dir, filename)
@@ -301,10 +299,26 @@ class ManDirectoryParser(object):
             for package, name, section, subtitle in self.conn.execute(query)
         }
 
-    def generate_manpage_sitemaps(self, manpage_list):
+    def generate_manpage_sitemaps(self):
+        query = """SELECT name,
+                          section,
+                          count(package) as amount,
+                          group_concat(package) as packages,
+                          file
+                   FROM manpages
+                   GROUP by name, section
+                   ORDER by section ASC, name ASC"""
+
         pages_in_section = defaultdict(set)
-        for section, page in manpage_list:
-            pages_in_section[section].add(page)
+        for name, section, amount, packages, file in self.conn.execute(query):
+            if amount > 1:
+                packages = packages.split(',')
+                for package in packages:
+                    page = "%s-%s.%s.html" % (package, name, section, )
+                    pages_in_section["man%s" % section[0]].add(page)
+            else:
+                page = "%s.%s.html" % (name, section, )
+                pages_in_section["man%s" % section[0]].add(page)
 
         sm_item_tpl = load_template('sitemap-url-nolastmod')
 
@@ -377,7 +391,7 @@ class ManDirectoryParser(object):
 
             package_index = []
             for section, pages in sorted(sections.items()):
-                full_section = "man%s" % (section, )
+                full_section = "man%s" % (section[0], )
                 section_description = SECTIONS[full_section]
                 section_directory = pjoin(package_directory, full_section)
                 section_relative_url = pjoin(self.manpages_dir_name,
@@ -522,13 +536,13 @@ class ManDirectoryParser(object):
 
         for section in items:
             section_content = load_template('section-index').substitute(
-                items=''.join(items[section]))
+                items=''.join(items[section[0]]))
 
-            section_description = SECTIONS["man%s" % section]
+            section_description = SECTIONS["man%s" % section[0]]
 
             breadcrumb = [
                 ("/man-pages/", "Man Pages"),
-                ("/man-pages/man%s/" % section, section_description),
+                ("/man-pages/man%s/" % section[0], section_description),
             ]
 
             out = load_template('base').substitute(
@@ -542,7 +556,7 @@ class ManDirectoryParser(object):
                 metadescription=section_description.replace("\"", "\'"), )
 
             f = open(
-                pjoin(self.manpages_dir, "man%s" % section, 'index.html'), 'w')
+                pjoin(self.manpages_dir, "man%s" % section[0], 'index.html'), 'w')
             f.write(out)
             f.close()
 
@@ -638,11 +652,22 @@ class ManDirectoryParser(object):
         self.create_output_directories()
 
         # Create Manpages
-        sitemap_manpages = self.create_manpages()
+        self.create_manpages()
+
+    def generate_indexes(self, output_dir, base_url):
+        self.root_html = output_dir
+
+        self.manpages_dir_name = "man-pages"
+        self.packages_dir_name = "packages"
+
+        self.manpages_dir = pjoin(output_dir, self.manpages_dir_name)
+        self.packages_dir = pjoin(output_dir, self.packages_dir_name)
+        self.manpages_url = base_url + "man-pages"
+        self.packages_url = base_url + "packages"
 
         # Generate sitemaps and indexes for manpages
-        sitemap_manpage_urls = self.generate_manpage_sitemaps(sitemap_manpages)
-        self.generate_manpage_sitemap_index(sitemap_manpage_urls)
+        sitemap_urls = self.generate_manpage_sitemaps()
+        self.generate_manpage_sitemap_index(sitemap_urls)
         self.generate_manpage_indexes()
         self.generate_manpage_index()
 
