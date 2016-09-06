@@ -99,6 +99,22 @@ class ManpageParser(object):
 
     line_replacement = {
         r".B \-{font|fn} \ffontname\fP": r".B \-{font|fn} \fIfontname\fP",
+        r"[\fFFILE\fP]...": r"[\fIFILE\fP]...",
+        r"(\fITIFF.IFd1.Xresolution\fP and \fTIFF.IFd1.YResolution\fP) are recorded in pixels per inch,": r"(\fITIFF.IFd1.Xresolution\fP and \fITIFF.IFd1.YResolution\fP) are recorded in pixels per inch,",
+        r"splitfont": r".splitfont",
+
+    }
+
+    str_replacement = {
+        (r'\f\*[B-Font]', r'\fB'),
+        (r'\f\*[I-Font]', r'\fI'),
+        (r'\f(LB', r'\fB'),
+        (r'\f(CR', r'\fR'),
+        (r'\f(SMNUL', r'\fISMNUL'),
+    }
+
+    forbidden_lines = {
+        r'#!/usr/bin/perl',
     }
 
     def __init__(self, path):
@@ -138,8 +154,18 @@ class ManpageParser(object):
             for line in iterator:
                 line = line.rstrip()
 
+                if line in ManpageParser.forbidden_lines:
+                    raise NotSupportedFormat(self.path)
+
                 # Fix buggy lines
                 line = ManpageParser.line_replacement.get(line, line)
+
+                for k,v in ManpageParser.str_replacement:
+                    line = line.replace(k, v)
+
+                if Line.comment in line:
+                    # Line has comment
+                    line = line.split(Line.comment, 1)[0]
 
                 if line and len(line) > 2:
                     if line[-1] == "\\":
@@ -154,14 +180,6 @@ class ManpageParser(object):
                     extra.append(line)
                     line = ' '.join(extra)
                     extra = []
-
-                # Fix exception in tc-flower.8
-                if line == '.splitfont':
-                    line = 'splitfont'
-
-                if Line.comment in line:
-                    # Line has comment
-                    line = line.split(Line.comment, 1)[0]
 
                 if line == Line.cc or line == Line.c2 or line == '\'.':
                     # Empty line (cc or c2)
@@ -213,6 +231,10 @@ class ManpageParser(object):
                         if "\\{" in rest:
                             braces += 1
 
+
+                        if "\\}" in rest:
+                            braces -= 1
+
                         while braces:
                             macro_line = next(iterator)
                             if "\\{" in macro_line:
@@ -235,7 +257,7 @@ class ManpageParser(object):
                     if macro == 'ig':
                         while True:
                             macro_line = next(iterator)
-                            if macro_line.rstrip() == "..":
+                            if macro_line.rstrip().startswith(".."):
                                 break
 
                         continue
@@ -244,7 +266,7 @@ class ManpageParser(object):
                         self.custom_macros.add_macro(rest.strip())
                         while True:
                             macro_line = next(iterator)
-                            if macro_line.rstrip() == "..":
+                            if macro_line.rstrip().startswith(".."):
                                 break
                             else:
                                 self.custom_macros.add_line(macro_line)
@@ -308,7 +330,7 @@ class ManpageParser(object):
                 if macro in Macro.styles:
                     args = Macro.stylize(macro, args)
                     macro = ''
-                elif macro in {'CW', 'R'}:
+                elif macro in {'CW', 'R', 'nop'}:
                     macro = ''
                     args = ' '.join(args)
 

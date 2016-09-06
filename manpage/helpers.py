@@ -211,6 +211,7 @@ class Macro(object):
         "Op",
         "Vb",
         "Ve",
+        "rj",
         # Fix IF
         "ds",
         "tr",
@@ -223,6 +224,7 @@ class Macro(object):
         "zY",
         "rm",
         "Sp",
+        "lf",
         # grep.in.i has lots of weird things
         "MTO",
         "URL",
@@ -261,6 +263,7 @@ class Macro(object):
             'p': 'P',
             'i': 'I',
             'L': 'B',
+            'l': 'I',
         }
 
         style_map = {
@@ -326,7 +329,7 @@ class Macro(object):
                         out += "</%s>" % style_map[current_tag]
                     previous_tag, current_tag = current_tag, None
                     state = "start"
-                elif c in {'$', 'C', '7', 'N', 's'}:
+                elif c in {'$', 'C', '7', 'N'}:
                     # So many bugs...
                     state = "start"
                 elif c in {'('}:
@@ -335,7 +338,8 @@ class Macro(object):
                     tmp_tag = None
                     state = "fontsquare"
                 else:
-                    raise Exception()
+                    state = "start"
+                    out += c
             elif state == "fontparentheses":
                 if c == "C":
                     state = "fontparentheses1"
@@ -344,7 +348,7 @@ class Macro(object):
                 else:
                     raise Exception()
             elif state == "fontparentheses1":
-                if c == "W":
+                if c in {"W", "w"}:
                     state = "start"
                 elif c in {"B", "O", "I"}:
                     if current_tag:
