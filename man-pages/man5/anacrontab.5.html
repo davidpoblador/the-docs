@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="anacrontab (5) manual">
   <meta name="twitter:description" content="Configuration file for anacron">
-  <meta name="twitter:image" content="https://www.carta.tech/images/cronie-anacrontab-5.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/anacron-anacrontab-5.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man5/anacrontab.5.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="anacrontab (5) manual" />
   <meta property="og:description" content="Configuration file for anacron" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/cronie-anacrontab-5.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/anacron-anacrontab-5.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/cronie/">
-      <span itemprop="name">cronie</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/anacron/">
+      <span itemprop="name">anacron</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -104,56 +104,39 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The <em>/etc/anacrontab</em> configuration file describes the jobs controlled by <a href="../man8/anacron.8.html"><strong>anacron</strong>(8)</a>. It can contain three types of lines: job-description lines, environment assignments, or empty lines.</p><p>Job-description lines can have the following format:</p>
+<p>The file <em>/etc/anacrontab</em> describes the jobs controlled by <a href="../man8/anacron.8.html"><strong>anacron</strong>(8)</a></strong>.  Its lines can be of three kinds:  job-description lines, environment assignments, or empty lines.</p><p>Job-description lines are of one of these two forms:</p>
 <pre>
-   period in days   delay in minutes   job-identifier   command
-</pre>
-<p>The <em>period in days</em> variable specifies the frequency of execution of a job in days.  This variable can be represented by an integer or a macro (@daily, @weekly, @monthly), where @daily denotes the same value as the integer 1, @weekly the same as 7, and @monthly specifies that the job is run once a month, independent on the length of the month.</p><p>The <em>delay in minutes</em> variable specifies the number of minutes anacron waits, if necessary, before executing a job.  This variable is represented by an integer where 0 means no delay.</p><p>The <em>job-identifier</em> variable specifies a unique name of a job which is used in the log files.</p><p>The <em>command</em> variable specifies the command to execute.  The command can either be a command such as <strong>ls /proc &gt;&gt; /tmp/proc</strong> or a command to execute a custom script.</p><p>Environment assignment lines can have the following format:</p>
-<pre>
-   VAR=VALUE
-</pre>
-<p>Any spaces around <em>VAR</em> are removed.  No spaces around <em>VALUE</em> are allowed (unless you want them to be part of the value).  The specified assignment takes effect from the next line until the end of the file, or to the next assignment of the same variable.</p><p>The <em>START_HOURS_RANGE</em> variable defines an interval (in hours) when scheduled jobs can be run. In case this time interval is missed, for example, due to a power down, then scheduled jobs are not executed that day.</p><p>The <em>RANDOM_DELAY</em> variable denotes the maximum number of minutes that will be added to the delay in minutes variable which is specified for each job.  A <em>RANDOM_DELAY</em> set to 12 would therefore add, randomly, between 0 and 12 minutes to the delay in minutes for each job in that particular anacrontab.  When set to 0, no random delay is added.</p><p>Empty lines are either blank lines, line containing white spaces only, or lines with white spaces followed by a '#' followed by an arbitrary comment.</p><p>You can continue a line onto the next line by adding a '&#92;' at the end of it.</p><p>In case you want to disable Anacron, add a line with <em>0anacron</em> which is the name of the script running the Anacron into the <em>/etc/cron.hourly/jobs.deny</em> file.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
-        <div class="sectioncontent">
-<p>This example shows how to set up an Anacron job similar in functionality to <em>/etc/crontab</em> which starts all regular jobs between 6:00 and 8:00 <em>only.</em> A <em>RANDOM_DELAY</em> which can be 30 minutes at the most is specified.  Jobs will run serialized in a queue where each job is started only after the previous one is finished.</p>
-<pre>
-# environment variables
-SHELL=/bin/sh
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-MAILTO=root
-RANDOM_DELAY=30
-# Anacron jobs will start between 6am and 8am.
-START_HOURS_RANGE=6-8
-# delay will be 5 minutes + RANDOM_DELAY for cron.daily
-1		5	cron.daily		nice run-parts /etc/cron.daily
-7		0	cron.weekly		nice run-parts /etc/cron.weekly
-@monthly	0	cron.monthly		nice run-parts /etc/cron.monthly
+   period  delay  job-identifier  command
 </pre>
 
+<pre>
+   @period_name delay job-identify command
+</pre>
+<p>The <em>period</em> is specified in days, the <em>delay</em> in minutes.  The <em>job-identifier</em> can contain any non-blank character, except slashes.  It is used to identify the job in Anacron messages, and as the name for the job's timestamp file.  The <em>command</em> can be any shell command. The fields can be separated by blank spaces or tabs. The <em>period_name</em> can only be set to monthly at the present time. This will ensure jobs are only run once a month, no matter the number of days in this month, or the previous month.</p><p>Environment assignment lines are of the form:</p>
+<pre>
+   VAR = VALUE
+</pre>
+<p>Spaces around <em>VAR</em> are removed.  No spaces around <em>VALUE</em> are allowed (unless you want them to be part of the value).  The assignment takes effect from the next line to the end of the file, or to the next assignment of the same variable.</p><p>Empty lines are either blank lines, line containing white-space only, or lines with white-space followed by a '#' followed by an arbitrary comment.</p><p>You can continue a line onto the next line by ending it with a '&#92;'.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO anacrontab&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man8/anacron.8.html"><strong>anacron</strong>(8)</a>, <a href="../man1/crontab.1.html"><strong>crontab</strong>(1)</a></p><p>The Anacron <em>README</em> file.</p>
+<p><a href="../man8/anacron.8.html"><strong>anacron</strong>(8)</a></strong></p><p>The Anacron <em>README</em> file.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
         <div class="sectioncontent">
-<p>Itai Tzur</p><p>Currently maintained by</p><p>Pascal Hakim</p><p>For Fedora, maintained by</p><p>Marcela Mašláňová</p>
+<p>Itai Tzur &lt;itzur@actcom.co.il&gt;</p><p>Currently maintained by Pascal Hakim &lt;pasc@(debian.org|redellipse.net)&gt;.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="acct.5.html"><span aria-hidden="true">&larr;</span> acct.5: Process accounting file</a></li>
-   <li class="next"><a href="attr.5.html">attr.5: Extended attributes <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="ample.html.5.html"><span aria-hidden="true">&larr;</span> ample.html.5: Html template for ample</a></li>
+   <li class="next"><a href="analysis.cfg.5.html">analysis.cfg.5: Configuration file for the xymond_client module <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

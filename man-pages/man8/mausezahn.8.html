@@ -124,8 +124,6 @@
         <div class="sectioncontent">
 <p>mausezahn provides a built-in context-specific help. Append the keyword  ''help'' after the configuration options. The most important options are:</p><h3>-x [&lt;port&gt;]</h3>
 <p>Start mausezahn in interactive mode with a Cisco-like CLI. Use telnet to log into the local mausezahn instance. If no port has been specified, port 25542 is used by default.</p>
-<h3>-l &lt;IP&gt;</h3>
-<p>Specify the IP address mausezahn should bind to when in interactive mode, default: 0.0.0.0.</p>
 <h3>-v</h3>
 <p>Verbose mode. Capital -V is even more verbose.</p>
 <h3>-S</h3>
@@ -146,7 +144,7 @@
 <p>Use specified source IP address, default is own interface address. Optionally, the keyword ''rand'' can again be used for a random source IP address or a range can be specified, such as ''192.168.1.1-192.168.1.100'' or ''10.1.0.0/16''. Also, a DNS name can be specified for which mausezahn tries to determine the corresponding IP address automatically.</p>
 <h3>-B &lt;dst-ip|range&gt;</h3>
 <p>Use specified destination IP address (default is broadcast i.e. 255.255.255.255). As with the source address (see above) you can also specify a range or a DNS name.</p>
-<h3>-t &lt;packet-type [help] | help&gt;</h3>
+<h3>-t &lt;packet-type&gt;</h3>
 <p>Create the specified packet type using the built-in packet builder. Currently, supported packet types are: ''arp'', ''bpdu'', ''ip'', ''udp'', ''tcp'', ''rtp'', and ''dns''. Currently, there is also limited support for ''icmp''. Type  ''-t help'' to verify which packet builders your actual mausezahn version supports. Also, for any particular packet type, for example ''tcp'' type  ''mausezahn -t tcp help'' to receive a more in-depth context specific help.</p>
 <h3>-T &lt;packet-type&gt;</h3>
 <p>Make this mausezahn instance the receiving station. Currently, only ''rtp'' is an option here and provides precise jitter measurements. For this purpose, start another mausezahn instance on the sending station and the local receiving station will output jitter statistics. See ''mausezahn -T rtp help'' for a detailed help.</p>
@@ -167,7 +165,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">USAGE EXAMPLE</h2>
         <div class="sectioncontent">
-<p>For more comprehensive examples, have a look at the two following HOWTO sections.</p><h3>mausezahn eth0 -c 0 -d 2s -t bpdu vlan=5</h3>
+<p>For more comprehensive examples, have a look at the two followng HOWTO sections.</p><h3>mausezahn eth0 -c 0 -d 2s -t bpdu vlan=5</h3>
 <p>Send BPDU frames for VLAN 5 as used with Cisco's PVST+ type of STP. By default mausezahn assumes that you want to become the root bridge.</p>
 <h3>mausezahn eth0 -c 128000 -a rand -p 64</h3>
 <p>Perform a CAM table overflow attack.</p>
@@ -186,43 +184,19 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">CONFIGURATION FILE</h2>
-        <div class="sectioncontent">
-<p>When mausezahn is run in interactive mode it automatically looks for and reads a configuration file located at /etc/netsniff-ng/mausezahn.conf for custom options if the file is available, otherwise it uses defaults set at compile time.</p><h3>Config file: /etc/netsniff-ng/mausezahn.conf</h3>
-<p>The configuration file contains lines of the form:</p><p>	option = value</p><p>Options supported in the configuration file are:</p>
-<pre>
-   Option: 	 	Description:
-</pre>
-
-<pre>
-   user			Username for authentication (default: mz)
-   password		Password for authentication (default: mz)
-   enable		     Password to enter privilege mode (default: mops)
-   port			The listening port for the CLI (default: 25542)
-   listen-addr		IP address to bind CLI to (default: 0.0.0.0)
-   management-only	Set management interface (no data traffic is allowed to pass through)
-   cli-device		Interface to bind CLI to (default: all) *not fully implemented*
-   automops         Path to automops file (contains XML data describing protocols) *in development*
-</pre>
-
-<h3>Example:</h3>
-<p> $ cat /etc/netsniff-ng/mausezahn.conf  user = mzadmin  password = mzpasswd  enable = privilege-mode-passwd  port = 65000  listen-addr = 127.0.0.1</p>
-
-        </div>
-      </section>
-
-      <section>
         <h2 class="font-effect-shadow-multiple">INTERACTIVE MODE HOWTO</h2>
         <div class="sectioncontent">
 <h3>Telnet:</h3>
 <p>Using the interactive mode requires starting mausezahn as a server:</p>
 <pre>
-  # mausezahn -x
+  mausezahn -x
 </pre>
 <p>Now you can <strong>telnet</strong>(1) to that server using the default port number 25542, but also an arbitrary port number can be specified:</p>
 <pre>
-  # mausezahn -x 99
-  mausezahn accepts incoming telnet connections on port 99.
+  mausezahn -x 99
+</pre>
+<p>mausezahn accepts incoming telnet connections on port 99.</p>
+<pre>
   mz: Problems opening config file. Will use defaults
 </pre>
 <p>Either from another terminal or from another host try to telnet to the mausezahn server:</p>
@@ -244,9 +218,15 @@
   Password: mops
   mz#
 </pre>
-<p>It is recommended to configure your own login credentials in /etc/netsniff-ng/mausezahn.conf, (see configuration file section)</p>
+<p>It is recommended to configure your own login credentials in /etc/mausezahn/mz.cfg, such as:</p>
+<pre>
+  user = foo
+  password = bar
+  enable = bla
+</pre>
+
 <h3>Basics:</h3>
-<p>Since you reached the mausezahn prompt, lets try some common commands. You can use the '?' character at any time for context-specific help. Note that Cisco-like short form of commands are accepted in interactive mode. For example, one can use "sh pac" instead of "show packet"; another common example is to use "config t" in place of "configure terminal". For readability, this manual will continue with the full commands.</p><p>First try out the show command:</p>
+<p>Since you reached the mausezahn prompt, lets try some common commands. You can use the '?' character at any time for content-sensitive help. Note that cisco- like short form of commands are accepted in interactive mode. For example, one can use "sh pac" instead of "show packet"; another common example is to use "config t" in place of "configure terminal". For readability, this manual will continue with the full commands.</p><p>First try out the show command:</p>
 <pre>
   mz# show ?
 </pre>
@@ -882,7 +862,7 @@
 <nav>
   <ul class="pager">
    <li class="previous"><a href="matchpathcon.8.html"><span aria-hidden="true">&larr;</span> matchpathcon.8: Get the default selinux security context for the specified path from the file contexts configuration</a></li>
-   <li class="next"><a href="mcs.8.html">mcs.8: Multi-category system <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="mbexamine.8.html">mbexamine.8: Examine a cyrus-format mailbox <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

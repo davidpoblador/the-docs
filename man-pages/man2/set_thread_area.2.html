@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>set_thread_area: Set a gdt entry for thread-local storage</title>
+  <title>set_thread_area: Set a thread local storage (tls) area</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -25,19 +25,19 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
   <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="Set a gdt entry for thread-local storage">
+  <meta name="description" content="Set a thread local storage (tls) area">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@CartaTech">
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="set_thread_area (2) manual">
-  <meta name="twitter:description" content="Set a gdt entry for thread-local storage">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-set_thread_area-2.png">
+  <meta name="twitter:description" content="Set a thread local storage (tls) area">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-set_thread_area-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/set_thread_area.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="set_thread_area (2) manual" />
-  <meta property="og:description" content="Set a gdt entry for thread-local storage" />
+  <meta property="og:description" content="Set a thread local storage (tls) area" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-set_thread_area-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-set_thread_area-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -45,7 +45,7 @@
   <div class="container final">
           <div class="page-header">
         <h1 class="font-effect-destruction">set_thread_area<small> (2)</small></h1>
-        <p class="lead">Set a gdt entry for thread-local storage</p>
+        <p class="lead">Set a thread local storage (tls) area</p>
       </div>
 
     <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
@@ -69,7 +69,7 @@
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
     <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man2/set_thread_area.2.html">
-      <span itemprop="name">set_thread_area: Set a gdt entry for thread-local storage</span>
+      <span itemprop="name">set_thread_area: Set a thread local storage (tls) area</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -88,14 +88,14 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
     <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man2/set_thread_area.2.html">
-      <span itemprop="name">set_thread_area: Set a gdt entry for thread-local storage</span>
+      <span itemprop="name">set_thread_area: Set a thread local storage (tls) area</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -104,41 +104,21 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-
-<pre>
-<strong>#include &lt;linux/unistd.h&gt;</strong>
-<strong>#include &lt;asm/ldt.h&gt;</strong>
-
-<strong>int get_thread_area(struct user_desc *</strong><em>u_info</em><strong>);</strong>
-<strong>int set_thread_area(struct user_desc *</strong><em>u_info</em><strong>);</strong>
-</pre>
-<p><em>Note</em>: There are no glibc wrappers for these system calls; see NOTES.</p>
+<p><strong>#include &lt;linux/unistd.h&gt;</strong></p><p><strong>#include &lt;asm/ldt.h&gt;</strong></p><p><strong>int set_thread_area(struct user_desc *</strong><em>u_info</em><strong>);</strong></p><p><em>Note</em>: There is no glibc wrapper for this system call; see NOTES.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>Linux dedicates three global descriptor table (GDT) entries for thread-local storage. For more information about the GDT, see the Intel Software Developer's Manual or the AMD Architecture Programming Manual.</p><p>Both of these system calls take an argument that is a pointer to a structure of the following type:</p><p>struct user_desc {</p>
-<pre>
-    unsigned int  entry_number;
-    unsigned long base_addr;
-    unsigned int  limit;
-    unsigned int  seg_32bit:1;
-    unsigned int  contents:2;
-    unsigned int  read_exec_only:1;
-    unsigned int  limit_in_pages:1;
-    unsigned int  seg_not_present:1;
-    unsigned int  useable:1;
-</pre>
-<p>};</p><p><strong>get_thread_area</strong>() reads the GDT entry indicated by <em>u_info-&gt;entry_number</em> and fills in the rest of the fields in <em>u_info</em>.</p><p><strong>set_thread_area</strong>() sets a TLS entry in the GDT.</p><p>The TLS array entry set by <strong>set_thread_area</strong>() corresponds to the value of <em>u_info-&gt;entry_number</em> passed in by the user. If this value is in bounds, <strong>set_thread_area</strong>() writes the TLS descriptor pointed to by <em>u_info</em> into the thread's TLS array.</p><p>When <strong>set_thread_area</strong>() is passed an <em>entry_number</em> of -1, it searches for a free TLS entry. If <strong>set_thread_area</strong>() finds a free TLS entry, the value of <em>u_info-&gt;entry_number</em> is set upon return to show which entry was changed.</p><p>A <em>user_desc</em> is considered "empty" if <em>read_exec_only</em> and <em>seg_not_present</em> are set to 1 and all of the other fields are 0. If an "empty" descriptor is passed to <strong>set_thread_area,</strong> the corresponding TLS entry will be cleared. See BUGS for additional details.</p><p>Since Linux 3.19, <strong>set_thread_area</strong>() cannot be used to write non-present segments, 16-bit segments, or code segments, although clearing a segment is still acceptable.</p>
+<p><strong>set_thread_area</strong>() sets an entry in the current thread's thread-local storage (TLS) array. The TLS array entry set by <strong>set_thread_area</strong>() corresponds to the value of <em>u_info-&gt;entry_number</em> passed in by the user. If this value is in bounds, <strong>set_thread_area</strong>() copies the TLS descriptor pointed to by <em>u_info</em> into the thread's TLS array.</p><p>When <strong>set_thread_area</strong>() is passed an <em>entry_number</em> of -1, it uses a free TLS entry. If <strong>set_thread_area</strong>() finds a free TLS entry, the value of <em>u_info-&gt;entry_number</em> is set upon return to show which entry was changed.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-<p>These system calls return 0 on success, and -1 on failure, with <em>errno</em> set appropriately.</p>
+<p><strong>set_thread_area</strong>() returns 0 on success, and -1 on failure, with <em>errno</em> set appropriately.</p>
         </div>
       </section>
 
@@ -148,28 +128,22 @@
 
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>EFAULT</strong></p>
-  </dt>
-  <dd>
-    <p><em>u_info</em> is an invalid pointer.</p>
-  </dd>
-  <dt>
     <p><strong>EINVAL</strong></p>
   </dt>
   <dd>
     <p><em>u_info-&gt;entry_number</em> is out of bounds.</p>
   </dd>
   <dt>
-    <p><strong>ENOSYS</strong></p>
+    <p><strong>EFAULT</strong></p>
   </dt>
   <dd>
-    <p><a href="../man2/get_thread_area.2.html"><strong>get_thread_area</strong>(2)</a> or <a href="../man2/set_thread_area.2.html"><strong>set_thread_area</strong>(2)</a> was invoked as a 64-bit system call.</p>
+    <p><em>u_info</em> is an invalid pointer.</p>
   </dd>
   <dt>
     <p><strong>ESRCH</strong></p>
   </dt>
   <dd>
-    <p>(<strong>set_thread_area</strong>()) A free TLS entry could not be located.</p>
+    <p>A free TLS entry could not be located.</p>
   </dd>
 
 </dl>
@@ -180,7 +154,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-<p><strong>set_thread_area</strong>() first appeared in Linux 2.5.29. <strong>get_thread_area</strong>() first appeared in Linux 2.5.32.</p>
+<p>A version of <strong>set_thread_area</strong>() first appeared in Linux 2.5.29.</p>
         </div>
       </section>
 
@@ -194,21 +168,21 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>Glibc does not provide wrappers for these system calls, since they are generally intended for use only by threading libraries. In the unlikely event that you want to call them directly, use <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p><p><a href="../man2/arch_prctl.2.html"><strong>arch_prctl</strong>(2)</a> can interfere with <a href="../man2/set_thread_area.2.html"><strong>set_thread_area</strong>(2)</a>. See <a href="../man2/arch_prctl.2.html"><strong>arch_prctl</strong>(2)</a> for more details. This is not normally a problem, as <a href="../man2/arch_prctl.2.html"><strong>arch_prctl</strong>(2)</a> is normally used only by 64-bit programs.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">BUGS</h2>
-        <div class="sectioncontent">
-<p>On 64-bit kernels before Linux 3.19, one of the padding bits in <em>user_desc</em>, if set, would prevent the descriptor from being considered empty (see <a href="../man2/modify_ldt.2.html"><strong>modify_ldt</strong>(2)</a>). As a result, the only reliable way to clear a TLS entry is to use <a href="../man3/memset.3.html"><strong>memset</strong>(3)</a> to zero the entire <em>user_desc</em> structure, including padding bits, and then to set the <em>read_exec_only</em> and <em>seg_not_present</em> bits. On Linux 3.19, a <em>user_desc</em> consisting entirely of zeros except for <em>entry_number</em> will also be interpreted as a request to clear a TLS entry, but this behaved differently on older kernels.</p><p>Prior to Linux 3.19, the DS and ES segment registers must not reference TLS entries.</p>
+<p>Glibc does not provide a wrapper for this system call, since it is generally intended only for use by threading libraries. In the unlikely event that you want to call it directly, use <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO set_thread_area&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man2/arch_prctl.2.html"><strong>arch_prctl</strong>(2)</a>, <a href="../man2/modify_ldt.2.html"><strong>modify_ldt</strong>(2)</a></p>
+<p><a href="../man2/get_thread_area.2.html"><strong>get_thread_area</strong>(2)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

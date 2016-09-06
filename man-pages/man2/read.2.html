@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="read (2) manual">
   <meta name="twitter:description" content="Read from a file descriptor">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-read-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-read-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/read.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="read (2) manual" />
   <meta property="og:description" content="Read from a file descriptor" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-read-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-read-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -117,14 +117,14 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p><strong>read</strong>() attempts to read up to <em>count</em> bytes from file descriptor <em>fd</em> into the buffer starting at <em>buf</em>.</p><p>On files that support seeking, the read operation commences at the file offset, and the file offset is incremented by the number of bytes read. If the file offset is at or past the end of file, no bytes are read, and <strong>read</strong>() returns zero.</p><p>If <em>count</em> is zero, <strong>read</strong>() <em>may</em> detect the errors described below. In the absence of any errors, or if <strong>read</strong>() does not check for errors, a <strong>read</strong>() with a <em>count</em> of 0 returns zero and has no other effects.</p><p>If <em>count</em> is greater than <strong>SSIZE_MAX</strong>, the result is unspecified.</p>
+<p><strong>read</strong>() attempts to read up to <em>count</em> bytes from file descriptor <em>fd</em> into the buffer starting at <em>buf</em>.</p><p>On files that support seeking, the read operation commences at the current file offset, and the file offset is incremented by the number of bytes read. If the current file offset is at or past the end of file, no bytes are read, and <strong>read</strong>() returns zero.</p><p>If <em>count</em> is zero, <strong>read</strong>() <em>may</em> detect the errors described below. In the absence of any errors, or if <strong>read</strong>() does not check for errors, a <strong>read</strong>() with a <em>count</em> of 0 returns zero and has no other effects.</p><p>If <em>count</em> is greater than <strong>SSIZE_MAX</strong>, the result is unspecified.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-<p>On success, the number of bytes read is returned (zero indicates end of file), and the file position is advanced by this number. It is not an error if this number is smaller than the number of bytes requested; this may happen for example because fewer bytes are actually available right now (maybe because we were close to end-of-file, or because we are reading from a pipe, or from a terminal), or because <strong>read</strong>() was interrupted by a signal. See also NOTES.</p><p>On error, -1 is returned, and <em>errno</em> is set appropriately. In this case, it is left unspecified whether the file position (if any) changes.</p>
+<p>On success, the number of bytes read is returned (zero indicates end of file), and the file position is advanced by this number. It is not an error if this number is smaller than the number of bytes requested; this may happen for example because fewer bytes are actually available right now (maybe because we were close to end-of-file, or because we are reading from a pipe, or from a terminal), or because <strong>read</strong>() was interrupted by a signal. On error, -1 is returned, and <em>errno</em> is set appropriately. In this case, it is left unspecified whether the file position (if any) changes.</p>
         </div>
       </section>
 
@@ -137,7 +137,7 @@
     <p><strong>EAGAIN</strong></p>
   </dt>
   <dd>
-    <p>The file descriptor <em>fd</em> refers to a file other than a socket and has been marked nonblocking (<strong>O_NONBLOCK</strong>), and the read would block. See <a href="../man2/open.2.html"><strong>open</strong>(2)</a> for further details on the <strong>O_NONBLOCK</strong> flag.</p>
+    <p>The file descriptor <em>fd</em> refers to a file other than a socket and has been marked nonblocking (<strong>O_NONBLOCK</strong>), and the read would block.</p>
   </dd>
   <dt>
     <p><strong>EAGAIN</strong> or <strong>EWOULDBLOCK</strong></p>
@@ -167,7 +167,7 @@
     <p><strong>EINVAL</strong></p>
   </dt>
   <dd>
-    <p><em>fd</em> is attached to an object which is unsuitable for reading; or the file was opened with the <strong>O_DIRECT</strong> flag, and either the address specified in <em>buf</em>, the value specified in <em>count</em>, or the file offset is not suitably aligned.</p>
+    <p><em>fd</em> is attached to an object which is unsuitable for reading; or the file was opened with the <strong>O_DIRECT</strong> flag, and either the address specified in <em>buf</em>, the value specified in <em>count</em>, or the current file offset is not suitably aligned.</p>
   </dd>
   <dt>
     <p><strong>EINVAL</strong></p>
@@ -203,7 +203,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>The types <em>size_t</em> and <em>ssize_t</em> are, respectively, unsigned and signed integer data types specified by POSIX.1.</p><p>On Linux, <strong>read</strong>() (and similar system calls) will transfer at most 0x7ffff000 (2,147,479,552) bytes, returning the number of bytes actually transferred. (This is true on both 32-bit and 64-bit systems.)</p><p>On NFS filesystems, reading small amounts of data will update the timestamp only the first time, subsequent calls may not do so. This is caused by client side attribute caching, because most if not all NFS clients leave <em>st_atime</em> (last file access time) updates to the server, and client side reads satisfied from the client's cache will not cause <em>st_atime</em> updates on the server as there are no server-side reads. UNIX semantics can be obtained by disabling client-side attribute caching, but in most situations this will substantially increase server load and decrease performance.</p>
+<p>On NFS filesystems, reading small amounts of data will update the timestamp only the first time, subsequent calls may not do so. This is caused by client side attribute caching, because most if not all NFS clients leave st_atime (last file access time) updates to the server and client side reads satisfied from the client's cache will not cause st_atime updates on the server as there are no server side reads. UNIX semantics can be obtained by disabling client side attribute caching, but in most situations this will substantially increase server load and decrease performance.</p>
         </div>
       </section>
 
@@ -218,6 +218,13 @@
         <h2 class="font-effect-shadow-multiple">RELATED TO read&hellip;</h2>
         <div class="sectioncontent">
 <p><a href="../man2/close.2.html"><strong>close</strong>(2)</a>, <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a>, <a href="../man2/lseek.2.html"><strong>lseek</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/pread.2.html"><strong>pread</strong>(2)</a>, <a href="../man2/readdir.2.html"><strong>readdir</strong>(2)</a>, <a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a>, <a href="../man2/readv.2.html"><strong>readv</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, <a href="../man3/fread.3.html"><strong>fread</strong>(3)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="readdir_r (3) manual">
   <meta name="twitter:description" content="Read a directory">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-readdir_r-3.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-readdir_r-3.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man3/readdir_r.3.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="readdir_r (3) manual" />
   <meta property="og:description" content="Read a directory" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-readdir_r-3.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-readdir_r-3.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -108,29 +108,36 @@
 <pre>
 <strong>#include &lt;dirent.h&gt;</strong>
 
+<strong>struct dirent *readdir(DIR *</strong><em>dirp</em><strong>);</strong>
+
 <strong>int readdir_r(DIR *</strong><em>dirp</em><strong>, struct dirent *</strong><em>entry</em><strong>, struct dirent **</strong><em>result</em><strong>);</strong>
 </pre>
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>readdir_r</strong>():</p><p>_POSIX_C_SOURCE</p>
-<pre>
-    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE || _SVID_SOURCE
-</pre>
-
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>readdir_r</strong>():</p><p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;1 || _XOPEN_SOURCE || _BSD_SOURCE || _SVID_SOURCE || _POSIX_SOURCE</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>This function is deprecated; use <a href="../man3/readdir.3.html"><strong>readdir</strong>(3)</a> instead.</p><p>The <strong>readdir_r</strong>() function was invented as a reentrant version of <a href="../man3/readdir.3.html"><strong>readdir</strong>(3)</a>. It reads the next directory entry from the directory stream <em>dirp</em>, and returns it in the caller-allocated buffer pointed to by <em>entry</em>. For details of the <em>dirent</em> structure, see <strong>readir</strong>(3).</p><p>A pointer to the returned buffer is placed in <em>*result</em>; if the end of the directory stream was encountered, then NULL is instead returned in <em>*result</em>.</p><p>It is recommended that applications use <strong>readdir</strong>() instead of <strong>readdir_r</strong>(). Furthermore, since version 2.24, glibc deprecates <strong>readdir_r</strong>(). The reasons are as follows:</p><ul>
-<li><p>On systems where <strong>NAME_MAX</strong> is undefined, calling <strong>readdir_r</strong>() may be unsafe because the interface does not allow the caller to specify the length of the buffer used for the returned directory entry.</p></li><li><p>On some systems, <strong>readdir_r</strong>() can't read directory entries with very long names. When the glibc implementation encounters such a name, <strong>readdir_r</strong>() fails with the error <strong>ENAMETOOLONG</strong> <em>after the final directory entry has been read</em>. On some other systems, <strong>readdir_r</strong>() may return a success status, but the returned <em>d_name</em> field may not be null terminated or may be truncated.</p></li><li><p>In the current POSIX.1 specification (POSIX.1-2008), <a href="../man3/readdir.3.html"><strong>readdir</strong>(3)</a> is not required to be thread-safe. However, in modern implementations (including the glibc implementation), concurrent calls to <a href="../man3/readdir.3.html"><strong>readdir</strong>(3)</a> that specify different directory streams are thread-safe. Therefore, the use of <strong>readdir_r</strong>() is generally unnecessary in multithreaded programs. In cases where multiple threads must read from the same directory stream, using <a href="../man3/readdir.3.html"><strong>readdir</strong>(3)</a> with external synchronization is still preferable to the use of <strong>readdir_r</strong>(), for the reasons given in the points above.</p></li><li><p>It is expected that a future version of POSIX.1 will make <strong>readdir_r</strong>() obsolete, and require that <strong>readdir</strong>() be thread-safe when concurrently employed on different directory streams.</p></li>
-</ul>
+<p>The <strong>readdir</strong>() function returns a pointer to a <em>dirent</em> structure representing the next directory entry in the directory stream pointed to by <em>dirp</em>. It returns NULL on reaching the end of the directory stream or if an error occurred.</p><p>On Linux, the <em>dirent</em> structure is defined as follows:</p>
+<pre>
+struct dirent {
+    ino_t          d_ino;       /* inode number */
+    off_t          d_off;       /* not an offset; see NOTES */
+    unsigned short d_reclen;    /* length of this record */
+    unsigned char  d_type;      /* type of file; not supported
+                                   by all filesystem types */
+    char           d_name[256]; /* filename */
+};
+</pre>
+<p>The only fields in the <em>dirent</em> structure that are mandated by POSIX.1 are: <em>d_name</em>[], of unspecified size, with at most <strong>NAME_MAX</strong> characters preceding the terminating null byte (&apos;&#92;0&apos;); and (as an XSI extension) <em>d_ino</em>. The other fields are unstandardized, and not present on all systems; see NOTES below for some further details.</p><p>The data returned by <strong>readdir</strong>() may be overwritten by subsequent calls to <strong>readdir</strong>() for the same directory stream.</p><p>The <strong>readdir_r</strong>() function is a reentrant version of <strong>readdir</strong>(). It reads the next directory entry from the directory stream <em>dirp</em>, and returns it in the caller-allocated buffer pointed to by <em>entry</em>. (See NOTES for information on allocating this buffer.) A pointer to the returned item is placed in <em>*result</em>; if the end of the directory stream was encountered, then NULL is instead returned in <em>*result</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-<p>The <strong>readdir_r</strong>() function returns 0 on success. On error, it returns a positive error number (listed under ERRORS). If the end of the directory stream is reached, <strong>readdir_r</strong>() returns 0, and returns NULL in <em>*result</em>.</p>
+<p>On success, <strong>readdir</strong>() returns a pointer to a <em>dirent</em> structure. (This structure may be statically allocated; do not attempt to <a href="../man3/free.3.html"><strong>free</strong>(3)</a> it.) If the end of the directory stream is reached, NULL is returned and <em>errno</em> is not changed. If an error occurs, NULL is returned and <em>errno</em> is set appropriately.</p><p>The <strong>readdir_r</strong>() function returns 0 on success. On error, it returns a positive error number (listed under ERRORS). If the end of the directory stream is reached, <strong>readdir_r</strong>() returns 0, and returns NULL in <em>*result</em>.</p>
         </div>
       </section>
 
@@ -145,12 +152,6 @@
   <dd>
     <p>Invalid directory stream descriptor <em>dirp</em>.</p>
   </dd>
-  <dt>
-    <p><strong>ENAMETOOLONG</strong></p>
-  </dt>
-  <dd>
-    <p>A directory entry whose name was too long to be read was encountered.</p>
-  </dd>
 
 </dl>
 
@@ -160,37 +161,104 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
-<tr>
-<th>Interface</th>
-<th>Attribute</th>
-<th>Value</th></tr>
+<h3>Multithreading (see <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a>)</h3>
+<p>The <strong>readdir</strong>() function is not thread-safe.</p><p>The <strong>readdir_r</strong>() function is thread-safe.</p>
 
-<tr>
-<td><strong>readdir_r</strong>()  </td>
-<td>Thread safety</td>
-<td>MT-Safe</td></tr>
-</table>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p>POSIX.1-2001, POSIX.1-2008.</p>
+<p>SVr4, 4.3BSD, POSIX.1-2001.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+<p>Only the fields <em>d_name</em> and <em>d_ino</em> are specified in POSIX.1-2001. The remaining fields are available on many, but not all systems. Under glibc, programs can check for the availability of the fields not defined in POSIX.1 by testing whether the macros <strong>_DIRENT_HAVE_D_NAMLEN</strong>, <strong>_DIRENT_HAVE_D_RECLEN</strong>, <strong>_DIRENT_HAVE_D_OFF</strong>, or <strong>_DIRENT_HAVE_D_TYPE</strong> are defined.</p><p>The value returned in <em>d_off</em> is the same as would be returned by calling <a href="../man3/telldir.3.html"><strong>telldir</strong>(3)</a> at the current position in the directory stream. Be aware that despite its type and name, the <em>d_off</em> field is seldom any kind of directory offset on modern filesystems. Applications should treat this field as an opaque value, making no assumptions about its contents; see also <a href="../man3/telldir.3.html"><strong>telldir</strong>(3)</a>.</p><p>Other than Linux, the <em>d_type</em> field is available mainly only on BSD systems. This field makes it possible to avoid the expense of calling <a href="../man2/lstat.2.html"><strong>lstat</strong>(2)</a> if further actions depend on the type of the file. If the <strong>_BSD_SOURCE</strong> feature test macro is defined, then glibc defines the following macro constants for the value returned in <em>d_type</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>DT_BLK</strong></p>
+  </dt>
+  <dd>
+    <p>This is a block device.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_CHR</strong></p>
+  </dt>
+  <dd>
+    <p>This is a character device.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_DIR</strong></p>
+  </dt>
+  <dd>
+    <p>This is a directory.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_FIFO</strong></p>
+  </dt>
+  <dd>
+    <p>This is a named pipe (FIFO).</p>
+  </dd>
+  <dt>
+    <p><strong>DT_LNK</strong></p>
+  </dt>
+  <dd>
+    <p>This is a symbolic link.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_REG</strong></p>
+  </dt>
+  <dd>
+    <p>This is a regular file.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_SOCK</strong></p>
+  </dt>
+  <dd>
+    <p>This is a UNIX domain socket.</p>
+  </dd>
+  <dt>
+    <p><strong>DT_UNKNOWN</strong></p>
+  </dt>
+  <dd>
+    <p>The file type is unknown.</p>
+  </dd>
+
+</dl>
+<p>If the file type could not be determined, the value <strong>DT_UNKNOWN</strong> is returned in <em>d_type</em>.</p><p>Currently, only some filesystems (among them: Btrfs, ext2, ext3, and ext4) have full support for returning the file type in <em>d_type</em>. All applications must properly handle a return of <strong>DT_UNKNOWN</strong>.</p><p>Since POSIX.1 does not specify the size of the <em>d_name</em> field, and other nonstandard fields may precede that field within the <em>dirent</em> structure, portable applications that use <strong>readdir_r</strong>() should allocate the buffer whose address is passed in <em>entry</em> as follows:</p>
+<pre>
+name_max = pathconf(dirpath, _PC_NAME_MAX);
+if (name_max == -1)         /* Limit not defined, or error */
+    name_max = 255;         /* Take a guess */
+len = offsetof(struct dirent, d_name) + name_max + 1;
+entryp = malloc(len);
+
+</pre>
+<p>(POSIX.1 requires that <em>d_name</em> is the last field in a <em>struct dirent</em>.)</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO readdir_r&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man3/readdir.3.html"><strong>readdir</strong>(3)</a></p>
+<p><a href="../man2/getdents.2.html"><strong>getdents</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man3/closedir.3.html"><strong>closedir</strong>(3)</a>, <a href="../man3/dirfd.3.html"><strong>dirfd</strong>(3)</a>, <a href="../man3/ftw.3.html"><strong>ftw</strong>(3)</a>, <a href="../man3/offsetof.3.html"><strong>offsetof</strong>(3)</a>, <a href="../man3/opendir.3.html"><strong>opendir</strong>(3)</a>, <a href="../man3/rewinddir.3.html"><strong>rewinddir</strong>(3)</a>, <a href="../man3/scandir.3.html"><strong>scandir</strong>(3)</a>, <a href="../man3/seekdir.3.html"><strong>seekdir</strong>(3)</a>, <a href="../man3/telldir.3.html"><strong>telldir</strong>(3)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="readdir.3.html"><span aria-hidden="true">&larr;</span> readdir.3: Read a directory</a></li>
-   <li class="next"><a href="binutils-readline.3.html">readline.3: Get a line from a user with editing <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="readlink_by_handle.3.html">readlink_by_handle.3: File handle operations <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

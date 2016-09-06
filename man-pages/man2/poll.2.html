@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="poll (2) manual">
   <meta name="twitter:description" content="Wait for some event on a file descriptor">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-poll-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-poll-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/poll.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="poll (2) manual" />
   <meta property="og:description" content="Wait for some event on a file descriptor" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-poll-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-poll-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -115,7 +115,7 @@
 <strong>#include &lt;poll.h&gt;</strong>
 
 <strong>int ppoll(struct pollfd *</strong><em>fds</em><strong>, nfds_t </strong><em>nfds</em><strong>, </strong>
-<strong>        const struct timespec *</strong><em>tmo_p</em><strong>, const sigset_t *</strong><em>sigmask</em><strong>);</strong>
+<strong>        const struct timespec *</strong><em>timeout_ts</em><strong>, const sigset_t *</strong><em>sigmask</em><strong>);</strong>
 </pre>
 
         </div>
@@ -164,19 +164,19 @@ struct pollfd {
     <p><strong>POLLERR</strong></p>
   </dt>
   <dd>
-    <p>Error condition (only returned in <em>revents</em>; ignored in <em>events</em>).</p>
+    <p>Error condition (output only).</p>
   </dd>
   <dt>
     <p><strong>POLLHUP</strong></p>
   </dt>
   <dd>
-    <p>Hang up (only returned in <em>revents</em>; ignored in <em>events</em>). Note that when reading from a channel such as a pipe or a stream socket, this event merely indicates that the peer closed its end of the channel. Subsequent reads from the channel will return 0 (end of file) only after all outstanding data in the channel has been consumed.</p>
+    <p>Hang up (output only).</p>
   </dd>
   <dt>
     <p><strong>POLLNVAL</strong></p>
   </dt>
   <dd>
-    <p>Invalid request: <em>fd</em> not open (only returned in <em>revents</em>; ignored in <em>events</em>).</p>
+    <p>Invalid request: <em>fd</em> not open (output only).</p>
   </dd>
 
 </dl>
@@ -211,7 +211,7 @@ struct pollfd {
 <p>Linux also knows about, but does not use <strong>POLLMSG</strong>.</p><h3>ppoll()</h3>
 <p>The relationship between <strong>poll</strong>() and <strong>ppoll</strong>() is analogous to the relationship between <a href="../man2/select.2.html"><strong>select</strong>(2)</a> and <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a>: like <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a>, <strong>ppoll</strong>() allows an application to safely wait until either a file descriptor becomes ready or until a signal is caught.</p><p>Other than the difference in the precision of the <em>timeout</em> argument, the following <strong>ppoll</strong>() call:</p>
 <pre>
-    ready = ppoll(&fds, nfds, tmo_p, &sigmask);
+    ready = ppoll(&fds, nfds, timeout_ts, &sigmask);
 
 </pre>
 <p>is equivalent to <em>atomically</em> executing the following calls:</p>
@@ -219,20 +219,20 @@ struct pollfd {
     sigset_t origmask;
     int timeout;
 
-    timeout = (tmo_p == NULL) ? -1 :
-              (tmo_p-&gt;tv_sec * 1000 + tmo_p-&gt;tv_nsec / 1000000);
-    pthread_sigmask(SIG_SETMASK, &sigmask, &origmask);
+    timeout = (timeout_ts == NULL) ? -1 :
+              (timeout_ts.tv_sec * 1000 + timeout_ts.tv_nsec / 1000000);
+    sigprocmask(SIG_SETMASK, &sigmask, &origmask);
     ready = poll(&fds, nfds, timeout);
-    pthread_sigmask(SIG_SETMASK, &origmask, NULL);
+    sigprocmask(SIG_SETMASK, &origmask, NULL);
 </pre>
-<p>See the description of <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a> for an explanation of why <strong>ppoll</strong>() is necessary.</p><p>If the <em>sigmask</em> argument is specified as NULL, then no signal mask manipulation is performed (and thus <strong>ppoll</strong>() differs from <strong>poll</strong>() only in the precision of the <em>timeout</em> argument).</p><p>The <em>tmo_p</em> argument specifies an upper limit on the amount of time that <strong>ppoll</strong>() will block. This argument is a pointer to a structure of the following form:</p>
+<p>See the description of <a href="../man2/pselect.2.html"><strong>pselect</strong>(2)</a> for an explanation of why <strong>ppoll</strong>() is necessary.</p><p>If the <em>sigmask</em> argument is specified as NULL, then no signal mask manipulation is performed (and thus <strong>ppoll</strong>() differs from <strong>poll</strong>() only in the precision of the <em>timeout</em> argument).</p><p>The <em>timeout_ts</em> argument specifies an upper limit on the amount of time that <strong>ppoll</strong>() will block. This argument is a pointer to a structure of the following form:</p>
 <pre>
 struct timespec {
     long    tv_sec;         /* seconds */
     long    tv_nsec;        /* nanoseconds */
 };
 </pre>
-<p>If <em>tmo_p</em> is specified as NULL, then <strong>ppoll</strong>() can block indefinitely.</p>
+<p>If <em>timeout_ts</em> is specified as NULL, then <strong>ppoll</strong>() can block indefinitely.</p>
 
         </div>
       </section>
@@ -289,15 +289,15 @@ struct timespec {
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p><strong>poll</strong>() conforms to POSIX.1-2001 and POSIX.1-2008. <strong>ppoll</strong>() is Linux-specific.</p>
+<p><strong>poll</strong>() conforms to POSIX.1-2001. <strong>ppoll</strong>() is Linux-specific.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>On some other UNIX systems, <strong>poll</strong>() can fail with the error <strong>EAGAIN</strong> if the system fails to allocate kernel-internal resources, rather than <strong>ENOMEM</strong> as Linux does. POSIX permits this behavior. Portable programs may wish to check for <strong>EAGAIN</strong> and loop, just as with <strong>EINTR</strong>.</p><p>Some implementations define the nonstandard constant <strong>INFTIM</strong> with the value -1 for use as a <em>timeout</em> for <strong>poll</strong>(). This constant is not provided in glibc.</p><p>For a discussion of what may happen if a file descriptor being monitored by <strong>poll</strong>() is closed in another thread, see <a href="../man2/select.2.html"><strong>select</strong>(2)</a>.</p><h3>C library/kernel differences</h3>
-<p>The Linux <strong>ppoll</strong>() system call modifies its <em>tmo_p</em> argument. However, the glibc wrapper function hides this behavior by using a local variable for the timeout argument that is passed to the system call. Thus, the glibc <strong>ppoll</strong>() function does not modify its <em>tmo_p</em> argument.</p><p>The raw <strong>ppoll</strong>() system call has a fifth argument, <em>size_t sigsetsize</em>, which specifies the size in bytes of the <em>sigmask</em> argument. The glibc <strong>ppoll</strong>() wrapper function specifies this argument as a fixed value (equal to <em>sizeof(sigset_t)</em>).</p>
+<p>Some implementations define the nonstandard constant <strong>INFTIM</strong> with the value -1 for use as a <em>timeout</em> for <strong>poll</strong>(). This constant is not provided in glibc.</p><p>For a discussion of what may happen if a file descriptor being monitored by <strong>poll</strong>() is closed in another thread, see <a href="../man2/select.2.html"><strong>select</strong>(2)</a>.</p><h3>C library/kernel ABI differences</h3>
+<p>The Linux <strong>ppoll</strong>() system call modifies its <em>timeout_ts</em> argument. However, the glibc wrapper function hides this behavior by using a local variable for the timeout argument that is passed to the system call. Thus, the glibc <strong>ppoll</strong>() function does not modify its <em>timeout_ts</em> argument.</p><p>The raw <strong>ppoll</strong>() system call has a fifth argument, <em>size_t sigsetsize</em>, which specifies the size in bytes of the <em>sigmask</em> argument. The glibc <strong>ppoll</strong>() wrapper function specifies this argument as a fixed value (equal to <em>sizeof(sigset_t)</em>).</p>
 
         </div>
       </section>
@@ -312,7 +312,14 @@ struct timespec {
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO poll&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man2/restart_syscall.2.html"><strong>restart_syscall</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/select_tut.2.html"><strong>select_tut</strong>(2)</a>, <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a></p>
+<p><a href="../man2/restart_syscall.2.html"><strong>restart_syscall</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/select_tut.2.html"><strong>select_tut</strong>(2)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

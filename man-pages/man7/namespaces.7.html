@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="namespaces (7) manual">
   <meta name="twitter:description" content="Overview of linux namespaces">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-namespaces-7.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-namespaces-7.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man7/namespaces.7.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="namespaces (7) manual" />
   <meta property="og:description" content="Overview of linux namespaces" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-namespaces-7.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-namespaces-7.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages/">
+      <span itemprop="name">manpages</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -109,11 +109,6 @@
 <th>Namespace</th>
 <th>Constant</th>
 <th>Isolates</th></tr>
-
-<tr>
-<td>Cgroup</td>
-<td>CLONE_NEWCGROUP</td>
-<td>Cgroup root directory</td></tr>
 
 <tr>
 <td>IPC</td>
@@ -173,27 +168,20 @@
 <pre>
 $ <strong>ls -l /proc/$$/ns</strong>
 total 0
-lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 cgroup -&gt; cgroup:[4026531835]
-lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 ipc -&gt; ipc:[4026531839]
-lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 mnt -&gt; mnt:[4026531840]
-lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 net -&gt; net:[4026531969]
-lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 pid -&gt; pid:[4026531836]
-lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 user -&gt; user:[4026531837]
-lrwxrwxrwx. 1 mtk mtk 0 Apr 28 12:46 uts -&gt; uts:[4026531838]
+lrwxrwxrwx. 1 mtk mtk 0 Jan 14 01:20 ipc -&gt; ipc:[4026531839]
+lrwxrwxrwx. 1 mtk mtk 0 Jan 14 01:20 mnt -&gt; mnt:[4026531840]
+lrwxrwxrwx. 1 mtk mtk 0 Jan 14 01:20 net -&gt; net:[4026531956]
+lrwxrwxrwx. 1 mtk mtk 0 Jan 14 01:20 pid -&gt; pid:[4026531836]
+lrwxrwxrwx. 1 mtk mtk 0 Jan 14 01:20 user -&gt; user:[4026531837]
+lrwxrwxrwx. 1 mtk mtk 0 Jan 14 01:20 uts -&gt; uts:[4026531838]
 </pre>
 <p>Bind mounting (see <a href="../man2/mount.2.html"><strong>mount</strong>(2)</a>) one of the files in this directory to somewhere else in the filesystem keeps the corresponding namespace of the process specified by <em>pid</em> alive even if all processes currently in the namespace terminate.</p><p>Opening one of the files in this directory (or a file that is bind mounted to one of these files) returns a file handle for the corresponding namespace of the process specified by <em>pid</em>. As long as this file descriptor remains open, the namespace will remain alive, even if all processes in the namespace terminate. The file descriptor can be passed to <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>.</p><p>In Linux 3.7 and earlier, these files were visible as hard links. Since Linux 3.8, they appear as symbolic links. If two processes are in the same namespace, then the inode numbers of their <em>/proc/[pid]/ns/xxx</em> symbolic links will be the same; an application can check this using the <em>stat.st_ino</em> field returned by <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>. The content of this symbolic link is a string containing the namespace type and inode number as in the following example:</p>
 <pre>
 $ <strong>readlink /proc/$$/ns/uts</strong>
 uts:[4026531838]
 </pre>
-<p>The symbolic links in this subdirectory are as follows:</p>
+<p>The files in this subdirectory are as follows:</p>
 <dl class='dl-vertical'>
-  <dt>
-    <p><em>/proc/[pid]/ns/cgroup</em> (since Linux 4.6)</p>
-  </dt>
-  <dd>
-    <p>This file is a handle for the cgroup namespace of the process.</p>
-  </dd>
   <dt>
     <p><em>/proc/[pid]/ns/ipc</em> (since Linux 3.0)</p>
   </dt>
@@ -232,17 +220,48 @@ uts:[4026531838]
   </dd>
 
 </dl>
-<p>Permission to dereference or read (<a href="../man2/readlink.2.html"><strong>readlink</strong>(2)</a>) these symbolic links is governed by a ptrace access mode <strong>PTRACE_MODE_READ_FSCREDS</strong> check; see <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>.</p>
-<h3>Cgroup namespaces (CLONE_NEWCGROUP)</h3>
-<p>See <a href="../man7/cgroup_namespaces.7.html"><strong>cgroup_namespaces</strong>(7)</a>.</p>
+
 <h3>IPC namespaces (CLONE_NEWIPC)</h3>
-<p>IPC namespaces isolate certain IPC resources, namely, System V IPC objects (see <a href="../man7/svipc.7.html"><strong>svipc</strong>(7)</a>) and (since Linux 2.6.30) POSIX message queues (see <a href="../man7/mq_overview.7.html"><strong>mq_overview</strong>(7)</a>). The common characteristic of these IPC mechanisms is that IPC objects are identified by mechanisms other than filesystem pathnames.</p><p>Each IPC namespace has its own set of System V IPC identifiers and its own POSIX message queue filesystem. Objects created in an IPC namespace are visible to all other processes that are members of that namespace, but are not visible to processes in other IPC namespaces.</p><p>The following <em>/proc</em> interfaces are distinct in each IPC namespace:</p><ul>
+<p>IPC namespaces isolate certain IPC resources, namely, System V IPC objects (see <a href="../man7/svipc.7.html"><strong>svipc</strong>(7)</a>) and (since Linux 2.6.30) POSIX message queues (see <a href="../man7/mq_overview.7.html"><strong>mq_overview</strong>(7)</a>. The common characteristic of these IPC mechanisms is that IPC objects are identified by mechanisms other than filesystem pathnames.</p><p>Each IPC namespace has its own set of System V IPC identifiers and its own POSIX message queue filesystem. Objects created in an IPC namespace are visible to all other processes that are members of that namespace, but are not visible to processes in other IPC namespaces.</p><p>The following <em>/proc</em> interfaces are distinct in each IPC namespace:</p><ul>
 <li><p>The POSIX message queue interfaces in <em>/proc/sys/fs/mqueue</em>.</p></li><li><p>The System V IPC interfaces in <em>/proc/sys/kernel</em>, namely: <em>msgmax</em>, <em>msgmnb</em>, <em>msgmni</em>, <em>sem</em>, <em>shmall</em>, <em>shmmax</em>, <em>shmmni</em>, and <em>shm_rmid_forced</em>.</p></li><li><p>The System V IPC interfaces in <em>/proc/sysvipc</em>.</p></li>
 </ul><p>When an IPC namespace is destroyed (i.e., when the last process that is a member of the namespace terminates), all IPC objects in the namespace are automatically destroyed.</p><p>Use of IPC namespaces requires a kernel that is configured with the <strong>CONFIG_IPC_NS</strong> option.</p>
 <h3>Network namespaces (CLONE_NEWNET)</h3>
 <p>Network namespaces provide isolation of the system resources associated with networking: network devices, IPv4 and IPv6 protocol stacks, IP routing tables, firewalls, the <em>/proc/net</em> directory, the <em>/sys/class/net</em> directory, port numbers (sockets), and so on. A physical network device can live in exactly one network namespace. A virtual network device ("veth") pair provides a pipe-like abstraction that can be used to create tunnels between network namespaces, and can be used to create a bridge to a physical network device in another namespace.</p><p>When a network namespace is freed (i.e., when the last process in the namespace terminates), its physical network devices are moved back to the initial network namespace (not to the parent of the process).</p><p>Use of network namespaces requires a kernel that is configured with the <strong>CONFIG_NET_NS</strong> option.</p>
 <h3>Mount namespaces (CLONE_NEWNS)</h3>
-<p>See <a href="../man7/mount_namespaces.7.html"><strong>mount_namespaces</strong>(7)</a>.</p>
+<p>Mount namespaces isolate the set of filesystem mount points, meaning that processes in different mount namespaces can have different views of the filesystem hierarchy. The set of mounts in a mount namespace is modified using <a href="../man2/mount.2.html"><strong>mount</strong>(2)</a> and <a href="../man2/umount.2.html"><strong>umount</strong>(2)</a>.</p><p>The <em>/proc/[pid]/mounts</em> file (present since Linux 2.4.19) lists all the filesystems currently mounted in the process's mount namespace. The format of this file is documented in <a href="../man5/fstab.5.html"><strong>fstab</strong>(5)</a>. Since kernel version 2.6.15, this file is pollable: after opening the file for reading, a change in this file (i.e., a filesystem mount or unmount) causes <a href="../man2/select.2.html"><strong>select</strong>(2)</a> to mark the file descriptor as readable, and <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a> and <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a> mark the file as having an error condition.</p><p>The <em>/proc/[pid]/mountstats</em> file (present since Linux 2.6.17) exports information (statistics, configuration information) about the mount points in the process's mount namespace. This file is only readable by the owner of the process. Lines in this file have the form:</p>
+<pre>
+device /dev/sda7 mounted on /home with fstype ext3 [statistics]
+(       1      )            ( 2 )             (3 ) (4)
+</pre>
+<p>The fields in each line are:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>(1)</p>
+  </dt>
+  <dd>
+    <p>The name of the mounted device (or "nodevice" if there is no corresponding device).</p>
+  </dd>
+  <dt>
+    <p>(2)</p>
+  </dt>
+  <dd>
+    <p>The mount point within the filesystem tree.</p>
+  </dd>
+  <dt>
+    <p>(3)</p>
+  </dt>
+  <dd>
+    <p>The filesystem type.</p>
+  </dd>
+  <dt>
+    <p>(4)</p>
+  </dt>
+  <dd>
+    <p>Optional statistics and configuration information. Currently (as at Linux 2.6.26), only NFS filesystems export information via this field.</p>
+  </dd>
+
+</dl>
+
 <h3>PID namespaces (CLONE_NEWPID)</h3>
 <p>See <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a>.</p>
 <h3>User namespaces (CLONE_NEWUSER)</h3>
@@ -270,13 +289,20 @@ uts:[4026531838]
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO namespaces&hellip;</h2>
         <div class="sectioncontent">
-<p><strong>lsns</strong>(1), <a href="../man1/nsenter.1.html"><strong>nsenter</strong>(1)</a>, <strong>readlink</strong>(1), <a href="../man1/unshare.1.html"><strong>unshare</strong>(1)</a>, <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/cgroup_namespaces.7.html"><strong>cgroup_namespaces</strong>(7)</a>, <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>, <a href="../man8/switch_root.8.html"><strong>switch_root</strong>(8)</a></p>
+<p><a href="../man1/nsenter.1.html"><strong>nsenter</strong>(1)</a>, <a href="../man1/readlink.1.html"><strong>readlink</strong>(1)</a>, <a href="../man1/unshare.1.html"><strong>unshare</strong>(1)</a>, <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/setns.2.html"><strong>setns</strong>(2)</a>, <a href="../man2/unshare.2.html"><strong>unshare</strong>(2)</a>, <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>, <a href="../man7/credentials.7.html"><strong>credentials</strong>(7)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/pid_namespaces.7.html"><strong>pid_namespaces</strong>(7)</a>, <a href="../man7/user_namespaces.7.html"><strong>user_namespaces</strong>(7)</a>, <a href="../man8/switch_root.8.html"><strong>switch_root</strong>(8)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="mq_overview.7.html"><span aria-hidden="true">&larr;</span> mq_overview.7: Overview of posix message queues</a></li>
-   <li class="next"><a href="netdevice.7.html">netdevice.7: Low-level access to linux network devices <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="munge.7.html"><span aria-hidden="true">&larr;</span> munge.7: Munge overview</a></li>
+   <li class="next"><a href="net-device-added.7.html">net-device-added.7: Bridge between upstart and udev <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="getxattr (2) manual">
   <meta name="twitter:description" content="Retrieve an extended attribute value">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-getxattr-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/libattr1-dev-getxattr-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/getxattr.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="getxattr (2) manual" />
   <meta property="og:description" content="Retrieve an extended attribute value" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-getxattr-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/libattr1-dev-getxattr-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/libattr1-dev/">
+      <span itemprop="name">libattr1-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -107,14 +107,14 @@
 
 <pre>
 <strong>#include &lt;sys/types.h&gt;</strong>
-<strong>#include &lt;sys/xattr.h&gt;</strong>
+<strong>#include &lt;attr/xattr.h&gt;</strong>
 
-<strong>ssize_t getxattr(const char&nbsp;*</strong><em>path</em><strong>, const char&nbsp;*</strong><em>name</em><strong>,</strong>
-<strong>                 void&nbsp;*</strong><em>value</em><strong>, size_t </strong><em>size</em><strong>);</strong>
-<strong>ssize_t lgetxattr(const char&nbsp;*</strong><em>path</em><strong>, const char&nbsp;*</strong><em>name</em><strong>,</strong>
-<strong>                 void&nbsp;*</strong><em>value</em><strong>, size_t </strong><em>size</em><strong>);</strong>
-<strong>ssize_t fgetxattr(int </strong><em>fd</em><strong>, const char&nbsp;*</strong><em>name</em><strong>,</strong>
-<strong>                 void&nbsp;*</strong><em>value</em><strong>, size_t </strong><em>size</em><strong>);</strong>
+<strong>ssize_t getxattr (const char&nbsp;*</strong><em>path</em><strong>, const char&nbsp;*</strong><em>name</em><strong>,</strong>
+<strong>\t\t\t\t void&nbsp;*</strong><em>value</em><strong>, size_t </strong><em>size</em><strong>);</strong>
+<strong>ssize_t lgetxattr (const char&nbsp;*</strong><em>path</em><strong>, const char&nbsp;*</strong><em>name</em><strong>,</strong>
+<strong>\t\t\t\t void&nbsp;*</strong><em>value</em><strong>, size_t </strong><em>size</em><strong>);</strong>
+<strong>ssize_t fgetxattr (int </strong><em>filedes</em><strong>, const char&nbsp;*</strong><em>name</em><strong>,</strong>
+<strong>\t\t\t\t void&nbsp;*</strong><em>value</em><strong>, size_t </strong><em>size</em><strong>);</strong>
 </pre>
 
         </div>
@@ -123,71 +123,28 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>Extended attributes are <em>name</em>:<em>.I</em>value pairs associated with inodes (files, directories, symbolic links, etc.). They are extensions to the normal attributes which are associated with all inodes in the system (i.e., the <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a> data). A complete overview of extended attributes concepts can be found in <a href="../man7/xattr.7.html"><strong>xattr</strong>(7)</a>.</p><p><strong>getxattr</strong>() retrieves the value of the extended attribute identified by <em>name</em> and associated with the given <em>path</em> in the filesystem. The attribute value is placed in the buffer pointed to by <em>value</em>; <em>size</em> specifies the size of that buffer. The return value of the call is the number of bytes placed in <em>value</em>.</p><p><strong>lgetxattr</strong>() is identical to <strong>getxattr</strong>(), except in the case of a symbolic link, where the link itself is interrogated, not the file that it refers to.</p><p><strong>fgetxattr</strong>() is identical to <strong>getxattr</strong>(), only the open file referred to by <em>fd</em> (as returned by <a href="../man2/open.2.html"><strong>open</strong>(2)</a>) is interrogated in place of <em>path</em>.</p><p>An extended attribute <em>name</em> is a null-terminated string. The name includes a namespace prefix; there may be several, disjoint namespaces associated with an individual inode. The value of an extended attribute is a chunk of arbitrary textual or binary data that was assigned using <a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>.</p><p>If <em>size</em> is specified as zero, these calls return the current size of the named extended attribute (and leave <em>value</em> unchanged). This can be used to determine the size of the buffer that should be supplied in a subsequent call. (But, bear in mind that there is a possibility that the attribute value may change between the two calls, so that it is still necessary to check the return status from the second call.)</p>
+<p>Extended attributes are <em>name</em>:<em>.I</em>value pairs associated with inodes (files, directories, symlinks, etc). They are extensions to the normal attributes which are associated with all inodes in the system (i.e. the <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a> data). A complete overview of extended attributes concepts can be found in <a href="../man5/attr.5.html"><strong>attr</strong>(5)</a>.</p><p><strong>getxattr</strong> retrieves the <em>value</em> of the extended attribute identified by <em>name</em> and associated with the given <em>path</em> in the filesystem. The length of the attribute <em>value</em> is returned.</p><p><strong>lgetxattr</strong> is identical to <strong>getxattr</strong>, except in the case of a symbolic link, where the link itself is interrogated, not the file that it refers to.</p><p><strong>fgetxattr</strong> is identical to <strong>getxattr</strong>, only the open file pointed to by <em>filedes</em> (as returned by <a href="../man2/open.2.html"><strong>open</strong>(2)</a>) is interrogated in place of <em>path</em>.</p><p>An extended attribute <em>name</em> is a simple NULL-terminated string. The name includes a namespace prefix - there may be several, disjoint namespaces associated with an individual inode. The value of an extended attribute is a chunk of arbitrary textual or binary data of specified length.</p><p>An empty buffer of <em>size</em> zero can be passed into these calls to return the current size of the named extended attribute, which can be used to estimate the size of a buffer which is sufficiently large to hold the value associated with the extended attribute.</p><p>The interface is designed to allow guessing of initial buffer sizes, and to enlarge buffers when the return value indicates that the buffer provided was too small.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-<p>On success, these calls return a nonnegative value which is the size (in bytes) of the extended attribute value. On failure, -1 is returned and <em>errno</em> is set appropriately.</p>
+<p>On success, a positive number is returned indicating the size of the extended attribute value. On failure, -1 is returned and <em>errno</em> is set appropriately.</p><p>If the named attribute does not exist, or the process has no access to this attribute, <em>errno</em> is set to ENOATTR.</p><p>If the <em>size</em> of the <em>value</em> buffer is too small to hold the result, <em>errno</em> is set to ERANGE.</p><p>If extended attributes are not supported by the filesystem, or are disabled, <em>errno</em> is set to ENOTSUP.</p><p>The errors documented for the <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a> system call are also applicable here.</p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">ERRORS</h2>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
         <div class="sectioncontent">
-
-<dl class='dl-vertical'>
-  <dt>
-    <p><strong>ENOATTR</strong></p>
-  </dt>
-  <dd>
-    <p>The named attribute does not exist, or the process has no access to this attribute. (<strong>ENOATTR</strong> is defined to be a synonym for <strong>ENODATA</strong> in <em>&lt;attr/xattr.h&gt;</em>.)</p>
-  </dd>
-  <dt>
-    <p><strong>ENOTSUP</strong></p>
-  </dt>
-  <dd>
-    <p>Extended attributes are not supported by the filesystem, or are disabled.</p>
-  </dd>
-  <dt>
-    <p><strong>ERANGE</strong></p>
-  </dt>
-  <dd>
-    <p>The <em>size</em> of the <em>value</em> buffer is too small to hold the result.</p>
-  </dd>
-
-</dl>
-<p>In addition, the errors documented in <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a> can also occur.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
-        <div class="sectioncontent">
-<p>These system calls have been available on Linux since kernel 2.4; glibc support is provided since version 2.3.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
-        <div class="sectioncontent">
-<p>These system calls are Linux-specific.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
-        <div class="sectioncontent">
-<p>See <a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a>.</p>
+<p>Andreas Gruenbacher, &lt;<em>a.gruenbacher@bestbits.at</em>&gt; and the SGI XFS development team, &lt;<em>linux-xfs@oss.sgi.com</em>&gt;. Please send any bug reports or comments to these addresses.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO getxattr&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man1/getfattr.1.html"><strong>getfattr</strong>(1)</a>, <a href="../man1/setfattr.1.html"><strong>setfattr</strong>(1)</a>, <a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/removexattr.2.html"><strong>removexattr</strong>(2)</a>, <a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>, <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, <a href="../man7/symlink.7.html"><strong>symlink</strong>(7)</a>, <a href="../man7/xattr.7.html"><strong>xattr</strong>(7)</a></p>
+<p><a href="../man1/getfattr.1.html"><strong>getfattr</strong>(1)</a>, <a href="../man1/setfattr.1.html"><strong>setfattr</strong>(1)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, <a href="../man2/setxattr.2.html"><strong>setxattr</strong>(2)</a>, <a href="../man2/listxattr.2.html"><strong>listxattr</strong>(2)</a>, <a href="../man2/removexattr.2.html"><strong>removexattr</strong>(2)</a>, and <a href="../man5/attr.5.html"><strong>attr</strong>(5)</a>.</p>
         </div>
       </section>
 <nav>

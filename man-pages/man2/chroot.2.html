@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="chroot (2) manual">
   <meta name="twitter:description" content="Change root directory">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-chroot-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-chroot-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/chroot.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="chroot (2) manual" />
   <meta property="og:description" content="Change root directory" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-chroot-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-chroot-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -112,9 +112,10 @@
   <dd>
     
 <pre>
-_XOPEN_SOURCE && ! (_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L)
-    || /* Since glibc 2.20: */ _DEFAULT_SOURCE
-    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE
+_BSD_SOURCE ||
+    (_XOPEN_SOURCE&nbsp;&gt;=&nbsp;500 ||
+        _XOPEN_SOURCE&nbsp;&&&nbsp;_XOPEN_SOURCE_EXTENDED) &&
+    !(_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L || _XOPEN_SOURCE&nbsp;&gt;=&nbsp;600)
 </pre>
 <p>Before glibc 2.2.2: none</p>
   </dd>
@@ -127,7 +128,7 @@ _XOPEN_SOURCE && ! (_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L)
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p><strong>chroot</strong>() changes the root directory of the calling process to that specified in <em>path</em>. This directory will be used for pathnames beginning with <em>/</em>. The root directory is inherited by all children of the calling process.</p><p>Only a privileged process (Linux: one with the <strong>CAP_SYS_CHROOT</strong> capability) may call <strong>chroot</strong>().</p><p>This call changes an ingredient in the pathname resolution process and does nothing else. In particular, it is not intended to be used for any kind of security purpose, neither to fully sandbox a process nor to restrict filesystem system calls. In the past, <strong>chroot</strong>() has been used by daemons to restrict themselves prior to passing paths supplied by untrusted users to system calls such as <a href="../man2/open.2.html"><strong>open</strong>(2)</a>. However, if a folder is moved out of the chroot directory, an attacker can exploit that to get out of the chroot directory as well. The easiest way to do that is to <a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a> to the to-be-moved directory, wait for it to be moved out, then open a path like ../../../etc/passwd.</p><p>A slightly trickier variation also works under some circumstances if <a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a> is not permitted. If a daemon allows a "chroot directory" to be specified, that usually means that if you want to prevent remote users from accessing files outside the chroot directory, you must ensure that folders are never moved out of it.</p><p>This call does not change the current working directory, so that after the call &apos;<em>.</em>&apos; can be outside the tree rooted at &apos;<em>/</em>&apos;. In particular, the superuser can escape from a "chroot jail" by doing:</p>
+<p><strong>chroot</strong>() changes the root directory of the calling process to that specified in <em>path</em>. This directory will be used for pathnames beginning with <em>/</em>. The root directory is inherited by all children of the calling process.</p><p>Only a privileged process (Linux: one with the <strong>CAP_SYS_CHROOT</strong> capability) may call <strong>chroot</strong>().</p><p>This call changes an ingredient in the pathname resolution process and does nothing else.</p><p>This call does not change the current working directory, so that after the call &apos;<em>.</em>&apos; can be outside the tree rooted at &apos;<em>/</em>&apos;. In particular, the superuser can escape from a "chroot jail" by doing:</p>
 <pre>
     mkdir foo; chroot foo; cd ..
 </pre>
@@ -224,7 +225,14 @@ _XOPEN_SOURCE && ! (_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L)
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO chroot&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a>, <a href="../man2/pivot_root.2.html"><strong>pivot_root</strong>(2)</a>, <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a></p>
+<p><a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a>, <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="open_by_handle_at (2) manual">
   <meta name="twitter:description" content="Obtain handle for a pathname and open file via a handle">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-open_by_handle_at-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-open_by_handle_at-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/open_by_handle_at.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="open_by_handle_at (2) manual" />
   <meta property="og:description" content="Obtain handle for a pathname and open file via a handle" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-open_by_handle_at-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-open_by_handle_at-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -136,7 +136,7 @@ struct file_handle {
 };
 </pre>
 <p>It is the caller's responsibility to allocate the structure with a size large enough to hold the handle returned in <em>f_handle</em>. Before the call, the <em>handle_bytes</em> field should be initialized to contain the allocated size for <em>f_handle</em>. (The constant <strong>MAX_HANDLE_SZ</strong>, defined in <em>&lt;fcntl.h&gt;</em>, specifies the maximum possible size for a file handle.) Upon successful return, the <em>handle_bytes</em> field is updated to contain the number of bytes actually written to <em>f_handle</em>.</p><p>The caller can discover the required size for the <em>file_handle</em> structure by making a call in which <em>handle-&gt;handle_bytes</em> is zero; in this case, the call fails with the error <strong>EOVERFLOW</strong> and <em>handle-&gt;handle_bytes</em> is set to indicate the required size; the caller can then use this information to allocate a structure of the correct size (see EXAMPLE below).</p><p>Other than the use of the <em>handle_bytes</em> field, the caller should treat the <em>file_handle</em> structure as an opaque data type: the <em>handle_type</em> and <em>f_handle</em> fields are needed only by a subsequent call to <strong>open_by_handle_at</strong>().</p><p>The <em>flags</em> argument is a bit mask constructed by ORing together zero or more of <strong>AT_EMPTY_PATH</strong> and <strong>AT_SYMLINK_FOLLOW</strong>, described below.</p><p>Together, the <em>pathname</em> and <em>dirfd</em> arguments identify the file for which a handle is to be obtained. There are four distinct cases:</p><ul>
-<li><p>If <em>pathname</em> is a nonempty string containing an absolute pathname, then a handle is returned for the file referred to by that pathname. In this case, <em>dirfd</em> is ignored.</p></li><li><p>If <em>pathname</em> is a nonempty string containing a relative pathname and <em>dirfd</em> has the special value <strong>AT_FDCWD</strong>, then <em>pathname</em> is interpreted relative to the current working directory of the caller, and a handle is returned for the file to which it refers.</p></li><li><p>If <em>pathname</em> is a nonempty string containing a relative pathname and <em>dirfd</em> is a file descriptor referring to a directory, then <em>pathname</em> is interpreted relative to the directory referred to by <em>dirfd</em>, and a handle is returned for the file to which it refers. (See <a href="../man2/openat.2.html"><strong>openat</strong>(2)</a> for an explanation of why "directory file descriptors" are useful.)</p></li><li><p>If <em>pathname</em> is an empty string and <em>flags</em> specifies the value <strong>AT_EMPTY_PATH</strong>, then <em>dirfd</em> can be an open file descriptor referring to any type of file, or <strong>AT_FDCWD</strong>, meaning the current working directory, and a handle is returned for the file to which it refers.</p></li>
+<li><p>If <em>pathname</em> is a nonempty string containing an absolute pathname, then a handle is returned for the file referred to by that pathname. In this case, <em>dirfd</em> is ignored.</p></li><li><p>If <em>pathname</em> is a nonempty string containing a relative pathname and <em>dirfd</em> has the special value <strong>AT_FDCWD</strong>, then <em>pathname</em> is interpreted relative to the current working directory of the caller, and a handle is returned for the file to which it refers.</p></li><li><p>If <em>pathname</em> is a nonempty string containing a relative pathname and <em>dirfd</em> is a file descriptor referring to a directory, then <em>pathname</em> is interpreted relative to the directory referred to by <em>dirfd</em>, and a handle is returned for the file to which it refers. (See <strong>openat</strong>(3) for an explanation of why "directory file descriptors" are useful.)</p></li><li><p>If <em>pathname</em> is an empty string and <em>flags</em> specifies the value <strong>AT_EMPTY_PATH</strong>, then <em>dirfd</em> can be an open file descriptor referring to any type of file, or <strong>AT_FDCWD</strong>, meaning the current working directory, and a handle is returned for the file to which it refers.</p></li>
 </ul><p>The <em>mount_id</em> argument returns an identifier for the filesystem mount that corresponds to <em>pathname</em>. This corresponds to the first field in one of the records in <em>/proc/self/mountinfo</em>. Opening the pathname in the fifth field of that record yields a file descriptor for the mount point; that file descriptor can be used in a subsequent call to <strong>open_by_handle_at</strong>().</p><p>By default, <strong>name_to_handle_at</strong>() does not dereference <em>pathname</em> if it is a symbolic link, and thus returns a handle for the link itself. If <strong>AT_SYMLINK_FOLLOW</strong> is specified in <em>flags</em>, <em>pathname</em> is dereferenced if it is a symbolic link (so that the call returns a handle for the file referred to by the link).</p>
 <h3>open_by_handle_at()</h3>
 <p>The <strong>open_by_handle_at</strong>() system call opens the file referred to by <em>handle</em>, a file handle returned by a previous call to <strong>name_to_handle_at</strong>().</p><p>The <em>mount_fd</em> argument is a file descriptor for any object (file, directory, etc.) in the mounted filesystem with respect to which <em>handle</em> should be interpreted. The special value <strong>AT_FDCWD</strong> can be specified, meaning the current working directory of the caller.</p><p>The <em>flags</em> argument is as for <a href="../man2/open.2.html"><strong>open</strong>(2)</a>. If <em>handle</em> refers to a symbolic link, the caller must specify the <strong>O_PATH</strong> flag, and the symbolic link is not dereferenced; the <strong>O_NOFOLLOW</strong> flag, if specified, is ignored.</p><p>The caller must have the <strong>CAP_DAC_READ_SEARCH</strong> capability to invoke <strong>open_by_handle_at</strong>().</p>
@@ -514,6 +514,13 @@ main(int argc, char *argv[])
         <h2 class="font-effect-shadow-multiple">RELATED TO open_by_handle_at&hellip;</h2>
         <div class="sectioncontent">
 <p><a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man3/libblkid.3.html"><strong>libblkid</strong>(3)</a>, <a href="../man8/blkid.8.html"><strong>blkid</strong>(8)</a>, <a href="../man8/findfs.8.html"><strong>findfs</strong>(8)</a>, <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a></p><p>The <em>libblkid</em> and <em>libmount</em> documentation in the latest <em>util-linux</em> release at</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

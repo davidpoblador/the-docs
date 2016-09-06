@@ -104,7 +104,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-<p><strong>trafgen</strong> [<em>options</em>] [<em>packet</em>]</p>
+<p><strong>trafgen</strong> [<em>options</em>]</p>
         </div>
       </section>
 
@@ -124,8 +124,6 @@
 <p>Defines the outgoing networking device such as eth0, wlan0 and others.</p>
 <h3>-p, --cpp</h3>
 <p>Pass the packet configuration to the C preprocessor before reading it into trafgen. This allows #define and #include directives (e.g. to include definitions from system headers) to be used in the trafgen configuration file.</p>
-<h3>-D &lt;name&gt;=&lt;definition&gt;, --define &lt;name&gt;=&lt;definition&gt;</h3>
-<p>Add macro definition for the C preprocessor to use it within trafgen file. This option is used in combination with the -p,--cpp option.</p>
 <h3>-J, --jumbo-support</h3>
 <p>By default trafgen's ring buffer frames are of a fixed size of 2048 bytes. This means that if you're expecting jumbo frames or even super jumbo frames to pass your line, then you will need to enable support for that with the help of this option. However, this has the disadvantage of a performance regression and a bigger memory footprint for the ring buffer.</p>
 <h3>-R, --rfraw</h3>
@@ -140,25 +138,16 @@
 <p>Specify the number of processes trafgen shall <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> off. By default trafgen will start as many processes as CPUs that are online and pin them to each, respectively. Allowed value must be within interval [1,CPUs].</p>
 <h3>-t &lt;time&gt;, --gap &lt;time&gt;</h3>
 <p>Specify a static inter-packet timegap in seconds, milliseconds, microseconds, or nanoseconds: ''&lt;num&gt;s/ms/us/ns''. If no postfix is given default to microseconds. If this option is given, then instead of <a href="../man7/packet.7.html"><strong>packet</strong>(7)</a>'s TX_RING interface, trafgen will use <a href="../man2/sendto.2.html"><strong>sendto</strong>(2)</a> I/O for network packets, even if the &lt;time&gt; argument is 0. This option is useful for a couple of reasons: i) comparison between <a href="../man2/sendto.2.html"><strong>sendto</strong>(2)</a> and TX_RING performance, ii) low-traffic packet probing for a given interval, iii) ping-like debugging with specific payload patterns. Furthermore, the TX_RING interface does not cope with interpacket gaps.</p>
-<h3>-b &lt;rate&gt;, --rate &lt;rate&gt;</h3>
-<p>Specify the packet send rate &lt;num&gt;pps/B/kB/MB/GB/kbit/Mbit/Gbit/KiB/MiB/GiB units. Like with the -t,--gap option, the packets are sent in slow mode.</p>
 <h3>-S &lt;size&gt;, --ring-size &lt;size&gt;</h3>
 <p>Manually define the TX_RING resp. TX_RING size in ''&lt;num&gt;KiB/MiB/GiB''. On default the size is being determined based on the network connectivity rate.</p>
+<h3>-k &lt;uint&gt;, --kernel-pull &lt;uint&gt;</h3>
+<p>Manually define the interval in micro-seconds where the kernel should be triggered to batch process the ring buffer frames. By default, it is every 10us, but it can manually be prolonged, for instance..</p>
 <h3>-E &lt;uint&gt;, --seed &lt;uint&gt;</h3>
 <p>Manually set the seed for pseudo random number generator (PRNG) in trafgen. By default, a random seed from /dev/urandom is used to feed glibc's PRNG. If that fails, it falls back to the unix timestamp. It can be useful to set the seed manually in order to be able to reproduce a trafgen session, e.g. after fuzz testing.</p>
 <h3>-u &lt;uid&gt;, --user &lt;uid&gt; resp. -g &lt;gid&gt;, --group &lt;gid&gt;</h3>
 <p>After ring setup, drop privileges to a non-root user/group combination.</p>
 <h3>-H, --prio-high</h3>
 <p>Set this process as a high priority process in order to achieve a higher scheduling rate resp. CPU time. This is however not the default setting, since it could lead to starvation of other processes, for example low priority kernel threads.</p>
-<h3>-A, --no-sock-mem</h3>
-<p>Do not change systems default socket memory setting during testrun. Default is to boost socket buffer memory during the test to:</p>
-<pre>
-   /proc/sys/net/core/rmem_default:4194304
-   /proc/sys/net/core/wmem_default:4194304
-   /proc/sys/net/core/rmem_max:104857600
-   /proc/sys/net/core/wmem_max:104857600
-</pre>
-
 <h3>-Q, --notouch-irq</h3>
 <p>Do not reassign the NIC's IRQ CPU affinity settings.</p>
 <h3>-q, --qdisc-path</h3>
@@ -185,7 +174,7 @@
    { /* packet 1 content goes here ... */ }
    { /* packet 2 content goes here ... */ }
 </pre>
-<p>Alternatively, packets can also be specified directly on the command line, using the same syntax as used in the configuration files.</p><p>When trafgen is started using multiple CPUs (default), then each of those packets will be scheduled for transmission on all CPUs by default. However, it is possible to tell trafgen to schedule a packet only on a particular CPU:</p>
+<p>When trafgen is started using multiple CPUs (default), then each of those packets will be scheduled for transmission on all CPUs by default. However, it is possible to tell trafgen to schedule a packet only on a particular CPU:</p>
 <pre>
    <strong>cpu</strong>(1): { /* packet 1 content goes here ... */ }
    cpu(2-3): { /* packet 2 content goes here ... */ }
@@ -204,7 +193,7 @@
    string:      "hello world"
    shellcode:   "&#92;x31&#92;xdb&#92;x8d&#92;x43&#92;x17&#92;x99&#92;xcd&#92;x80&#92;x31&#92;xc9"
 </pre>
-<p>Thus, a quite useless packet configuration might look like this (one can verify this when running this with trafgen in combination with -V):</p>
+<p>Thus, a quite useless packet packet configuration might look like this (one can verify this when running this with trafgen in combination with -V):</p>
 <pre>
    { 0xca, 42, 0b11110000, 011, 'a', "hello world",
      "&#92;x31&#92;xdb&#92;x8d&#92;x43&#92;x17&#92;x99&#92;xcd&#92;x80&#92;x31&#92;xc9" }
@@ -224,8 +213,6 @@
    IP/ICMP checksum:        csumip/csumicmp(&lt;off-from&gt;, &lt;off-to&gt;)
    UDP checksum:            csumudp(&lt;off-iphdr&gt;, &lt;off-udpdr&gt;)
    TCP checksum:            csumtcp(&lt;off-iphdr&gt;, &lt;off-tcphdr&gt;)
-   UDP checksum (IPv6):     csumudp6(&lt;off-ip6hdr&gt;, &lt;off-udpdr&gt;)
-   TCP checksum (IPv6):     csumtcp6(&lt;off-ip6hdr&gt;, &lt;off-tcphdr&gt;)
 </pre>
 <p>iii) Multibyte functions, compile-time expression evaluation:</p>
 <pre>
@@ -236,16 +223,7 @@
 <pre>
    These functions write their result in network byte order into the packet
 </pre>
-<p>configuration, e.g. const16(0xaa) will result in ''00 aa''. Within c*() functions, it is possible to do some arithmetics: -,+,*,/,%,&,|,&lt;&lt;,&gt;&gt;,^ E.g. const16((((1&lt;&lt;8)+0x32)|0b110)*2) will be evaluated to ''02 6c''.</p><p>iv) Protocol header functions: The protocol header functions allow to fill protocol header fields by using following generic syntax:</p><p>&lt;proto&gt;(&lt;field&gt;=&lt;value&gt;,&lt;field2&gt;=&lt;value2&gt;,...,&lt;field3&gt;,...)</p><p>If a field is not specified, then a default value will be used (usually 0). Protocol fields might be set in any order. However, the offset of the fields in the resulting packet is according to the respective protocol.</p><p>All required lower layer headers will be filled automatically if they were not specified by the user. The headers will be filled in the order they were specified. Each header will be filled with some mimimum required set of fields.</p><p>Supported protocol headers:</p><p><em>Ethernet</em> : <strong>eth(da=&lt;mac&gt;, sa=&lt;mac&gt;, type=&lt;number&gt;)</strong></p><p><strong>da|daddr</strong> - Destination MAC address (default: 00:00:00:00:00:00)</p><p><strong>sa|saddr</strong> - Source MAC address (default: device MAC address)</p><p><strong>etype|type|prot|proto</strong> - Ethernet type (default: 0)</p><p><em>VLAN</em> : <strong>vlan(tpid=&lt;number&gt;, id=&lt;number&gt;, dei=&lt;number&gt;, tci=&lt;number&gt;, pcp=&lt;number&gt;, 1q, 1ad)</strong></p><p><strong>tpid|prot|proto</strong> - Tag Protocol Identifier (TPID) (default: 0x8100)</p><p><strong>tci</strong> - Tag Control Information (TCI) field (VLAN Id + PCP + DEI) (default: 0)</p><p><strong>dei|cfi</strong> - Drop Eligible Indicator (DEI), formerly Canonical Format Indicator (CFI) (default: 0)</p><p><strong>pcp</strong> - Priority code point (PCP) (default: 0)</p><p><strong>id</strong> - VLAN Identifier (default: 0)</p><p><strong>1q</strong> - Set 802.1q header (TPID: 0x8100)</p><p><strong>1ad</strong> - Set 802.1ad header (TPID: 0x88a8)</p><p>By default, if the lower level header is Ethernet, its EtherType is set to 0x8100 (802.1q).</p><p><em>MPLS</em> : <strong>mpls(label=&lt;number&gt;, tc|exp=&lt;number&gt;, last=&lt;number&gt;, ttl=&lt;number&gt;)</strong></p><p><strong>label|lbl</strong> - MPLS label value (default: 0)</p><p><strong>tclass|tc|exp</strong> - Traffic Class for QoS field (default: 0)</p><p><strong>last</strong> - Bottom of stack S-flag (default: 1 for most last label)</p><p><strong>ttl</strong> - Time To Live (TTL) (default: 0)</p><p>By default, if the lower level header is Ethernet, its EtherType is set to 0x8847 (MPLS Unicast). S-flag is set automatically to 1 for the last label and resets to 0 if the lower MPLS label was added after.</p><p><em>ARP</em> : <strong>arp(htype=&lt;number&gt;, ptype=&lt;number&gt;, op=&lt;request|reply|number&gt;, request,</strong> <strong>reply, smac=&lt;mac&gt;, sip=&lt;ip4_addr&gt;, tmac=&lt;mac&gt;, tip=&lt;ip4_addr&gt;)</strong></p><p><strong>htype</strong> - ARP hardware type (default: 1 [Ethernet])</p><p><strong>ptype</strong> - ARP protocol type (default: 0x0800 [IPv4])</p><p><strong>op</strong> - ARP operation type (request/reply) (default: request)</p><p><strong>req|request</strong> - ARP Request operation type</p><p><strong>reply</strong> - ARP Reply operation type</p><p><strong>smac|sha</strong> - Sender hardware (MAC) address (default: device MAC address)</p><p><strong>sip|spa</strong> - Sender protocol (IPv4) address (default: device IPv4 address)</p><p><strong>tmac|tha</strong> - Target hardware (MAC) address (default: 00:00:00:00:00:00)</p><p><strong>tip|tpa</strong> - Target protocol (IPv4) address (default: device IPv4 address)</p><p>By default, the ARP operation field is set to request and the Ethernet destination MAC address is set to the broadcast address (ff:ff:ff:ff:ff:ff).</p><p><em>IPv4</em> : <strong>ip4|ipv4(ihl=&lt;number&gt;, ver=&lt;number&gt;, len=&lt;number&gt;, csum=&lt;number&gt;,</strong> <strong>ttl=&lt;number&gt;, tos=&lt;number&gt;, dscp=&lt;number&gt;, ecn=&lt;number&gt;,</strong> <strong>id=&lt;number&gt;, flags=&lt;number&gt;, frag=&lt;number&gt;, df, mf, da=&lt;ip4_addr&gt;, sa=&lt;ip4_addr&gt;,</strong> <strong>prot[o]=&lt;number&gt;)</strong></p><p><strong>ver|version</strong> - Version field (default: 4)</p><p><strong>ihl</strong> - Header length in number of 32-bit words (default: 5)</p><p><strong>tos</strong> - Type of Service (ToS) field (default: 0)</p><p><strong>dscp</strong> - Differentiated Services Code Point (DSCP, DiffServ) field (default: 0)</p><p><strong>ecn</strong> - Explicit Congestion Notification (ECN) field (default: 0)</p><p><strong>len|length</strong> - Total length of header and payload (calculated by default)</p><p><strong>id</strong> - IPv4 datagram identification (default: 0)</p><p><strong>flags</strong> - IPv4 flags value (DF, MF) (default: 0)</p><p><strong>df</strong> - Don't fragment (DF) flag (default: 0)</p><p><strong>mf</strong> - More fragments (MF) flag (default: 0)</p><p><strong>frag</strong> - Fragment offset field in number of 8 byte blocks (default: 0)</p><p><strong>ttl</strong> - Time to live (TTL) field (default: 0)</p><p><strong>csum</strong> - Header checksum (calculated by default)</p><p><strong>sa|saddr</strong> - Source IPv4 address (default: device IPv4 address)</p><p><strong>da|daddr</strong> - Destination IPv4 address (default: 0.0.0.0)</p><p><strong>prot|proto</strong> - IPv4 protocol number (default: 0)</p><p>By default, if the lower level header is Ethernet, its EtherType field is set to 0x0800 (IPv4). If the lower level header is IPv4, its protocol field is set to 0x4 (IP-in-IP).</p><p><em>IPv6</em> : <strong>ip6|ipv6(ver=&lt;number&gt;, class=&lt;number&gt;, flow=&lt;number&gt; len=&lt;number&gt;,</strong> <strong>nexthdr=&lt;number&gt;, hoplimit=&lt;number&gt;,</strong> <strong>da=&lt;ip6_addr&gt;, sa=&lt;ip6_addr&gt;)</strong></p><p><strong>ver|version</strong> - Version field (default: 6)</p><p><strong>tc|tclass</strong> - Traffic class (default: 0)</p><p><strong>fl|flow</strong> - Flow label (default: 0)</p><p><strong>len|length</strong> - Payload length (calculated by default)</p><p><strong>nh|nexthdr</strong> - Type of next header, i.e. transport layer protocol number (default: 0)</p><p><strong>hl|hoplimit|ttl</strong> - Hop limit, i.e. time to live (default: 0)</p><p><strong>sa|saddr</strong> - Source IPv6 address (default: device IPv6 address)</p><p><strong>da|daddr</strong> - Destination IPv6 address (default: 0:0:0:0:0:0:0:0)</p><p>By default, if the lower level header is Ethernet, its EtherType field is set to 0x86DD (IPv6).</p><p><em>ICMPv4</em> : <strong>icmp4|icmpv4(type=&lt;number&gt;, code=&lt;number&gt;, echorequest, echoreply,</strong> <strong>csum=&lt;number&gt;, mtu=&lt;number&gt;, seq=&lt;number&gt;, id=&lt;number&gt;, addr=&lt;ip4_addr&gt;)</strong></p><p><strong>type</strong> - Message type (default: 0 - Echo reply)</p><p><strong>code</strong> - Message code (default: 0)</p><p><strong>echorequest</strong> - ICMPv4 echo (ping) request (type: 8, code: 0)</p><p><strong>echoreply</strong> - ICMPv4 echo (ping) reply (type: 0, code: 0)</p><p><strong>csum</strong> - Checksum of ICMPv4 header and payload (calculated by default)</p><p><strong>mtu</strong> - Next-hop MTU field used in 'Datagram is too big' message type (default; 0)</p><p><strong>seq</strong> - Sequence number used in Echo/Timestamp/Address mask messages (default: 0)</p><p><strong>id</strong> - Identifier used in Echo/Timestamp/Address mask messages (default: 0)</p><p><strong>addr</strong> - IPv4 address used in Redirect messages (default: 0.0.0.0)</p><p>Example ICMP echo request (ping):</p><p>{ icmpv4(echorequest, seq=1, id=1326) }</p><p><em>ICMPv6</em> : <strong>icmp6|icmpv6(type=&lt;number&gt;, echorequest, echoreply, code=&lt;number&gt;,</strong> <strong>csum=&lt;number&gt;)</strong></p><p><strong>type</strong> - Message type (default: 0)</p><p><strong>code</strong> - Code (default: 0)</p><p><strong>echorequest</strong> - ICMPv6 echo (ping) request</p><p><strong>echoreply</strong> - ICMPv6 echo (ping) reply</p><p><strong>csum</strong> - Message checksum (calculated by default)</p><p>By default, if the lower level header is IPv6, its Next Header field is set to 58 (ICMPv6).</p><p><em>UDP</em> : <strong>udp(sp=&lt;number&gt;, dp=&lt;number&gt;, len=&lt;number&gt;, csum=&lt;number&gt;)</strong></p><p><strong>sp|sport</strong> - Source port (default: 0)</p><p><strong>dp|dport</strong> - Destination port (default: 0)</p><p><strong>len|length</strong> - Length of UDP header and data (calculated by default)</p><p><strong>csum</strong> - Checksum field over IPv4 pseudo header (calculated by default)</p><p>By default, if the lower level header is IPv4, its protocol field is set to 0x11 (UDP).</p><p><em>TCP</em> : <strong>tcp(sp=&lt;number&gt;, dp=&lt;number&gt;, seq=&lt;number&gt;, aseq|ackseq=&lt;number&gt;, doff|hlen=&lt;number&gt;,</strong> <strong>cwr, ece|ecn, urg, ack, psh, rst, syn, fin, win|window=&lt;number&gt;, csum=&lt;number&gt;,</strong> <strong>urgptr=&lt;number&gt;)</strong></p><p><strong>sp|sport</strong> - Source port (default: 0)</p><p><strong>dp|dport</strong> - Destination port (default: 0)</p><p><strong>seq</strong> - Sequence number (default: 0)</p><p><strong>aseq|ackseq</strong> - Acknowledgement number (default: 0)</p><p><strong>doff|hlen</strong> - Header size (data offset) in number of 32-bit words (default: 5)</p><p><strong>cwr</strong> - Congestion Window Reduced (CWR) flag (default: 0)</p><p><strong>ece|ecn</strong> - ECN-Echo (ECE) flag (default: 0)</p><p><strong>urg</strong> - Urgent flag (default: 0)</p><p><strong>ack</strong> - Acknowledgement flag (default: 0)</p><p><strong>psh</strong> - Push flag (default: 0)</p><p><strong>rst</strong> - Reset flag (default: 0)</p><p><strong>syn</strong> - Synchronize flag (default: 0)</p><p><strong>fin</strong> - Finish flag (default: 0)</p><p><strong>win|window</strong> - Receive window size (default: 0)</p><p><strong>csum</strong> - Checksum field over IPv4 pseudo header (calculated by default)</p><p><strong>urgptr</strong> - Urgent pointer (default: 0)</p><p>By default, if the lower level header is IPv4, its protocol field is set to 0x6 (TCP).</p><p>Simple example of a UDP Echo packet:</p>
-<pre>
-   {
-     eth(da=11:22:33:44:55:66),
-     ipv4(daddr=1.2.3.4)
-     udp(dp=7),
-     "Hello world"
-   }
-</pre>
-<p>Furthermore, there are two types of comments in trafgen configuration files:</p>
+<p>configuration, e.g. const16(0xaa) will result in ''00 aa''. Within c*() functions, it is possible to do some arithmetics: -,+,*,/,%,&,|,&lt;&lt;,&gt;&gt;,^ E.g. const16((((1&lt;&lt;8)+0x32)|0b110)*2) will be evaluated to ''02 6c''.</p><p>Furthermore, there are two types of comments in trafgen configuration files:</p>
 <pre>
   1. Multi-line C-style comments:        /* put comment here */
   2. Single-line Shell-style comments:   #  put comment here
@@ -342,19 +320,6 @@
 <pre>
    [1] http://thread.gmane.org/gmane.linux.network/257155
 </pre>
-<p>The above example rewritten using the header generation functions:</p>
-<pre>
-   {
-     # --- ethernet header ---
-     eth(da=00:1b:21:3c:9d:f8, da=90:e2:ba:0a:56:b4, proto=0x0800)
-     # --- ip header ---
-     ipv4(len=40, id=<strong>drnd</strong>(2), mf, ttl=64, proto=17, sa=192.168.51.1, da=192.168.51.2)
-     # --- udp header ---
-     udp(sport=48054, dport=43514, len=20, csum=0)
-     # payload
-     'A',  fill(0x41, 11),
-   }
-</pre>
 
         </div>
       </section>
@@ -376,8 +341,6 @@
 <p>Send only 1400000 packets using the ''icmp.cfg'' configuration file and then exit trafgen. Select packets randomly from that file for transmission and send them out via ''eth0''. Also, trigger the kernel every 1000us for batching the ring frames from user space (default is 10us).</p>
 <h3>trafgen --dev eth0 --conf tcp_syn.cfg -u `id -u bob` -g `id -g bob`</h3>
 <p>Send out packets generated from the configuration file ''tcp_syn.cfg'' via the ''eth0'' networking device. After setting up the ring for transmission, drop credentials to the non-root user/group bob/bob.</p>
-<h3>trafgen --dev eth0 '{ fill(0xff, 6), 0x00, 0x02, 0xb3, <strong>rnd</strong>(3), c16(0x0800), fill(0xca, 64) }' -n 1</h3>
-<p>Send out 1 invaid IPv4 packet built from command line to all hosts.</p>
 
         </div>
       </section>
@@ -397,7 +360,7 @@
     RPR Trimodal               64:60, 512:20, 1518:20
     RPR Quadrimodal            64:50, 512:15, 1518:15, 9218:20
 </pre>
-<p>The low-level nature of trafgen makes trafgen rather protocol independent and therefore useful in many scenarios when stress testing is needed, for instance. However, if a traffic generator with higher level packet descriptions is desired, netsniff-ng's <a href="../man8/mausezahn.8.html"><strong>mausezahn</strong>(8)</a> can be of good use as well.</p><p>For smoke/fuzz testing with trafgen, it is recommended to have a direct link between the host you want to analyze (''victim'' machine) and the host you run trafgen on (''attacker'' machine). If the ICMP reply from the victim fails, we assume that probably its kernel crashed, thus we print the last sent packet together with the seed and quit probing. It might be very unlikely to find such a ping-of-death on modern Linux systems. However, there might be a good chance to find it on some proprietary (e.g. embedded) systems or buggy driver firmwares that are in the wild. Also, fuzz testing can be done on raw 802.11 frames, of course. In case you find a ping-of-death, please mention that you were using trafgen in your commit message of the fix!</p>
+<p>The low-level nature of trafgen makes trafgen rather protocol independent and therefore useful in many scenarios when stress testing is needed, for instance. However, if a traffic generator with higher level packet descriptions is desired, netsniff-ng's <a href="../man8/mausezahn.8.html"><strong>mausezahn</strong>(8)</a> can be of good use as well.</p><p>For smoke/fuzz testing with trafgen, it is recommended to have a direct link between the host you want to analyze (''victim'' machine) and the host you run trafgen on (''attacker'' machine). If the ICMP reply from the victim fails, we assume that probably its kernel crashed, thus we print the last sent packet togther with the seed and quit probing. It might be very unlikely to find such a ping-of-death on modern Linux systems. However, there might be a good chance to find it on some proprietary (e.g. embedded) systems or buggy driver firmwares that are in the wild. Also, fuzz testing can be done on raw 802.11 frames, of course. In case you find a ping-of-death, please mention that you were using trafgen in your commit message of the fix!</p>
         </div>
       </section>
 
@@ -444,8 +407,8 @@
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="togglesebool.8.html"><span aria-hidden="true">&larr;</span> togglesebool.8: Flip the current value of a selinux boolean</a></li>
-   <li class="next"><a href="tunelp.8.html">tunelp.8: Set various parameters for the lp device <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="tracert6.8.html"><span aria-hidden="true">&larr;</span> tracert6.8: Ipv6 traceroute tool  tcptraceroute6 - tcp/ipv6 traceroute tool</a></li>
+   <li class="next"><a href="tricklectl.8.html">tricklectl.8: Control utility for trickled <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

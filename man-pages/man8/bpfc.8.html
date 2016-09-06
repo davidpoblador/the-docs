@@ -111,7 +111,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>bpfc is a small Berkeley Packet Filter assembler and compiler which is able to translate BPF assembler-like mnemonics into a numerical or C-like format, that can be read by tools such as netsniff-ng, iptables (xt_bpf) and many others. BPF is the one and only upstream filtering construct that is used in combination with <a href="../man7/packet.7.html"><strong>packet</strong>(7)</a> sockets, but also seccomp-BPF for system call sandboxing.</p><p>The Linux kernel and also BSD kernels implement "virtual machine" like constructs and JIT compilers that mimic a small register-based machine in BPF architecture and execute filter code that is, for example, composed by bpfc on a data buffer that is given by network packets. The purpose of this is to shift computation in time, so that the kernel can drop or truncate incoming packets as early as possible without having to push them to user space for further analysis first. Meanwhile, BPF constructs also find application in other areas such as in the communication between user and kernel space like system call sand-boxing.</p><p>At the time of writing this man page, the only other available BPF compiler is part of the <strong>pcap</strong>(3) library and accessible through a high-level filter language that might be familiar to many people as tcpdump-like filters.</p><p>However, it is quite often useful to bypass that compiler and write optimized code that cannot be produced by the <strong>pcap</strong>(3) compiler, or is wrongly optimized, or is defective on purpose in order to debug test kernel code. Also, a reason to use bpfc could be to try out some new BPF extensions that are not supported by other compilers. Furthermore, bpfc can be useful to verify JIT compiler behavior or to find possible bugs that need to be fixed.</p><p>bpfc is implemented with the help of <strong>flex</strong>(1) and <strong>bison</strong>(1), tokenizes the source file in the first stage and parses its content into an AST. In two code generation stages it emits target opcodes. bpfc furthermore supports Linux kernel BPF extensions. More about that can be found in the syntax section.</p><p>The Linux kernel BPF JIT compiler is automatically turned on if detected by netsniff-ng. However, it can also be manually turned on through the command ''echo "1" &gt; /proc/sys/net/core/bpf_jit_enable'' (normal working mode) or ''echo "2" &gt; /proc/sys/net/core/bpf_jit_enable'' (debug mode where emitted opcodes of the image are printed to the kernel log). An architecture agnostic BPF JIT image disassembler can be found in the kernel source tree under ''tools/net/bpf_jit_disasm.c'' or within the netsniff-ng Git repository.</p>
+<p>bpfc is a small Berkeley Packet Filter assembler and compiler which is able to translate BPF assembler-like mnemonics into a numerical or C-like format, that can be read by tools such as netsniff-ng, iptables (xt_bpf) and many others. BPF is the one and only upstream filtering construct that is used in combination with <a href="../man7/packet.7.html"><strong>packet</strong>(7)</a> sockets, but also seccomp-BPF for system call sandboxing.</p><p>The Linux kernel and also BSD kernels implement "virtual machine" like constructs and JIT compilers that mimic a small register-based machine in BPF architecture and execute filter code that is, for example, composed by bpfc on a data buffer that is given by network packets. The purpose of this is to shift computation in time, so that the kernel can drop or truncate incoming packets as early as possible without having to push them to user space for further analysis first. Meanwhile, BPF constructs also find application in other areas such as in the communication between user and kernel space like system call sand-boxing.</p><p>At the time of writing this man page, the only other available BPF compiler is part of the <strong>pcap</strong>(3) library and accessible through a high-level filter language that might be familiar to many people as tcpdump-like filters.</p><p>However, it is quite often useful to bypass that compiler and write optimized code that cannot be produced by the <strong>pcap</strong>(3) compiler, or is wrongly optimized, or is defective on purpose in order to debug test kernel code. Also, a reason to use bpfc could be to try out some new BPF extensions that are not supported by other compilers. Furthermore, bpfc can be useful to verify JIT compiler behavior or to find possible bugs that need to be fixed.</p><p>bpfc is implemented with the help of <a href="../man1/flex.1.html"><strong>flex</strong>(1)</a> and <a href="../man1/bison.1.html"><strong>bison</strong>(1)</a>, tokenizes the source file in the first stage and parses its content into an AST. In two code generation stages it emits target opcodes. bpfc furthermore supports Linux kernel BPF extensions. More about that can be found in the syntax section.</p><p>The Linux kernel BPF JIT compiler is automatically turned on if detected by netsniff-ng. However, it can also be manually turned on through the command ''echo "1" &gt; /proc/sys/net/core/bpf_jit_enable'' (normal working mode) or ''echo "2" &gt; /proc/sys/net/core/bpf_jit_enable'' (debug mode where emitted opcodes of the image are printed to the kernel log). An architecture agnostic BPF JIT image disassembler can be found in the kernel source tree under ''tools/net/bpf_jit_disasm.c'' or within the netsniff-ng Git repository.</p>
         </div>
       </section>
 
@@ -122,8 +122,6 @@
 <p>Read BPF assembly instruction from an input file or from stdin.</p>
 <h3>-p, --cpp</h3>
 <p>Pass the bpf program through the C preprocessor before reading it in bpfc. This allows #define and #include directives (e.g. to include definitions from system headers) to be used in the bpf program.</p>
-<h3>-D &lt;name&gt;=&lt;definition&gt;, --define &lt;name&gt;=&lt;definition&gt;</h3>
-<p>Add macro definition for the C preprocessor to use it within bpf file. This option is used in combination with the -p,--cpp option.</p>
 <h3>-f &lt;format&gt;, --format &lt;format&gt;</h3>
 <p>Specify a different output format than the default that is netsniff-ng compatible. The &lt;format&gt; specifier can be: C, netsniff-ng, xt_bpf, tcpdump.</p>
 <h3>-b, --bypass</h3>
@@ -392,42 +390,6 @@
   drop: ret #0
 </pre>
 
-<h3>Filter rtnetlink messages</h3>
-
-<pre>
-  ldh #proto       /* A = skb-&gt;protocol */
-</pre>
-
-<pre>
-  jneq #0, skip    /* check for NETLINK_ROUTE */
-  ldb [4]          /* A = nlmsg_type */
-</pre>
-
-<pre>
-  jneq #0x10, skip /* check type == RTNL_NEWLINK */
-  ldx #16          /* X = offset(ifinfomsg) */
-</pre>
-
-<pre>
-  ldb [x + 4]      /* offset(ifi_index) */
-  jneq #0x3, skip  /* check ifindex == 3 */
-</pre>
-
-<pre>
-  ld #32           /* A = len(nlmsghdr) + len(ifinfomsg), payload offset */
-  ldx #16          /* X = IFLA_OPERSTATE */
-  ld #nla          /* A = offset(IFLA_OPERSTATE) */
-  jeq #0, skip
-  tax
-  ldb [x + 4]      /* A = value(IFLA_OPERSTATE) */
-  jneq #0x6, skip  /* check oper state is UP */
-</pre>
-
-<pre>
-  ret #-1
-  skip: ret #0
-</pre>
-
 
         </div>
       </section>
@@ -485,8 +447,8 @@
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="booleans.8.html"><span aria-hidden="true">&larr;</span> booleans.8: Policy booleans enable runtime customization of selinux policy</a></li>
-   <li class="next"><a href="bridge.8.html">bridge.8: Show / manipulate bridge addresses and devices <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="bootptest.8.html"><span aria-hidden="true">&larr;</span> bootptest.8: Send bootp queries and print responses</a></li>
+   <li class="next"><a href="bpluginfo.8.html">bpluginfo.8: Bareos plugin information utility <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

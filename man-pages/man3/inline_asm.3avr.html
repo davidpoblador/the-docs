@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>inline_asm: Inline assembler cookbook avr-gcc   inline assembler cookbook  about this document  the gnu c compiler for atmel avr risc processors offers, to embed assembly language code into c programs. this cool feature may be used for manually optimizing time critical parts of the software or to use specific processor instruction, which are not available in the c language.  because of a lack of documentation, especially for the avr version of the compiler, it may take some time to figure out the implementation details by studying the compiler and assembler source code. there are also a few sample programs available in the net. hopefully this document will help to increase their number.  it's assumed, that you are familiar with writing avr assembler programs, because this is not an avr assembler programming tutorial. it's not a c language tutorial either.  note that this document does not cover file written completely in assembler language, refer to avr-libc and assembler programs for this.  copyright (c) 2001-2002 by egnite software gmbh  permission is granted to copy and distribute verbatim copies of this manual provided that the copyright notice and this permission notice are preserved on all copies. permission is granted to copy and distribute modified versions of this manual provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.  this document describes version 3.3 of the compiler. there may be some parts, which hadn't been completely understood by the author himself and not all samples had been tested so far. because the author is german and not familiar with the english language, there are definitely some typos and syntax errors in the text. as a programmer the author knows, that a wrong documentation sometimes might be worse than none. anyway, he decided to offer his little knowledge to the public, in the hope to get enough response to improve this document. feel free to contact the author via e-mail. for the latest release check http://www.ethernut.de/.  herne, 17th of may 2002 harald kipp harald.kipp-at-egnite.de  note: as of 26th of july 2002, this document has been merged into the documentation for avr-libc. the latest version is now available at http://savannah.nongnu.org/projects/avr-libc/.</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Inline assembler cookbook avr-gcc   inline assembler cookbook  about this document  the gnu c compiler for atmel avr risc processors offers, to embed assembly language code into c programs. this cool feature may be used for manually optimizing time critical parts of the software or to use specific processor instruction, which are not available in the c language.  because of a lack of documentation, especially for the avr version of the compiler, it may take some time to figure out the implementation details by studying the compiler and assembler source code. there are also a few sample programs available in the net. hopefully this document will help to increase their number.  it's assumed, that you are familiar with writing avr assembler programs, because this is not an avr assembler programming tutorial. it's not a c language tutorial either.  note that this document does not cover file written completely in assembler language, refer to avr-libc and assembler programs for this.  copyright (c) 2001-2002 by egnite software gmbh  permission is granted to copy and distribute verbatim copies of this manual provided that the copyright notice and this permission notice are preserved on all copies. permission is granted to copy and distribute modified versions of this manual provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.  this document describes version 3.3 of the compiler. there may be some parts, which hadn't been completely understood by the author himself and not all samples had been tested so far. because the author is german and not familiar with the english language, there are definitely some typos and syntax errors in the text. as a programmer the author knows, that a wrong documentation sometimes might be worse than none. anyway, he decided to offer his little knowledge to the public, in the hope to get enough response to improve this document. feel free to contact the author via e-mail. for the latest release check http://www.ethernut.de/.  herne, 17th of may 2002 harald kipp harald.kipp-at-egnite.de  note: as of 26th of july 2002, this document has been merged into the documentation for avr-libc. the latest version is now available at http://savannah.nongnu.org/projects/avr-libc/.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@CartaTech">
+  <meta name="twitter:creator" content="@CartaTech">
+  <meta name="twitter:title" content="inline_asm (3avr) manual">
+  <meta name="twitter:description" content="Inline assembler cookbook avr-gcc   inline assembler cookbook  about this document  the gnu c compiler for atmel avr risc processors offers, to embed assembly language code into c programs. this cool feature may be used for manually optimizing time critical parts of the software or to use specific processor instruction, which are not available in the c language.  because of a lack of documentation, especially for the avr version of the compiler, it may take some time to figure out the implementation details by studying the compiler and assembler source code. there are also a few sample programs available in the net. hopefully this document will help to increase their number.  it's assumed, that you are familiar with writing avr assembler programs, because this is not an avr assembler programming tutorial. it's not a c language tutorial either.  note that this document does not cover file written completely in assembler language, refer to avr-libc and assembler programs for this.  copyright (c) 2001-2002 by egnite software gmbh  permission is granted to copy and distribute verbatim copies of this manual provided that the copyright notice and this permission notice are preserved on all copies. permission is granted to copy and distribute modified versions of this manual provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.  this document describes version 3.3 of the compiler. there may be some parts, which hadn't been completely understood by the author himself and not all samples had been tested so far. because the author is german and not familiar with the english language, there are definitely some typos and syntax errors in the text. as a programmer the author knows, that a wrong documentation sometimes might be worse than none. anyway, he decided to offer his little knowledge to the public, in the hope to get enough response to improve this document. feel free to contact the author via e-mail. for the latest release check http://www.ethernut.de/.  herne, 17th of may 2002 harald kipp harald.kipp-at-egnite.de  note: as of 26th of july 2002, this document has been merged into the documentation for avr-libc. the latest version is now available at http://savannah.nongnu.org/projects/avr-libc/.">
+  <meta name="twitter:image" content="https://www.carta.tech/images/avr-libc-inline_asm-3avr.png">
+  <meta property="og:url" content="https://www.carta.tech/man-pages/man3avr/inline_asm.3avr.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="inline_asm (3avr) manual" />
+  <meta property="og:description" content="Inline assembler cookbook avr-gcc   inline assembler cookbook  about this document  the gnu c compiler for atmel avr risc processors offers, to embed assembly language code into c programs. this cool feature may be used for manually optimizing time critical parts of the software or to use specific processor instruction, which are not available in the c language.  because of a lack of documentation, especially for the avr version of the compiler, it may take some time to figure out the implementation details by studying the compiler and assembler source code. there are also a few sample programs available in the net. hopefully this document will help to increase their number.  it's assumed, that you are familiar with writing avr assembler programs, because this is not an avr assembler programming tutorial. it's not a c language tutorial either.  note that this document does not cover file written completely in assembler language, refer to avr-libc and assembler programs for this.  copyright (c) 2001-2002 by egnite software gmbh  permission is granted to copy and distribute verbatim copies of this manual provided that the copyright notice and this permission notice are preserved on all copies. permission is granted to copy and distribute modified versions of this manual provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.  this document describes version 3.3 of the compiler. there may be some parts, which hadn't been completely understood by the author himself and not all samples had been tested so far. because the author is german and not familiar with the english language, there are definitely some typos and syntax errors in the text. as a programmer the author knows, that a wrong documentation sometimes might be worse than none. anyway, he decided to offer his little knowledge to the public, in the hope to get enough response to improve this document. feel free to contact the author via e-mail. for the latest release check http://www.ethernut.de/.  herne, 17th of may 2002 harald kipp harald.kipp-at-egnite.de  note: as of 26th of july 2002, this document has been merged into the documentation for avr-libc. the latest version is now available at http://savannah.nongnu.org/projects/avr-libc/." />
+  <meta property="fb:app_id" content="1241677679199500" />
+  <meta property="og:image" content="https://www.carta.tech/images/avr-libc-inline_asm-3avr.png" />
+  <meta property="og:image:width" content="600" />
+  <meta property="og:image:height" content="315" />
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">inline_asm<small> (3avr)</small></h1>
+        <p class="lead">Inline assembler cookbook avr-gcc   inline assembler cookbook  about this document  the gnu c compiler for atmel avr risc processors offers, to embed assembly language code into c programs. this cool feature may be used for manually optimizing time critical parts of the software or to use specific processor instruction, which are not available in the c language.  because of a lack of documentation, especially for the avr version of the compiler, it may take some time to figure out the implementation details by studying the compiler and assembler source code. there are also a few sample programs available in the net. hopefully this document will help to increase their number.  it's assumed, that you are familiar with writing avr assembler programs, because this is not an avr assembler programming tutorial. it's not a c language tutorial either.  note that this document does not cover file written completely in assembler language, refer to avr-libc and assembler programs for this.  copyright (c) 2001-2002 by egnite software gmbh  permission is granted to copy and distribute verbatim copies of this manual provided that the copyright notice and this permission notice are preserved on all copies. permission is granted to copy and distribute modified versions of this manual provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.  this document describes version 3.3 of the compiler. there may be some parts, which hadn't been completely understood by the author himself and not all samples had been tested so far. because the author is german and not familiar with the english language, there are definitely some typos and syntax errors in the text. as a programmer the author knows, that a wrong documentation sometimes might be worse than none. anyway, he decided to offer his little knowledge to the public, in the hope to get enough response to improve this document. feel free to contact the author via e-mail. for the latest release check http://www.ethernut.de/.  herne, 17th of may 2002 harald kipp harald.kipp-at-egnite.de  note: as of 26th of july 2002, this document has been merged into the documentation for avr-libc. the latest version is now available at http://savannah.nongnu.org/projects/avr-libc/.</p>
+      </div>
+
+    <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/">
+      <span itemprop="name">Carta.tech</span>
+    </a>
+    <meta itemprop="position" content="1" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/">
+      <span itemprop="name">Man Pages</span>
+    </a>
+    <meta itemprop="position" content="2" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3avr/">
+      <span itemprop="name">MISSING SECTION</span>
+    </a>
+    <meta itemprop="position" content="3" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3avr/inline_asm.3avr.html">
+      <span itemprop="name">inline_asm: Inline assembler cookbook avr-gcc   inline assembler cookbook  about this document  the gnu c compiler for atmel avr risc processors offers, to embed assembly language code into c programs. this cool feature may be used for manually optimizing time critical parts of the software or to use specific processor instruction, which are not available in the c language.  because of a lack of documentation, especially for the avr version of the compiler, it may take some time to figure out the implementation details by studying the compiler and assembler source code. there are also a few sample programs available in the net. hopefully this document will help to increase their number.  it's assumed, that you are familiar with writing avr assembler programs, because this is not an avr assembler programming tutorial. it's not a c language tutorial either.  note that this document does not cover file written completely in assembler language, refer to avr-libc and assembler programs for this.  copyright (c) 2001-2002 by egnite software gmbh  permission is granted to copy and distribute verbatim copies of this manual provided that the copyright notice and this permission notice are preserved on all copies. permission is granted to copy and distribute modified versions of this manual provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.  this document describes version 3.3 of the compiler. there may be some parts, which hadn't been completely understood by the author himself and not all samples had been tested so far. because the author is german and not familiar with the english language, there are definitely some typos and syntax errors in the text. as a programmer the author knows, that a wrong documentation sometimes might be worse than none. anyway, he decided to offer his little knowledge to the public, in the hope to get enough response to improve this document. feel free to contact the author via e-mail. for the latest release check http://www.ethernut.de/.  herne, 17th of may 2002 harald kipp harald.kipp-at-egnite.de  note: as of 26th of july 2002, this document has been merged into the documentation for avr-libc. the latest version is now available at http://savannah.nongnu.org/projects/avr-libc/.</span>
+    </a>
+    <meta itemprop="position" content="4" />
+  </li>
+</ol>
+<ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/">
+      <span itemprop="name">Carta.tech</span>
+    </a>
+    <meta itemprop="position" content="1" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/">
+      <span itemprop="name">Packages</span>
+    </a>
+    <meta itemprop="position" content="2" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/avr-libc/">
+      <span itemprop="name">avr-libc</span>
+    </a>
+    <meta itemprop="position" content="3" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3avr/inline_asm.3avr.html">
+      <span itemprop="name">inline_asm: Inline assembler cookbook avr-gcc   inline assembler cookbook  about this document  the gnu c compiler for atmel avr risc processors offers, to embed assembly language code into c programs. this cool feature may be used for manually optimizing time critical parts of the software or to use specific processor instruction, which are not available in the c language.  because of a lack of documentation, especially for the avr version of the compiler, it may take some time to figure out the implementation details by studying the compiler and assembler source code. there are also a few sample programs available in the net. hopefully this document will help to increase their number.  it's assumed, that you are familiar with writing avr assembler programs, because this is not an avr assembler programming tutorial. it's not a c language tutorial either.  note that this document does not cover file written completely in assembler language, refer to avr-libc and assembler programs for this.  copyright (c) 2001-2002 by egnite software gmbh  permission is granted to copy and distribute verbatim copies of this manual provided that the copyright notice and this permission notice are preserved on all copies. permission is granted to copy and distribute modified versions of this manual provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.  this document describes version 3.3 of the compiler. there may be some parts, which hadn't been completely understood by the author himself and not all samples had been tested so far. because the author is german and not familiar with the english language, there are definitely some typos and syntax errors in the text. as a programmer the author knows, that a wrong documentation sometimes might be worse than none. anyway, he decided to offer his little knowledge to the public, in the hope to get enough response to improve this document. feel free to contact the author via e-mail. for the latest release check http://www.ethernut.de/.  herne, 17th of may 2002 harald kipp harald.kipp-at-egnite.de  note: as of 26th of july 2002, this document has been merged into the documentation for avr-libc. the latest version is now available at http://savannah.nongnu.org/projects/avr-libc/.</span>
+    </a>
+    <meta itemprop="position" content="4" />
+  </li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">GCC asm Statement</h2>
+        <div class="sectioncontent">
+<p>Let's start with a simple example of reading a value from port D:</p>
+<pre>
+asm("in %0, %1" : "=r" (value) : "I" (_SFR_IO_ADDR(PORTD)) );
+</pre>
+<p>Each asm statement is devided by colons into (up to) four parts:</p>
+<dl class='dl-vertical'>
+  <dt>
+    1.
+  </dt>
+  <dd>
+    <p>The assembler instructions, defined as a single string constant:</p>
+  </dd>
+
+</dl>
+
+<pre>
+"in %0, %1"
+
+</pre>
+
+<dl class='dl-vertical'>
+  <dt>
+    2.
+  </dt>
+  <dd>
+    <p>A list of output operands, separated by commas. Our example uses just one:</p>
+  </dd>
+
+</dl>
+
+<pre>
+"=r" (value)
+
+</pre>
+
+<dl class='dl-vertical'>
+  <dt>
+    3.
+  </dt>
+  <dd>
+    <p>A comma separated list of input operands. Again our example uses one operand only:</p>
+  </dd>
+
+</dl>
+
+<pre>
+"I" (_SFR_IO_ADDR(PORTD))
+
+</pre>
+
+<dl class='dl-vertical'>
+  <dt>
+    4.
+  </dt>
+  <dd>
+    <p>Clobbered registers, left empty in our example.</p>
+  </dd>
+
+</dl>
+<p>You can write assembler instructions in much the same way as you would write assembler programs. However, registers and constants are used in a different way if they refer to expressions of your C program. The connection between registers and C operands is specified in the second and third part of the asm instruction, the list of input and output operands, respectively. The general form is</p>
+<pre>
+asm(code : output operand list : input operand list [: clobber list]);
+</pre>
+<p>In the code section, operands are referenced by a percent sign followed by a single digit. %0 refers to the first %1 to the second operand and so forth. From the above example:</p><p>%0 refers to '=r' (value) and</p><p> %1 refers to 'I' (_SFR_IO_ADDR(PORTD)).</p><p>This may still look a little odd now, but the syntax of an operand list will be explained soon. Let us first examine the part of a compiler listing which may have been generated from our example:</p>
+<pre>
+        lds r24,value
+/* #APP */
+        in r24, 12
+/* #NOAPP */
+        sts value,r24
+</pre>
+<p>The comments have been added by the compiler to inform the assembler that the included code was not generated by the compilation of C statements, but by inline assembler statements. The compiler selected register r24 for storage of the value read from PORTD. The compiler could have selected any other register, though. It may not explicitely load or store the value and it may even decide not to include your assembler code at all. All these decisions are part of the compiler's optimization strategy. For example, if you never use the variable value in the remaining part of the C program, the compiler will most likely remove your code unless you switched off optimization. To avoid this, you can add the volatile attribute to the asm statement:</p>
+<pre>
+asm volatile("in %0, %1" : "=r" (value) : "I" (_SFR_IO_ADDR(PORTD)));
+</pre>
+<p>Alternatively, operands can be given names. The name is prepended in brackets to the constraints in the operand list, and references to the named operand use the bracketed name instead of a number after the % sign. Thus, the above example could also be written as</p>
+<pre>
+asm("in %[retval], %[port]" :
+    [retval] "=r" (value) :
+    [port] "I" (_SFR_IO_ADDR(PORTD)) );
+</pre>
+<p>The last part of the asm instruction, the clobber list, is mainly used to tell the compiler about modifications done by the assembler code. This part may be omitted, all other parts are required, but may be left empty. If your assembler routine won't use any input or output operand, two colons must still follow the assembler code string. A good example is a simple statement to disable interrupts:</p>
+<pre>
+asm volatile("cli"::);
+</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">Assembler Code</h2>
+        <div class="sectioncontent">
+<p>You can use the same assembler instruction mnemonics as you'd use with any other AVR assembler. And you can write as many assembler statements into one code string as you like and your flash memory is able to hold.</p><p><strong>Note:</strong></p><p>The available assembler directives vary from one assembler to another.</p><p>To make it more readable, you should put each statement on a seperate line:</p>
+<pre>
+asm volatile("nop\n\t"
+             "nop\n\t"
+             "nop\n\t"
+             "nop\n\t"
+             ::);
+</pre>
+<p>The linefeed and tab characters will make the assembler listing generated by the compiler more readable. It may look a bit odd for the first time, but that's the way the compiler creates it's own assembler code.</p><p>You may also make use of some special registers.</p><p><strong>Symbol</strong> <strong>Register</strong>  __SREG__<strong> Status register at address 0x3F  __SP_H__</strong> Stack pointer high byte at address 0x3E  __SP_L__<strong> Stack pointer low byte at address 0x3D  __tmp_reg__</strong> Register r0, used for temporary storage  __zero_reg__<strong> Register r1, always zero</strong></p><p>Register r0 may be freely used by your assembler code and need not be restored at the end of your code. It's a good idea to use <strong>tmp_reg</strong><strong> and </strong><strong>zero_reg</strong><strong></strong><strong> instead of r0</strong><strong> or r1</strong><strong>, just in case a new compiler version changes the register usage definitions.</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">Input and Output Operands</h2>
+        <div class="sectioncontent">
+<p>Each input and output operand is described by a constraint string followed by a C expression in parantheses. AVR-GCC 3.3 knows the following constraint characters:</p><p><strong>Note:</strong></p><p>The most up-to-date and detailed information on contraints for the avr can be found in the gcc manual.</p><p>The x register is r27:r26, the y register is r29:r28, and the z register is r31:r30</p><p><strong>Constraint</strong><strong>Used for</strong><strong>Range</strong> aSimple upper registersr16 to r23 bBase pointer registers pairsy, z dUpper registerr16 to r31 ePointer register pairsx, y, z qStack pointer registerSPH:SPL rAny registerr0 to r31 tTemporary registerr0 wSpecial upper register pairsr24, r26, r28, r30 xPointer register pair Xx (r27:r26) yPointer register pair Yy (r29:r28) zPointer register pair Zz (r31:r30) GFloating point constant0.0 I6-bit positive integer constant0 to 63 J6-bit negative integer constant-63 to 0 KInteger constant2 LInteger constant0 lLower registersr0 to r15 M8-bit integer constant0 to 255 NInteger constant-1 OInteger constant8, 16, 24 PInteger constant1 Q(GCC &gt;= 4.2.x) A memory address based on Y or Z pointer with displacement.  R(GCC &gt;= 4.3.x) Integer constant.-6 to 5</p><p>The selection of the proper contraint depends on the range of the constants or registers, which must be acceptable to the AVR instruction they are used with. The C compiler doesn't check any line of your assembler code. But it is able to check the constraint against your C expression. However, if you specify the wrong constraints, then the compiler may silently pass wrong code to the assembler. And, of course, the assembler will fail with some cryptic output or internal errors. For example, if you specify the constraint 'r' and you are using this register with an 'ori' instruction in your assembler code, then the compiler may select any register. This will fail, if the compiler chooses r2 to r15. (It will never choose r0 or r1, because these are uses for special purposes.) That's why the correct constraint in that case is 'd'. On the other hand, if you use the constraint 'M', the compiler will make sure that you don't pass anything else but an 8-bit value. Later on we will see how to pass multibyte expression results to the assembler code.</p><p>The following table shows all AVR assembler mnemonics which require operands, and the related contraints. Because of the improper constraint definitions in version 3.3, they aren't strict enough. There is, for example, no constraint, which restricts integer constants to the range 0 to 7 for bit set and bit clear operations.</p><p><strong>Mnemonic</strong> <strong>Constraints</strong> <strong>Mnemonic</strong> <strong>Constraints</strong>  adc r,r add r,r  adiw w,I and r,r  andi d,M asr r  bclr I bld r,I  brbc I,label brbs I,label  bset I bst r,I  cbi I,I cbr d,I  com r cp r,r  cpc r,r cpi d,M  cpse r,r dec r  elpm t,z eor r,r  in r,I inc r  ld r,e ldd r,b  ldi d,M lds r,label  lpm t,z lsl r  lsr r mov r,r  movw r,r mul r,r  neg r or r,r  ori d,M out I,r  pop r push r  rol r ror r  sbc r,r sbci d,M  sbi I,I sbic I,I  sbiw w,I sbr d,M  sbrc r,I sbrs r,I  ser d st e,r  std b,r sts label,r  sub r,r subi d,M  swap r</p><p>Constraint characters may be prepended by a single constraint modifier. Contraints without a modifier specify read-only operands. Modifiers are:</p><p><strong>Modifier</strong> <strong>Specifies</strong>  = Write-only operand, usually used for all output operands.  + Read-write operand  & Register should be used for output only</p><p>Output operands must be write-only and the C expression result must be an lvalue, which means that the operands must be valid on the left side of assignments. Note, that the compiler will not check if the operands are of reasonable type for the kind of operation used in the assembler instructions.</p><p>Input operands are, you guessed it, read-only. But what if you need the same operand for input and output? As stated above, read-write operands are not supported in inline assembler code. But there is another solution. For input operators it is possible to use a single digit in the constraint string. Using digit n tells the compiler to use the same register as for the n-th operand, starting with zero. Here is an example:</p>
+<pre>
+asm volatile("swap %0" : "=r" (value) : "0" (value));
+</pre>
+<p>This statement will swap the nibbles of an 8-bit variable named value. Constraint '0' tells the compiler, to use the same input register as for the first operand. Note however, that this doesn't automatically imply the reverse case. The compiler may choose the same registers for input and output, even if not told to do so. This is not a problem in most cases, but may be fatal if the output operator is modified by the assembler code before the input operator is used. In the situation where your code depends on different registers used for input and output operands, you must add the & constraint modifier to your output operand. The following example demonstrates this problem:</p>
+<pre>
+asm volatile("in %0,%1"    "\n\t"
+             "out %1, %2"  "\n\t"
+             : "=&r" (input)
+             : "I" (_SFR_IO_ADDR(port)), "r" (output)
+            );
+</pre>
+<p>In this example an input value is read from a port and then an output value is written to the same port. If the compiler would have choosen the same register for input and output, then the output value would have been destroyed on the first assembler instruction. Fortunately, this example uses the & constraint modifier to instruct the compiler not to select any register for the output value, which is used for any of the input operands. Back to swapping. Here is the code to swap high and low byte of a 16-bit value:</p>
+<pre>
+asm volatile("mov __tmp_reg__, %A0" "\n\t"
+             "mov %A0, %B0"         "\n\t"
+             "mov %B0, __tmp_reg__" "\n\t"
+             : "=r" (value)
+             : "0" (value)
+            );
+</pre>
+<p>First you will notice the usage of register __tmp_reg__, which we listed among other special registers in the <strong>Assembler Code</strong> section. You can use this register without saving its contents. Completely new are those letters A<strong> and B</strong> in %A0<strong> and %B0</strong>. In fact they refer to two different 8-bit registers, both containing a part of value.</p><p>Another example to swap bytes of a 32-bit value:</p>
+<pre>
+asm volatile("mov __tmp_reg__, %A0" "\n\t"
+             "mov %A0, %D0"         "\n\t"
+             "mov %D0, __tmp_reg__" "\n\t"
+             "mov __tmp_reg__, %B0" "\n\t"
+             "mov %B0, %C0"         "\n\t"
+             "mov %C0, __tmp_reg__" "\n\t"
+             : "=r" (value)
+             : "0" (value)
+            );
+</pre>
+<p>Instead of listing the same operand as both, input and output operand, it can also be declared as a read-write operand. This must be applied to an output operand, and the respective input operand list remains empty:</p>
+<pre>
+asm volatile("mov __tmp_reg__, %A0" "\n\t"
+             "mov %A0, %D0"         "\n\t"
+             "mov %D0, __tmp_reg__" "\n\t"
+             "mov __tmp_reg__, %B0" "\n\t"
+             "mov %B0, %C0"         "\n\t"
+             "mov %C0, __tmp_reg__" "\n\t"
+             : "+r" (value));
+</pre>
+<p>If operands do not fit into a single register, the compiler will automatically assign enough registers to hold the entire operand. In the assembler code you use %A0 to refer to the lowest byte of the first operand, %A1 to the lowest byte of the second operand and so on. The next byte of the first operand will be %B0, the next byte %C0 and so on.</p><p>This also implies, that it is often neccessary to cast the type of an input operand to the desired size.</p><p>A final problem may arise while using pointer register pairs. If you define an input operand</p>
+<pre>
+"e" (ptr)
+</pre>
+<p>and the compiler selects register Z (r30:r31), then</p><p>%A0 refers to r30 and</p><p> %B0 refers to r31.</p><p>But both versions will fail during the assembly stage of the compiler, if you explicitely need Z, like in</p>
+<pre>
+ld r24,Z
+</pre>
+<p>If you write</p>
+<pre>
+ld r24, %a0
+</pre>
+<p>with a lower case a following the percent sign, then the compiler will create the proper assembler line.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">Clobbers</h2>
+        <div class="sectioncontent">
+<p>As stated previously, the last part of the asm statement, the list of clobbers, may be omitted, including the colon seperator. However, if you are using registers, which had not been passed as operands, you need to inform the compiler about this. The following example will do an atomic increment. It increments an 8-bit value pointed to by a pointer variable in one go, without being interrupted by an interrupt routine or another thread in a multithreaded environment. Note, that we must use a pointer, because the incremented value needs to be stored before interrupts are enabled.</p>
+<pre>
+asm volatile(
+    "cli"               "\n\t"
+    "ld r24, %a0"       "\n\t"
+    "inc r24"           "\n\t"
+    "st %a0, r24"       "\n\t"
+    "sei"               "\n\t"
+    :
+    : "e" (ptr)
+    : "r24"
+);
+</pre>
+<p>The compiler might produce the following code:</p>
+<pre>
+cli
+ld r24, Z
+inc r24
+st Z, r24
+sei
+</pre>
+<p>One easy solution to avoid clobbering register r24 is, to make use of the special temporary register <strong>tmp_reg</strong><strong> defined by the compiler.</strong></p>
+<pre>
+asm volatile(
+    "cli"                       "\n\t"
+    "ld __tmp_reg__, %a0"       "\n\t"
+    "inc __tmp_reg__"           "\n\t"
+    "st %a0, __tmp_reg__"       "\n\t"
+    "sei"                       "\n\t"
+    :
+    : "e" (ptr)
+);
+</pre>
+<p>The compiler is prepared to reload this register next time it uses it. Another problem with the above code is, that it should not be called in code sections, where interrupts are disabled and should be kept disabled, because it will enable interrupts at the end. We may store the current status, but then we need another register. Again we can solve this without clobbering a fixed, but let the compiler select it. This could be done with the help of a local C variable.</p>
+<pre>
+{
+    uint8_t s;
+    asm volatile(
+        "in %0, __SREG__"           "\n\t"
+        "cli"                       "\n\t"
+        "ld __tmp_reg__, %a1"       "\n\t"
+        "inc __tmp_reg__"           "\n\t"
+        "st %a1, __tmp_reg__"       "\n\t"
+        "out __SREG__, %0"          "\n\t"
+        : "=&r" (s)
+        : "e" (ptr)
+    );
+}
+</pre>
+<p>Now every thing seems correct, but it isn't really. The assembler code modifies the variable, that ptr points to. The compiler will not recognize this and may keep its value in any of the other registers. Not only does the compiler work with the wrong value, but the assembler code does too. The C program may have modified the value too, but the compiler didn't update the memory location for optimization reasons. The worst thing you can do in this case is:</p>
+<pre>
+{
+    uint8_t s;
+    asm volatile(
+        "in %0, __SREG__"           "\n\t"
+        "cli"                       "\n\t"
+        "ld __tmp_reg__, %a1"       "\n\t"
+        "inc __tmp_reg__"           "\n\t"
+        "st %a1, __tmp_reg__"       "\n\t"
+        "out __SREG__, %0"          "\n\t"
+        : "=&r" (s)
+        : "e" (ptr)
+        : "memory"
+    );
+}
+</pre>
+<p>The special clobber 'memory' informs the compiler that the assembler code may modify any memory location. It forces the compiler to update all variables for which the contents are currently held in a register before executing the assembler code. And of course, everything has to be reloaded again after this code.</p><p>In most situations, a much better solution would be to declare the pointer destination itself volatile:</p>
+<pre>
+volatile uint8_t *ptr;
+</pre>
+<p>This way, the compiler expects the value pointed to by ptr to be changed and will load it whenever used and store it whenever modified.</p><p>Situations in which you need clobbers are very rare. In most cases there will be better ways. Clobbered registers will force the compiler to store their values before and reload them after your assembler code. Avoiding clobbers gives the compiler more freedom while optimizing your code.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">Assembler Macros</h2>
+        <div class="sectioncontent">
+<p>In order to reuse your assembler language parts, it is useful to define them as macros and put them into include files. AVR Libc comes with a bunch of them, which could be found in the directory avr/include. Using such include files may produce compiler warnings, if they are used in modules, which are compiled in strict ANSI mode. To avoid that, you can write <strong>asm</strong><strong> instead of asm</strong> and <strong>volatile</strong><strong> instead of volatile</strong>. These are equivalent aliases.</p><p>Another problem with reused macros arises if you are using labels. In such cases you may make use of the special pattern %=, which is replaced by a unique number on each asm statement. The following code had been taken from avr/include/iomacros.h:</p>
+<pre>
+#define loop_until_bit_is_clear(port,bit)           __asm__ __volatile__ (                      "L_%=: " "sbic %0, %1" "\n\t"                        "rjmp L_%="                                 : /* no outputs */
+                 : "I" (_SFR_IO_ADDR(port)),
+                   "I" (bit)
+        )
+</pre>
+<p>When used for the first time, L_%= may be translated to L_1404, the next usage might create L_1405 or whatever. In any case, the labels became unique too.</p><p>Another option is to use Unix-assembler style numeric labels. They are explained in <strong>How do I trace an assembler file in avr-gdb?</strong>. The above example would then look like:</p>
+<pre>
+#define loop_until_bit_is_clear(port,bit)
+        __asm__ __volatile__ (
+        "1: " "sbic %0, %1" "\n\t"
+                 "rjmp 1b"
+                 : /* no outputs */
+                 : "I" (_SFR_IO_ADDR(port)),
+                   "I" (bit)
+        )
+</pre>
+
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">C Stub Functions</h2>
+        <div class="sectioncontent">
+<p>Macro definitions will include the same assembler code whenever they are referenced. This may not be acceptable for larger routines. In this case you may define a C stub function, containing nothing other than your assembler code.</p>
+<pre>
+void delay(uint8_t ms)
+{
+    uint16_t cnt;
+    asm volatile (
+        "\n"
+        "L_dl1%=:" "\n\t"
+        "mov %A0, %A2" "\n\t"
+        "mov %B0, %B2" "\n"
+        "L_dl2%=:" "\n\t"
+        "sbiw %A0, 1" "\n\t"
+        "brne L_dl2%=" "\n\t"
+        "dec %1" "\n\t"
+        "brne L_dl1%=" "\n\t"
+        : "=&w" (cnt)
+        : "r" (ms), "r" (delay_count)
+        );
+}
+</pre>
+<p>The purpose of this function is to delay the program execution by a specified number of milliseconds using a counting loop. The global 16 bit variable delay_count must contain the CPU clock frequency in Hertz divided by 4000 and must have been set before calling this routine for the first time. As described in the <strong>clobber</strong> section, the routine uses a local variable to hold a temporary value.</p><p>Another use for a local variable is a return value. The following function returns a 16 bit value read from two successive port addresses.</p>
+<pre>
+uint16_t inw(uint8_t port)
+{
+    uint16_t result;
+    asm volatile (
+        "in %A0,%1" "\n\t"
+        "in %B0,(%1) + 1"
+        : "=r" (result)
+        : "I" (_SFR_IO_ADDR(port))
+        );
+    return result;
+}
+</pre>
+<p><strong>Note:</strong></p><p>inw() is supplied by avr-libc.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">C Names Used in Assembler Code</h2>
+        <div class="sectioncontent">
+<p>By default AVR-GCC uses the same symbolic names of functions or variables in C and assembler code. You can specify a different name for the assembler code by using a special form of the asm statement:</p>
+<pre>
+unsigned long value asm("clock") = 3686400;
+</pre>
+<p>This statement instructs the compiler to use the symbol name clock rather than value. This makes sense only for external or static variables, because local variables do not have symbolic names in the assembler code. However, local variables may be held in registers.</p><p>With AVR-GCC you can specify the use of a specific register:</p>
+<pre>
+void Count(void)
+{
+    register unsigned char counter asm("r3");
+
+    ... some code...
+    asm volatile("clr r3");
+    ... more code...
+}
+</pre>
+<p>The assembler instruction, 'clr r3', will clear the variable counter. AVR-GCC will not completely reserve the specified register. If the optimizer recognizes that the variable will not be referenced any longer, the register may be re-used. But the compiler is not able to check wether this register usage conflicts with any predefined register. If you reserve too many registers in this way, the compiler may even run out of registers during code generation.</p><p>In order to change the name of a function, you need a prototype declaration, because the compiler will not accept the asm keyword in the function definition:</p>
+<pre>
+extern long Calc(void) asm ("CALCULATE");
+</pre>
+<p>Calling the function Calc() will create assembler instructions to call the function CALCULATE.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">Links</h2>
+        <div class="sectioncontent">
+<p>For a more thorough discussion of inline assembly usage, see the gcc user manual. The latest version of the gcc manual is always available here: http://gcc.gnu.org/onlinedocs/</p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="inb.3avr.html"><span aria-hidden="true">&larr;</span> inb.3avr: Compat/deprecated.h: deprecated items -</a></li>
+   <li class="next"><a href="inp.3avr.html">inp.3avr: Compat/deprecated.h: deprecated items - <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="encrypt (3) manual">
   <meta name="twitter:description" content="Encrypt 64-bit messages">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-encrypt-3.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-encrypt-3.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man3/encrypt.3.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="encrypt (3) manual" />
   <meta property="og:description" content="Encrypt 64-bit messages" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-encrypt-3.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-encrypt-3.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -157,29 +157,16 @@ struct crypt_data {
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
-<tr>
-<th>Interface</th>
-<th>Attribute</th>
-<th>Value</th></tr>
+<h3>Multithreading (see <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a>)</h3>
+<p>The <strong>encrypt</strong>() and <strong>setkey</strong>() functions are not thread-safe.</p><p>The <strong>encrypt_r</strong>() and <strong>setkey_r</strong>() functions are thread-safe.</p>
 
-<tr>
-<td><strong>encrypt</strong>(),   <strong>setkey</strong>()  </td>
-<td>Thread safety</td>
-<td>MT-Unsafe race:crypt</td></tr>
-
-<tr>
-<td><strong>encrypt_r</strong>(),   <strong>setkey_r</strong>()  </td>
-<td>Thread safety</td>
-<td>MT-Safe</td></tr>
-</table>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p><strong>encrypt</strong>(), <strong>setkey</strong>(): POSIX.1-2001, POSIX.1-2008, SUS, SVr4.</p><p>The functions <strong>encrypt_r</strong>() and <strong>setkey_r</strong>() are GNU extensions.</p>
+<p>The functions <strong>encrypt</strong>() and <strong>setkey</strong>() conform to SVr4, SUSv2, and POSIX.1-2001. The functions <strong>encrypt_r</strong>() and <strong>setkey_r</strong>() are GNU extensions.</p>
         </div>
       </section>
 
@@ -193,53 +180,21 @@ struct crypt_data {
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-
+<p>You need to link with libcrypt to compile this example with glibc. To do useful work, the <em>key[]</em> and <em>txt[]</em> arrays must be filled with a useful bit pattern.</p>
 <pre>
 #define _XOPEN_SOURCE
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
 #include &lt;unistd.h&gt;
-#include &lt;crypt.h&gt;
+#include &lt;stdlib.h&gt;
 
 int
 main(void)
 {
-    char key[64];
-    char orig[9] = "eggplant";
-    char buf[64];
-    char txt[9];
-    int i, j;
+    char key[64];      /* bit pattern for key */
+    char txt[64];      /* bit pattern for messages */
 
-    for (i = 0; i &lt; 64; i++) {
-        key[i] = rand() & 1;
-    }
-
-    for (i = 0; i &lt; 8; i++) {
-        for (j = 0; j &lt; 8; j++) {
-            buf[i * 8 + j] = orig[i] &gt;&gt; j & 1;
-        }
-        setkey(key);
-    }
-    printf("Before encrypting: %s&#92;n", orig);
-
-    encrypt(buf, 0);
-    for (i = 0; i &lt; 8; i++) {
-        for (j = 0, txt[i] = &apos;&#92;0&apos;; j &lt; 8; j++) {
-            txt[i] |= buf[i * 8 + j] &lt;&lt; j;
-        }
-        txt[8] = &apos;&#92;0&apos;;
-    }
-    printf("After encrypting:  %s&#92;n", txt);
-
-    encrypt(buf, 1);
-    for (i = 0; i &lt; 8; i++) {
-        for (j = 0, txt[i] = &apos;&#92;0&apos;; j &lt; 8; j++) {
-            txt[i] |= buf[i * 8 + j] &lt;&lt; j;
-        }
-        txt[8] = &apos;&#92;0&apos;;
-    }
-    printf("After decrypting:  %s&#92;n", txt);
-    exit(EXIT_SUCCESS);
+    setkey(key);
+    encrypt(txt, 0);   /* encode */
+    encrypt(txt, 1);   /* decode */
 }
 </pre>
 
@@ -252,9 +207,16 @@ main(void)
 <p><a href="../man3/cbc_crypt.3.html"><strong>cbc_crypt</strong>(3)</a>, <a href="../man3/crypt.3.html"><strong>crypt</strong>(3)</a>, <a href="../man3/ecb_crypt.3.html"><strong>ecb_crypt</strong>(3)</a>,</p>
         </div>
       </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="edata.3.html"><span aria-hidden="true">&larr;</span> edata.3: End of program segments</a></li>
+   <li class="previous"><a href="emst_tutorial.3.html"><span aria-hidden="true">&larr;</span> emst_tutorial.3: Emst tutorial</a></li>
    <li class="next"><a href="encrypt_r.3.html">encrypt_r.3: Encrypt 64-bit messages <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

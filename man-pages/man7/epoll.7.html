@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="epoll (7) manual">
   <meta name="twitter:description" content="I/o event notification facility">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-epoll-7.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-epoll-7.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man7/epoll.7.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="epoll (7) manual" />
   <meta property="og:description" content="I/o event notification facility" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-epoll-7.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-epoll-7.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages/">
+      <span itemprop="name">manpages</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -166,7 +166,7 @@
 </dl>
 <p>By contrast, when used as a level-triggered interface (the default, when <strong>EPOLLET</strong> is not specified), <strong>epoll</strong> is simply a faster <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, and can be used wherever the latter is used since it shares the same semantics.</p><p>Since even with edge-triggered <strong>epoll</strong>, multiple events can be generated upon receipt of multiple chunks of data, the caller has the option to specify the <strong>EPOLLONESHOT</strong> flag, to tell <strong>epoll</strong> to disable the associated file descriptor after the receipt of an event with <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a>. When the <strong>EPOLLONESHOT</strong> flag is specified, it is the caller's responsibility to rearm the file descriptor using <a href="../man2/epoll_ctl.2.html"><strong>epoll_ctl</strong>(2)</a> with <strong>EPOLL_CTL_MOD</strong>.</p>
 <h3>Interaction with autosleep</h3>
-<p>If the system is in <strong>autosleep</strong> mode via <em>/sys/power/autosleep</em> and an event happens which wakes the device from sleep, the device driver will keep the device awake only until that event is queued. To keep the device awake until the event has been processed, it is necessary to use the <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a> <strong>EPOLLWAKEUP</strong> flag.</p><p>When the <strong>EPOLLWAKEUP</strong> flag is set in the <strong>events</strong> field for a <em>struct epoll_event</em>, the system will be kept awake from the moment the event is queued, through the <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a> call which returns the event until the subsequent <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a> call. If the event should keep the system awake beyond that time, then a separate <em>wake_lock</em> should be taken before the second <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a> call.</p>
+<p>If the system is in <strong>autosleep</strong> mode via <em>/sys/power/autosleep</em> and an event happens which wakes the device from sleep, the device driver will only keep the device awake until that event is queued. To keep the device awake until the event has been processed, it is necessary to use the <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a> <strong>EPOLLWAKEUP</strong> flag.</p><p>When the <strong>EPOLLWAKEUP</strong> flag is set in the <strong>events</strong> field for a <em>struct epoll_event</em>, the system will be kept awake from the moment the event is queued, through the <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a> call which returns the event until the subsequent <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a> call. If the event should keep the system awake beyond that time, then a separate <em>wake_lock</em> should be taken before the second <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a> call.</p>
 <h3>/proc interfaces</h3>
 <p>The following interfaces can be used to limit the amount of kernel memory consumed by epoll:</p>
 <dl class='dl-vertical'>
@@ -186,12 +186,12 @@
 struct epoll_event ev, events[MAX_EVENTS];
 int listen_sock, conn_sock, nfds, epollfd;
 
-/* Code to set up listening socket, &apos;listen_sock&apos;,
-   (socket(), bind(), listen()) omitted */
+/* Set up listening socket, &apos;listen_sock&apos; (socket(),
+   bind(), listen()) */
 
-epollfd = <strong>epoll_create1</strong>(0);
+epollfd = epoll_create(10);
 if (epollfd == -1) {
-    perror("epoll_create1");
+    perror("epoll_create");
     exit(EXIT_FAILURE);
 }
 
@@ -205,14 +205,14 @@ if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {
 for (;;) {
     nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
     if (nfds == -1) {
-        perror("epoll_wait");
+        perror("epoll_pwait");
         exit(EXIT_FAILURE);
     }
 
     for (n = 0; n &lt; nfds; ++n) {
         if (events[n].data.fd == listen_sock) {
             conn_sock = accept(listen_sock,
-                               (struct sockaddr *) &addr, &addrlen);
+                            (struct sockaddr *) &local, &addrlen);
             if (conn_sock == -1) {
                 perror("accept");
                 exit(EXIT_FAILURE);
@@ -257,7 +257,7 @@ for (;;) {
     <p><strong>A1</strong></p>
   </dt>
   <dd>
-    <p>You will probably get <strong>EEXIST</strong>. However, it is possible to add a duplicate (<a href="../man2/dup.2.html"><strong>dup</strong>(2)</a>, <a href="../man2/dup2.2.html"><strong>dup2</strong>(2)</a>, <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> <strong>F_DUPFD</strong>) file descriptor to the same <strong>epoll</strong> instance. This can be a useful technique for filtering events, if the duplicate file descriptors are registered with different <em>events</em> masks.</p>
+    <p>You will probably get <strong>EEXIST</strong>. However, it is possible to add a duplicate (<a href="../man2/dup.2.html"><strong>dup</strong>(2)</a>, <a href="../man2/dup2.2.html"><strong>dup2</strong>(2)</a>, <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> <strong>F_DUPFD</strong>) descriptor to the same <strong>epoll</strong> instance. This can be a useful technique for filtering events, if the duplicate file descriptors are registered with different <em>events</em> masks.</p>
   </dd>
   <dt>
     <p><strong>Q2</strong></p>
@@ -317,7 +317,7 @@ for (;;) {
     <p><strong>A6</strong></p>
   </dt>
   <dd>
-    <p>Yes, but be aware of the following point. A file descriptor is a reference to an open file description (see <a href="../man2/open.2.html"><strong>open</strong>(2)</a>). Whenever a file descriptor is duplicated via <a href="../man2/dup.2.html"><strong>dup</strong>(2)</a>, <a href="../man2/dup2.2.html"><strong>dup2</strong>(2)</a>, <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> <strong>F_DUPFD</strong>, or <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, a new file descriptor referring to the same open file description is created. An open file description continues to exist until all file descriptors referring to it have been closed. A file descriptor is removed from an <strong>epoll</strong> set only after all the file descriptors referring to the underlying open file description have been closed (or before if the file descriptor is explicitly removed using <a href="../man2/epoll_ctl.2.html"><strong>epoll_ctl</strong>(2)</a> <strong>EPOLL_CTL_DEL</strong>). This means that even after a file descriptor that is part of an <strong>epoll</strong> set has been closed, events may be reported for that file descriptor if other file descriptors referring to the same underlying file description remain open.</p>
+    <p>Yes, but be aware of the following point. A file descriptor is a reference to an open file description (see <a href="../man2/open.2.html"><strong>open</strong>(2)</a>). Whenever a descriptor is duplicated via <a href="../man2/dup.2.html"><strong>dup</strong>(2)</a>, <a href="../man2/dup2.2.html"><strong>dup2</strong>(2)</a>, <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> <strong>F_DUPFD</strong>, or <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, a new file descriptor referring to the same open file description is created. An open file description continues to exist until all file descriptors referring to it have been closed. A file descriptor is removed from an <strong>epoll</strong> set only after all the file descriptors referring to the underlying open file description have been closed (or before if the descriptor is explicitly removed using <a href="../man2/epoll_ctl.2.html"><strong>epoll_ctl</strong>(2)</a> <strong>EPOLL_CTL_DEL</strong>). This means that even after a file descriptor that is part of an <strong>epoll</strong> set has been closed, events may be reported for that file descriptor if other file descriptors referring to the same underlying file description remain open.</p>
   </dd>
   <dt>
     <p><strong>Q7</strong></p>
@@ -399,22 +399,22 @@ for (;;) {
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO epoll&hellip;</h2>
         <div class="sectioncontent">
-<p>The set of file descriptors that is being monitored via an epoll file descriptor can be viewed via the entry for the epoll file descriptor in the process's <em>/proc/[pid]/fdinfo</em> directory. See <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> for further details.</p>
+<p><a href="../man2/epoll_create.2.html"><strong>epoll_create</strong>(2)</a>, <a href="../man2/epoll_create1.2.html"><strong>epoll_create1</strong>(2)</a>, <a href="../man2/epoll_ctl.2.html"><strong>epoll_ctl</strong>(2)</a>, <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a></p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO epoll&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
         <div class="sectioncontent">
-<p><a href="../man2/epoll_create.2.html"><strong>epoll_create</strong>(2)</a>, <a href="../man2/epoll_create1.2.html"><strong>epoll_create1</strong>(2)</a>, <a href="../man2/epoll_ctl.2.html"><strong>epoll_ctl</strong>(2)</a>, <a href="../man2/epoll_wait.2.html"><strong>epoll_wait</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a></p>
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="environ.7.html"><span aria-hidden="true">&larr;</span> environ.7: User environment</a></li>
-   <li class="next"><a href="fanotify.7.html">fanotify.7: Monitoring filesystem events <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="erl_docgen.7.html">erl_docgen.7: Erl_docgen - <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="vlock (1) manual">
   <meta name="twitter:description" content="Virtual console lock program">
-  <meta name="twitter:image" content="https://www.carta.tech/images/kbd-vlock-1.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/vlock-vlock-1.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man1/vlock.1.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="vlock (1) manual" />
   <meta property="og:description" content="Virtual console lock program" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/kbd-vlock-1.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/vlock-vlock-1.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/kbd/">
-      <span itemprop="name">kbd</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/vlock/">
+      <span itemprop="name">vlock</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -104,14 +104,14 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-<p><strong>vlock</strong></p><p><strong>vlock [ -a,--all ] [ -c,--current ] [ -h,--help ] [ -v,--version ]</strong></p>
+<p><strong>vlock [ -hv ]</strong></p><p><strong>vlock [ -acns ] [ -t &lt;timeout&gt; ] [ plugins... ]</strong></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p><strong>vlock</strong> is a program to lock one or more sessions on the Linux console.  This is especially useful for Linux machines which have multiple users with access to the console.  One user may lock his or her session(s) while still allowing other users to use the system on other virtual consoles.  If desired, the entire console may be locked and virtual console switching disabled.</p><p>By default, only the current VC (virtual console) is locked.  With the <strong>-a,-all</strong> option all VCs are locked.  The locked VCs cannot be unlocked without the invoker's password.  And, for the paranoid, vlock makes it a trying experience for those attempting to guess the password, so unauthorized access to session(s) is highly unlikely.</p><p>Please note that it is entirely possible to completely lock yourself out of the console with the <strong>-a,--all</strong> option if you cannot remember your password!  Unless you are able to kill vlock by logging in remotely via a serial terminal or network, a hard reset is the only method of ``unlocking'' the display.</p><p><strong>vlock</strong> works for console sessions primarily.  However, there is support for trying to lock non-console sessions as well, but that support has not been well tested.</p>
+<p><strong>vlock</strong> is a program to lock one or more sessions on the Linux console.  This is especially useful for Linux machines which have multiple users with access to the console.  One user may lock his or her session(s) while still allowing other users to use the system on other virtual consoles.  If desired, the entire console may be locked and virtual console switching disabled.</p><p>By default, only the current VC (virtual console) is locked.  With the <strong>-a,--all</strong> option all VCs are locked.  The locked VCs cannot be unlocked without the invoker's password or the root password.  The root password will always be able to unlock any or all sessions, unless disabled at compile time.</p><p>Please note that it is entirely possible to completely lock yourself out of the console with the <strong>-a,--all</strong> option if you cannot remember your password! Unless you are able to kill vlock by logging in remotely via a serial terminal or network, a hard reset is the only method of ``unlocking'' the display.</p><p>When locking the entire console display it is sometimes still possible to kill vlock using the Secure Access Key (SAK) or other commands that are available through the SysRq mechanism.  When the <strong>-s,--disable-sysrq</strong> and <strong>-a,--all</strong> options are given the SysRq mechanism is disabled while vlock is running.  See /usr/src/linux/Documentation/sysrq.txt for more details.</p><p>vlock works for console sessions primarily.  To lock the entire console display from an X session use the <strong>-n,--new</strong> option.  This will make vlock switch to an empty virtual console to lock the display.</p><p>The options <strong>-n,--new</strong>, <strong>-s,--disable-sysrq</strong>, and <strong>-t,--timeout</strong> only work if vlock is compiled with plugin support.  See the PLUGINS section for more information.</p>
         </div>
       </section>
 
@@ -122,24 +122,74 @@
 <li><p>Lock all console sessions and disable VC switching.</p></li>
 </ul><p><strong>-c,--current</strong></p><ul>
 <li><p>Lock the current session (this is the default).</p></li>
+</ul><p><strong>-n,--new</strong></p><ul>
+<li><p>Switch to a new virtual console before locking all console sessions.</p></li>
+</ul><p><strong>-s,--disable-sysrq</strong></p><ul>
+<li><p>Disable the SysRq mechanism while consoles are locked.  This option only works if the <strong>-a,--all</strong> option given.</p></li>
+</ul><p><strong>-t,--timeout &lt;seconds&gt;</strong></p><ul>
+<li><p>Specify the timeout for the screensaver plugins.  See <a href="../man5/vlock-plugins.5.html"><strong>vlock-plugins</strong>(5)</a> for more information.</p></li>
 </ul><p><strong>-h,--help</strong></p><ul>
 <li><p>Print a brief help message.</p></li>
 </ul><p><strong>-v,--version</strong></p><ul>
-<li><p>Print the version number of <strong>vlock</strong>.</p></li>
+<li><p>Print the version number.</p></li>
 </ul>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <h2 class="font-effect-shadow-multiple">ENVIRONMENT VARIABLES</h2>
         <div class="sectioncontent">
-<p>Michael K. Johnson &lt;johnsonm@redhat.com&gt;</p>
+<p>The following environment variables can be used to change vlock's behavior:</p><p><strong>USER</strong></p><ul>
+<li><p>If this variable is when <strong>vlock</strong> is run as root (uid 0) vlock locks the screen as this user instead of root.  The root password will still be able to unlock the session, unless disabled at compile time.</p></li>
+</ul><p><strong>VLOCK_ALL_MESSAGE</strong></p><ul>
+<li><p>If this variable is set and all consoles are locked its contents will be used as the locking message instead of the default message.</p></li>
+</ul><p><strong>VLOCK_CURRENT_MESSAGE</strong></p><ul>
+<li><p>If this variable is set and only the current consoles is locked its contents will be used as the locking message instead of the default message.</p></li>
+</ul><p><strong>VLOCK_MESSAGE</strong></p><ul>
+<li><p>If this variable is set its contents will be used as the locking message instead of the default.  This overrides the former two variables.</p></li>
+</ul><p><strong>VLOCK_PLUGINS</strong></p><ul>
+<li><p>If this variable is set it is interpreted as a space separated list of plugins that will be loaded when vlock starts additionally to the ones listed on the command line.</p></li>
+</ul><p><strong>VLOCK_TIMEOUT</strong></p><ul>
+<li><p>Set this variable to specify the timeout (in seconds) after which the screen saver plugins (if any) will be invoked.  If this variable is unset or set to an invalid value or 0 no timeout is used.  See <a href="../man5/vlock-plugins.5.html"><strong>vlock-plugins</strong>(5)</a> for more information about plugins.</p></li>
+</ul><p><strong>VLOCK_PROMPT_TIMEOUT</strong></p><ul>
+<li><p>Set this variable to specify the amount of time (in seconds) you will have to enter your password at the password prompt.  If this variable is unset or set to an invalid value or 0 no timeout is used.  <strong>Warning</strong>: If this value is too low, you may not be able to unlock your session.</p></li>
+</ul>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">FILES</h2>
+        <div class="sectioncontent">
+<p><strong>~/.vlockrc</strong></p><ul>
+<li><p>This file is read by <strong>vlock</strong> on startup if it exists.  All the variables mentioned above can be set here.</p></li>
+</ul>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SECURITY</h2>
+        <div class="sectioncontent">
+<p>See the SECURITY file in the <strong>vlock</strong> distribution for more information.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RELATED TO vlock&hellip;</h2>
+        <div class="sectioncontent">
+<p><a href="../man8/vlock-main.8.html"><strong>vlock-main</strong>(8)</a>, <a href="../man5/vlock-plugins.5.html"><strong>vlock-plugins</strong>(5)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <div class="sectioncontent">
+<p>Michael K. Johnson &lt;http://danlj.org/mkj/&gt;</p><p>Frank Benkstein &lt;frank-vlock@benkstein.net&gt;</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="verifytree.1.html"><span aria-hidden="true">&larr;</span> verifytree.1: Verify that a local yum repository is consistent</a></li>
-   <li class="next"><a href="w.1.html">w.1: Show who is logged on and what they are doing. <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="vlna.1.html"><span aria-hidden="true">&larr;</span> vlna.1: Adds tilde after each non-syllabic preposition</a></li>
+   <li class="next"><a href="vlog.1.html">vlog.1: List version information <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

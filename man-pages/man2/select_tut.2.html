@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="select_tut (2) manual">
   <meta name="twitter:description" content="Synchronous i/o multiplexing">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-select_tut-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-select_tut-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/select_tut.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="select_tut (2) manual" />
   <meta property="og:description" content="Synchronous i/o multiplexing" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-select_tut-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-select_tut-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -106,7 +106,7 @@
         <div class="sectioncontent">
 
 <pre>
-/* According to POSIX.1-2001, POSIX.1-2008 */
+/* According to POSIX.1-2001 */
 
 <strong>#include &lt;sys/select.h&gt;</strong>
 
@@ -135,14 +135,14 @@
 <strong>            fd_set *</strong><em>exceptfds</em><strong>, const struct timespec *</strong><em>ntimeout</em><strong>,</strong>
 <strong>            const sigset_t *</strong><em>sigmask</em><strong>);</strong>
 </pre>
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>pselect</strong>(): _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L</p>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>pselect</strong>(): _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L || _XOPEN_SOURCE&nbsp;&gt;=&nbsp;600</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p><strong>select</strong>() (or <strong>pselect</strong>()) is used to efficiently monitor multiple file descriptors, to see if any of them is, or becomes, "ready"; that is, to see whether I/O becomes possible, or an "exceptional condition" has occurred on any of the file descriptors.</p><p>Its principal arguments are three "sets" of file descriptors: <em>readfds</em>, <em>writefds</em>, and <em>exceptfds</em>. Each set is declared as type <em>fd_set</em>, and its contents can be manipulated with the macros <strong>FD_CLR</strong>(), <strong>FD_ISSET</strong>(), <strong>FD_SET</strong>(), and <strong>FD_ZERO</strong>(). A newly declared set should first be cleared using <strong>FD_ZERO</strong>(). <strong>select</strong>() modifies the contents of the sets according to the rules described below; after calling <strong>select</strong>() you can test if a file descriptor is still present in a set with the <strong>FD_ISSET</strong>() macro. <strong>FD_ISSET</strong>() returns nonzero if a specified file descriptor is present in a set and zero if it is not. <strong>FD_CLR</strong>() removes a file descriptor from a set.</p><h3>Arguments</h3>
+<p><strong>select</strong>() (or <strong>pselect</strong>()) is used to efficiently monitor multiple file descriptors, to see if any of them is, or becomes, "ready"; that is, to see whether I/O becomes possible, or an "exceptional condition" has occurred on any of the descriptors.</p><p>Its principal arguments are three "sets" of file descriptors: <em>readfds</em>, <em>writefds</em>, and <em>exceptfds</em>. Each set is declared as type <em>fd_set</em>, and its contents can be manipulated with the macros <strong>FD_CLR</strong>(), <strong>FD_ISSET</strong>(), <strong>FD_SET</strong>(), and <strong>FD_ZERO</strong>(). A newly declared set should first be cleared using <strong>FD_ZERO</strong>(). <strong>select</strong>() modifies the contents of the sets according to the rules described below; after calling <strong>select</strong>() you can test if a file descriptor is still present in a set with the <strong>FD_ISSET</strong>() macro. <strong>FD_ISSET</strong>() returns nonzero if a specified file descriptor is present in a set and zero if it is not. <strong>FD_CLR</strong>() removes a file descriptor from a set.</p><h3>Arguments</h3>
 
 <dl class='dl-vertical'>
   <dt>
@@ -209,7 +209,7 @@ struct timespec {
 </dl>
 
 <h3>Combining signal and data events</h3>
-<p><strong>pselect</strong>() is useful if you are waiting for a signal as well as for file descriptor(s) to become ready for I/O. Programs that receive signals normally use the signal handler only to raise a global flag. The global flag will indicate that the event must be processed in the main loop of the program. A signal will cause the <strong>select</strong>() (or <strong>pselect</strong>()) call to return with <em>errno</em> set to <strong>EINTR</strong>. This behavior is essential so that signals can be processed in the main loop of the program, otherwise <strong>select</strong>() would block indefinitely. Now, somewhere in the main loop will be a conditional to check the global flag. So we must ask: what if a signal arrives after the conditional, but before the <strong>select</strong>() call? The answer is that <strong>select</strong>() would block indefinitely, even though an event is actually pending. This race condition is solved by the <strong>pselect</strong>() call. This call can be used to set the signal mask to a set of signals that are to be received only within the <strong>pselect</strong>() call. For instance, let us say that the event in question was the exit of a child process. Before the start of the main loop, we would block <strong>SIGCHLD</strong> using <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>. Our <strong>pselect</strong>() call would enable <strong>SIGCHLD</strong> by using an empty signal mask. Our program would look like:</p>
+<p><strong>pselect</strong>() is useful if you are waiting for a signal as well as for file descriptor(s) to become ready for I/O. Programs that receive signals normally use the signal handler only to raise a global flag. The global flag will indicate that the event must be processed in the main loop of the program. A signal will cause the <strong>select</strong>() (or <strong>pselect</strong>()) call to return with <em>errno</em> set to <strong>EINTR</strong>. This behavior is essential so that signals can be processed in the main loop of the program, otherwise <strong>select</strong>() would block indefinitely. Now, somewhere in the main loop will be a conditional to check the global flag. So we must ask: what if a signal arrives after the conditional, but before the <strong>select</strong>() call? The answer is that <strong>select</strong>() would block indefinitely, even though an event is actually pending. This race condition is solved by the <strong>pselect</strong>() call. This call can be used to set the signal mask to a set of signals that are only to be received within the <strong>pselect</strong>() call. For instance, let us say that the event in question was the exit of a child process. Before the start of the main loop, we would block <strong>SIGCHLD</strong> using <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>. Our <strong>pselect</strong>() call would enable <strong>SIGCHLD</strong> by using an empty signal mask. Our program would look like:</p>
 <pre>
 static volatile sig_atomic_t got_SIGCHLD = 0;
 
@@ -267,7 +267,7 @@ main(int argc, char *argv[])
 </pre>
 
 <h3>Practical</h3>
-<p>So what is the point of <strong>select</strong>()? Can't I just read and write to my file descriptors whenever I want? The point of <strong>select</strong>() is that it watches multiple descriptors at the same time and properly puts the process to sleep if there is no activity. UNIX programmers often find themselves in a position where they have to handle I/O from more than one file descriptor where the data flow may be intermittent. If you were to merely create a sequence of <a href="../man2/read.2.html"><strong>read</strong>(2)</a> and <a href="../man2/write.2.html"><strong>write</strong>(2)</a> calls, you would find that one of your calls may block waiting for data from/to a file descriptor, while another file descriptor is unused though ready for I/O. <strong>select</strong>() efficiently copes with this situation.</p>
+<p>So what is the point of <strong>select</strong>()? Can't I just read and write to my descriptors whenever I want? The point of <strong>select</strong>() is that it watches multiple descriptors at the same time and properly puts the process to sleep if there is no activity. UNIX programmers often find themselves in a position where they have to handle I/O from more than one file descriptor where the data flow may be intermittent. If you were to merely create a sequence of <a href="../man2/read.2.html"><strong>read</strong>(2)</a> and <a href="../man2/write.2.html"><strong>write</strong>(2)</a> calls, you would find that one of your calls may block waiting for data from/to a file descriptor, while another file descriptor is unused though ready for I/O. <strong>select</strong>() efficiently copes with this situation.</p>
 <h3>Select law</h3>
 <p>Many people who try to use <strong>select</strong>() come across behavior that is difficult to understand and produces nonportable or borderline results. For instance, the above program is carefully written not to block at any point, even though it does not set its file descriptors to nonblocking mode. It is easy to introduce subtle errors that will remove the advantage of using <strong>select</strong>(), so here is a list of essentials to watch for when using <strong>select</strong>().</p>
 <dl class='dl-vertical'>
@@ -323,7 +323,7 @@ main(int argc, char *argv[])
     <p>9.</p>
   </dt>
   <dd>
-    <p>If the functions <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man2/send.2.html"><strong>send</strong>(2)</a> fail with errors other than those listed in <strong>7.</strong>, or one of the input functions returns 0, indicating end of file, then you should <em>not</em> pass that file descriptor to <strong>select</strong>() again. In the example below, I close the file descriptor immediately, and then set it to -1 to prevent it being included in a set.</p>
+    <p>If the functions <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man2/send.2.html"><strong>send</strong>(2)</a> fail with errors other than those listed in <strong>7.</strong>, or one of the input functions returns 0, indicating end of file, then you should <em>not</em> pass that descriptor to <strong>select</strong>() again. In the example below, I close the descriptor immediately, and then set it to -1 to prevent it being included in a set.</p>
   </dd>
   <dt>
     <p>10.</p>
@@ -392,68 +392,65 @@ static int forward_port;
 static int
 listen_socket(int listen_port)
 {
-    struct sockaddr_in addr;
-    int lfd;
+    struct sockaddr_in a;
+    int s;
     int yes;
 
-    lfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (lfd == -1) {
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s == -1) {
         perror("socket");
         return -1;
     }
-
     yes = 1;
-    if (setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR,
+    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR,
             &yes, sizeof(yes)) == -1) {
         perror("setsockopt");
-        close(lfd);
+        close(s);
         return -1;
     }
-
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_port = htons(listen_port);
-    addr.sin_family = AF_INET;
-    if (bind(lfd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
+    memset(&a, 0, sizeof(a));
+    a.sin_port = htons(listen_port);
+    a.sin_family = AF_INET;
+    if (bind(s, (struct sockaddr *) &a, sizeof(a)) == -1) {
         perror("bind");
-        close(lfd);
+        close(s);
         return -1;
     }
-
     printf("accepting connections on port %d&#92;n", listen_port);
-    listen(lfd, 10);
-    return lfd;
+    listen(s, 10);
+    return s;
 }
 
 static int
 connect_socket(int connect_port, char *address)
 {
-    struct sockaddr_in addr;
-    int cfd;
+    struct sockaddr_in a;
+    int s;
 
-    cfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (cfd == -1) {
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s == -1) {
         perror("socket");
-        close(cfd);
+        close(s);
         return -1;
     }
 
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_port = htons(connect_port);
-    addr.sin_family = AF_INET;
+    memset(&a, 0, sizeof(a));
+    a.sin_port = htons(connect_port);
+    a.sin_family = AF_INET;
 
-    if (!inet_aton(address, (struct in_addr *) &addr.sin_addr.s_addr)) {
+    if (!inet_aton(address, (struct in_addr *) &a.sin_addr.s_addr)) {
         perror("bad IP address format");
-        close(cfd);
+        close(s);
         return -1;
     }
 
-    if (connect(cfd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
+    if (connect(s, (struct sockaddr *) &a, sizeof(a)) == -1) {
         perror("connect()");
-        shutdown(cfd, SHUT_RDWR);
-        close(cfd);
+        shutdown(s, SHUT_RDWR);
+        close(s);
         return -1;
     }
-    return cfd;
+    return s;
 }
 
 #define SHUT_FD1 do {                                &#92;
@@ -498,136 +495,139 @@ main(int argc, char *argv[])
         exit(EXIT_FAILURE);
 
     for (;;) {
-        int ready, nfds = 0;
-	ssize_t nbytes;
-        fd_set readfds, writefds, exceptfds;
+        int r, nfds = 0;
+        fd_set rd, wr, er;
 
-        FD_ZERO(&readfds);
-        FD_ZERO(&writefds);
-        FD_ZERO(&exceptfds);
-        FD_SET(h, &readfds);
+        FD_ZERO(&rd);
+        FD_ZERO(&wr);
+        FD_ZERO(&er);
+        FD_SET(h, &rd);
         nfds = max(nfds, h);
         if (fd1 &gt; 0 && buf1_avail &lt; BUF_SIZE) {
-            FD_SET(fd1, &readfds);
+            FD_SET(fd1, &rd);
             nfds = max(nfds, fd1);
         }
         if (fd2 &gt; 0 && buf2_avail &lt; BUF_SIZE) {
-            FD_SET(fd2, &readfds);
+            FD_SET(fd2, &rd);
             nfds = max(nfds, fd2);
         }
         if (fd1 &gt; 0 && buf2_avail - buf2_written &gt; 0) {
-            FD_SET(fd1, &writefds);
+            FD_SET(fd1, &wr);
             nfds = max(nfds, fd1);
         }
         if (fd2 &gt; 0 && buf1_avail - buf1_written &gt; 0) {
-            FD_SET(fd2, &writefds);
+            FD_SET(fd2, &wr);
             nfds = max(nfds, fd2);
         }
         if (fd1 &gt; 0) {
-            FD_SET(fd1, &exceptfds);
+            FD_SET(fd1, &er);
             nfds = max(nfds, fd1);
         }
         if (fd2 &gt; 0) {
-            FD_SET(fd2, &exceptfds);
+            FD_SET(fd2, &er);
             nfds = max(nfds, fd2);
         }
 
-        ready = select(nfds + 1, &readfds, &writefds, &exceptfds, NULL);
+        r = select(nfds + 1, &rd, &wr, &er, NULL);
 
-        if (ready == -1 && errno == EINTR)
+        if (r == -1 && errno == EINTR)
             continue;
 
-        if (ready == -1) {
+        if (r == -1) {
             perror("select()");
             exit(EXIT_FAILURE);
         }
 
-        if (FD_ISSET(h, &readfds)) {
-            socklen_t addrlen;
-            struct sockaddr_in client_addr;
-	    int fd;
+        if (FD_ISSET(h, &rd)) {
+            unsigned int l;
+            struct sockaddr_in client_address;
 
-	    addrlen = sizeof(client_addr);
-            memset(&client_addr, 0, addrlen);
-            fd = accept(h, (struct sockaddr *) &client_addr, &addrlen);
-            if (fd == -1) {
+            memset(&client_address, 0, l = sizeof(client_address));
+            r = accept(h, (struct sockaddr *) &client_address, &l);
+            if (r == -1) {
                 perror("accept()");
             } else {
                 SHUT_FD1;
                 SHUT_FD2;
                 buf1_avail = buf1_written = 0;
                 buf2_avail = buf2_written = 0;
-                fd1 = fd;
+                fd1 = r;
                 fd2 = connect_socket(forward_port, argv[3]);
                 if (fd2 == -1)
                     SHUT_FD1;
                 else
                     printf("connect from %s&#92;n",
-                            inet_ntoa(client_addr.sin_addr));
+                            inet_ntoa(client_address.sin_addr));
             }
         }
 
-        /* NB: read OOB data before normal reads */
+        /* NB: read oob data before normal reads */
 
-        if (fd1 &gt; 0 && FD_ISSET(fd1, &exceptfds)) {
-            char c;
+        if (fd1 &gt; 0)
+            if (FD_ISSET(fd1, &er)) {
+                char c;
 
-            nbytes = recv(fd1, &c, 1, MSG_OOB);
-            if (nbytes &lt; 1)
-                SHUT_FD1;
-            else
-                send(fd2, &c, 1, MSG_OOB);
-        }
-        if (fd2 &gt; 0 && FD_ISSET(fd2, &exceptfds)) {
-            char c;
+                r = recv(fd1, &c, 1, MSG_OOB);
+                if (r &lt; 1)
+                    SHUT_FD1;
+                else
+                    send(fd2, &c, 1, MSG_OOB);
+            }
+        if (fd2 &gt; 0)
+            if (FD_ISSET(fd2, &er)) {
+                char c;
 
-            nbytes = recv(fd2, &c, 1, MSG_OOB);
-            if (nbytes &lt; 1)
-                SHUT_FD2;
-            else
-                send(fd1, &c, 1, MSG_OOB);
-        }
-        if (fd1 &gt; 0 && FD_ISSET(fd1, &readfds)) {
-            nbytes = read(fd1, buf1 + buf1_avail,
-                      BUF_SIZE - buf1_avail);
-            if (nbytes &lt; 1)
-                SHUT_FD1;
-            else
-                buf1_avail += nbytes;
-        }
-        if (fd2 &gt; 0 && FD_ISSET(fd2, &readfds)) {
-            nbytes = read(fd2, buf2 + buf2_avail,
-                      BUF_SIZE - buf2_avail);
-            if (nbytes &lt; 1)
-                SHUT_FD2;
-            else
-                buf2_avail += nbytes;
-        }
-        if (fd1 &gt; 0 && FD_ISSET(fd1, &writefds)) {
-            nbytes = write(fd1, buf2 + buf2_written,
-                       buf2_avail - buf2_written);
-            if (nbytes &lt; 1)
-                SHUT_FD1;
-            else
-                buf2_written += nbytes;
-        }
-        if (fd2 &gt; 0 && FD_ISSET(fd2, &writefds)) {
-            nbytes = write(fd2, buf1 + buf1_written,
-                       buf1_avail - buf1_written);
-            if (nbytes &lt; 1)
-                SHUT_FD2;
-            else
-                buf1_written += nbytes;
-        }
+                r = recv(fd2, &c, 1, MSG_OOB);
+                if (r &lt; 1)
+                    SHUT_FD2;
+                else
+                    send(fd1, &c, 1, MSG_OOB);
+            }
+        if (fd1 &gt; 0)
+            if (FD_ISSET(fd1, &rd)) {
+                r = read(fd1, buf1 + buf1_avail,
+                          BUF_SIZE - buf1_avail);
+                if (r &lt; 1)
+                    SHUT_FD1;
+                else
+                    buf1_avail += r;
+            }
+        if (fd2 &gt; 0)
+            if (FD_ISSET(fd2, &rd)) {
+                r = read(fd2, buf2 + buf2_avail,
+                          BUF_SIZE - buf2_avail);
+                if (r &lt; 1)
+                    SHUT_FD2;
+                else
+                    buf2_avail += r;
+            }
+        if (fd1 &gt; 0)
+            if (FD_ISSET(fd1, &wr)) {
+                r = write(fd1, buf2 + buf2_written,
+                           buf2_avail - buf2_written);
+                if (r &lt; 1)
+                    SHUT_FD1;
+                else
+                    buf2_written += r;
+            }
+        if (fd2 &gt; 0)
+            if (FD_ISSET(fd2, &wr)) {
+                r = write(fd2, buf1 + buf1_written,
+                           buf1_avail - buf1_written);
+                if (r &lt; 1)
+                    SHUT_FD2;
+                else
+                    buf1_written += r;
+            }
 
-        /* Check if write data has caught read data */
+        /* check if write data has caught read data */
 
         if (buf1_written == buf1_avail)
             buf1_written = buf1_avail = 0;
         if (buf2_written == buf2_avail)
             buf2_written = buf2_avail = 0;
 
-        /* One side has closed the connection, keep
+        /* one side has closed the connection, keep
            writing to the other side until empty */
 
         if (fd1 &lt; 0 && buf1_avail - buf1_written == 0)
@@ -646,6 +646,13 @@ main(int argc, char *argv[])
         <h2 class="font-effect-shadow-multiple">RELATED TO select_tut&hellip;</h2>
         <div class="sectioncontent">
 <p><a href="../man2/accept.2.html"><strong>accept</strong>(2)</a>, <a href="../man2/connect.2.html"><strong>connect</strong>(2)</a>, <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a>, <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/recv.2.html"><strong>recv</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <a href="../man2/send.2.html"><strong>send</strong>(2)</a>, <a href="../man2/sigprocmask.2.html"><strong>sigprocmask</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, <a href="../man3/sigaddset.3.html"><strong>sigaddset</strong>(3)</a>, <a href="../man3/sigdelset.3.html"><strong>sigdelset</strong>(3)</a>, <a href="../man3/sigemptyset.3.html"><strong>sigemptyset</strong>(3)</a>, <a href="../man3/sigfillset.3.html"><strong>sigfillset</strong>(3)</a>, <a href="../man3/sigismember.3.html"><strong>sigismember</strong>(3)</a>, <a href="../man7/epoll.7.html"><strong>epoll</strong>(7)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

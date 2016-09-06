@@ -104,7 +104,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-<p><strong>ip</strong> [ <em>OPTIONS</em> ] <strong>neigh</strong>  { <em>COMMAND</em> |  <strong>help</strong> }</p><p><strong>ip neigh</strong> { <strong>add</strong> | <strong>del</strong> | <strong>change</strong> | <strong>replace</strong> } {  <em>ADDR</em> [  <strong>lladdr</strong> <em>LLADDR</em> ] [  <strong>nud</strong> <em>STATE</em> ] | <strong>proxy</strong> <em>ADDR</em> } [  <strong>dev</strong> <em>DEV</em> ]</p><p><strong>ip neigh</strong> { <strong>show</strong> | <strong>flush</strong> } [ <strong>proxy</strong> ] [ <strong>to</strong> <em>PREFIX</em> ] [  <strong>dev</strong> <em>DEV</em> ] [  <strong>nud</strong> <em>STATE</em> ] [  <strong>vrf</strong> <em>NAME</em> ] </p><p><em>STATE</em> := { <strong>permanent</strong> | <strong>noarp</strong> | <strong>stale</strong> | <strong>reachable</strong> | <strong>none</strong> | <strong>incomplete</strong> | <strong>delay</strong> | <strong>probe</strong> | <strong>failed</strong> }</p>
+<p><strong>ip</strong> [ <em>OPTIONS</em> ] <strong>neigh</strong>  { <em>COMMAND</em> |  <strong>help</strong> }</p><p><strong>ip neigh</strong> { <strong>add</strong> | <strong>del</strong> | <strong>change</strong> | <strong>replace</strong> } {  <em>ADDR</em> [  <strong>lladdr</strong> <em>LLADDR</em> ] [  <strong>nud</strong> { <strong>permanent</strong> | <strong>noarp</strong> | <strong>stale</strong> | <strong>reachable</strong> } ] | <strong>proxy</strong> <em>ADDR</em> } [  <strong>dev</strong> <em>DEV</em> ]</p><p><strong>ip neigh</strong> { <strong>show</strong> | <strong>flush</strong> } [ <strong>proxy</strong> ] [ <strong>to</strong> <em>PREFIX</em> ] [  <strong>dev</strong> <em>DEV</em> ] [  <strong>nud</strong> <em>STATE</em> ]</p>
         </div>
       </section>
 
@@ -150,11 +150,11 @@
     <p>the link layer address of the neighbour. <em>LLADDRESS</em> can also be <strong>null</strong>.</p>
   </dd>
   <dt>
-    <p><strong>nud</strong><em> STATE</em></p>
+    <p><strong>nud</strong><em> NUD_STATE</em></p>
   </dt>
   <dd>
     <p>the state of the neighbour entry. <strong>nud</strong> is an abbreviation for 'Neighbour Unreachability Detection'. The state can take one of the following values:</p>
-<dl class='dl-vertical'>
+  </dd>
   <dt>
     <p><strong>permanent</strong></p>
   </dt>
@@ -178,40 +178,6 @@
   </dt>
   <dd>
     <p>the neighbour entry is valid but suspicious. This option to <strong>ip neigh</strong> does not change the neighbour state if it was valid and the address is not changed by this command.</p>
-  </dd>
-  <dt>
-    <p><strong>none</strong></p>
-  </dt>
-  <dd>
-    <p>this is a pseudo state used when initially creating a neighbour entry or after trying to remove it before it becomes free to do so.</p>
-  </dd>
-  <dt>
-    <p><strong>incomplete</strong></p>
-  </dt>
-  <dd>
-    <p>the neighbour entry has not (yet) been validated/resolved.</p>
-  </dd>
-  <dt>
-    <p><strong>delay</strong></p>
-  </dt>
-  <dd>
-    <p>neighbor entry validation is currently delayed.</p>
-  </dd>
-  <dt>
-    <p><strong>probe</strong></p>
-  </dt>
-  <dd>
-    <p>neighbor is being probed.</p>
-  </dd>
-  <dt>
-    <p><strong>failed</strong></p>
-  </dt>
-  <dd>
-    <p>max number of probes exceeded without success, neighbor validation has ultimately failed.</p>
-  </dd>
-
-</dl>
-
   </dd>
 
 </dl>
@@ -242,12 +208,6 @@
     <p>only list the neighbours attached to this device.</p>
   </dd>
   <dt>
-    <p><strong>vrf</strong><em> NAME</em></p>
-  </dt>
-  <dd>
-    <p>only list the neighbours for given VRF.</p>
-  </dd>
-  <dt>
     <p><strong>proxy</strong></p>
   </dt>
   <dd>
@@ -260,10 +220,10 @@
     <p>only list neighbours which are not currently in use.</p>
   </dd>
   <dt>
-    <p><strong>nud</strong><em> STATE</em></p>
+    <p><strong>nud</strong><em> NUD_STATE</em></p>
   </dt>
   <dd>
-    <p>only list neighbour entries in this state. <em>NUD_STATE</em> takes values listed below or the special value <strong>all</strong> which means all states. This option may occur more than once. If this option is absent, <strong>ip</strong> lists all entries except for <strong>none</strong> and <strong>noarp</strong>.</p>
+    <p>only list neighbour entries in this state. <em>NUD_STATE</em> takes values listed below or the special value <strong>all</strong> which means all states.  This option may occur more than once. If this option is absent, <strong>ip</strong> lists all entries except for <strong>none</strong> and <strong>noarp</strong>.</p>
   </dd>
 
 </dl>
@@ -273,7 +233,7 @@
     <p>ip neighbour flush</p>
   </dt>
   <dd>
-    <p>flush neighbour entries</p><p>This command has the same arguments as <strong>show.</strong> The differences are that it does not run when no arguments are given, and that the default neighbour states to be flushed do not include <strong>permanent</strong> and <strong>noarp</strong>.</p><p>With the <strong>-statistics</strong> option, the command becomes verbose. It prints out the number of deleted neighbours and the number of rounds made to flush the neighbour table. If the option is given twice, <strong>ip neigh flush</strong> also dumps all the deleted neighbours.</p>
+    <p>flush neighbour entries</p><p>This command has the same arguments as <strong>show.</strong> The differences are that it does not run when no arguments are given, and that the default neighbour states to be flushed do not include <strong>permanent</strong> and <strong>noarp</strong>.</p><p>With the <strong>-statistics</strong> option, the command becomes verbose.  It prints out the number of deleted neighbours and the number of rounds made to flush the neighbour table.  If the option is given twice, <strong>ip neigh flush</strong> also dumps all the deleted neighbours.</p>
   </dd>
 
 </dl>

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="perf_event_open (2) manual">
   <meta name="twitter:description" content="Set up performance monitoring">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-perf_event_open-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-perf_event_open-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/perf_event_open.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="perf_event_open (2) manual" />
   <meta property="og:description" content="Set up performance monitoring" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-perf_event_open-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-perf_event_open-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -161,10 +161,10 @@
   </dd>
 
 </dl>
-<p>When <em>pid</em> is greater than zero, permission to perform this system call is governed by a ptrace access mode <strong>PTRACE_MODE_READ_REALCREDS</strong> check; see <a href="../man2/ptrace.2.html"><strong>ptrace</strong>(2)</a>.</p><p>The <em>group_fd</em> argument allows event groups to be created. An event group has one event which is the group leader. The leader is created first, with <em>group_fd</em> = -1. The rest of the group members are created with subsequent <strong>perf_event_open</strong>() calls with <em>group_fd</em> being set to the file descriptor of the group leader. (A single event on its own is created with <em>group_fd</em> = -1 and is considered to be a group with only 1 member.) An event group is scheduled onto the CPU as a unit: it will be put onto the CPU only if all of the events in the group can be put onto the CPU. This means that the values of the member events can be meaningfully compared&ndash;added, divided (to get ratios), and so on&ndash;with each other, since they have counted events for the same set of executed instructions.</p><p>The <em>flags</em> argument is formed by ORing together zero or more of the following values:</p>
+<p>The <em>group_fd</em> argument allows event groups to be created. An event group has one event which is the group leader. The leader is created first, with <em>group_fd</em> = -1. The rest of the group members are created with subsequent <strong>perf_event_open</strong>() calls with <em>group_fd</em> being set to the file descriptor of the group leader. (A single event on its own is created with <em>group_fd</em> = -1 and is considered to be a group with only 1 member.) An event group is scheduled onto the CPU as a unit: it will be put onto the CPU only if all of the events in the group can be put onto the CPU. This means that the values of the member events can be meaningfully compared&ndash;added, divided (to get ratios), and so on&ndash;with each other, since they have counted events for the same set of executed instructions.</p><p>The <em>flags</em> argument is formed by ORing together zero or more of the following values:</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>PERF_FLAG_FD_CLOEXEC</strong> (since Linux 3.14)</p>
+    <p><strong>PERF_FLAG_FD_CLOEXEC</strong> (since Linux 3.14).</p>
   </dt>
   <dd>
     <p>This flag enables the close-on-exec flag for the created event file descriptor, so that the file descriptor is automatically closed on <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>. Setting the close-on-exec flags at creation time, rather than later with <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, avoids potential race conditions where the calling thread invokes <strong>perf_event_open</strong>() and <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> at the same time as another thread calls <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a> then <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p>
@@ -173,16 +173,16 @@
     <p><strong>PERF_FLAG_FD_NO_GROUP</strong></p>
   </dt>
   <dd>
-    <p>This flag tells the event to ignore the <em>group_fd</em> parameter except for the purpose of setting up output redirection using the <strong>PERF_FLAG_FD_OUTPUT</strong> flag.</p>
+    <p>This flag allows creating an event as part of an event group but having no group leader. It is unclear why this is useful.</p>
   </dd>
   <dt>
-    <p><strong>PERF_FLAG_FD_OUTPUT</strong> (broken since Linux 2.6.35)</p>
+    <p><strong>PERF_FLAG_FD_OUTPUT</strong></p>
   </dt>
   <dd>
-    <p>This flag re-routes the event's sampled output to instead be included in the mmap buffer of the event specified by <em>group_fd</em>.</p>
+    <p>This flag reroutes the output from an event to the group leader.</p>
   </dd>
   <dt>
-    <p><strong>PERF_FLAG_PID_CGROUP</strong> (since Linux 2.6.39)</p>
+    <p><strong>PERF_FLAG_PID_CGROUP</strong> (since Linux 2.6.39).</p>
   </dt>
   <dd>
     <p>This flag activates per-container system-wide monitoring. A container is an abstraction that isolates a set of resources for finer-grained control (CPUs, memory, etc.). In this mode, the event is measured only if the thread running on the monitored CPU belongs to the designated container (cgroup). The cgroup is identified by passing a file descriptor opened on its directory in the cgroupfs filesystem. For instance, if the cgroup to monitor is called <em>test</em>, then a file descriptor opened on <em>/dev/cgroup/test</em> (assuming cgroupfs is mounted on <em>/dev/cgroup</em>) must be passed as the <em>pid</em> parameter. cgroup monitoring is available only for system-wide events and may therefore require extra permissions.</p>
@@ -230,9 +230,7 @@ struct perf_event_attr {
                                 /* exclude user callchains */
           mmap2          :  1,  /* include mmap with inode data */
           comm_exec      :  1,  /* flag comm events that are due to exec */
-          use_clockid    :  1,  /* use clockid for time fields */
-
-          __reserved_1   : 38;
+          __reserved_1   : 39;
 
     union {
         __u32 wakeup_events;    /* wakeup every n events */
@@ -254,10 +252,7 @@ struct perf_event_attr {
     __u64 sample_regs_user;     /* user regs to dump on samples */
     __u32 sample_stack_user;    /* size of stack to dump on
                                    samples */
-    __s32 clockid;              /* clock to use for time fields */
-    __u64 sample_regs_intr;     /* regs to dump on samples */
-    __u32 aux_watermark;        /* aux bytes before wakeup */
-    __u32 __reserved_2;         /* align to u64 */
+    __u32 __reserved_2;         /* Align to u64 */
 
 };
 </pre>
@@ -309,7 +304,7 @@ struct perf_event_attr {
     <p>dynamic PMU</p>
   </dt>
   <dd>
-    <p>Since Linux 2.6.38, <strong>perf_event_open</strong>() can support multiple PMUs. To enable this, a value exported by the kernel can be used in the <em>type</em> field to indicate which PMU to use. The value to use can be found in the sysfs filesystem: there is a subdirectory per PMU instance under <em>/sys/bus/event_source/devices</em>. In each subdirectory there is a <em>type</em> file whose content is an integer that can be used in the <em>type</em> field. For instance, <em>/sys/bus/event_source/devices/cpu/type</em> contains the value for the core CPU PMU, which is usually 4.</p>
+    <p>Since Linux 2.6.39, <strong>perf_event_open</strong>() can support multiple PMUs. To enable this, a value exported by the kernel can be used in the <em>type</em> field to indicate which PMU to use. The value to use can be found in the sysfs filesystem: there is a subdirectory per PMU instance under <em>/sys/bus/event_source/devices</em>. In each subdirectory there is a <em>type</em> file whose content is an integer that can be used in the <em>type</em> field. For instance, <em>/sys/bus/event_source/devices/cpu/type</em> contains the value for the core CPU PMU, which is usually 4.</p>
   </dd>
 
 </dl>
@@ -319,13 +314,13 @@ struct perf_event_attr {
     <p><em>size</em></p>
   </dt>
   <dd>
-    <p>The size of the <em>perf_event_attr</em> structure for forward/backward compatibility. Set this using <em>sizeof(struct perf_event_attr)</em> to allow the kernel to see the struct size at the time of compilation.</p><p>The related define <strong>PERF_ATTR_SIZE_VER0</strong> is set to 64; this was the size of the first published struct. <strong>PERF_ATTR_SIZE_VER1</strong> is 72, corresponding to the addition of breakpoints in Linux 2.6.33. <strong>PERF_ATTR_SIZE_VER2</strong> is 80 corresponding to the addition of branch sampling in Linux 3.4. <strong>PERF_ATTR_SIZE_VER3</strong> is 96 corresponding to the addition of <em>sample_regs_user</em> and <em>sample_stack_user</em> in Linux 3.7. <strong>PERF_ATTR_SIZE_VER4</strong> is 104 corresponding to the addition of <em>sample_regs_intr</em> in Linux 3.19. <strong>PERF_ATTR_SIZE_VER5</strong> is 112 corresponding to the addition of <em>aux_watermark</em> in Linux 4.1.</p>
+    <p>The size of the <em>perf_event_attr</em> structure for forward/backward compatibility. Set this using <em>sizeof(struct perf_event_attr)</em> to allow the kernel to see the struct size at the time of compilation.</p><p>The related define <strong>PERF_ATTR_SIZE_VER0</strong> is set to 64; this was the size of the first published struct. <strong>PERF_ATTR_SIZE_VER1</strong> is 72, corresponding to the addition of breakpoints in Linux 2.6.33. <strong>PERF_ATTR_SIZE_VER2</strong> is 80 corresponding to the addition of branch sampling in Linux 3.4. <strong>PERF_ATR_SIZE_VER3</strong> is 96 corresponding to the addition of <em>sample_regs_user</em> and <em>sample_stack_user</em> in Linux 3.7.</p>
   </dd>
   <dt>
     <p><em>config</em></p>
   </dt>
   <dd>
-    <p>This specifies which event you want, in conjunction with the <em>type</em> field. The <em>config1</em> and <em>config2</em> fields are also taken into account in cases where 64 bits is not enough to fully specify the event. The encoding of these fields are event dependent.</p><p>There are various ways to set the <em>config</em> field that are dependent on the value of the previously described <em>type</em> field. What follows are various possible settings for <em>config</em> separated out by <em>type</em>.</p><p>If <em>type</em> is <strong>PERF_TYPE_HARDWARE</strong>, we are measuring one of the generalized hardware CPU events. Not all of these are available on all platforms. Set <em>config</em> to one of the following:</p>
+    <p>This specifies which event you want, in conjunction with the <em>type</em> field. The <em>config1</em> and <em>config2</em> fields are also taken into account in cases where 64 bits is not enough to fully specify the event. The encoding of these fields are event dependent.</p><p>The most significant bit (bit 63) of <em>config</em> signifies CPU-specific (raw) counter configuration data; if the most significant bit is unset, the next 7 bits are an event type and the rest of the bits are the event identifier.</p><p>There are various ways to set the <em>config</em> field that are dependent on the value of the previously described <em>type</em> field. What follows are various possible settings for <em>config</em> separated out by <em>type</em>.</p><p>If <em>type</em> is <strong>PERF_TYPE_HARDWARE</strong>, we are measuring one of the generalized hardware CPU events. Not all of these are available on all platforms. Set <em>config</em> to one of the following:</p>
 <dl class='dl-vertical'>
   <dt>
     <p><strong>PERF_COUNT_HW_CPU_CYCLES</strong></p>
@@ -355,7 +350,7 @@ struct perf_event_attr {
     <p><strong>PERF_COUNT_HW_BRANCH_INSTRUCTIONS</strong></p>
   </dt>
   <dd>
-    <p>Retired branch instructions. Prior to Linux 2.6.35, this used the wrong event on AMD processors.</p>
+    <p>Retired branch instructions. Prior to Linux 2.6.34, this used the wrong event on AMD processors.</p>
   </dd>
   <dt>
     <p><strong>PERF_COUNT_HW_BRANCH_MISSES</strong></p>
@@ -498,7 +493,7 @@ struct perf_event_attr {
     <p>for measuring the branch prediction unit</p>
   </dd>
   <dt>
-    <p><strong>PERF_COUNT_HW_CACHE_NODE</strong> (since Linux 3.1)</p>
+    <p><strong>PERF_COUNT_HW_CACHE_NODE</strong> (since Linux 3.0)</p>
   </dt>
   <dd>
     <p>for measuring local memory accesses</p>
@@ -550,7 +545,7 @@ struct perf_event_attr {
     <p><em>sample_period</em>, <em>sample_freq</em></p>
   </dt>
   <dd>
-    <p>A "sampling" event is one that generates an overflow notification every N events, where N is given by <em>sample_period</em>. A sampling event has <em>sample_period</em> &gt; 0. When an overflow occurs, requested data is recorded in the mmap buffer. The <em>sample_type</em> field controls what data is recorded on each overflow.</p><p><em>sample_freq</em> can be used if you wish to use frequency rather than period. In this case, you set the <em>freq</em> flag. The kernel will adjust the sampling period to try and achieve the desired rate. The rate of adjustment is a timer tick.</p>
+    <p>A "sampling" counter is one that generates an interrupt every N events, where N is given by <em>sample_period</em>. A sampling counter has <em>sample_period</em> &gt; 0. When an overflow interrupt occurs, requested data is recorded in the mmap buffer. The <em>sample_type</em> field controls what data is recorded on each interrupt.</p><p><em>sample_freq</em> can be used if you wish to use frequency rather than period. In this case, you set the <em>freq</em> flag. The kernel will adjust the sampling period to try and achieve the desired rate. The rate of adjustment is a timer tick.</p>
   </dd>
   <dt>
     <p><em>sample_type</em></p>
@@ -652,25 +647,19 @@ struct perf_event_attr {
     <p><strong>PERF_SAMPLE_DATA_SRC</strong> (since Linux 3.10)</p>
   </dt>
   <dd>
-    <p>Records the data source: where in the memory hierarchy the data associated with the sampled instruction came from. This is available only if the underlying hardware supports this feature.</p>
+    <p>Records the data source: where in the memory hierarchy the data associated with the sampled instruction came from. This is only available if the underlying hardware supports this feature.</p>
   </dd>
   <dt>
     <p><strong>PERF_SAMPLE_IDENTIFIER</strong> (since Linux 3.12)</p>
   </dt>
   <dd>
-    <p>Places the <strong>SAMPLE_ID</strong> value in a fixed position in the record, either at the beginning (for sample events) or at the end (if a non-sample event).</p><p>This was necessary because a sample stream may have records from various different event sources with different <em>sample_type</em> settings. Parsing the event stream properly was not possible because the format of the record was needed to find <strong>SAMPLE_ID</strong>, but the format could not be found without knowing what event the sample belonged to (causing a circular dependency).</p><p>The <strong>PERF_SAMPLE_IDENTIFIER</strong> setting makes the event stream always parsable by putting <strong>SAMPLE_ID</strong> in a fixed location, even though it means having duplicate <strong>SAMPLE_ID</strong> values in records.</p>
+    <p>Places the <strong>SAMPLE_ID</strong> value in a fixed position in the record, either at the beginning (for sample events) or at the end (if a non-sample event).</p><p>This was necessary because a sample stream may have records from various different event sources with different <em>sample_type</em> settings. Parsing the event stream properly was not possible because the format of the record was needed to find <strong>SAMPLE_ID</strong>, but the format could not be found without knowing what event the sample belonged to (causing a circular dependency).</p><p>This new <strong>PERF_SAMPLE_IDENTIFIER</strong> setting makes the event stream always parsable by putting <strong>SAMPLE_ID</strong> in a fixed location, even though it means having duplicate <strong>SAMPLE_ID</strong> values in records.</p>
   </dd>
   <dt>
-    <p><strong>PERF_SAMPLE_TRANSACTION</strong> (since Linux 3.13)</p>
+    <p><strong>PERF_SAMPLE_TRANSACTION</strong> (Since Linux 3.13)</p>
   </dt>
   <dd>
     <p>Records reasons for transactional memory abort events (for example, from Intel TSX transactional memory support).</p><p>The <em>precise_ip</em> setting must be greater than 0 and a transactional memory abort event must be measured or no values will be recorded. Also note that some perf_event measurements, such as sampled cycle counting, may cause extraneous aborts (by causing an interrupt during a transaction).</p>
-  </dd>
-  <dt>
-    <p><strong>PERF_SAMPLE_REGS_INTR</strong> (since Linux 3.19)</p>
-  </dt>
-  <dd>
-    <p>Records a subset of the current CPU register state as specified by <em>sample_regs_intr</em>. Unlike <strong>PERF_SAMPLE_REGS_USER</strong> the register values will return kernel register state if the overflow happened while kernel code is running. If the CPU supports hardware sampling of register state (i.e. PEBS on Intel x86) and <em>precise_ip</em> is set higher than zero then the register values returned are those captured by hardware at the time of the sampled instruction's retirement.</p>
   </dd>
 
 </dl>
@@ -798,7 +787,7 @@ struct perf_event_attr {
     <p><em>watermark</em></p>
   </dt>
   <dd>
-    <p>If set, have an overflow notification happen when we cross the <em>wakeup_watermark</em> boundary. Otherwise, overflow notifications happen after <em>wakeup_events</em> samples.</p>
+    <p>If set, have a sampling interrupt happen when we cross the <em>wakeup_watermark</em> boundary. Otherwise, interrupts happen after <em>wakeup_events</em> samples.</p>
   </dd>
   <dt>
     <p><em>precise_ip</em> (since Linux 2.6.35)</p>
@@ -861,13 +850,13 @@ struct sample_id {
     <p><em>exclude_host</em> (since Linux 3.2)</p>
   </dt>
   <dd>
-    <p>When conducting measurements that include processes running VM instances (i.e. have executed a <em>KVM_RUN</em> <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> ) only measure events happening inside a guest instance. This is only meaningful outside the guests; this setting does not change counts gathered inside of a guest. Currently, this functionality is x86 only.</p>
+    <p>Do not measure time spent in VM host.</p>
   </dd>
   <dt>
     <p><em>exclude_guest</em> (since Linux 3.2)</p>
   </dt>
   <dd>
-    <p>When conducting measurements that include processes running VM instances (i.e. have executed a <em>KVM_RUN</em> <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> ) do not measure events happening inside guest instances. This is only meaningful outside the guests; this setting does not change counts gathered inside of a guest. Currently, this functionality is x86 only.</p>
+    <p>Do not measure time spent in VM guest.</p>
   </dd>
   <dt>
     <p><em>exclude_callchain_kernel</em> (since Linux 3.7)</p>
@@ -894,16 +883,10 @@ struct sample_id {
     <p>This is purely a feature-detection flag, it does not change kernel behavior. If this flag can successfully be set, then, when <em>comm</em> is enabled, the <strong>PERF_RECORD_MISC_COMM_EXEC</strong> flag will be set in the <em>misc</em> field of a comm record header if the rename event being reported was caused by a call to <strong>exec</strong>(2). This allows tools to distinguish between the various types of process renaming.</p>
   </dd>
   <dt>
-    <p><em>use_clockid</em> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>This allows selecting which internal Linux clock to use when generating timestamps via the <em>clockid</em> field. This can make it easier to correlate perf sample times with timestamps generated by other tools.</p>
-  </dd>
-  <dt>
     <p><em>wakeup_events</em>, <em>wakeup_watermark</em></p>
   </dt>
   <dd>
-    <p>This union sets how many samples (<em>wakeup_events</em>) or bytes (<em>wakeup_watermark</em>) happen before an overflow notification happens. Which one is used is selected by the <em>watermark</em> bit flag.</p><p><em>wakeup_events</em> counts only <strong>PERF_RECORD_SAMPLE</strong> record types. To receive overflow notification for all <strong>PERF_RECORD</strong> types choose watermark and set <em>wakeup_watermark</em> to 1.</p><p>Prior to Linux 3.0 setting <em>wakeup_events</em> to 0 resulted in no overflow notifications; more recent kernels treat 0 the same as 1.</p>
+    <p>This union sets how many samples (<em>wakeup_events</em>) or bytes (<em>wakeup_watermark</em>) happen before an overflow signal happens. Which one is used is selected by the <em>watermark</em> bit flag.</p><p><em>wakeup_events</em> only counts <strong>PERF_RECORD_SAMPLE</strong> record types. To receive a signal for every incoming <strong>PERF_RECORD</strong> type set <em>wakeup_watermark</em> to 1.</p>
   </dd>
   <dt>
     <p><em>bp_type</em> (since Linux 2.6.33)</p>
@@ -1049,7 +1032,7 @@ struct sample_id {
     <p><strong>PERF_SAMPLE_BRANCH_NO_TX</strong> (since Linux 3.11)</p>
   </dt>
   <dd>
-    <p>Branch not in transactional memory transaction. <strong>PERF_SAMPLE_BRANCH_CALL_STACK</strong> (since Linux 4.1) Branch is part of a hardware-generated call stack. This requires hardware support, currently only found on Intel x86 Haswell or newer.</p>
+    <p>Branch not in transactional memory transaction.</p>
   </dd>
 
 </dl>
@@ -1067,18 +1050,6 @@ struct sample_id {
   <dd>
     <p>This defines the size of the user stack to dump if <strong>PERF_SAMPLE_STACK_USER</strong> is specified.</p>
   </dd>
-  <dt>
-    <p><em>clockid</em> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>If <em>use_clockid</em> is set, then this field selects which internal Linux timer to use for timestamps. The available timers are defined in <em>linux/time.h</em>, with <strong>CLOCK_MONOTONIC</strong>, <strong>CLOCK_MONOTONIC_RAW</strong>, <strong>CLOCK_REALTIME</strong>, <strong>CLOCK_BOOTTIME</strong>, and <strong>CLOCK_TAI</strong> currently supported.</p>
-  </dd>
-  <dt>
-    <p><em>aux_watermark</em> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>This specifies how much data is required to trigger a <strong>PERF_RECORD_AUX</strong> sample.</p>
-  </dd>
 
 </dl>
 
@@ -1090,7 +1061,7 @@ struct read_format {
     u64 nr;            /* The number of events */
     u64 time_enabled;  /* if PERF_FORMAT_TOTAL_TIME_ENABLED */
     u64 time_running;  /* if PERF_FORMAT_TOTAL_TIME_RUNNING */
-    struct {
+    struct
         u64 value;     /* The value of the event */
         u64 id;        /* if PERF_FORMAT_ID */
     } values[nr];
@@ -1130,13 +1101,13 @@ struct read_format {
     <p><em>id</em></p>
   </dt>
   <dd>
-    <p>A globally unique value for this particular event, only present if <strong>PERF_FORMAT_ID</strong> was specified in <em>read_format</em>.</p>
+    <p>A globally unique value for this particular event, only there if <strong>PERF_FORMAT_ID</strong> was specified in <em>read_format</em>.</p>
   </dd>
 
 </dl>
 
 <h3>MMAP layout</h3>
-<p>When using <strong>perf_event_open</strong>() in sampled mode, asynchronous events (like counter overflow or <strong>PROT_EXEC</strong> mmap tracking) are logged into a ring-buffer. This ring-buffer is created and accessed through <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>.</p><p>The mmap size should be 1+2^n pages, where the first page is a metadata page (<em>struct perf_event_mmap_page</em>) that contains various bits of information such as where the ring-buffer head is.</p><p>Before kernel 2.6.39, there is a bug that means you must allocate an mmap ring buffer when sampling even if you do not plan to access it.</p><p>The structure of the first metadata mmap page is as follows:</p>
+<p>When using <strong>perf_event_open</strong>() in sampled mode, asynchronous events (like counter overflow or <strong>PROT_EXEC</strong> mmap tracking) are logged into a ring-buffer. This ring-buffer is created and accessed through <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>.</p><p>The mmap size should be 1+2^n pages, where the first page is a metadata page (<em>struct perf_event_mmap_page</em>) that contains various bits of information such as where the ring-buffer head is.</p><p>Before kernel 2.6.39, there is a bug that means you must allocate a mmap ring buffer when sampling even if you do not plan to access it.</p><p>The structure of the first metadata mmap page is as follows:</p>
 <pre>
 struct perf_event_mmap_page {
     __u32 version;        /* version number of this structure */
@@ -1163,13 +1134,6 @@ struct perf_event_mmap_page {
     __u64 __reserved[120];   /* Pad to 1k */
     __u64 data_head;         /* head in the data section */
     __u64 data_tail;         /* user-space written tail */
-    __u64 data_offset;       /* where the buffer starts */
-    __u64 data_size;         /* data buffer size */
-    __u64 aux_head;
-    __u64 aux_tail;
-    __u64 aux_offset;
-    __u64 aux_size;
-
 }
 </pre>
 <p>The following list describes the fields in the <em>perf_event_mmap_page</em> structure in more detail:</p>
@@ -1220,7 +1184,7 @@ struct perf_event_mmap_page {
     <p><em>cap_usr_time</em> / <em>cap_usr_rdpmc</em> / <em>cap_bit0</em> (since Linux 3.4)</p>
   </dt>
   <dd>
-    <p>There was a bug in the definition of <em>cap_usr_time</em> and <em>cap_usr_rdpmc</em> from Linux 3.4 until Linux 3.11. Both bits were defined to point to the same location, so it was impossible to know if <em>cap_usr_time</em> or <em>cap_usr_rdpmc</em> were actually set.</p><p>Starting with Linux 3.12, these are renamed to <em>cap_bit0</em> and you should use the <em>cap_user_time</em> and <em>cap_user_rdpmc</em> fields instead.</p>
+    <p>There was a bug in the definition of <em>cap_usr_time</em> and <em>cap_usr_rdpmc</em> from Linux 3.4 until Linux 3.11. Both bits were defined to point to the same location, so it was impossible to know if <em>cap_usr_time</em> or <em>cap_usr_rdpmc</em> were actually set.</p><p>Starting with 3.12 these are renamed to <em>cap_bit0</em> and you should use the new <em>cap_user_time</em> and <em>cap_user_rdpmc</em> fields instead.</p>
   </dd>
   <dt>
     <p><em>cap_bit0_is_deprecated</em> (since Linux 3.12)</p>
@@ -1265,7 +1229,7 @@ do {
 
   </dd>
   <dt>
-    <p><em>cap_user_time</em> (since Linux 3.12)</p>
+    <p><em>cap_user_time  (since Linux 3.12)</em></p>
   </dt>
   <dd>
     <p>This bit indicates the hardware has a constant, nonstop timestamp counter (TSC on x86).</p>
@@ -1344,24 +1308,6 @@ count += pmc;
   <dd>
     <p>When the mapping is <strong>PROT_WRITE</strong>, the <em>data_tail</em> value should be written by user space to reflect the last read data. In this case, the kernel will not overwrite unread data.</p>
   </dd>
-  <dt>
-    <p><em>data_offset</em> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>Contains the offset of the location in the mmap buffer where perf sample data begins.</p>
-  </dd>
-  <dt>
-    <p><em>data_size</em> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>Contains the size of the perf sample region within the mmap buffer.</p>
-  </dd>
-  <dt>
-    <p><em>aux_head</em>, <em>aux_tail</em>, <em>aux_offset</em>, <em>aux_size</em> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>The AUX region allows mmaping a separate sample buffer for high-bandwidth data streams (separate from the main perf sample buffer). An example of a high-bandwidth stream is instruction tracing support, as is found in newer Intel processors.</p><p>To set up an AUX area, first <em>aux_offset</em> needs to be set with an offset greater than <em>data_offset</em>+<em>data_size</em> and <em>aux_size</em> needs to be set to the desired buffer size. The desired offset and size must be page aligned, and the size must be a power of two. These values are then passed to mmap in order to map the AUX buffer. Pages in the AUX buffer are included as part of the <strong>RLIMIT_MEMLOCK</strong> resource limit (see <a href="../man2/setrlimit.2.html"><strong>setrlimit</strong>(2)</a>), and also as part of the <em>perf_event_mlock_kb</em> allowance.</p><p>By default, the AUX buffer will be truncated if it will not fit in the available space in the ring buffer. If the AUX buffer is mapped as a read only buffer, then it will operate in ring buffer mode where old data will be overwritten by new. In overwrite mode, it might not be possible to infer where the new data began, and it is the consumer's job to disable measurement while reading to avoid possible data races.</p><p>The <em>aux_head</em> and <em>aux_tail</em> ring buffer pointers have the same behavior and ordering rules as the previous described <em>data_head</em> and <em>data_tail</em>.</p>
-  </dd>
 
 </dl>
 <p>The following 2^n ring-buffer pages have the layout described below.</p><p>If <em>perf_event_attr.sample_id_all</em> is set, then all event types will have the sample_type selected fields related to where/when (identity) an event took place (TID, TIME, ID, CPU, STREAM_ID) described in <strong>PERF_RECORD_SAMPLE</strong> below, it will be stashed just after the <em>perf_event_header</em> and the fields already present for the existing fields, that is, at the end of the payload. That way a newer perf.data file will be supported by older perf tools, with these new optional fields being ignored.</p><p>The mmap values start with a header:</p>
@@ -1411,13 +1357,13 @@ struct perf_event_header {
     <p>Sample happened in the hypervisor.</p>
   </dd>
   <dt>
-    <p><strong>PERF_RECORD_MISC_GUEST_KERNEL</strong> (since Linux 2.6.35)</p>
+    <p><strong>PERF_RECORD_MISC_GUEST_KERNEL</strong></p>
   </dt>
   <dd>
     <p>Sample happened in the guest kernel.</p>
   </dd>
   <dt>
-    <p><strong>PERF_RECORD_MISC_GUEST_USER  (since Linux 2.6.35)</strong></p>
+    <p><strong>PERF_RECORD_MISC_GUEST_USER</strong></p>
   </dt>
   <dd>
     <p>Sample happened in guest user code.</p>
@@ -1427,13 +1373,13 @@ struct perf_event_header {
 <p>In addition, one of the following bits can be set:</p>
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>PERF_RECORD_MISC_MMAP_DATA</strong> (since Linux 3.10)</p>
+    <p><strong>PERF_RECORD_MISC_MMAP_DATA</strong></p>
   </dt>
   <dd>
     <p>This is set when the mapping is not executable; otherwise the mapping is executable.</p>
   </dd>
   <dt>
-    <p><strong>PERF_RECORD_MISC_COMM_EXEC</strong> (since Linux 3.16)</p>
+    <p><strong>PERF_RECORD_MISC_COMM_EXEC</strong></p>
   </dt>
   <dd>
     <p>This is set for a <strong>PERF_RECORD_COMM</strong> record on kernels more recent than Linux 3.16 if a process name change was caused by an <strong>exec</strong>(2) system call. It is an alias for <strong>PERF_RECORD_MISC_MMAP_DATA</strong> since the two values would not be set in the same record.</p>
@@ -1445,7 +1391,7 @@ struct perf_event_header {
     <p>This indicates that the content of <strong>PERF_SAMPLE_IP</strong> points to the actual instruction that triggered the event. See also <em>perf_event_attr.precise_ip</em>.</p>
   </dd>
   <dt>
-    <p><strong>PERF_RECORD_MISC_EXT_RESERVED</strong> (since Linux 2.6.35)</p>
+    <p><strong>PERF_RECORD_MISC_EXT_RESERVED</strong></p>
   </dt>
   <dd>
     <p>This indicates there is extended data available (currently not used).</p>
@@ -1661,13 +1607,10 @@ struct {
                       /* if PERF_SAMPLE_REGS_USER */
     u64   size;       /* if PERF_SAMPLE_STACK_USER */
     char  data[size]; /* if PERF_SAMPLE_STACK_USER */
-    u64   dyn_size;   /* if PERF_SAMPLE_STACK_USER && size != 0 */
+    u64   dyn_size;   /* if PERF_SAMPLE_STACK_USER */
     u64   weight;     /* if PERF_SAMPLE_WEIGHT */
     u64   data_src;   /* if PERF_SAMPLE_DATA_SRC */
     u64   transaction;/* if PERF_SAMPLE_TRANSACTION */
-    u64   abi;        /* if PERF_SAMPLE_REGS_INTR */
-    u64   regs[weight(mask)];
-                      /* if PERF_SAMPLE_REGS_INTR */
 };
 </pre>
 
@@ -1800,7 +1743,7 @@ struct {
     <p><em>size</em>, <em>data[size]</em>, <em>dyn_size</em></p>
   </dt>
   <dd>
-    <p>If <strong>PERF_SAMPLE_STACK_USER</strong> is enabled, then the user stack is recorded. This can be used to generate stack backtraces. <em>size</em> is the size requested by the user in <em>sample_stack_user</em> or else the maximum record size. <em>data</em> is the stack data (a raw dump of the memory pointed to by the stack pointer at the time of sampling). <em>dyn_size</em> is the amount of data actually dumped (can be less than <em>size</em>). Note that <em>dyn_size</em> is omitted if <em>size</em> is 0.</p>
+    <p>If <strong>PERF_SAMPLE_STACK_USER</strong> is enabled, then the user stack is recorded. This can be used to generate stack backtraces. <em>size</em> is the size requested by the user in <em>sample_stack_user</em> or else the maximum record size. <em>data</em> is the stack data (a raw dump of the memory pointed to by the stack pointer at the time of sampling). <em>dyn_size</em> is the amount of data actually dumped (can be less than <em>size</em>).</p>
   </dd>
   <dt>
     <p><em>weight</em></p>
@@ -2126,12 +2069,6 @@ struct {
 <li><p>In addition, a user-specified abort code can be obtained from the high 32 bits of the field by shifting right by <strong>PERF_TXN_ABORT_SHIFT</strong> and masking with <strong>PERF_TXN_ABORT_MASK</strong>.</p></li>
 </ul>
   </dd>
-  <dt>
-    <p><em>abi</em>, <em>regs[weight(mask)]</em></p>
-  </dt>
-  <dd>
-    <p>If <strong>PERF_SAMPLE_REGS_INTR</strong> is enabled, then the user CPU registers are recorded.</p><p>The <em>abi</em> field is one of <strong>PERF_SAMPLE_REGS_ABI_NONE</strong>, <strong>PERF_SAMPLE_REGS_ABI_32</strong> or  <strong>PERF_SAMPLE_REGS_ABI_64</strong>.</p><p>The <em>regs</em> field is an array of the CPU registers that were specified by the <em>sample_regs_intr</em> attr field. The number of values is the number of bits set in the <em>sample_regs_intr</em> bit mask.</p>
-  </dd>
 
 </dl>
 
@@ -2237,52 +2174,6 @@ struct {
 </dl>
 
   </dd>
-  <dt>
-    <p><strong>PERF_RECORD_AUX</strong> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>This record reports that new data is available in the separate AUX buffer region.</p>
-<pre>
-struct {
-    struct perf_event_header header;
-    u64 aux_offset;
-    u64 aux_size;
-    u64 flags;
-    struct sample_id sample_id;
-};
-</pre>
-
-<dl class='dl-vertical'>
-  <dt>
-    <p><em>aux_offset</em></p>
-  </dt>
-  <dd>
-    <p>offset in the AUX mmap region where the new data begins.</p>
-  </dd>
-  <dt>
-    <p><em>aux_size</em></p>
-  </dt>
-  <dd>
-    <p>size of the data made available.</p>
-  </dd>
-  <dt>
-    <p><em>flags</em></p>
-  </dt>
-  <dd>
-    <p>describes the AUX update.</p>
-<dl class='dl-vertical'>
-  <dt>
-    <p><strong>PERF_AUX_FLAG_TRUNCATED</strong></p>
-  </dt>
-  <dd>
-    <p>if set, then the data returned was truncated to fit the available buffer size.</p>
-  </dd>
-  <dt>
-    <p><strong>PERF_AUX_FLAG_OVERWRITE</strong></p>
-  </dt>
-  <dd>
-    <p>if set, then the data returned has overwritten previous data.</p>
-  </dd>
 
 </dl>
 
@@ -2290,48 +2181,10 @@ struct {
 
 </dl>
 
-  </dd>
-  <dt>
-    <p><strong>PERF_RECORD_ITRACE_START</strong> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>This record indicates which process has initiated an instruction trace event, allowing tools to properly correlate the instruction addresses in the AUX buffer with the proper executable.</p>
-<pre>
-struct {
-    struct perf_event_header header;
-    u32 pid;
-    u32 tid;
-};
-</pre>
-
-<dl class='dl-vertical'>
-  <dt>
-    <p><em>pid</em></p>
-  </dt>
-  <dd>
-    <p>process ID of the thread starting an instruction trace.</p>
-  </dd>
-  <dt>
-    <p><em>tid</em></p>
-  </dt>
-  <dd>
-    <p>thread ID of the thread starting an instruction trace.</p>
-  </dd>
-
-</dl>
-
-  </dd>
-
-</dl>
-
-  </dd>
-
-</dl>
-
-<h3>Overflow handling</h3>
-<p>Events can be set to notify when a threshold is crossed, indicating an overflow. Overflow conditions can be captured by monitoring the event file descriptor with <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, or <strong>epoll</strong>(2). Alternately, a SIGIO signal handler can be created and the event configured with <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> to generate SIGIO signals.</p><p>Overflows are generated only by sampling events (<em>sample_period</em> must have a nonzero value).</p><p>There are two ways to generate overflow notifications.</p><p>The first is to set a <em>wakeup_events</em> or <em>wakeup_watermark</em> value that will trigger if a certain number of samples or bytes have been written to the mmap ring buffer. In this case <strong>POLL_IN</strong> is indicated.</p><p>The other way is by use of the <strong>PERF_EVENT_IOC_REFRESH</strong> ioctl. This ioctl adds to a counter that decrements each time the event overflows. When nonzero, <strong>POLL_IN</strong> is indicated, but once the counter reaches 0 <strong>POLL_HUP</strong> is indicated and the underlying event is disabled.</p><p>Refreshing an event group leader refreshes all siblings and refreshing with a parameter of 0 currently enables infinite refreshes; these behaviors are unsupported and should not be relied on.</p><p>Starting with Linux 3.18, <strong>POLL_HUP</strong> is indicated if the event being monitored is attached to a different process and that process exits.</p>
+<h3>Signal overflow</h3>
+<p>Events can be set to deliver a signal when a threshold is crossed. The signal handler is set up using the <a href="../man2/poll.2.html"><strong>poll</strong>(2)</a>, <a href="../man2/select.2.html"><strong>select</strong>(2)</a>, <strong>epoll</strong>(2) and <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, system calls.</p><p>To generate signals, sampling must be enabled (<em>sample_period</em> must have a nonzero value).</p><p>There are two ways to generate signals.</p><p>The first is to set a <em>wakeup_events</em> or <em>wakeup_watermark</em> value that will generate a signal if a certain number of samples or bytes have been written to the mmap ring buffer. In this case, a signal of type <strong>POLL_IN</strong> is sent.</p><p>The other way is by use of the <strong>PERF_EVENT_IOC_REFRESH</strong> ioctl. This ioctl adds to a counter that decrements each time the event overflows. When nonzero, a <strong>POLL_IN</strong> signal is sent on overflow, but once the value reaches 0, a signal is sent of type <strong>POLL_HUP</strong> and the underlying event is disabled.</p><p>Note: on newer kernels (since at least as early as Linux 3.2), a signal is provided for every overflow, even if <em>wakeup_events</em> is not set.</p>
 <h3>rdpmc instruction</h3>
-<p>Starting with Linux 3.4 on x86, you can use the <em>rdpmc</em> instruction to get low-latency reads without having to enter the kernel. Note that using <em>rdpmc</em> is not necessarily faster than other methods for reading event values.</p><p>Support for this can be detected with the <em>cap_usr_rdpmc</em> field in the mmap page; documentation on how to calculate event values can be found in that section.</p><p>Originally, when rdpmc support was enabled, any process (not just ones with an active perf event) could use the rdpmc instruction to access the counters. Starting with Linux 4.0 rdpmc support is only allowed if an event is currently enabled in a process's context. To restore the old behavior, write the value 2 to <em>/sys/devices/cpu/rdpmc</em>.</p>
+<p>Starting with Linux 3.4 on x86, you can use the <em>rdpmc</em> instruction to get low-latency reads without having to enter the kernel. Note that using <em>rdpmc</em> is not necessarily faster than other methods for reading event values.</p><p>Support for this can be detected with the <em>cap_usr_rdpmc</em> field in the mmap page; documentation on how to calculate event values can be found in that section.</p>
 <h3>perf_event ioctl calls</h3>
 <p>Various ioctls act on <strong>perf_event_open</strong>() file descriptors:</p>
 <dl class='dl-vertical'>
@@ -2351,7 +2204,7 @@ struct {
     <p><strong>PERF_EVENT_IOC_REFRESH</strong></p>
   </dt>
   <dd>
-    <p>Non-inherited overflow counters can use this to enable a counter for a number of overflows specified by the argument, after which it is disabled. Subsequent calls of this ioctl add the argument value to the current count. An overflow notification with <strong>POLL_IN</strong> set will happen on each overflow until the count reaches 0; when that happens a notification with <strong>POLL_HUP</strong> set is sent and the event is disabled. Using an argument of 0 is considered undefined behavior.</p>
+    <p>Non-inherited overflow counters can use this to enable a counter for a number of overflows specified by the argument, after which it is disabled. Subsequent calls of this ioctl add the argument value to the current count. A signal with <strong>POLL_IN</strong> set will happen on each overflow until the count reaches 0; when that happens a signal with POLL_HUP set is sent and the event is disabled. Using an argument of 0 is considered undefined behavior.</p>
   </dd>
   <dt>
     <p><strong>PERF_EVENT_IOC_RESET</strong></p>
@@ -2383,12 +2236,6 @@ struct {
   <dd>
     <p>This returns the event ID value for the given event file descriptor.</p><p>The argument is a pointer to a 64-bit unsigned integer to hold the result.</p>
   </dd>
-  <dt>
-    <p><strong>PERF_EVENT_IOC_SET_BPF</strong> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>This allows attaching a Berkeley Packet Filter (BPF) program to an existing kprobe tracepoint event. You need <strong>CAP_SYS_ADMIN</strong> privileges to use this ioctl.</p><p>The argument is a BPF program file descriptor that was created by a previous <a href="../man2/bpf.2.html"><strong>bpf</strong>(2)</a> system call.</p>
-  </dd>
 
 </dl>
 
@@ -2407,13 +2254,13 @@ struct {
     2
   </dt>
   <dd>
-    <p>allow only user-space measurements (default since Linux 4.6).</p>
+    <p>only allow user-space measurements.</p>
   </dd>
   <dt>
     1
   </dt>
   <dd>
-    <p>allow both kernel and user measurements (default before Linux 4.6).</p>
+    <p>allow both kernel and user measurements (default).</p>
   </dd>
   <dt>
     0
@@ -2456,10 +2303,10 @@ struct {
     <p>This contains an integer that can be used in the <em>type</em> field of <em>perf_event_attr</em> to indicate that you wish to use this PMU.</p>
   </dd>
   <dt>
-    <p><em>/sys/bus/event_source/devices/cpu/rdpmc</em> (since Linux 3.4)</p>
+    <p><em>/sys/bus/event_source/devices/*/rdpmc</em> (since Linux 3.4)</p>
   </dt>
   <dd>
-    <p>If this file is 1, then direct user-space access to the performance counter registers is allowed via the rdpmc instruction. This can be disabled by echoing 0 to the file.</p><p>As of Linux 4.0 the behavior has changed, so that 1 now means only allow access to processes with active perf events, with 2 indicating the old allow-anyone-access behavior.</p>
+    <p>If this file is 1, then direct user-space access to the performance counter registers is allowed via the rdpmc instruction. This can be disabled by echoing 0 to the file.</p>
   </dd>
   <dt>
     <p><em>/sys/bus/event_source/devices/*/format/</em> (since Linux 3.4)</p>
@@ -2523,12 +2370,6 @@ struct {
     <p>Returned if the <em>group_fd</em> file descriptor is not valid, or, if <strong>PERF_FLAG_PID_CGROUP</strong> is set, the cgroup file descriptor in <em>pid</em> is not valid.</p>
   </dd>
   <dt>
-    <p><strong>EBUSY</strong> (since Linux 4.1)</p>
-  </dt>
-  <dd>
-    <p>Returned if another event already has exclusive access to the PMU.</p>
-  </dd>
-  <dt>
     <p><strong>EFAULT</strong></p>
   </dt>
   <dd>
@@ -2544,7 +2385,7 @@ struct {
     <p><strong>EMFILE</strong></p>
   </dt>
   <dd>
-    <p>Each opened event uses one file descriptor. If a large number of events are opened, the per-process limit on the number of open file descriptors will be reached, and no more events can be created.</p>
+    <p>Each opened event uses one file descriptor. If a large number of events are opened the per-user file descriptor limit (often 1024) will be hit and no more events can be created.</p>
   </dd>
   <dt>
     <p><strong>ENODEV</strong></p>
@@ -2618,7 +2459,7 @@ struct {
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>The <strong>F_SETOWN_EX</strong> option to <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> is needed to properly get overflow signals in threads. This was introduced in Linux 2.6.32.</p><p>Prior to Linux 2.6.33 (at least for x86), the kernel did not check if events could be scheduled together until read time. The same happens on all known kernels if the NMI watchdog is enabled. This means to see if a given set of events works you have to <strong>perf_event_open</strong>(), start, then read before you know for sure you can get valid measurements.</p><p>Prior to Linux 2.6.34, event constraints were not enforced by the kernel. In that case, some events would silently return "0" if the kernel scheduled them in an improper counter slot.</p><p>Prior to Linux 2.6.34, there was a bug when multiplexing where the wrong results could be returned.</p><p>Kernels from Linux 2.6.35 to Linux 2.6.39 can quickly crash the kernel if "inherit" is enabled and many threads are started.</p><p>Prior to Linux 2.6.35, <strong>PERF_FORMAT_GROUP</strong> did not work with attached processes.</p><p>There is a bug in the kernel code between Linux 2.6.36 and Linux 3.0 that ignores the "watermark" field and acts as if a wakeup_event was chosen if the union has a nonzero value in it.</p><p>From Linux 2.6.31 to Linux 3.4, the <strong>PERF_IOC_FLAG_GROUP</strong> ioctl argument was broken and would repeatedly operate on the event specified rather than iterating across all sibling events in a group.</p><p>From Linux 3.4 to Linux 3.11, the mmap <em>cap_usr_rdpmc</em> and <em>cap_usr_time</em> bits mapped to the same location. Code should migrate to the new <em>cap_user_rdpmc</em> and <em>cap_user_time</em> fields instead.</p><p>Always double-check your results! Various generalized events have had wrong values. For example, retired branches measured the wrong thing on AMD machines until Linux 2.6.35.</p>
+<p>The <strong>F_SETOWN_EX</strong> option to <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a> is needed to properly get overflow signals in threads. This was introduced in Linux 2.6.32.</p><p>Prior to Linux 2.6.33 (at least for x86), the kernel did not check if events could be scheduled together until read time. The same happens on all known kernels if the NMI watchdog is enabled. This means to see if a given set of events works you have to <strong>perf_event_open</strong>(), start, then read before you know for sure you can get valid measurements.</p><p>Prior to Linux 2.6.34, event constraints were not enforced by the kernel. In that case, some events would silently return "0" if the kernel scheduled them in an improper counter slot.</p><p>Prior to Linux 2.6.34, there was a bug when multiplexing where the wrong results could be returned.</p><p>Kernels from Linux 2.6.35 to Linux 2.6.39 can quickly crash the kernel if "inherit" is enabled and many threads are started.</p><p>Prior to Linux 2.6.35, <strong>PERF_FORMAT_GROUP</strong> did not work with attached processes.</p><p>In older Linux 2.6 versions, refreshing an event group leader refreshed all siblings, and refreshing with a parameter of 0 enabled infinite refresh. This behavior is unsupported and should not be relied on.</p><p>There is a bug in the kernel code between Linux 2.6.36 and Linux 3.0 that ignores the "watermark" field and acts as if a wakeup_event was chosen if the union has a nonzero value in it.</p><p>From Linux 2.6.31 to Linux 3.4, the <strong>PERF_IOC_FLAG_GROUP</strong> ioctl argument was broken and would repeatedly operate on the event specified rather than iterating across all sibling events in a group.</p><p>From Linux 3.4 to Linux 3.11, the mmap <em>cap_usr_rdpmc</em> and <em>cap_usr_time</em> bits mapped to the same location. Code should migrate to the new <em>cap_user_rdpmc</em> and <em>cap_user_time</em> fields instead.</p><p>Always double-check your results! Various generalized events have had wrong values. For example, retired branches measured the wrong thing on AMD machines until Linux 2.6.35.</p>
         </div>
       </section>
 
@@ -2688,6 +2529,13 @@ main(int argc, char **argv)
         <h2 class="font-effect-shadow-multiple">RELATED TO perf_event_open&hellip;</h2>
         <div class="sectioncontent">
 <p><a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/prctl.2.html"><strong>prctl</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

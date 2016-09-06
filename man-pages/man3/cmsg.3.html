@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="cmsg (3) manual">
   <meta name="twitter:description" content="Access ancillary data">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-cmsg-3.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-cmsg-3.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man3/cmsg.3.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="cmsg (3) manual" />
   <meta property="og:description" content="Access ancillary data" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-cmsg-3.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-cmsg-3.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -107,12 +107,10 @@
 <p><strong>#include &lt;sys/socket.h&gt;</strong></p><p><strong>struct cmsghdr *CMSG_FIRSTHDR(struct msghdr *</strong><em>msgh</em><strong>);</strong></p><p><strong>struct cmsghdr *CMSG_NXTHDR(struct msghdr *</strong><em>msgh</em><strong>, struct cmsghdr *</strong><em>cmsg</em><strong>);</strong></p><p><strong>size_t CMSG_ALIGN(size_t </strong><em>length</em><strong>);</strong></p><p><strong>size_t CMSG_SPACE(size_t </strong><em>length</em><strong>);</strong></p><p><strong>size_t CMSG_LEN(size_t </strong><em>length</em><strong>);</strong></p><p><strong>unsigned char *CMSG_DATA(struct cmsghdr *</strong><em>cmsg</em><strong>);</strong></p>
 <pre>
 struct cmsghdr {
-    size_t cmsg_len;    /* Data byte count, including header
-                           (type is socklen_t in POSIX) */
-    int    cmsg_level;  /* Originating protocol */
-    int    cmsg_type;   /* Protocol-specific type */
-/* followed by
-   unsigned char cmsg_data[]; */
+    socklen_t cmsg_len;    /* data byte count, including header */
+    int       cmsg_level;  /* originating protocol */
+    int       cmsg_type;   /* protocol-specific type */
+    /* followed by unsigned char cmsg_data[]; */
 };
 </pre>
 
@@ -151,9 +149,8 @@ int *ttlptr;
 int received_ttl;
 
 /* Receive auxiliary data in msgh */
-
 for (cmsg = CMSG_FIRSTHDR(&msgh); cmsg != NULL;
-        cmsg = CMSG_NXTHDR(&msgh, cmsg)) {
+        cmsg = CMSG_NXTHDR(&msgh,cmsg)) {
     if (cmsg-&gt;cmsg_level == IPPROTO_IP
             && cmsg-&gt;cmsg_type == IP_TTL) {
         ttlptr = (int *) CMSG_DATA(cmsg);
@@ -161,31 +158,32 @@ for (cmsg = CMSG_FIRSTHDR(&msgh); cmsg != NULL;
         break;
     }
 }
-
 if (cmsg == NULL) {
-    /* Error: IP_TTL not enabled or small buffer or I/O error */
+    /*
+     * Error: IP_TTL not enabled or small buffer
+     * or I/O error.
+     */
 }
 </pre>
 <p>The code below passes an array of file descriptors over a UNIX domain socket using <strong>SCM_RIGHTS</strong>:</p>
 <pre>
-struct msghdr msg = { 0 };
+struct msghdr msg = {0};
 struct cmsghdr *cmsg;
-int myfds[NUM_FD];  /* Contains the file descriptors to pass */
+int myfds[NUM_FD]; /* Contains the file descriptors to pass. */
+char buf[CMSG_SPACE(sizeof myfds)];  /* ancillary data buffer */
 int *fdptr;
-union {         /* Ancillary data buffer, wrapped in a union
-                   in order to ensure it is suitably aligned */
-    char buf[CMSG_SPACE(sizeof(myfds))];
-    struct cmsghdr align;
-} u;
 
-msg.msg_control = u.buf;
-msg.msg_controllen = sizeof(u.buf);
+msg.msg_control = buf;
+msg.msg_controllen = sizeof buf;
 cmsg = CMSG_FIRSTHDR(&msg);
 cmsg-&gt;cmsg_level = SOL_SOCKET;
 cmsg-&gt;cmsg_type = SCM_RIGHTS;
 cmsg-&gt;cmsg_len = CMSG_LEN(sizeof(int) * NUM_FD);
-fdptr = (int *) CMSG_DATA(cmsg);    /* Initialize the payload */
+/* Initialize the payload: */
+fdptr = (int *) CMSG_DATA(cmsg);
 memcpy(fdptr, myfds, NUM_FD * sizeof(int));
+/* Sum of the length of all control messages in the buffer: */
+msg.msg_controllen = cmsg-&gt;cmsg_len;
 </pre>
 
         </div>
@@ -197,10 +195,17 @@ memcpy(fdptr, myfds, NUM_FD * sizeof(int));
 <p><a href="../man2/recvmsg.2.html"><strong>recvmsg</strong>(2)</a>, <a href="../man2/sendmsg.2.html"><strong>sendmsg</strong>(2)</a></p><p>RFC&nbsp;2292</p>
         </div>
       </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="closelog.3.html"><span aria-hidden="true">&larr;</span> closelog.3: Send messages to the system logger</a></li>
-   <li class="next"><a href="com_err.3.html">com_err.3: Common error display routine <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="cmpStrChstr.3.html"><span aria-hidden="true">&larr;</span> cmpStrChstr.3: Curses development kit miscellaneous routines</a></li>
+   <li class="next"><a href="coe.3.html">coe.3: Set close-on-exec flag for a descriptor <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="semodule (8) manual">
   <meta name="twitter:description" content="Manage selinux policy modules.">
-  <meta name="twitter:image" content="https://www.carta.tech/images/selinux-semodule-8.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/policycoreutils-semodule-8.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man8/semodule.8.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="semodule (8) manual" />
   <meta property="og:description" content="Manage selinux policy modules." />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/selinux-semodule-8.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/policycoreutils-semodule-8.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/selinux/">
-      <span itemprop="name">selinux</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/policycoreutils/">
+      <span itemprop="name">policycoreutils</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -148,13 +148,31 @@
     <p><strong>-u,--upgrade=MODULE_PKG</strong></p>
   </dt>
   <dd>
-    <p>deprecated, alias for --install</p>
+    <p>upgrade an existing module package, or install if the module does not exist</p>
   </dd>
   <dt>
     <p><strong>-b,--base=MODULE_PKG</strong></p>
   </dt>
   <dd>
-    <p>deprecated, alias for --install</p>
+    <p>install/replace base module package</p>
+  </dd>
+  <dt>
+    <p><strong>-d,--disable=MODULE_NAME</strong></p>
+  </dt>
+  <dd>
+    <p>disable existing module</p>
+  </dd>
+  <dt>
+    <p><strong>-e,--enable=MODULE_NAME</strong></p>
+  </dt>
+  <dd>
+    <p>enable existing module</p>
+  </dd>
+  <dt>
+    <p><strong>-p,--path=ROOTPATH</strong></p>
+  </dt>
+  <dd>
+    <p>use an alternate root path</p>
   </dd>
   <dt>
     <p><strong>-r,--remove=MODULE_NAME</strong></p>
@@ -163,52 +181,10 @@
     <p>remove existing module</p>
   </dd>
   <dt>
-    <p><strong>-l[KIND],--list-modules[=KIND]</strong></p>
+    <p><strong>-l,--list-modules</strong></p>
   </dt>
   <dd>
     <p>display list of installed modules (other than base)</p>
-  </dd>
-  <dt>
-    <p><strong>-E,--extract=MODULE_PKG</strong></p>
-  </dt>
-  <dd>
-    <p>Extract a module from the store as an HLL or CIL file to the current directory. A module is extracted as HLL by default. The name of the module written is &lt;module-name&gt;.&lt;lang_ext&gt;</p>
-  </dd>
-  <dt>
-    <p><strong>KIND:</strong></p>
-  </dt>
-  <dd>
-    
-  </dd>
-  <dt>
-    <p>standard</p>
-  </dt>
-  <dd>
-    <p>list highest priority, enabled, non-base modules</p>
-  </dd>
-  <dt>
-    <p>full</p>
-  </dt>
-  <dd>
-    <p>list all modules</p>
-  </dd>
-  <dt>
-    <p><strong>-X,--priority=PRIORITY</strong></p>
-  </dt>
-  <dd>
-    <p>set priority for following operations (1-999)</p>
-  </dd>
-  <dt>
-    <p><strong>-e,--enabled=MODULE_NAME</strong></p>
-  </dt>
-  <dd>
-    <p>enable module</p>
-  </dd>
-  <dt>
-    <p><strong>-d,--disable=MODULE_NAME</strong></p>
-  </dt>
-  <dd>
-    <p>disable module</p>
   </dd>
   <dt>
     <p><strong>-s,--store</strong></p>
@@ -235,40 +211,10 @@
     <p>Preserve tunables in policy</p>
   </dd>
   <dt>
-    <p><strong>-C,--ignore-module-cache</strong></p>
-  </dt>
-  <dd>
-    <p>Recompile CIL modules built from HLL files</p>
-  </dd>
-  <dt>
-    <p><strong>-p,--path</strong></p>
-  </dt>
-  <dd>
-    <p>Use an alternate path for the policy root</p>
-  </dd>
-  <dt>
-    <p><strong>-S,--store-path</strong></p>
-  </dt>
-  <dd>
-    <p>Use an alternate path for the policy store root</p>
-  </dd>
-  <dt>
     <p><strong>-v,--verbose</strong></p>
   </dt>
   <dd>
     <p>be verbose</p>
-  </dd>
-  <dt>
-    <p><strong>-c,--cil</strong></p>
-  </dt>
-  <dd>
-    <p>Extract module as a CIL file. This only affects the --extract option and only modules listed in --extract after this option.</p>
-  </dd>
-  <dt>
-    <p><strong>-H,--hll</strong></p>
-  </dt>
-  <dd>
-    <p>Extract module as an HLL file. This only affects the --extract option and only modules listed in --extract after this option.</p>
   </dd>
 
 </dl>
@@ -295,19 +241,6 @@ $ semodule -B
 $ semodule -i *.pp
 # Install or replace all modules in the current directory.
 $ ls *.pp | grep -Ev "base.pp|enableaudit.pp" | xargs /usr/sbin/semodule -b base.pp -i
-# Disable a module.
-$ semodule -d alsa
-# Install a module at a specific priority.
-$ semodule -X 100 -i alsa.pp
-# List all modules.
-$ semodule --list=full
-# Set an alternate path for the policy root
-$ semodule -B -p "/tmp"
-# Set an alternate path for the policy store root
-$ semodule -B -S "/tmp/var/lib/selinux"
-# Write the HLL version of puppet and the CIL version of wireshark
-# modules at priority 400 to the current working directory
-$ semodule -X 400 --hll -E puppet --cil -E wireshark
 </pre>
 
         </div>

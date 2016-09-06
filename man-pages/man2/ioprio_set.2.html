@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="ioprio_set (2) manual">
   <meta name="twitter:description" content="Get/set i/o scheduling class and priority">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-ioprio_set-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-ioprio_set-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/ioprio_set.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="ioprio_set (2) manual" />
   <meta property="og:description" content="Get/set i/o scheduling class and priority" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-ioprio_set-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-ioprio_set-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -160,7 +160,7 @@
   </dd>
 
 </dl>
-<p>See the NOTES section for more information on scheduling classes and priorities, as well as the meaning of specifying <em>ioprio</em> as 0.</p><p>I/O priorities are supported for reads and for synchronous (<strong>O_DIRECT</strong>, <strong>O_SYNC</strong>) writes. I/O priorities are not supported for asynchronous writes because they are issued outside the context of the program dirtying the memory, and thus program-specific priorities do not apply.</p>
+<p>See the NOTES section for more information on scheduling classes and priorities.</p><p>I/O priorities are supported for reads and for synchronous (<strong>O_DIRECT</strong>, <strong>O_SYNC</strong>) writes. I/O priorities are not supported for asynchronous writes because they are issued outside the context of the program dirtying the memory, and thus program-specific priorities do not apply.</p>
         </div>
       </section>
 
@@ -217,27 +217,27 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>Glibc does not provide a wrapper for these system calls; call them using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p><p>Two or more processes or threads can share an I/O context. This will be the case when <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> was called with the <strong>CLONE_IO</strong> flag. However, by default, the distinct threads of a process will <strong>not</strong> share the same I/O context. This means that if you want to change the I/O priority of all threads in a process, you may need to call <strong>ioprio_set</strong>() on each of the threads. The thread ID that you would need for this operation is the one that is returned by <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a> or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>.</p><p>These system calls have an effect only when used in conjunction with an I/O scheduler that supports I/O priorities. As at kernel 2.6.17 the only such scheduler is the Completely Fair Queuing (CFQ) I/O scheduler.</p><p>If no I/O scheduler has been set for a thread, then by default the I/O priority will follow the CPU nice value (<a href="../man2/setpriority.2.html"><strong>setpriority</strong>(2)</a>). In Linux kernels before version 2.6.24, once an I/O priority had been set using <strong>ioprio_set</strong>(), there was no way to reset the I/O scheduling behavior to the default. Since Linux 2.6.24, specifying <em>ioprio</em> as 0 can be used to reset to the default I/O scheduling behavior.</p><h3>Selecting an I/O scheduler</h3>
-<p>I/O schedulers are selected on a per-device basis via the special file <em>/sys/block/&lt;device&gt;/queue/scheduler</em>.</p><p>One can view the current I/O scheduler via the <em>/sys</em> filesystem. For example, the following command displays a list of all schedulers currently loaded in the kernel:</p>
+<p>Glibc does not provide a wrapper for these system calls; call them using <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a>.</p><p>Two or more processes or threads can share an I/O context. This will be the case when <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a> was called with the <strong>CLONE_IO</strong> flag. However, by default, the distinct threads of a process will <strong>not</strong> share the same I/O context. This means that if you want to change the I/O priority of all threads in a process, you may need to call <strong>ioprio_set</strong>() on each of the threads. The thread ID that you would need for this operation is the one that is returned by <a href="../man2/gettid.2.html"><strong>gettid</strong>(2)</a> or <a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>.</p><p>These system calls have an effect only when used in conjunction with an I/O scheduler that supports I/O priorities. As at kernel 2.6.17 the only such scheduler is the Completely Fair Queuing (CFQ) I/O scheduler.</p><h3>Selecting an I/O scheduler</h3>
+<p>I/O Schedulers are selected on a per-device basis via the special file <em>/sys/block/&lt;device&gt;/queue/scheduler</em>.</p><p>One can view the current I/O scheduler via the <em>/sys</em> filesystem. For example, the following command displays a list of all schedulers currently loaded in the kernel:</p>
 <pre>
-$<strong> cat /sys/block/sda/queue/scheduler</strong>
+$<strong> cat /sys/block/hda/queue/scheduler</strong>
 noop anticipatory deadline [cfq]
 </pre>
-<p>The scheduler surrounded by brackets is the one actually in use for the device (<em>sda</em> in the example). Setting another scheduler is done by writing the name of the new scheduler to this file. For example, the following command will set the scheduler for the <em>sda</em> device to <em>cfq</em>:</p>
+<p>The scheduler surrounded by brackets is the one actually in use for the device (<em>hda</em> in the example). Setting another scheduler is done by writing the name of the new scheduler to this file. For example, the following command will set the scheduler for the <em>hda</em> device to <em>cfq</em>:</p>
 <pre>
 $<strong> su</strong>
 Password:
-#<strong> echo cfq &gt; /sys/block/sda/queue/scheduler</strong>
+#<strong> echo cfq &gt; /sys/block/hda/queue/scheduler</strong>
 </pre>
 
 <h3>The Completely Fair Queuing (CFQ) I/O scheduler</h3>
-<p>Since version 3 (also known as CFQ Time Sliced), CFQ implements I/O nice levels similar to those of CPU scheduling. These nice levels are grouped into three scheduling classes, each one containing one or more priority levels:</p>
+<p>Since v3 (aka CFQ Time Sliced) CFQ implements I/O nice levels similar to those of CPU scheduling. These nice levels are grouped in three scheduling classes each one containing one or more priority levels:</p>
 <dl class='dl-vertical'>
   <dt>
     <p><strong>IOPRIO_CLASS_RT</strong> (1)</p>
   </dt>
   <dd>
-    <p>This is the real-time I/O class. This scheduling class is given higher priority than any other class: processes from this class are given first access to the disk every time. Thus, this I/O class needs to be used with some care: one I/O real-time process can starve the entire system. Within the real-time class, there are 8 levels of class data (priority) that determine exactly how much time this process needs the disk for on each service. The highest real-time priority level is 0; the lowest is 7. In the future, this might change to be more directly mappable to performance, by passing in a desired data rate instead.</p>
+    <p>This is the real-time I/O class. This scheduling class is given higher priority than any other class: processes from this class are given first access to the disk every time. Thus this I/O class needs to be used with some care: one I/O real-time process can starve the entire system. Within the real-time class, there are 8 levels of class data (priority) that determine exactly how much time this process needs the disk for on each service. The highest real-time priority level is 0; the lowest is 7. In the future this might change to be more directly mappable to performance, by passing in a desired data rate instead.</p>
   </dd>
   <dt>
     <p><strong>IOPRIO_CLASS_BE</strong> (2)</p>
@@ -249,19 +249,19 @@ Password:
     <p><strong>IOPRIO_CLASS_IDLE</strong> (3)</p>
   </dt>
   <dd>
-    <p>This is the idle scheduling class. Processes running at this level get I/O time only when no-one else needs the disk. The idle class has no class data. Attention is required when assigning this priority class to a process, since it may become starved if higher priority processes are constantly accessing the disk.</p>
+    <p>This is the idle scheduling class. Processes running at this level only get I/O time when no-one else needs the disk. The idle class has no class data. Attention is required when assigning this priority class to a process, since it may become starved if higher priority processes are constantly accessing the disk.</p>
   </dd>
 
 </dl>
-<p>Refer to the kernel source file <em>Documentation/block/ioprio.txt</em> for more information on the CFQ I/O Scheduler and an example program.</p>
+<p>Refer to <em>Documentation/block/ioprio.txt</em> for more information on the CFQ I/O Scheduler and an example program.</p>
 <h3>Required permissions to set I/O priorities</h3>
-<p>Permission to change a process's priority is granted or denied based on two criteria:</p>
+<p>Permission to change a process's priority is granted or denied based on two assertions:</p>
 <dl class='dl-vertical'>
   <dt>
     <p><strong>Process ownership</strong></p>
   </dt>
   <dd>
-    <p>An unprivileged process may set the I/O priority only for a process whose real UID matches the real or effective UID of the calling process. A process which has the <strong>CAP_SYS_NICE</strong> capability can change the priority of any process.</p>
+    <p>An unprivileged process may set only the I/O priority of a process whose real UID matches the real or effective UID of the calling process. A process which has the <strong>CAP_SYS_NICE</strong> capability can change the priority of any process.</p>
   </dd>
   <dt>
     <p><strong>What is the desired priority</strong></p>
@@ -286,7 +286,14 @@ Password:
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO ioprio_set&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man1/ionice.1.html"><strong>ionice</strong>(1)</a>, <a href="../man2/getpriority.2.html"><strong>getpriority</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/cgroups.7.html"><strong>cgroups</strong>(7)</a></p><p><em>Documentation/block/ioprio.txt</em> in the Linux kernel source tree</p>
+<p><a href="../man1/ionice.1.html"><strong>ionice</strong>(1)</a>, <a href="../man2/getpriority.2.html"><strong>getpriority</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a></p><p><em>Documentation/block/ioprio.txt</em> in the Linux kernel source tree</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

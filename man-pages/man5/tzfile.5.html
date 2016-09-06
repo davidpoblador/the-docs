@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="tzfile (5) manual">
   <meta name="twitter:description" content="Timezone information">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-tzfile-5.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-tzfile-5.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man5/tzfile.5.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="tzfile (5) manual" />
   <meta property="og:description" content="Timezone information" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-tzfile-5.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-tzfile-5.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages/">
+      <span itemprop="name">manpages</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -104,8 +104,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>This page describes the structure of the timezone files used by <a href="../man3/tzset.3.html"><strong>tzset</strong>(3)</a>. These files are typically found under one of the directories <em>/usr/lib/zoneinfo</em> or <em>/usr/share/zoneinfo</em>.</p><p>Timezone information files begin with a 44-byte header structured as follows:</p><ul>
-<li><p>The magic four-byte sequence "TZif" identifying this as a timezone information file.</p></li><li><p>A single character identifying the version of the file's format: either an ASCII NUL (&apos;&#92;0&apos;) or a &apos;2&apos; (<strong>0x32</strong>).</p></li><li><p>Fifteen bytes containing zeros reserved for future use.</p></li><li><p>Six four-byte values of type <em>long</em>, written in a "standard" byte order (the high-order byte of the value is written first). These values are, in order:</p>
+<p>This page describes the structure of the timezone files used by <a href="../man3/tzset.3.html"><strong>tzset</strong>(3)</a>. These files are typically found under one of the directories <em>/usr/lib/zoneinfo</em> or <em>/usr/share/zoneinfo</em>.</p><p>Timezone information files begin with the magic characters "TZif" to identify them as timezone information files, followed by a character identifying the version of the file's format (as of 2005, either an ASCII NUL (&apos;&#92;0&apos;) or a &apos;2&apos;) followed by fifteen bytes containing zeros reserved for future use, followed by six four-byte values of type <em>long</em>, written in a "standard" byte order (the high-order byte of the value is written first). These values are, in order:</p>
 <dl class='dl-vertical'>
   <dt>
     <p><em>tzh_ttisgmtcnt</em></p>
@@ -145,8 +144,7 @@
   </dd>
 
 </dl>
-</li>
-</ul><p>The above header is followed by <em>tzh_timecnt</em> four-byte values of type <em>long</em>, sorted in ascending order. These values are written in "standard" byte order. Each is used as a transition time (as returned by <a href="../man2/time.2.html"><strong>time</strong>(2)</a>) at which the rules for computing local time change. Next come <em>tzh_timecnt</em> one-byte values of type <em>unsigned char</em>; each one tells which of the different types of "local time" types described in the file is associated with the same-indexed transition time. These values serve as indices into an array of <em>ttinfo</em> structures (with <em>tzh_typecnt</em> entries) that appear next in the file; these structures are defined as follows:</p>
+<p>The above header is followed by <em>tzh_timecnt</em> four-byte values of type <em>long</em>, sorted in ascending order. These values are written in "standard" byte order. Each is used as a transition time (as returned by <a href="../man2/time.2.html"><strong>time</strong>(2)</a>) at which the rules for computing local time change. Next come <em>tzh_timecnt</em> one-byte values of type <em>unsigned char</em>; each one tells which of the different types of "local time" types described in the file is associated with the same-indexed transition time. These values serve as indices into an array of <em>ttinfo</em> structures (with <em>tzh_typecnt</em> entries) that appear next in the file; these structures are defined as follows:</p>
 <pre>
 struct ttinfo {
     long         tt_gmtoff;
@@ -154,46 +152,21 @@ struct ttinfo {
     unsigned int tt_abbrind;
 };
 </pre>
-<p>Each structure is written as a four-byte value for <em>tt_gmtoff</em> of type <em>long</em>, in a standard byte order, followed by a one-byte value for <em>tt_isdst</em> and a one-byte value for <em>tt_abbrind</em>. In each structure, <em>tt_gmtoff</em> gives the number of seconds to be added to UTC, <em>tt_isdst</em> tells whether <em>tm_isdst</em> should be set by <a href="../man3/localtime.3.html"><strong>localtime</strong>(3)</a>, and <em>tt_abbrind</em> serves as an index into the array of timezone abbreviation characters that follow the <em>ttinfo</em> structure(s) in the file.</p><p>Then there are <em>tzh_leapcnt</em> pairs of four-byte values, written in standard byte order; the first value of each pair gives the time (as returned by <a href="../man2/time.2.html"><strong>time</strong>(2)</a>) at which a leap second occurs; the second gives the <em>total</em> number of leap seconds to be applied after the given time. The pairs of values are sorted in ascending order by time.</p><p>Then there are <em>tzh_ttisstdcnt</em> standard/wall indicators, each stored as a one-byte value; they tell whether the transition times associated with local time types were specified as standard time or wall clock time, and are used when a timezone file is used in handling POSIX-style timezone environment variables.</p><p>Finally, there are <em>tzh_ttisgmtcnt</em> UTC/local indicators, each stored as a one-byte value; they tell whether the transition times associated with local time types were specified as UTC or local time, and are used when a timezone file is used in handling POSIX-style timezone environment variables.</p><p><a href="../man3/localtime.3.html"><strong>localtime</strong>(3)</a> uses the first standard-time <em>ttinfo</em> structure in the file (or simply the first <em>ttinfo</em> structure in the absence of a standard-time structure) if either <em>tzh_timecnt</em> is zero or the time argument is less than the first transition time recorded in the file.</p><h3>Version 2 format</h3>
-<p>For version-2-format timezone files, the above header and data is followed by a second header and data, identical in format except that eight bytes are used for each transition time or leap-second time (and that the version byte in the header record is <strong>0x32</strong> rather than <strong>0x00</strong>). After the second header and data comes a newline-enclosed, POSIX-TZ-environment-variable-style string for use in handling instants after the last transition time stored in the file (with nothing between the newlines if there is no POSIX representation for such instants).</p><p>The second section of the timezone file consists of another 44-byte header record, identical in structure to the one at the beginning of the file, except that it applies to the data that follows, which is also identical in structure to the first section of the timezone file, with the following differences:</p><ul>
-<li><p>The transition time values, after the header, are eight-byte values.</p></li><li><p>In each leap second record, the leap second value is an eight-byte value. The accumulated leap second count is still a four-byte value.</p></li>
-</ul><p>In all cases, the eight-byte time values are given in the "standard" byte order, the high-order byte first.</p>
-<h3>POSIX timezone string</h3>
-<p>The second eight-byte time value section is followed by an optional third section: a single ASCII newline character (&apos;&#92;n&apos;), then a text string followed by a second newline character. The text string is a POSIX timezone string, whose format is described in the <a href="../man3/tzset.3.html"><strong>tzset</strong>(3)</a> manual page.</p><p>The POSIX timezone string defines a rule for computing transition times that follow the last transition time explicitly specified in the timezone information file.</p>
-<h3>Summary of the timezone information file format</h3>
+<p>Each structure is written as a four-byte value for <em>tt_gmtoff</em> of type <em>long</em>, in a standard byte order, followed by a one-byte value for <em>tt_isdst</em> and a one-byte value for <em>tt_abbrind</em>. In each structure, <em>tt_gmtoff</em> gives the number of seconds to be added to UTC, <em>tt_isdst</em> tells whether <em>tm_isdst</em> should be set by <a href="../man3/localtime.3.html"><strong>localtime</strong>(3)</a>, and <em>tt_abbrind</em> serves as an index into the array of timezone abbreviation characters that follow the <em>ttinfo</em> structure(s) in the file.</p><p>Then there are <em>tzh_leapcnt</em> pairs of four-byte values, written in standard byte order; the first value of each pair gives the time (as returned by <a href="../man2/time.2.html"><strong>time</strong>(2)</a>) at which a leap second occurs; the second gives the <em>total</em> number of leap seconds to be applied after the given time. The pairs of values are sorted in ascending order by time.</p><p>Then there are <em>tzh_ttisstdcnt</em> standard/wall indicators, each stored as a one-byte value; they tell whether the transition times associated with local time types were specified as standard time or wall clock time, and are used when a timezone file is used in handling POSIX-style timezone environment variables.</p><p>Finally, there are <em>tzh_ttisgmtcnt</em> UTC/local indicators, each stored as a one-byte value; they tell whether the transition times associated with local time types were specified as UTC or local time, and are used when a timezone file is used in handling POSIX-style timezone environment variables.</p><p><a href="../man3/localtime.3.html"><strong>localtime</strong>(3)</a> uses the first standard-time <em>ttinfo</em> structure in the file (or simply the first <em>ttinfo</em> structure in the absence of a standard-time structure) if either <em>tzh_timecnt</em> is zero or the time argument is less than the first transition time recorded in the file.</p>
+        </div>
+      </section>
 
-<pre>
-Four-byte value section
-(header version <strong>0x00</strong> or <strong>0x32</strong>)
-        Header record
-        Four-byte transition times
-        Transition time index
-        <strong>ttinfo</strong> structures
-        Timezone abbreviation array
-        Leap second records
-        Standard/Wall array
-        UTC/Local array
+      <section>
+        <h2 class="font-effect-shadow-multiple">NOTES</h2>
+        <div class="sectioncontent">
+<p>This manual page documents <em>&lt;tzfile.h&gt;</em> in the glibc source archive, see <em>timezone/tzfile.h</em>.</p><p>It seems that timezone uses <strong>tzfile</strong> internally, but glibc refuses to expose it to userspace.  This is most likely because the standardised functions are more useful and portable, and actually documented by glibc.  It may only be in glibc just to support the non-glibc-maintained timezone data (which is maintained by some other entity).</p>
+        </div>
+      </section>
 
-Eight-byte value section
-(only if first header version is <strong>0x32</strong>,
-the second header's version is also <strong>0x32</strong>)
-        Header record
-        Eight-byte transition times
-        Transition time index
-        <strong>ttinfo</strong> structures
-        Timezone abbreviation array
-        Leap second records
-        Standard/Wall array
-        UTC/Local array
-
-Third section
-(optional, only in <strong>0x32</strong> version files)
-        Newline character
-        Timezone string
-        Newline character
-</pre>
-
-
+      <section>
+        <h2 class="font-effect-shadow-multiple">RELATED TO tzfile&hellip;</h2>
+        <div class="sectioncontent">
+<p><strong>time</strong>(3), <strong>gettimeofday</strong>(3), <a href="../man3/tzset.3.html"><strong>tzset</strong>(3)</a>, <a href="../man3/ctime.3.html"><strong>ctime</strong>(3)</a></p><p>For version-2-format timezone files, the above header and data is followed by a second header and data, identical in format except that eight bytes are used for each transition time or leap-second time. After the second header and data comes a newline-enclosed, POSIX-TZ-environment-variable-style string for use in handling instants after the last transition time stored in the file (with nothing between the newlines if there is no POSIX representation for such instants).</p>
         </div>
       </section>
 
@@ -203,10 +176,17 @@ Third section
 <p><a href="../man3/ctime.3.html"><strong>ctime</strong>(3)</a>, <a href="../man3/tzset.3.html"><strong>tzset</strong>(3)</a>, <a href="../man8/tzselect.8.html"><strong>tzselect</strong>(8)</a>,</p><p><em>timezone/tzfile.h</em> in the glibc source tree</p>
         </div>
       </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="ttytype.5.html"><span aria-hidden="true">&larr;</span> ttytype.5: Terminal device to default terminal type mapping</a></li>
-   <li class="next"><a href="user_contexts.5.html">user_contexts.5: The selinux user contexts configuration files <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="typerules.5.html"><span aria-hidden="true">&larr;</span> typerules.5: \*(fx file type identification and conversion rules</a></li>
+   <li class="next"><a href="ubuntu-dev-tools.5.html">ubuntu-dev-tools.5: Configuration for the ubuntu-dev-tools package. <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="console_codes (4) manual">
   <meta name="twitter:description" content="Linux console escape and control sequences">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-console_codes-4.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-console_codes-4.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man4/console_codes.4.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="console_codes (4) manual" />
   <meta property="og:description" content="Linux console escape and control sequences" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-console_codes-4.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-console_codes-4.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages/">
+      <span itemprop="name">manpages</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -104,7 +104,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The Linux console implements a large subset of the VT102 and ECMA-48/ISO 6429/ANSI X3.64 terminal controls, plus certain private-mode sequences for changing the color palette, character-set mapping, and so on. In the tabular descriptions below, the second column gives ECMA-48 or DEC mnemonics (the latter if prefixed with DEC) for the given function. Sequences without a mnemonic are neither ECMA-48 nor VT102.</p><p>After all the normal output processing has been done, and a stream of characters arrives at the console driver for actual printing, the first thing that happens is a translation from the code used for processing to the code used for printing.</p><p>If the console is in UTF-8 mode, then the incoming bytes are first assembled into 16-bit Unicode codes. Otherwise, each byte is transformed according to the current mapping table (which translates it to a Unicode value). See the <strong>Character Sets</strong> section below for discussion.</p><p>In the normal case, the Unicode value is converted to a font index, and this is stored in video memory, so that the corresponding glyph (as found in video ROM) appears on the screen. Note that the use of Unicode (and the design of the PC hardware) allows us to use 512 different glyphs simultaneously.</p><p>If the current Unicode value is a control character, or we are currently processing an escape sequence, the value will treated specially. Instead of being turned into a font index and rendered as a glyph, it may trigger cursor movement or other control functions. See the <strong>Linux Console Controls</strong> section below for discussion.</p><p>It is generally not good practice to hard-wire terminal controls into programs. Linux supports a <strong>terminfo</strong>(5) database of terminal capabilities. Rather than emitting console escape sequences by hand, you will almost always want to use a terminfo-aware screen library or utility such as <strong>ncurses</strong>(3), <strong>tput</strong>(1), or <a href="../man1/reset.1.html"><strong>reset</strong>(1)</a>.</p><h3>Linux console controls</h3>
+<p>The Linux console implements a large subset of the VT102 and ECMA-48/ISO 6429/ANSI X3.64 terminal controls, plus certain private-mode sequences for changing the color palette, character-set mapping, and so on. In the tabular descriptions below, the second column gives ECMA-48 or DEC mnemonics (the latter if prefixed with DEC) for the given function. Sequences without a mnemonic are neither ECMA-48 nor VT102.</p><p>After all the normal output processing has been done, and a stream of characters arrives at the console driver for actual printing, the first thing that happens is a translation from the code used for processing to the code used for printing.</p><p>If the console is in UTF-8 mode, then the incoming bytes are first assembled into 16-bit Unicode codes. Otherwise, each byte is transformed according to the current mapping table (which translates it to a Unicode value). See the <strong>Character Sets</strong> section below for discussion.</p><p>In the normal case, the Unicode value is converted to a font index, and this is stored in video memory, so that the corresponding glyph (as found in video ROM) appears on the screen. Note that the use of Unicode (and the design of the PC hardware) allows us to use 512 different glyphs simultaneously.</p><p>If the current Unicode value is a control character, or we are currently processing an escape sequence, the value will treated specially. Instead of being turned into a font index and rendered as a glyph, it may trigger cursor movement or other control functions. See the <strong>Linux Console Controls</strong> section below for discussion.</p><p>It is generally not good practice to hard-wire terminal controls into programs. Linux supports a <a href="../man5/terminfo.5.html"><strong>terminfo</strong>(5)</a> database of terminal capabilities. Rather than emitting console escape sequences by hand, you will almost always want to use a terminfo-aware screen library or utility such as <strong>ncurses</strong>(3), <a href="../man1/tput.1.html"><strong>tput</strong>(1)</a>, or <a href="../man1/reset.1.html"><strong>reset</strong>(1)</a>.</p><h3>Linux console controls</h3>
 <p>This section describes all the control characters and escape sequences that invoke special functions (i.e., anything other than writing a glyph at the current cursor location) on the Linux console.</p><p><strong>Control characters</strong></p><p>A character is a control character if (before transformation according to the mapping table) it has one of the 14 codes 00 (NUL), 07 (BEL), 08 (BS), 09 (HT), 0a (LF), 0b (VT), 0c (FF), 0d (CR), 0e (SO), 0f (SI), 18 (CAN), 1a (SUB), 1b (ESC), 7f (DEL). One can set a "display control characters" mode (see below), and allow 07, 09, 0b, 18, 1a, 7f to be displayed as glyphs. On the other hand, in UTF-8 mode all codes 00-1f are regarded as control characters, regardless of any "display control characters" mode.</p><p>If we have a control character, it is acted upon immediately and then discarded (even in the middle of an escape sequence) and the escape sequence continues with the next character. (However, ESC starts a new escape sequence, possibly aborting a previous unfinished one, and CAN and SUB abort any escape sequence.) The recognized control characters are BEL, BS, HT, LF, VT, FF, CR, SO, SI, CAN, SUB, ESC, DEL, CSI. They do what one would expect: BEL (0x07, <strong>^G</strong>) beeps; BS (0x08, <strong>^H</strong>) backspaces one column (but not past the beginning of the line); HT (0x09, <strong>^I</strong>) goes to the next tab stop or to the end of the line if there is no earlier tab stop; LF (0x0A, <strong>^J</strong>), VT (0x0B, <strong>^K</strong>) and FF (0x0C, <strong>^L</strong>) all give a linefeed, and if LF/NL (new-line mode) is set also a carriage return; CR (0x0D, <strong>^M</strong>) gives a carriage return; SO (0x0E, <strong>^N</strong>) activates the G1 character set; SI (0x0F, <strong>^O</strong>) activates the G0 character set; CAN (0x18, <strong>^X</strong>) and SUB (0x1A, <strong>^Z</strong>) interrupt escape sequences; ESC (0x1B, <strong>^[</strong>) starts an escape sequence; DEL (0x7F) is ignored; CSI (0x9B) is equivalent to ESC [.</p><p><strong>ESC- but not CSI-sequences</strong></p><table class="table table-striped">
 <tr>
 <th>ESC c</th>
@@ -204,7 +204,7 @@
 <tr>
 <td></td>
 <td></td>
-<td>&nbsp;&nbsp;&nbsp;the utility <strong>mapscrn</strong>(8).</td></tr>
+<td>&nbsp;&nbsp;&nbsp;the utility <a href="../man8/mapscrn.8.html"><strong>mapscrn</strong>(8)</a>.</td></tr>
 
 <tr>
 <td>ESC )</td>
@@ -703,21 +703,13 @@
 <tr>
 <td>ESC [ 14 ; <em>n</em> ]   </td>
 <td>Set the VESA powerdown interval in minutes.</td></tr>
-
-<tr>
-<td>ESC [ 15 ]      </td>
-<td>Bring the previous console to the front  (since Linux 2.6.0). </td></tr>
-
-<tr>
-<td>ESC [ 16 ; <em>n</em> ]   </td>
-<td>Set the cursor blink interval in milliseconds  (since Linux 4.2) </td></tr>
 </table>
 <h3>Character sets</h3>
-<p>The kernel knows about 4 translations of bytes into console-screen symbols. The four tables are: a) Latin1 -&gt; PC, b) VT100 graphics -&gt; PC, c) PC -&gt; PC, d) user-defined.</p><p>There are two character sets, called G0 and G1, and one of them is the current character set. (Initially G0.) Typing <strong>^N</strong> causes G1 to become current, <strong>^O</strong> causes G0 to become current.</p><p>These variables G0 and G1 point at a translation table, and can be changed by the user. Initially they point at tables a) and b), respectively. The sequences ESC ( B and ESC ( 0 and ESC ( U and ESC ( K cause G0 to point at translation table a), b), c) and d), respectively. The sequences ESC ) B and ESC ) 0 and ESC ) U and ESC ) K cause G1 to point at translation table a), b), c) and d), respectively.</p><p>The sequence ESC c causes a terminal reset, which is what you want if the screen is all garbled. The oft-advised "echo ^V^O" will make only G0 current, but there is no guarantee that G0 points at table a). In some distributions there is a program <a href="../man1/reset.1.html"><strong>reset</strong>(1)</a> that just does "echo ^[c". If your terminfo entry for the console is correct (and has an entry rs1=&#92;Ec), then "tput reset" will also work.</p><p>The user-defined mapping table can be set using <strong>mapscrn</strong>(8). The result of the mapping is that if a symbol c is printed, the symbol s = map[c] is sent to the video memory. The bitmap that corresponds to s is found in the character ROM, and can be changed using <strong>setfont</strong>(8).</p>
+<p>The kernel knows about 4 translations of bytes into console-screen symbols. The four tables are: a) Latin1 -&gt; PC, b) VT100 graphics -&gt; PC, c) PC -&gt; PC, d) user-defined.</p><p>There are two character sets, called G0 and G1, and one of them is the current character set. (Initially G0.) Typing <strong>^N</strong> causes G1 to become current, <strong>^O</strong> causes G0 to become current.</p><p>These variables G0 and G1 point at a translation table, and can be changed by the user. Initially they point at tables a) and b), respectively. The sequences ESC ( B and ESC ( 0 and ESC ( U and ESC ( K cause G0 to point at translation table a), b), c) and d), respectively. The sequences ESC ) B and ESC ) 0 and ESC ) U and ESC ) K cause G1 to point at translation table a), b), c) and d), respectively.</p><p>The sequence ESC c causes a terminal reset, which is what you want if the screen is all garbled. The oft-advised "echo ^V^O" will make only G0 current, but there is no guarantee that G0 points at table a). In some distributions there is a program <a href="../man1/reset.1.html"><strong>reset</strong>(1)</a> that just does "echo ^[c". If your terminfo entry for the console is correct (and has an entry rs1=&#92;Ec), then "tput reset" will also work.</p><p>The user-defined mapping table can be set using <a href="../man8/mapscrn.8.html"><strong>mapscrn</strong>(8)</a>. The result of the mapping is that if a symbol c is printed, the symbol s = map[c] is sent to the video memory. The bitmap that corresponds to s is found in the character ROM, and can be changed using <a href="../man8/setfont.8.html"><strong>setfont</strong>(8)</a>.</p>
 <h3>Mouse tracking</h3>
-<p>The mouse tracking facility is intended to return <strong>xterm</strong>(1)-compatible mouse status reports. Because the console driver has no way to know the device or type of the mouse, these reports are returned in the console input stream only when the virtual terminal driver receives a mouse update ioctl. These ioctls must be generated by a mouse-aware user-mode application such as the <strong>gpm</strong>(8) daemon.</p><p>The mouse tracking escape sequences generated by <strong>xterm</strong>(1) encode numeric parameters in a single character as <em>value</em>+040. For example, &apos;!&apos; is 1. The screen coordinate system is 1-based.</p><p>The X10 compatibility mode sends an escape sequence on button press encoding the location and the mouse button pressed. It is enabled by sending ESC [ ? 9 h and disabled with ESC [ ? 9 l. On button press, <strong>xterm</strong>(1) sends ESC [ M <em>bxy</em> (6 characters). Here <em>b</em> is button-1, and <em>x</em> and <em>y</em> are the x and y coordinates of the mouse when the button was pressed. This is the same code the kernel also produces.</p><p>Normal tracking mode (not implemented in Linux 2.0.24) sends an escape sequence on both button press and release. Modifier information is also sent. It is enabled by sending ESC [ ? 1000 h and disabled with ESC [ ? 1000 l. On button press or release, <strong>xterm</strong>(1) sends ESC [ M <em>bxy</em>. The low two bits of <em>b</em> encode button information: 0=MB1 pressed, 1=MB2 pressed, 2=MB3 pressed, 3=release. The upper bits encode what modifiers were down when the button was pressed and are added together: 4=Shift, 8=Meta, 16=Control. Again <em>x</em> and <em>y</em> are the x and y coordinates of the mouse event. The upper left corner is (1,1).</p>
+<p>The mouse tracking facility is intended to return <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a>-compatible mouse status reports. Because the console driver has no way to know the device or type of the mouse, these reports are returned in the console input stream only when the virtual terminal driver receives a mouse update ioctl. These ioctls must be generated by a mouse-aware user-mode application such as the <a href="../man8/gpm.8.html"><strong>gpm</strong>(8)</a> daemon.</p><p>The mouse tracking escape sequences generated by <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> encode numeric parameters in a single character as <em>value</em>+040. For example, &apos;!&apos; is 1. The screen coordinate system is 1-based.</p><p>The X10 compatibility mode sends an escape sequence on button press encoding the location and the mouse button pressed. It is enabled by sending ESC [ ? 9 h and disabled with ESC [ ? 9 l. On button press, <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> sends ESC [ M <em>bxy</em> (6 characters). Here <em>b</em> is button-1, and <em>x</em> and <em>y</em> are the x and y coordinates of the mouse when the button was pressed. This is the same code the kernel also produces.</p><p>Normal tracking mode (not implemented in Linux 2.0.24) sends an escape sequence on both button press and release. Modifier information is also sent. It is enabled by sending ESC [ ? 1000 h and disabled with ESC [ ? 1000 l. On button press or release, <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> sends ESC [ M <em>bxy</em>. The low two bits of <em>b</em> encode button information: 0=MB1 pressed, 1=MB2 pressed, 2=MB3 pressed, 3=release. The upper bits encode what modifiers were down when the button was pressed and are added together: 4=Shift, 8=Meta, 16=Control. Again <em>x</em> and <em>y</em> are the x and y coordinates of the mouse event. The upper left corner is (1,1).</p>
 <h3>Comparisons with other terminals</h3>
-<p>Many different terminal types are described, like the Linux console, as being "VT100-compatible". Here we discuss differences between the Linux console and the two most important others, the DEC VT102 and <strong>xterm</strong>(1).</p><p><strong>Control-character handling</strong></p><p>The VT102 also recognized the following control characters: NUL (0x00) was ignored; ENQ (0x05) triggered an answerback message; DC1 (0x11, <strong>^Q</strong>, XON) resumed transmission; DC3 (0x13, <strong>^S</strong>, XOFF) caused VT100 to ignore (and stop transmitting) all codes except XOFF and XON.</p><p>VT100-like DC1/DC3 processing may be enabled by the terminal driver.</p><p>The <strong>xterm</strong>(1) program (in VT100 mode) recognizes the control characters BEL, BS, HT, LF, VT, FF, CR, SO, SI, ESC.</p><p><strong>Escape sequences</strong></p><p>VT100 console sequences not implemented on the Linux console:</p><table class="table table-striped">
+<p>Many different terminal types are described, like the Linux console, as being "VT100-compatible". Here we discuss differences between the Linux console and the two most important others, the DEC VT102 and <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a>.</p><p><strong>Control-character handling</strong></p><p>The VT102 also recognized the following control characters: NUL (0x00) was ignored; ENQ (0x05) triggered an answerback message; DC1 (0x11, <strong>^Q</strong>, XON) resumed transmission; DC3 (0x13, <strong>^S</strong>, XOFF) caused VT100 to ignore (and stop transmitting) all codes except XOFF and XON.</p><p>VT100-like DC1/DC3 processing may be enabled by the terminal driver.</p><p>The <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> program (in VT100 mode) recognizes the control characters BEL, BS, HT, LF, VT, FF, CR, SO, SI, ESC.</p><p><strong>Escape sequences</strong></p><p>VT100 console sequences not implemented on the Linux console:</p><table class="table table-striped">
 <tr>
 <th>ESC N</th>
 <th>SS2</th>
@@ -767,7 +759,7 @@
 <td>ESC + ...</td>
 <td></td>
 <td>Designate G3 character set</td></tr>
-</table><p>The program <strong>xterm</strong>(1) (in VT100 mode) recognizes ESC c, ESC # 8, ESC &gt;, ESC =, ESC D, ESC E, ESC H, ESC M, ESC N, ESC O, ESC P ... ESC &#92;, ESC Z (it answers ESC [ ? 1 ; 2 c, "I am a VT100 with advanced video option") and ESC ^ ... ESC nbsp;with the same meanings as indicated above. It accepts ESC (, ESC ), ESC *,  ESC + followed by 0, A, B for the DEC special character and line drawing set, UK, and US-ASCII, respectively.</p><p>The user can configure <strong>xterm</strong>(1) to respond to VT220-specific control sequences, and it will identify itself as a VT52, VT100, and up depending on the way it is configured and initialized.</p><p>It accepts ESC ] (OSC) for the setting of certain resources. In addition to the ECMA-48 string terminator (ST), <strong>xterm</strong>(1) accepts a BEL to terminate an OSC string. These are a few of the OSC control sequences recognized by <strong>xterm</strong>(1):</p><table class="table table-striped">
+</table><p>The program <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> (in VT100 mode) recognizes ESC c, ESC # 8, ESC &gt;, ESC =, ESC D, ESC E, ESC H, ESC M, ESC N, ESC O, ESC P ... ESC &#92;, ESC Z (it answers ESC [ ? 1 ; 2 c, "I am a VT100 with advanced video option") and ESC ^ ... ESC nbsp;with the same meanings as indicated above. It accepts ESC (, ESC ), ESC *,  ESC + followed by 0, A, B for the DEC special character and line drawing set, UK, and US-ASCII, respectively.</p><p>The user can configure <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> to respond to VT220-specific control sequences, and it will identify itself as a VT52, VT100, and up depending on the way it is configured and initialized.</p><p>It accepts ESC ] (OSC) for the setting of certain resources. In addition to the ECMA-48 string terminator (ST), <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> accepts a BEL to terminate an OSC string. These are a few of the OSC control sequences recognized by <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a>:</p><table class="table table-striped">
 <tr>
 <th>ESC ] 0 ; <em>txt</em> ST</th>
 <th>Set icon name and window title to <em>txt</em>.</th></tr>
@@ -818,7 +810,7 @@
 <tr>
 <td></td>
 <td></td>
-<td><strong>xterm</strong>(1)'s <strong>hpLowerleftBugCompat</strong> resource)</td></tr>
+<td><a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a>'s <strong>hpLowerleftBugCompat</strong> resource)</td></tr>
 
 <tr>
 <td>ESC l</td>
@@ -851,15 +843,30 @@
 <td>Invoke the G3 character set as GR.</td></tr>
 
 <tr>
+<td></td>
+<td></td>
+<td>Has no visible effect in xterm.</td></tr>
+
+<tr>
 <td>ESC }</td>
 <td>LS2R</td>
 <td>Invoke the G2 character set as GR.</td></tr>
 
 <tr>
+<td></td>
+<td></td>
+<td>Has no visible effect in xterm.</td></tr>
+
+<tr>
 <td>ESC ~</td>
 <td>LS1R</td>
 <td>Invoke the G1 character set as GR.</td></tr>
-</table><p>It also recognizes ESC % and provides a more complete UTF-8 implementation than Linux console.</p><p><strong>CSI Sequences</strong></p><p>Old versions of <strong>xterm</strong>(1), for example, from X11R5, interpret the blink SGR as a bold SGR. Later versions which implemented ANSI colors, for example, XFree86 3.1.2A in 1995, improved this by allowing the blink attribute to be displayed as a color. Modern versions of xterm implement blink SGR as blinking text and still allow colored text as an alternate rendering of SGRs. Stock X11R6 versions did not recognize the color-setting SGRs until the X11R6.8 release, which incorporated XFree86 xterm. All ECMA-48 CSI sequences recognized by Linux are also recognized by <em>xterm</em>, however <strong>xterm</strong>(1) implements several ECMA-48 and DEC control sequences not recognized by Linux.</p><p>The <strong>xterm</strong>(1) program recognizes all of the DEC Private Mode sequences listed above, but none of the Linux private-mode sequences. For discussion of <strong>xterm</strong>(1)'s own private-mode sequences, refer to the <em>Xterm Control Sequences</em> document by Edward Moy, Stephen Gildea, and Thomas E. Dickey available with the X distribution. That document, though terse, is much longer than this manual page. For a chronological overview,</p><p>details changes to xterm.</p><p>The <em>vttest</em> program</p><p>demonstrates many of these control sequences. The <strong>xterm</strong>(1) source distribution also contains sample scripts which exercise other features.</p>
+
+<tr>
+<td></td>
+<td></td>
+<td>Has no visible effect in xterm.</td></tr>
+</table><p>It also recognizes ESC % and provides a more complete UTF-8 implementation than Linux console.</p><p><strong>CSI Sequences</strong></p><p>Old versions of <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a>, for example, from X11R5, interpret the blink SGR as a bold SGR. Later versions which implemented ANSI colors, for example, XFree86 3.1.2A in 1995, improved this by allowing the blink attribute to be displayed as a color. Modern versions of xterm implement blink SGR as blinking text and still allow colored text as an alternate rendering of SGRs. Stock X11R6 versions did not recognize the color-setting SGRs until the X11R6.8 release, which incorporated XFree86 xterm. All ECMA-48 CSI sequences recognized by Linux are also recognized by <em>xterm</em>, however <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> implements several ECMA-48 and DEC control sequences not recognized by Linux.</p><p>The <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> program recognizes all of the DEC Private Mode sequences listed above, but none of the Linux private-mode sequences. For discussion of <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a>'s own private-mode sequences, refer to the <em>Xterm Control Sequences</em> document by Edward Moy, Stephen Gildea, and Thomas E. Dickey available with the X distribution. That document, though terse, is much longer than this manual page. For a chronological overview,</p><p>details changes to xterm.</p><p>The <em>vttest</em> program</p><p>demonstrates many of these control sequences. The <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> source distribution also contains sample scripts which exercise other features.</p>
 
         </div>
       </section>
@@ -874,19 +881,26 @@
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>In 2.0.23, CSI is broken, and NUL is not ignored inside escape sequences.</p><p>Some older kernel versions (after 2.0) interpret 8-bit control sequences. These "C1 controls" use codes between 128 and 159 to replace ESC [, ESC ] and similar two-byte control sequence initiators. There are fragments of that in modern kernels (either overlooked or broken by changes to support UTF-8), but the implementation is incomplete and should be regarded as unreliable.</p><p>Linux "private mode" sequences do not follow the rules in ECMA-48 for private mode control sequences. In particular, those ending with ] do not use a standard terminating character. The OSC (set palette) sequence is a greater problem, since <strong>xterm</strong>(1) may interpret this as a control sequence which requires a string terminator (ST). Unlike the <a href="../man1/setterm.1.html"><strong>setterm</strong>(1)</a> sequences which will be ignored (since they are invalid control sequences), the palette sequence will make <strong>xterm</strong>(1) appear to hang (though pressing the return-key will fix that). To accommodate applications which have been hardcoded to use Linux control sequences, set the <strong>xterm</strong>(1) resource <strong>brokenLinuxOSC</strong> to true.</p><p>An older version of this document implied that Linux recognizes the ECMA-48 control sequence for invisible text. It is ignored.</p>
+<p>In 2.0.23, CSI is broken, and NUL is not ignored inside escape sequences.</p><p>Some older kernel versions (after 2.0) interpret 8-bit control sequences. These "C1 controls" use codes between 128 and 159 to replace ESC [, ESC ] and similar two-byte control sequence initiators. There are fragments of that in modern kernels (either overlooked or broken by changes to support UTF-8), but the implementation is incomplete and should be regarded as unreliable.</p><p>Linux "private mode" sequences do not follow the rules in ECMA-48 for private mode control sequences. In particular, those ending with ] do not use a standard terminating character. The OSC (set palette) sequence is a greater problem, since <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> may interpret this as a control sequence which requires a string terminator (ST). Unlike the <a href="../man1/setterm.1.html"><strong>setterm</strong>(1)</a> sequences which will be ignored (since they are invalid control sequences), the palette sequence will make <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> appear to hang (though pressing the return-key will fix that). To accommodate applications which have been hardcoded to use Linux control sequences, set the <a href="../man1/xterm.1.html"><strong>xterm</strong>(1)</a> resource <strong>brokenLinuxOSC</strong> to true.</p><p>An older version of this document implied that Linux recognizes the ECMA-48 control sequence for invisible text. It is ignored.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO console_codes&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man4/console_ioctl.4.html"><strong>console_ioctl</strong>(4)</a>, <a href="../man7/charsets.7.html"><strong>charsets</strong>(7)</a></p>
+<p><strong>console</strong>(4), <a href="../man4/console_ioctl.4.html"><strong>console_ioctl</strong>(4)</a>, <a href="../man7/charsets.7.html"><strong>charsets</strong>(7)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="cciss.4.html"><span aria-hidden="true">&larr;</span> cciss.4: Hp smart array block driver</a></li>
+   <li class="previous"><a href="cirrus.4.html"><span aria-hidden="true">&larr;</span> cirrus.4: Cirrus logic video driver</a></li>
    <li class="next"><a href="console_ioctl.4.html">console_ioctl.4: Ioctls for console terminal and virtual consoles <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

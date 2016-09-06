@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="dup (2) manual">
   <meta name="twitter:description" content="Duplicate a file descriptor">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-dup-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-dup-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/dup.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="dup (2) manual" />
   <meta property="og:description" content="Duplicate a file descriptor" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-dup-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-dup-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -124,8 +124,8 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The <strong>dup</strong>() system call creates a copy of the file descriptor <em>oldfd</em>, using the lowest-numbered unused file descriptor for the new descriptor.</p><p>After a successful return, the old and new file descriptors may be used interchangeably. They refer to the same open file description (see <a href="../man2/open.2.html"><strong>open</strong>(2)</a>) and thus share file offset and file status flags; for example, if the file offset is modified by using <a href="../man2/lseek.2.html"><strong>lseek</strong>(2)</a> on one of the file descriptors, the offset is also changed for the other.</p><p>The two file descriptors do not share file descriptor flags (the close-on-exec flag). The close-on-exec flag (<strong>FD_CLOEXEC</strong>; see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>) for the duplicate descriptor is off.</p><h3>dup2()</h3>
-<p>The <strong>dup2</strong>() system call performs the same task as <strong>dup</strong>(), but instead of using the lowest-numbered unused file descriptor, it uses the file descriptor number specified in <em>newfd</em>. If the file descriptor <em>newfd</em> was previously open, it is silently closed before being reused.</p><p>The steps of closing and reusing the file descriptor <em>newfd</em> are performed <em>atomically</em>. This is important, because trying to implement equivalent functionality using <a href="../man2/close.2.html"><strong>close</strong>(2)</a> and <strong>dup</strong>() would be subject to race conditions, whereby <em>newfd</em> might be reused between the two steps. Such reuse could happen because the main program is interrupted by a signal handler that allocates a file descriptor, or because a parallel thread allocates a file descriptor.</p><p>Note the following points:</p><ul>
+<p>The <strong>dup</strong>() system call creates a copy of the file descriptor <em>oldfd</em>, using the lowest-numbered unused descriptor for the new descriptor.</p><p>After a successful return, the old and new file descriptors may be used interchangeably. They refer to the same open file description (see <a href="../man2/open.2.html"><strong>open</strong>(2)</a>) and thus share file offset and file status flags; for example, if the file offset is modified by using <a href="../man2/lseek.2.html"><strong>lseek</strong>(2)</a> on one of the descriptors, the offset is also changed for the other.</p><p>The two descriptors do not share file descriptor flags (the close-on-exec flag). The close-on-exec flag (<strong>FD_CLOEXEC</strong>; see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>) for the duplicate descriptor is off.</p><h3>dup2()</h3>
+<p>The <strong>dup2</strong>() system call performs the same task as <strong>dup</strong>(), but instead of using the lowest-numbered unused file descriptor, it uses the descriptor number specified in <em>newfd</em>. If the descriptor <em>newfd</em> was previously open, it is silently closed before being reused.</p><p>The steps of closing and reusing the file descriptor <em>newfd</em> are performed <em>atomically</em>. This is important, because trying to implement equivalent functionality using <a href="../man2/close.2.html"><strong>close</strong>(2)</a> and <strong>dup</strong>() would be subject to race conditions, whereby <em>newfd</em> might be reused between the two steps. Such reuse could happen because the main program is interrupted by a signal handler that allocates a file descriptor, or because a parallel thread allocates a file descriptor.</p><p>Note the following points:</p><ul>
 <li><p>If <em>oldfd</em> is not a valid file descriptor, then the call fails, and <em>newfd</em> is not closed.</p></li><li><p>If <em>oldfd</em> is a valid file descriptor, and <em>newfd</em> has the same value as <em>oldfd</em>, then <strong>dup2</strong>() does nothing, and returns <em>newfd</em>.</p></li>
 </ul>
 <h3>dup3()</h3>
@@ -139,7 +139,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-<p>On success, these system calls return the new file descriptor. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
+<p>On success, these system calls return the new descriptor. On error, -1 is returned, and <em>errno</em> is set appropriately.</p>
         </div>
       </section>
 
@@ -152,13 +152,7 @@
     <p><strong>EBADF</strong></p>
   </dt>
   <dd>
-    <p><em>oldfd</em> isn't an open file descriptor.</p>
-  </dd>
-  <dt>
-    <p><strong>EBADF</strong></p>
-  </dt>
-  <dd>
-    <p><em>newfd</em> is out of the allowed range for file descriptors (see the discussion of <strong>RLIMIT_NOFILE</strong> in <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>).</p>
+    <p><em>oldfd</em> isn't an open file descriptor, or <em>newfd</em> is out of the allowed range for file descriptors.</p>
   </dd>
   <dt>
     <p><strong>EBUSY</strong></p>
@@ -176,19 +170,13 @@
     <p><strong>EINVAL</strong></p>
   </dt>
   <dd>
-    <p>(<strong>dup3</strong>()) <em>flags</em> contain an invalid value.</p>
-  </dd>
-  <dt>
-    <p><strong>EINVAL</strong></p>
-  </dt>
-  <dd>
-    <p>(<strong>dup3</strong>()) <em>oldfd</em> was equal to <em>newfd</em>.</p>
+    <p>(<strong>dup3</strong>()) <em>flags</em> contain an invalid value. Or, <em>oldfd</em> was equal to <em>newfd</em>.</p>
   </dd>
   <dt>
     <p><strong>EMFILE</strong></p>
   </dt>
   <dd>
-    <p>The per-process limit on the number of open file descriptors has been reached (see the discussion of <strong>RLIMIT_NOFILE</strong> in <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>).</p>
+    <p>The process already has the maximum number of file descriptors open and tried to open a new one.</p>
   </dd>
 
 </dl>
@@ -206,7 +194,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p><strong>dup</strong>(), <strong>dup2</strong>(): POSIX.1-2001, POSIX.1-2008, SVr4, 4.3BSD.</p><p><strong>dup3</strong>() is Linux-specific.</p>
+<p><strong>dup</strong>(), <strong>dup2</strong>(): SVr4, 4.3BSD, POSIX.1-2001.</p><p><strong>dup3</strong>() is Linux-specific.</p>
         </div>
       </section>
 
@@ -247,6 +235,13 @@
         <h2 class="font-effect-shadow-multiple">RELATED TO dup&hellip;</h2>
         <div class="sectioncontent">
 <p><a href="../man2/close.2.html"><strong>close</strong>(2)</a>, <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

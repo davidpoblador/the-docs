@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="msgop (2) manual">
   <meta name="twitter:description" content="System v message queue operations">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-msgop-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-msgop-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/msgop.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="msgop (2) manual" />
   <meta property="og:description" content="System v message queue operations" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-msgop-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-msgop-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -248,6 +248,12 @@ struct msgbuf {
     <p>The calling process does not have read permission on the message queue, and does not have the <strong>CAP_IPC_OWNER</strong> capability.</p>
   </dd>
   <dt>
+    <p><strong>EAGAIN</strong></p>
+  </dt>
+  <dd>
+    <p>No message was available in the queue and <strong>IPC_NOWAIT</strong> was specified in <em>msgflg</em>.</p>
+  </dd>
+  <dt>
     <p><strong>EFAULT</strong></p>
   </dt>
   <dd>
@@ -269,7 +275,7 @@ struct msgbuf {
     <p><strong>EINVAL</strong></p>
   </dt>
   <dd>
-    <p><em>msqid</em> was invalid, or <em>msgsz</em> was less than 0.</p>
+    <p><em>msgqid</em> was invalid, or <em>msgsz</em> was less than 0.</p>
   </dd>
   <dt>
     <p><strong>EINVAL</strong> (since Linux 3.14)</p>
@@ -310,7 +316,7 @@ struct msgbuf {
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p>POSIX.1-2001, POSIX.1-2008, SVr4.</p><p>The <strong>MSG_EXCEPT</strong> and <strong>MSG_COPY</strong> flags are Linux-specific; their definitions can be obtained by defining the <strong>_GNU_SOURCE</strong> feature test macro.</p>
+<p>SVr4, POSIX.1-2001.</p><p>The <strong>MSG_EXCEPT</strong> and <strong>MSG_COPY</strong> flags are Linux-specific; their definitions can be obtained by defining the <strong>_GNU_SOURCE</strong> feature test macro.</p>
         </div>
       </section>
 
@@ -323,13 +329,13 @@ struct msgbuf {
     <p><strong>MSGMAX</strong></p>
   </dt>
   <dd>
-    <p>Maximum size of a message text, in bytes (default value: 8192 bytes). On Linux, this limit can be read and modified via <em>/proc/sys/kernel/msgmax</em>.</p>
+    <p>Maximum size for a message text: 8192 bytes (on Linux, this limit can be read and modified via <em>/proc/sys/kernel/msgmax</em>).</p>
   </dd>
   <dt>
     <p><strong>MSGMNB</strong></p>
   </dt>
   <dd>
-    <p>Maximum number of bytes that can be held in a message queue (default value: 16384 bytes). On Linux, this limit can be read and modified via <em>/proc/sys/kernel/msgmnb</em>. A privileged process (Linux: a process with the <strong>CAP_SYS_RESOURCE</strong> capability) can increase the size of a message queue beyond <strong>MSGMNB</strong> using the <a href="../man2/msgctl.2.html"><strong>msgctl</strong>(2)</a> <strong>IPC_SET</strong> operation.</p>
+    <p>Default maximum size in bytes of a message queue: 16384 bytes (on Linux, this limit can be read and modified via <em>/proc/sys/kernel/msgmnb</em>). A privileged process (Linux: a process with the <strong>CAP_SYS_RESOURCE</strong> capability) can increase the size of a message queue beyond <strong>MSGMNB</strong> by a <a href="../man2/msgctl.2.html"><strong>msgctl</strong>(2)</a> system call.</p>
   </dd>
 
 </dl>
@@ -345,141 +351,16 @@ struct msgbuf {
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO msgop&hellip;</h2>
         <div class="sectioncontent">
-<p>The program below demonstrates the use of <strong>msgsnd</strong>() and <strong>msgrcv</strong>().</p><p>The example program is first run with the <strong>-s</strong> option to send a message and then run again with the <strong>-r</strong> option to receive a message.</p><p>The following shell session shows a sample run of the program:</p>
-<pre>
-$<strong> ./a.out -s</strong>
-sent: a message at Wed Mar  4 16:25:45 2015
-
-$<strong> ./a.out -r</strong>
-message received: a message at Wed Mar  4 16:25:45 2015
-</pre>
-<h3>Program source</h3>
-
-<pre>
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-#include &lt;string.h&gt;
-#include &lt;time.h&gt;
-#include &lt;unistd.h&gt;
-#include &lt;errno.h&gt;
-#include &lt;sys/types.h&gt;
-#include &lt;sys/ipc.h&gt;
-#include &lt;sys/msg.h&gt;
-
-struct msgbuf {
-    long mtype;
-    char mtext[80];
-};
-
-static void
-usage(char *prog_name, char *msg)
-{
-    if (msg != NULL)
-        fputs(msg, stderr);
-
-    fprintf(stderr, "Usage: %s [options]&#92;n", prog_name);
-    fprintf(stderr, "Options are:&#92;n");
-    fprintf(stderr, "-s        send message using msgsnd()&#92;n");
-    fprintf(stderr, "-r        read message using msgrcv()&#92;n");
-    fprintf(stderr, "-t        message type (default is 1)&#92;n");
-    fprintf(stderr, "-k        message queue key (default is 1234)&#92;n");
-    exit(EXIT_FAILURE);
-}
-
-static void
-send_msg(int qid, int msgtype)
-{
-    struct msgbuf msg;
-    time_t t;
-
-    msg.mtype = msgtype;
-
-    time(&t);
-    snprintf(msg.mtext, sizeof(msg.mtext), "a message at %s",
-            ctime(&t));
-
-    if (msgsnd(qid, (void *) &msg, sizeof(msg.mtext),
-                IPC_NOWAIT) == -1) {
-        perror("msgsnd error");
-        exit(EXIT_FAILURE);
-    }
-    printf("sent: %s&#92;n", msg.mtext);
-}
-
-static void
-get_msg(int qid, int msgtype)
-{
-    struct msgbuf msg;
-
-    if (msgrcv(qid, (void *) &msg, sizeof(msg.mtext), msgtype,
-               MSG_NOERROR | IPC_NOWAIT) == -1) {
-        if (errno != ENOMSG) {
-            perror("msgrcv");
-            exit(EXIT_FAILURE);
-        }
-        printf("No message available for msgrcv()&#92;n");
-    } else
-        printf("message received: %s&#92;n", msg.mtext);
-}
-
-int
-main(int argc, char *argv[])
-{
-    int qid, opt;
-    int mode = 0;               /* 1 = send, 2 = receive */
-    int msgtype = 1;
-    int msgkey = 1234;
-
-    while ((opt = getopt(argc, argv, "srt:k:")) != -1) {
-        switch (opt) {
-        case &apos;s&apos;:
-            mode = 1;
-            break;
-        case &apos;r&apos;:
-            mode = 2;
-            break;
-        case &apos;t&apos;:
-            msgtype = atoi(optarg);
-            if (msgtype &lt;= 0)
-                usage(argv[0], "-t option must be greater than 0&#92;n");
-            break;
-        case &apos;k&apos;:
-            msgkey = atoi(optarg);
-            break;
-        default:
-            usage(argv[0], "Unrecognized option&#92;n");
-        }
-    }
-
-    if (mode == 0)
-        usage(argv[0], "must use either -s or -r option&#92;n");
-
-    qid = msgget(msgkey, IPC_CREAT | 0666);
-
-    if (qid == -1) {
-        perror("msgget");
-        exit(EXIT_FAILURE);
-    }
-
-    if (mode == 2)
-        get_msg(qid, msgtype);
-    else
-        send_msg(qid, msgtype);
-
-    exit(EXIT_SUCCESS);
-}
-</pre>
-
-
+<p><a href="../man2/msgctl.2.html"><strong>msgctl</strong>(2)</a>, <a href="../man2/msgget.2.html"><strong>msgget</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/mq_overview.7.html"><strong>mq_overview</strong>(7)</a>, <a href="../man7/svipc.7.html"><strong>svipc</strong>(7)</a></p>
         </div>
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO msgop&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
         <div class="sectioncontent">
-<p><a href="../man2/msgctl.2.html"><strong>msgctl</strong>(2)</a>, <a href="../man2/msgget.2.html"><strong>msgget</strong>(2)</a>, <a href="../man7/capabilities.7.html"><strong>capabilities</strong>(7)</a>, <a href="../man7/mq_overview.7.html"><strong>mq_overview</strong>(7)</a>, <a href="../man7/svipc.7.html"><strong>svipc</strong>(7)</a></p>
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

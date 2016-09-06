@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="fexecve (3) manual">
   <meta name="twitter:description" content="Execute program specified via file descriptor">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-fexecve-3.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-fexecve-3.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man3/fexecve.3.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="fexecve (3) manual" />
   <meta property="og:description" content="Execute program specified via file descriptor" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-fexecve-3.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-fexecve-3.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -116,7 +116,7 @@
     <p>Since glibc 2.10:</p>
   </dt>
   <dd>
-    <p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
+    <p>_XOPEN_SOURCE&nbsp;&gt;=&nbsp;700 || _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
   </dd>
   <dt>
     <p>Before glibc 2.10:</p>
@@ -175,23 +175,6 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
-        <div class="sectioncontent">
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
-<tr>
-<th>Interface</th>
-<th>Attribute</th>
-<th>Value</th></tr>
-
-<tr>
-<td><strong>fexecve</strong>()  </td>
-<td>Thread safety</td>
-<td>MT-Safe</td></tr>
-</table>
-        </div>
-      </section>
-
-      <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
 <p>POSIX.1-2008. This function is not specified in POSIX.1-2001, and is not widely available on other systems. It is specified in POSIX.1-2008.</p>
@@ -201,21 +184,21 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>On Linux, <strong>fexecve</strong>() is implemented using the <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> filesystem, so <em>/proc</em> needs to be mounted and available at the time of the call.</p><p>The idea behind <strong>fexecve</strong>() is to allow the caller to verify (checksum) the contents of an executable before executing it. Simply opening the file, checksumming the contents, and then doing an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> would not suffice, since, between the two steps, the filename, or a directory prefix of the pathname, could have been exchanged (by, for example, modifying the target of a symbolic link). <strong>fexecve</strong>() does not mitigate the problem that the <em>contents</em> of a file could be changed between the checksumming and the call to <strong>fexecve</strong>(); for that, the solution is to ensure that the permissions on the file prevent it from being modified by malicious users.</p><p>The natural idiom when using <strong>fexecve</strong>() is to set the close-on-exec flag on <em>fd</em>, so that the file descriptor does not leak through to the program that is executed. This approach is natural for two reasons. First, it prevents file descriptors being consumed unnecessarily. (The executed program normally has no need of a file descriptor that refers to the program itself.) Second, if <strong>fexecve</strong>() is used recursively, employing the close-on-exec flag prevents the file descriptor exhaustion that would result from the fact that each step in the recursion would cause one more file descriptor to be passed to the new program. (But see BUGS.)</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">BUGS</h2>
-        <div class="sectioncontent">
-<p>If <em>fd</em> refers to a script (i.e., it is an executable text file that names a script interpreter with a first line that begins with the characters <em>#!</em>) and the close-on-exec flag has been set for <em>fd</em>, then <strong>fexecve</strong>() fails with the error <strong>ENOENT</strong>. This error occurs because, by the time the script interpreter is executed, <em>fd</em> has already been closed because of the close-on-exec flag. Thus, the close-on-exec flag can't be set on <em>fd</em> if it refers to a script, leading to the problems described in NOTES.</p>
+<p>On Linux, <strong>fexecve</strong>() is implemented using the <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> filesystem, so <em>/proc</em> needs to be mounted and available at the time of the call.</p><p>If <em>fd</em> is a file descriptor that refers to an interpreter script and has been marked as close-on-exec (see the discussion of the <strong>FD_CLOEXEC</strong> in <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>), <strong>fexecve</strong>() will fail to execute the script, since, by the time the script interpreter tries to access the script file, <em>fd</em> has already been closed.</p><p>The idea behind <strong>fexecve</strong>() is to allow the caller to verify (checksum) the contents of an executable before executing it. Simply opening the file, checksumming the contents, and then doing an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a> would not suffice, since, between the two steps, the filename, or a directory prefix of the pathname, could have been exchanged (by, for example, modifying the target of a symbolic link). <strong>fexecve</strong>() does not mitigate the problem that the <em>contents</em> of a file could be changed between the checksumming and the call to <strong>fexecve</strong>(); for that, the solution is to ensure that the permissions on the file prevent it from being modified by malicious users.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO fexecve&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>, <a href="../man2/execveat.2.html"><strong>execveat</strong>(2)</a></p>
+<p><a href="../man2/execve.2.html"><strong>execve</strong>(2)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="timer_create (2) manual">
   <meta name="twitter:description" content="Create a posix per-process timer">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-timer_create-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-timer_create-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/timer_create.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="timer_create (2) manual" />
   <meta property="og:description" content="Create a posix per-process timer" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-timer_create-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-timer_create-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -225,7 +225,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p>POSIX.1-2001, POSIX.1-2008.</p>
+<p>POSIX.1-2001.</p>
         </div>
       </section>
 
@@ -233,11 +233,11 @@
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
 <p>A program may create multiple interval timers using <strong>timer_create</strong>().</p><p>Timers are not inherited by the child of a <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, and are disarmed and deleted during an <a href="../man2/execve.2.html"><strong>execve</strong>(2)</a>.</p><p>The kernel preallocates a "queued real-time signal" for each timer created using <strong>timer_create</strong>(). Consequently, the number of timers is limited by the <strong>RLIMIT_SIGPENDING</strong> resource limit (see <a href="../man2/setrlimit.2.html"><strong>setrlimit</strong>(2)</a>).</p><p>The timers created by <strong>timer_create</strong>() are commonly known as "POSIX (interval) timers". The POSIX timers API consists of the following interfaces:</p><ul>
-<li><p><strong>timer_create</strong>(): Create a timer.</p></li><li><p><a href="../man2/timer_settime.2.html"><strong>timer_settime</strong>(2)</a>: Arm (start) or disarm (stop) a timer.</p></li><li><p><a href="../man2/timer_gettime.2.html"><strong>timer_gettime</strong>(2)</a>: Fetch the time remaining until the next expiration of a timer, along with the interval setting of the timer.</p></li><li><p><a href="../man2/timer_getoverrun.2.html"><strong>timer_getoverrun</strong>(2)</a>: Return the overrun count for the last timer expiration.</p></li><li><p><a href="../man2/timer_delete.2.html"><strong>timer_delete</strong>(2)</a>: Disarm and delete a timer.</p></li>
-</ul><p>Since Linux 3.10, the <em>/proc/[pid]/timers</em> file can be used to list the POSIX timers for the process with PID <em>pid</em>. See <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> for further information.</p><h3>C library/kernel differences</h3>
+<li><p><strong>timer_create</strong>(): Create a timer.</p></li><li><p><a href="../man2/timer_settime.2.html"><strong>timer_settime</strong>(2)</a>: Arm (start) or disarm (stop) a timer.</p></li><li><p><a href="../man2/timer_gettime.2.html"><strong>timer_gettime</strong>(2)</a>: Fetch the time remaining until the next expiration of a timer, along with the interval setting of the timer.</p></li><li><p><a href="../man2/timer_getoverrun.2.html"><strong>timer_getoverrun</strong>(2)</a>: Return the overrun count for the last timer expiration.</p></li><li><p><a href="../man2/timer_delete.2.html"><strong>timer_delete</strong>(2)</a>: Disarm and delete a timer.</p><p>Since Linux 3.10, the <em>/proc/[pid]/timers</em> file can be used to list the POSIX timers for the process with PID <em>pid</em>. See <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> for further information.</p></li>
+</ul><h3>C library/kernel ABI differences</h3>
 <p>Part of the implementation of the POSIX timers API is provided by glibc. In particular:</p><ul>
-<li><p>Much of the functionality for <strong>SIGEV_THREAD</strong> is implemented within glibc, rather than the kernel. (This is necessarily so, since the thread involved in handling the notification is one that must be managed by the C library POSIX threads implementation.) Although the notification delivered to the process is via a thread, internally the NPTL implementation uses a <em>sigev_notify</em> value of <strong>SIGEV_THREAD_ID</strong> along with a real-time signal that is reserved by the implementation (see <a href="../man7/nptl.7.html"><strong>nptl</strong>(7)</a>).</p></li><li><p>The implementation of the default case where <em>evp</em> is NULL is handled inside glibc, which invokes the underlying system call with a suitably populated <em>sigevent</em> structure.</p></li><li><p>The timer IDs presented at user level are maintained by glibc, which maps these IDs to the timer IDs employed by the kernel.</p></li>
-</ul><p>The POSIX timers system calls first appeared in Linux 2.6. Prior to this, glibc provided an incomplete user-space implementation (<strong>CLOCK_REALTIME</strong> timers only) using POSIX threads, and in glibc versions before 2.17, the implementation falls back to this technique on systems running pre-2.6 Linux kernels.</p>
+<li><p>The functionality for <strong>SIGEV_THREAD</strong> is implemented within glibc, rather than the kernel.</p></li><li><p>The timer IDs presented at user level are maintained by glibc, which maps these IDs to the timer IDs employed by the kernel.</p></li>
+</ul><p>The POSIX timers system calls first appeared in Linux 2.6. Prior to this, glibc provided an incomplete user-space implementation (<strong>CLOCK_REALTIME</strong> timers only) using POSIX threads, and current glibc falls back to this implementation on systems running pre-2.6 Linux kernels.</p>
 
         </div>
       </section>
@@ -381,6 +381,13 @@ main(int argc, char *argv[])
         <h2 class="font-effect-shadow-multiple">RELATED TO timer_create&hellip;</h2>
         <div class="sectioncontent">
 <p><a href="../man2/clock_gettime.2.html"><strong>clock_gettime</strong>(2)</a>, <a href="../man2/setitimer.2.html"><strong>setitimer</strong>(2)</a>, <a href="../man2/timer_delete.2.html"><strong>timer_delete</strong>(2)</a>, <a href="../man2/timer_getoverrun.2.html"><strong>timer_getoverrun</strong>(2)</a>, <a href="../man2/timer_settime.2.html"><strong>timer_settime</strong>(2)</a>, <a href="../man2/timerfd_create.2.html"><strong>timerfd_create</strong>(2)</a>, <a href="../man3/clock_getcpuclockid.3.html"><strong>clock_getcpuclockid</strong>(3)</a>, <a href="../man3/pthread_getcpuclockid.3.html"><strong>pthread_getcpuclockid</strong>(3)</a>, <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a>, <a href="../man7/sigevent.7.html"><strong>sigevent</strong>(7)</a>, <a href="../man7/signal.7.html"><strong>signal</strong>(7)</a>, <a href="../man7/time.7.html"><strong>time</strong>(7)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

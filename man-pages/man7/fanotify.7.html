@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="fanotify (7) manual">
   <meta name="twitter:description" content="Monitoring filesystem events">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-fanotify-7.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-fanotify-7.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man7/fanotify.7.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="fanotify (7) manual" />
   <meta property="og:description" content="Monitoring filesystem events" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-fanotify-7.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-fanotify-7.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages/">
+      <span itemprop="name">manpages</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -105,7 +105,7 @@
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
 <p>The fanotify API provides notification and interception of filesystem events. Use cases include virus scanning and hierarchical storage management. Currently, only a limited set of events is supported. In particular, there is no support for create, delete, and move events. (See <a href="../man7/inotify.7.html"><strong>inotify</strong>(7)</a> for details of an API that does notify those events.)</p><p>Additional capabilities compared to the <a href="../man7/inotify.7.html"><strong>inotify</strong>(7)</a> API include the ability to monitor all of the objects in a mounted filesystem, the ability to make access permission decisions, and the possibility to read or modify files before access by other applications.</p><p>The following system calls are used with this API: <a href="../man2/fanotify_init.2.html"><strong>fanotify_init</strong>(2)</a>, <a href="../man2/fanotify_mark.2.html"><strong>fanotify_mark</strong>(2)</a>, <a href="../man2/read.2.html"><strong>read</strong>(2)</a>, <a href="../man2/write.2.html"><strong>write</strong>(2)</a>, and <a href="../man2/close.2.html"><strong>close</strong>(2)</a>.</p><h3>fanotify_init(), fanotify_mark(), and notification groups</h3>
-<p>The <a href="../man2/fanotify_init.2.html"><strong>fanotify_init</strong>(2)</a> system call creates and initializes an fanotify notification group and returns a file descriptor referring to it.</p><p>An fanotify notification group is a kernel-internal object that holds a list of files, directories, and mount points for which events shall be created.</p><p>For each entry in an fanotify notification group, two bit masks exist: the <em>mark</em> mask and the <em>ignore</em> mask. The mark mask defines file activities for which an event shall be created. The ignore mask defines activities for which no event shall be generated. Having these two types of masks permits a mount point or directory to be marked for receiving events, while at the same time ignoring events for specific objects under that mount point or directory.</p><p>The <a href="../man2/fanotify_mark.2.html"><strong>fanotify_mark</strong>(2)</a> system call adds a file, directory, or mount to a notification group and specifies which events shall be reported (or ignored), or removes or modifies such an entry.</p><p>A possible usage of the ignore mask is for a file cache. Events of interest for a file cache are modification of a file and closing of the same. Hence, the cached directory or mount point is to be marked to receive these events. After receiving the first event informing that a file has been modified, the corresponding cache entry will be invalidated. No further modification events for this file are of interest until the file is closed. Hence, the modify event can be added to the ignore mask. Upon receiving the close event, the modify event can be removed from the ignore mask and the file cache entry can be updated.</p><p>The entries in the fanotify notification groups refer to files and directories via their inode number and to mounts via their mount ID. If files or directories are renamed or moved within the same mount, the respective entries survive. If files or directories are deleted or moved to another mount or if mounts are unmounted, the corresponding entries are deleted.</p>
+<p>The <a href="../man2/fanotify_init.2.html"><strong>fanotify_init</strong>(2)</a> system call creates and initializes an fanotify notification group and returns a file descriptor referring to it.</p><p>An fanotify notification group is a kernel-internal object that holds a list of files, directories, and mount points for which events shall be created.</p><p>For each entry in an fanotify notification group, two bit masks exist: the <em>mark</em> mask and the <em>ignore</em> mask. The mark mask defines file activities for which an event shall be created. The ignore mask defines activities for which no event shall be generated. Having these two types of masks permits a mount point or directory to be marked for receiving events, while at the same time ignoring events for specific objects under that mount point or directory.</p><p>The <a href="../man2/fanotify_mark.2.html"><strong>fanotify_mark</strong>(2)</a> system call adds a file, directory, or mount to a notification group and specifies which events shall be reported (or ignored), or removes or modifies such an entry.</p><p>A possible usage of the ignore mask is for a file cache. Events of interest for a file cache are modification of a file and closing of the same. Hence, the cached directory or mount point is to be marked to receive these events. After receiving the first event informing that a file has been modified, the corresponding cache entry will be invalidated. No further modification events for this file are of interest until the file is closed. Hence, the modify event can be added to the ignore mask. Upon receiving the close event, the modify event can be removed from the ignore mask and the file cache entry can be updated.</p><p>The entries in the fanotify notification groups refer to files and directories via their inode number and to mounts via their mount ID. If files or directories are renamed or moved, the respective entries survive. If files or directories are deleted or mounts are unmounted, the corresponding entries are deleted.</p>
 <h3>The event queue</h3>
 <p>As events occur on the filesystem objects monitored by a notification group, the fanotify system generates events that are collected in a queue. These events can then be read (using <a href="../man2/read.2.html"><strong>read</strong>(2)</a> or similar) from the fanotify file descriptor returned by <a href="../man2/fanotify_init.2.html"><strong>fanotify_init</strong>(2)</a>.</p><p>Two types of events are generated: <em>notification</em> events and <em>permission</em> events. Notification events are merely informative and require no action to be taken by the receiving application except for closing the file descriptor passed in the event (see below). Permission events are requests to the receiving application to decide whether permission for a file access shall be granted. For these events, the recipient must write a response which decides whether access is granted or not.</p><p>An event is removed from the event queue of the fanotify group when it has been read. Permission events that have been read are kept in an internal list of the fanotify group until either a permission decision has been taken by writing to the fanotify file descriptor or the fanotify file descriptor is closed.</p>
 <h3>Reading fanotify events</h3>
@@ -247,7 +247,7 @@ struct fanotify_event_metadata {
     <p><strong>FAN_EVENT_NEXT(meta, len)</strong></p>
   </dt>
   <dd>
-    <p>This macro uses the length indicated in the <em>event_len</em> field of the metadata structure pointed to by <em>meta</em> to calculate the address of the next metadata structure that follows <em>meta</em>. <em>len</em> is the number of bytes of metadata that currently remain in the buffer. The macro returns a pointer to the next metadata structure that follows <em>meta</em>, and reduces <em>len</em> by the number of bytes in the metadata structure that has been skipped over (i.e., it subtracts <em>meta-&gt;event_len</em> from <em>len</em>).</p>
+    <p>This macro uses the length indicated in the <em>event_len</em> field of the metadata structure pointed to by <em>meta</em> to calculate the address of the next metadata structure that follows <em>meta</em>. <em>len</em> is the number of bytes of metadata that currently remain in the buffer. The macro returns a pointer to the next metadata structure that follows <em>meta</em>, and reduces <em>len</em> by the number of bytes in the the metadata structure that has been skipped over (i.e., it subtracts <em>meta-&gt;event_len</em> from <em>len</em>).</p>
   </dd>
 
 </dl>
@@ -292,7 +292,7 @@ struct fanotify_response {
 <h3>Closing the fanotify file descriptor</h3>
 <p>When all file descriptors referring to the fanotify notification group are closed, the fanotify group is released and its resources are freed for reuse by the kernel. Upon <a href="../man2/close.2.html"><strong>close</strong>(2)</a>, outstanding permission events will be set to allowed.</p>
 <h3>/proc/[pid]/fdinfo</h3>
-<p>The file <em>/proc/[pid]/fdinfo/[fd]</em> contains information about fanotify marks for file descriptor <em>fd</em> of process <em>pid</em>. See <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a> for details.</p>
+<p>The file <em>/proc/[pid]/fdinfo/[fd]</em> contains information about fanotify marks for file descriptor <em>fd</em> of process <em>pid</em>. See the kernel source file <em>Documentation/filesystems/proc.txt</em> for details.</p>
 
         </div>
       </section>
@@ -318,7 +318,7 @@ struct fanotify_response {
     <p><strong>ENFILE</strong></p>
   </dt>
   <dd>
-    <p>The system-wide limit on the total number of open files has been reached. See <em>/proc/sys/fs/file-max</em> in <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>.</p>
+    <p>The system-wide limit on the number of open files has been reached. See <em>/proc/sys/fs/file-max</em> in <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>.</p>
   </dd>
   <dt>
     <p><strong>ETXTBSY</strong></p>
@@ -374,8 +374,8 @@ struct fanotify_response {
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>Before Linux 3.19, <a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a> did not generate fanotify events. Since Linux 3.19, calls to <a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a> generate <strong>FAN_MODIFY</strong> events.</p><p>As of Linux 3.17, the following bugs exist:</p><ul>
-<li><p>On Linux, a filesystem object may be accessible through multiple paths, for example, a part of a filesystem may be remounted using the <em>--bind</em> option of <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a>. A listener that marked a mount will be notified only of events that were triggered for a filesystem object using the same mount. Any other event will pass unnoticed.</p></li><li><p>When an event is generated, no check is made to see whether the user ID of the receiving process has authorization to read or write the file before passing a file descriptor for that file. This poses a security risk, when the <strong>CAP_SYS_ADMIN</strong> capability is set for programs executed by unprivileged users.</p></li><li><p>If a call to <a href="../man2/read.2.html"><strong>read</strong>(2)</a> processes multiple events from the fanotify queue and an error occurs, the return value will be the total length of the events successfully copied to the user-space buffer before the error occurred. The return value will not be -1, and <em>errno</em> will not be set. Thus, the reading application has no way to detect the error.</p></li>
+<p>As of Linux 3.15, the following bugs exist:</p><ul>
+<li><p>When an event is generated, no check is made to see whether the user ID of the receiving process has authorization to read or write the file before passing a file descriptor for that file. This poses a security risk, when the <strong>CAP_SYS_ADMIN</strong> capability is set for programs executed by unprivileged users.</p></li><li><p>If a call to <a href="../man2/read.2.html"><strong>read</strong>(2)</a> processes multiple events from the fanotify queue and an error occurs, the return value will be the total length of the events successfully copied to the user-space buffer before the error occurred. The return value will not be -1, and <em>errno</em> will not be set. Thus, the reading application has no way to detect the error.</p></li>
 </ul>
         </div>
       </section>
@@ -536,7 +536,7 @@ main(int argc, char *argv[])
          file descriptor */
 
     if (fanotify_mark(fd, FAN_MARK_ADD | FAN_MARK_MOUNT,
-                      FAN_OPEN_PERM | FAN_CLOSE_WRITE, AT_FDCWD,
+                      FAN_OPEN_PERM | FAN_CLOSE_WRITE, -1,
                       argv[1]) == -1) {
         perror("fanotify_mark");
         exit(EXIT_FAILURE);
@@ -604,9 +604,16 @@ main(int argc, char *argv[])
 <p><a href="../man2/fanotify_init.2.html"><strong>fanotify_init</strong>(2)</a>, <a href="../man2/fanotify_mark.2.html"><strong>fanotify_mark</strong>(2)</a>, <a href="../man7/inotify.7.html"><strong>inotify</strong>(7)</a></p>
         </div>
       </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="epoll.7.html"><span aria-hidden="true">&larr;</span> epoll.7: I/o event notification facility</a></li>
+   <li class="previous"><a href="exactimage.7.html"><span aria-hidden="true">&larr;</span> exactimage.7: Image processing library</a></li>
    <li class="next"><a href="feature_test_macros.7.html">feature_test_macros.7: Feature test macros <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

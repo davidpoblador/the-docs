@@ -126,7 +126,7 @@
     <p><strong>-b</strong><em> block_size_options</em></p>
   </dt>
   <dd>
-    <p>This option specifies the fundamental block size of the filesystem. The valid <em>block_size_options</em> are: <strong>log=</strong><em>value</em> or <strong>size=</strong><em>value</em> and only one can be supplied. The block size is specified either as a base two logarithm value with <strong>log=</strong>, or in bytes with <strong>size=</strong>. The default value is 4096 bytes (4 KiB), the minimum is 512, and the maximum is 65536 (64 KiB). Although <strong>mkfs.xfs</strong> will accept any of these values and create a valid filesystem, XFS on Linux can only mount filesystems with pagesize or smaller blocks.</p>
+    <p>This option specifies the fundamental block size of the filesystem. The valid <em>block_size_options</em> are: <strong>log=</strong><em>value</em> or <strong>size=</strong><em>value</em> and only one can be supplied. The block size is specified either as a base two logarithm value with <strong>log=</strong>, or in bytes with <strong>size=</strong>. The default value is 4096 bytes (4 KiB), the minimum is 512, and the maximum is 65536 (64 KiB). XFS on Linux currently only supports pagesize or smaller blocks.</p>
   </dd>
   <dt>
     <p><strong>-m</strong><em> global_metadata_options</em></p>
@@ -139,7 +139,7 @@
   </dt>
   <dd>
     <p>This is used to create a filesystem which maintains and checks CRC information in all metadata objects on disk. The value is either 0 to disable the feature, or 1 to enable the use of CRCs.</p><ul>
-<li><p>CRCs enable enhanced error detection due to hardware issues, whilst the format changes also improves crash recovery algorithms and the ability of various tools to validate and repair metadata corruptions when they are found.  The CRC algorithm used is CRC32c, so the overhead is dependent on CPU architecture as some CPUs have hardware acceleration of this algorithm.  Typically the overhead of calculating and checking the CRCs is not noticeable in normal operation.</p></li><li><p>By default, <strong>mkfs.xfs</strong> will enable metadata CRCs.</p></li>
+<li><p>CRCs enable enhanced error detection due to hardware issues, whilst the format changes also improves crash recovery algorithms and the ability of various tools to validate and repair metadata corruptions when they are found.  The CRC algorithm used is CRC32c, so the overhead is dependent on CPU architecture as some CPUs have hardware acceleration of this algorithm.  Typically the overhead of calculating and checking the CRCs is not noticable in normal operation.</p></li><li><p>By default, <strong>mkfs.xfs</strong> will not enable metadata CRCs.</p></li>
 </ul>
   </dd>
   <dt>
@@ -147,14 +147,8 @@
   </dt>
   <dd>
     <p>This option enables the use of a separate free inode btree index in each allocation group. The value is either 0 to disable the feature, or 1 to create a free inode btree in each allocation group.</p><ul>
-<li><p>The free inode btree mirrors the existing allocated inode btree index which indexes both used and free inodes. The free inode btree does not index used inodes, allowing faster, more consistent inode allocation performance as filesystems age.</p></li><li><p>By default, <strong>mkfs.xfs</strong> will create free inode btrees for filesystems created with the (default) <strong>-m crc=1</strong> option set. When the option <strong>-m crc=0</strong> is used, the free inode btree feature is not supported and is disabled.</p></li>
+<li><p>The free inode btree mirrors the existing allocated inode btree index which indexes both used and free inodes. The free inode btree does not index used inodes, allowing faster, more consistent inode allocation performance as filesystems age.</p></li><li><p>By default, <strong>mkfs.xfs</strong> will not create free inode btrees. This feature is also currently only available for filesystems created with the <strong>-m crc=1</strong> option set.</p></li>
 </ul>
-  </dd>
-  <dt>
-    <p><strong>uuid=</strong><em>value</em></p>
-  </dt>
-  <dd>
-    <p>Use the given value as the filesystem UUID for the newly created filesystem. The default is to generate a random UUID.</p>
   </dd>
 
 </dl>
@@ -280,14 +274,6 @@
   </dt>
   <dd>
     <p>This is used to enable 32bit quota project identifiers. The <em>value</em> is either 0 or 1, with 1 signifying that 32bit projid are to be enabled. If the value is omitted, 1 is assumed.  (This default changed in release version 3.2.0.)</p>
-  </dd>
-  <dt>
-    <p><strong>sparse[=</strong><em>value</em><strong>]</strong></p>
-  </dt>
-  <dd>
-    <p>Enable sparse inode chunk allocation. The <em>value</em> is either 0 or 1, with 1 signifying that sparse allocation is enabled. If the value is omitted, 1 is assumed. Sparse inode allocation is disabled by default. This feature is only available for filesystems formatted with <strong>-m crc=1.</strong></p><ul>
-<li><p>When enabled, sparse inode allocation allows the filesystem to allocate smaller than the standard 64-inode chunk when free space is severely limited. This feature is useful for filesystems that might fragment free space over time such that no free extents are large enough to accommodate a chunk of 64 inodes. Without this feature enabled, inode allocations can fail with out of space errors under severe fragmented free space conditions.</p></li>
-</ul>
   </dd>
 
 </dl>
@@ -430,7 +416,7 @@
 
 </dl>
 <ul>
-<li><p>A 6-character string defines the mode for a file. The first character of this string defines the file type. The character range for this first character is <strong>-bcdpl.</strong> A file may be a regular file, a block special file, a character special file, directory files, named pipes (first-in, first out files), and symbolic links. The second character of the mode string is used to specify setuserID mode, in which case it is <strong>u</strong>. If setuserID mode is not specified, the second character is <strong>-</strong>. The third character of the mode string is used to specify the setgroupID mode, in which case it is <strong>g</strong>. If setgroupID mode is not specified, the third character is <strong>-</strong>. The remaining characters of the mode string are a three digit octal number. This octal number defines the owner, group, and other read, write, and execute permissions for the file, respectively. For more information on file permissions, see the <strong>chmod</strong>(1) command.</p></li><li><p>Following the mode character string are two decimal number tokens that specify the user and group IDs of the file's owner.</p></li><li><p>In a regular file, the next token specifies the pathname from which the contents and size of the file are copied. In a block or character special file, the next token are two decimal numbers that specify the major and minor device numbers. When a file is a symbolic link, the next token specifies the contents of the link.</p><p>When the file is a directory, the <strong>mkfs.xfs</strong> command creates the entries <strong>dot</strong> (.) and <strong>dot-dot</strong> (..) and then reads the list of names and file specifications in a recursive manner for all of the entries in the directory. A scan of the protofile is always terminated with the dollar ( <strong>$</strong> ) token.</p></li>
+<li><p>A 6-character string defines the mode for a file. The first character of this string defines the file type. The character range for this first character is <strong>-bcdpl.</strong> A file may be a regular file, a block special file, a character special file, directory files, named pipes (first-in, first out files), and symbolic links. The second character of the mode string is used to specify setuserID mode, in which case it is <strong>u</strong>. If setuserID mode is not specified, the second character is <strong>-</strong>. The third character of the mode string is used to specify the setgroupID mode, in which case it is <strong>g</strong>. If setgroupID mode is not specified, the third character is <strong>-</strong>. The remaining characters of the mode string are a three digit octal number. This octal number defines the owner, group, and other read, write, and execute permissions for the file, respectively. For more information on file permissions, see the <a href="../man1/chmod.1.html"><strong>chmod</strong>(1)</a> command.</p></li><li><p>Following the mode character string are two decimal number tokens that specify the user and group IDs of the file's owner.</p></li><li><p>In a regular file, the next token specifies the pathname from which the contents and size of the file are copied. In a block or character special file, the next token are two decimal numbers that specify the major and minor device numbers. When a file is a symbolic link, the next token specifies the contents of the link.</p><p>When the file is a directory, the <strong>mkfs.xfs</strong> command creates the entries <strong>dot</strong> (.) and <strong>dot-dot</strong> (..) and then reads the list of names and file specifications in a recursive manner for all of the entries in the directory. A scan of the protofile is always terminated with the dollar ( <strong>$</strong> ) token.</p></li>
 </ul>
 <dl class='dl-vertical'>
   <dt>
@@ -512,7 +498,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO mkfs.xfs&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man5/xfs.5.html"><strong>xfs</strong>(5)</a>, <a href="../man8/mkfs.8.html"><strong>mkfs</strong>(8)</a>, <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a>, <strong>xfs_info</strong>(8), <a href="../man8/xfs_admin.8.html"><strong>xfs_admin</strong>(8)</a>.</p>
+<p><a href="../man5/xfs.5.html"><strong>xfs</strong>(5)</a>, <a href="../man8/mkfs.8.html"><strong>mkfs</strong>(8)</a>, <a href="../man8/mount.8.html"><strong>mount</strong>(8)</a>, <a href="../man8/xfs_info.8.html"><strong>xfs_info</strong>(8)</a>, <a href="../man8/xfs_admin.8.html"><strong>xfs_admin</strong>(8)</a>.</p>
         </div>
       </section>
 
@@ -524,8 +510,8 @@
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="mkfs.minix.8.html"><span aria-hidden="true">&larr;</span> mkfs.minix.8: Make a minix filesystem</a></li>
-   <li class="next"><a href="mkswap.8.html">mkswap.8: Set up a linux swap area <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="mkfs.vfat.8.html"><span aria-hidden="true">&larr;</span> mkfs.vfat.8: Create an ms-dos filesystem under linux</a></li>
+   <li class="next"><a href="mkhomedir_helper.8.html">mkhomedir_helper.8: Helper binary that creates home directories <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

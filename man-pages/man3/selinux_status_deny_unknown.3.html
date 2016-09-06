@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>selinux_status_open: Reference the selinux kernel status without invocation of system calls</title>
+  <title>selinux_status_deny_unknown: Reference the selinux kernel status without invocation of system calls</title>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/manpage.css" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
@@ -29,22 +29,22 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@CartaTech">
   <meta name="twitter:creator" content="@CartaTech">
-  <meta name="twitter:title" content="selinux_status_open (3) manual">
+  <meta name="twitter:title" content="selinux_status_deny_unknown (3) manual">
   <meta name="twitter:description" content="Reference the selinux kernel status without invocation of system calls">
-  <meta name="twitter:image" content="https://www.carta.tech/images/selinux-selinux_status_open-3.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/libselinux1-dev-selinux_status_deny_unknown-3.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man3/selinux_status_deny_unknown.3.html" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="selinux_status_open (3) manual" />
+  <meta property="og:title" content="selinux_status_deny_unknown (3) manual" />
   <meta property="og:description" content="Reference the selinux kernel status without invocation of system calls" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/selinux-selinux_status_open-3.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/libselinux1-dev-selinux_status_deny_unknown-3.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
 <body>
   <div class="container final">
           <div class="page-header">
-        <h1 class="font-effect-destruction">selinux_status_open<small> (3)</small></h1>
+        <h1 class="font-effect-destruction">selinux_status_deny_unknown<small> (3)</small></h1>
         <p class="lead">Reference the selinux kernel status without invocation of system calls</p>
       </div>
 
@@ -68,8 +68,8 @@
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/selinux_status_open.3.html">
-      <span itemprop="name">selinux_status_open: Reference the selinux kernel status without invocation of system calls</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/selinux_status_deny_unknown.3.html">
+      <span itemprop="name">selinux_status_deny_unknown: Reference the selinux kernel status without invocation of system calls</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -88,14 +88,14 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/selinux/">
-      <span itemprop="name">selinux</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/libselinux1-dev/">
+      <span itemprop="name">libselinux1-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/selinux_status_open.3.html">
-      <span itemprop="name">selinux_status_open: Reference the selinux kernel status without invocation of system calls</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3/selinux_status_deny_unknown.3.html">
+      <span itemprop="name">selinux_status_deny_unknown: Reference the selinux kernel status without invocation of system calls</span>
     </a>
     <meta itemprop="position" content="4" />
   </li>
@@ -111,7 +111,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>Linux 2.6.37 or later provides a SELinux kernel status page; being mostly placed on <em>/sys/fs/selinux/status</em> entry. It enables userspace applications to mmap this page with read-only mode, then it informs some status without system call invocations.</p><p>In some cases that a userspace application tries to apply heavy frequent access control; such as row-level security in databases, it will face unignorable cost to communicate with kernel space to check invalidation of userspace avc.</p><p>These functions provides applications a way to know some kernel events without system-call invocation or worker thread for monitoring.</p><p><strong>selinux_status_open</strong>() tries to <a href="../man2/open.2.html"><strong>open</strong>(2)</a> <em>/sys/fs/selinux/status</em> and <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> it in read-only mode. The file-descriptor and pointer to the page shall be stored internally; Don't touch them directly. Set 1 on the <em>fallback</em> argument to handle a case of older kernels without kernel status page support. In this case, this function tries to open a netlink socket using <a href="../man3/avc_netlink_open.3.html"><strong>avc_netlink_open</strong>(3)</a> and overwrite corresponding callbacks ( setenforce and policyload). Thus, we need to pay attention to the interaction with these interfaces, when fallback mode is enabled.</p><p><strong>selinux_status_close</strong>() unmap the kernel status page and close its file descriptor, or close the netlink socket if fallbacked.</p><p><strong>selinux_status_updated</strong>() informs us whether something has been updated since the last call. It returns 0 if nothing was happened, however, 1 if something has been updated in this duration, or -1 on error.</p><p><strong>selinux_status_getenforce</strong>() returns 0 if SELinux is running in permissive mode, 1 if enforcing mode, or -1 on error. Same as <a href="../man3/security_getenforce.3.html"><strong>security_getenforce</strong>(3)</a> except with or without system call invocation.</p><p><strong>selinux_status_policyload</strong>() returns times of policy reloaded on the running system, or -1 on error. Note that it is not a reliable value on fallback-mode until it receive the first event message via netlink socket. Thus, don't use this value to know actual times of policy reloaded.</p><p><strong>selinux_status_deny_unknown</strong>() returns 0 if SELinux treats policy queries on undefined object classes or permissions as being allowed, 1 if such queries are denied, or -1 on error.</p><p>Also note that these interfaces are not thread-safe, so you have to protect them from concurrent calls using exclusive locks when multiple threads are performing.</p>
+<p>Linux 2.6.37 or later provides a SELinux kernel status page; being mostly placed on <em>/selinux/status</em> entry. It enables userspace applications to mmap this page with read-only mode, then it informs some status without system call invocations.</p><p>In some cases that a userspace application tries to apply heavy frequent access control; such as row-level security in databases, it will face unignorable cost to communicate with kernel space to check invalidation of userspace avc.</p><p>These functions provides applications a way to know some kernel events without system-call invocation or worker thread for monitoring.</p><p><strong>selinux_status_open</strong>() tries to <a href="../man2/open.2.html"><strong>open</strong>(2)</a> <em>/selinux/status</em> and <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> it in read-only mode. The file-descriptor and pointer to the page shall be stored internally; Don't touch them directly. Set 1 on the <em>fallback</em> argument to handle a case of older kernels without kernel status page support. In this case, this function tries to open a netlink socket using <a href="../man3/avc_netlink_open.3.html"><strong>avc_netlink_open</strong>(3)</a> and overwrite corresponding callbacks ( setenforce and policyload). Thus, we need to pay attention to the interaction with these interfaces, when fallback mode is enabled.</p><p><strong>selinux_status_close</strong>() unmap the kernel status page and close its file descriptor, or close the netlink socket if fallbacked.</p><p><strong>selinux_status_updated</strong>() informs us whether something has been updated since the last call. It returns 0 if nothing was happened, however, 1 if something has been updated in this duration, or -1 on error.</p><p><strong>selinux_status_getenforce</strong>() returns 0 if SELinux is running in permissive mode, 1 if enforcing mode, or -1 on error. Same as <a href="../man3/security_getenforce.3.html"><strong>security_getenforce</strong>(3)</a> except with or without system call invocation.</p><p><strong>selinux_status_policyload</strong>() returns times of policy reloaded on the running system, or -1 on error. Note that it is not a reliable value on fallback-mode until it receive the first event message via netlink socket. Thus, don't use this value to know actual times of policy reloaded.</p><p><strong>selinux_status_deny_unknown</strong>() returns 0 if SELinux treats policy queries on undefined object classes or permissions as being allowed, 1 if such queries are denied, or -1 on error.</p><p>Also note that these interfaces are not thread-safe, so you have to protect them from concurrent calls using exclusive locks when multiple threads are performing.</p>
         </div>
       </section>
 
@@ -123,7 +123,7 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">RELATED TO selinux_status_open&hellip;</h2>
+        <h2 class="font-effect-shadow-multiple">RELATED TO selinux_status_deny_unknown&hellip;</h2>
         <div class="sectioncontent">
 <p><a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, <a href="../man3/avc_netlink_open.3.html"><strong>avc_netlink_open</strong>(3)</a>, <a href="../man3/security_getenforce.3.html"><strong>security_getenforce</strong>(3)</a>, <a href="../man3/security_deny_unknown.3.html"><strong>security_deny_unknown</strong>(3)</a></p>
         </div>

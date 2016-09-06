@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="posix_fadvise (2) manual">
   <meta name="twitter:description" content="Predeclare an access pattern for file data">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-posix_fadvise-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-posix_fadvise-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/posix_fadvise.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="posix_fadvise (2) manual" />
   <meta property="og:description" content="Predeclare an access pattern for file data" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-posix_fadvise-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-posix_fadvise-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -110,7 +110,7 @@
 
 <strong>int posix_fadvise(int </strong><em>fd</em><strong>, off_t </strong><em>offset</em><strong>, off_t </strong><em>len</em><strong>, int </strong><em>advice</em><strong>);</strong>
 </pre>
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>posix_fadvise</strong>():</p><p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L</p>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>posix_fadvise</strong>():</p><p>_XOPEN_SOURCE&nbsp;&gt;=&nbsp;600 || _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L</p>
         </div>
       </section>
 
@@ -189,7 +189,7 @@
     <p><strong>ESPIPE</strong></p>
   </dt>
   <dd>
-    <p>The specified file descriptor refers to a pipe or FIFO. (<strong>ESPIPE</strong> is the error specified by POSIX, but before kernel version 2.16, Linux returned <strong>EINVAL</strong> in this case.)</p>
+    <p>The specified file descriptor refers to a pipe or FIFO. (Linux actually returns <strong>EINVAL</strong> in this case.)</p>
   </dd>
 
 </dl>
@@ -200,24 +200,22 @@
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-<p>Kernel support first appeared in Linux 2.5.60; the underlying system call is called <strong>fadvise64</strong>(). Library support has been provided since glibc version 2.2, via the wrapper function <strong>posix_fadvise</strong>().</p><p>Since Linux 3.18, support for the underlying system call is optional, depending on the setting of the <strong>CONFIG_ADVISE_SYSCALLS</strong> configuration option.</p>
+<p>Kernel support first appeared in Linux 2.5.60; the underlying system call is called <strong>fadvise64</strong>(). Library support has been provided since glibc version 2.2, via the wrapper function <strong>posix_fadvise</strong>().</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p>POSIX.1-2001, POSIX.1-2008. Note that the type of the <em>len</em> argument was changed from <em>size_t</em> to <em>off_t</em> in POSIX.1-2003 TC1.</p>
+<p>POSIX.1-2001. Note that the type of the <em>len</em> argument was changed from <em>size_t</em> to <em>off_t</em> in POSIX.1-2003 TC1.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>Under Linux, <strong>POSIX_FADV_NORMAL</strong> sets the readahead window to the default size for the backing device; <strong>POSIX_FADV_SEQUENTIAL</strong> doubles this size, and <strong>POSIX_FADV_RANDOM</strong> disables file readahead entirely. These changes affect the entire file, not just the specified region (but other open file handles to the same file are unaffected).</p><p><strong>POSIX_FADV_WILLNEED</strong> initiates a nonblocking read of the specified region into the page cache. The amount of data read may be decreased by the kernel depending on virtual memory load. (A few megabytes will usually be fully satisfied, and more is rarely useful.)</p><p>In kernels before 2.6.18, <strong>POSIX_FADV_NOREUSE</strong> had the same semantics as <strong>POSIX_FADV_WILLNEED</strong>. This was probably a bug; since kernel 2.6.18, this flag is a no-op.</p><p><strong>POSIX_FADV_DONTNEED</strong> attempts to free cached pages associated with the specified region. This is useful, for example, while streaming large files. A program may periodically request the kernel to free cached data that has already been used, so that more useful cached pages are not discarded instead.</p><p>Requests to discard partial pages are ignored. It is preferable to preserve needed data than discard unneeded data. If the application requires that data be considered for discarding, then <em>offset</em> and <em>len</em> must be page-aligned.</p><p>Pages that have not yet been written out will be unaffected, so if the application wishes to guarantee that pages will be released, it should call <a href="../man2/fsync.2.html"><strong>fsync</strong>(2)</a> or <a href="../man2/fdatasync.2.html"><strong>fdatasync</strong>(2)</a> first.</p><h3>C library/kernel differences</h3>
-<p>The name of the wrapper function in the C library is <strong>posix_fadvise</strong>(). The underlying system call is called <strong>fadvise64</strong>() (or, on some architectures, <strong>fadvise64_64</strong>()).</p>
-<h3>Architecture-specific variants</h3>
-<p>Some architectures require 64-bit arguments to be aligned in a suitable pair of registers (see <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a> for further detail). On such architectures, the call signature of <strong>posix_fadvise</strong>() shown in the SYNOPSIS would force a register to be wasted as padding between the <em>fd</em> and <em>offset</em> arguments. Therefore, these architectures define a version of the system call that orders the arguments suitably, but is otherwise exactly the same as <strong>posix_fadvise</strong>().</p><p>For example, since Linux 2.6.14, ARM has the following system call:</p>
+<p>Under Linux, <strong>POSIX_FADV_NORMAL</strong> sets the readahead window to the default size for the backing device; <strong>POSIX_FADV_SEQUENTIAL</strong> doubles this size, and <strong>POSIX_FADV_RANDOM</strong> disables file readahead entirely. These changes affect the entire file, not just the specified region (but other open file handles to the same file are unaffected).</p><p><strong>POSIX_FADV_WILLNEED</strong> initiates a nonblocking read of the specified region into the page cache. The amount of data read may be decreased by the kernel depending on virtual memory load. (A few megabytes will usually be fully satisfied, and more is rarely useful.)</p><p>In kernels before 2.6.18, <strong>POSIX_FADV_NOREUSE</strong> had the same semantics as <strong>POSIX_FADV_WILLNEED</strong>. This was probably a bug; since kernel 2.6.18, this flag is a no-op.</p><p><strong>POSIX_FADV_DONTNEED</strong> attempts to free cached pages associated with the specified region. This is useful, for example, while streaming large files. A program may periodically request the kernel to free cached data that has already been used, so that more useful cached pages are not discarded instead.</p><p>Pages that have not yet been written out will be unaffected, so if the application wishes to guarantee that pages will be released, it should call <a href="../man2/fsync.2.html"><strong>fsync</strong>(2)</a> or <a href="../man2/fdatasync.2.html"><strong>fdatasync</strong>(2)</a> first.</p><h3>Architecture-specific variants</h3>
+<p>Some architectures require 64-bit arguments to be aligned in a suitable pair of registers (see <a href="../man2/syscall.2.html"><strong>syscall</strong>(2)</a> for further detail). On such architectures, the call signature of <strong>posix_fadvise</strong>() shown in the SYNOPSIS would force a register to be wasted as padding between the <em>fd</em> and <em>offset</em> arguments. Therefore, these architectures define a version of the system call that orders the arguments suitably, but otherwise is otherwise exactly the same as <strong>posix_fadvise</strong>().</p><p>For example, since Linux 2.6.14, ARM has the following system call:</p>
 <pre>
 <strong>long arm_fadvise64_64(int </strong><em>fd</em><strong>, int </strong><em>advice</em><strong>,</strong>
 <strong>                      loff_t </strong><em>offset</em><strong>, loff_t </strong><em>len</em><strong>);</strong>
@@ -237,7 +235,14 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO posix_fadvise&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man2/readahead.2.html"><strong>readahead</strong>(2)</a>, <a href="../man2/sync_file_range.2.html"><strong>sync_file_range</strong>(2)</a>, <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a>, <a href="../man3/posix_madvise.3.html"><strong>posix_madvise</strong>(3)</a></p>
+<p><a href="../man2/readahead.2.html"><strong>readahead</strong>(2)</a>, <a href="../man2/sync_file_range.2.html"><strong>sync_file_range</strong>(2)</a>, <a href="../man3/posix_fallocate.3.html"><strong>posix_fallocate</strong>(3)</a>, <strong>posix_madvise</strong>(3)</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

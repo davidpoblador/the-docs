@@ -118,14 +118,14 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ALGORITHM</h2>
         <div class="sectioncontent">
-<p>The <strong>BLUE</strong> algorithm maintains a probability which is used to mark or drop packets that are to be queued. If the queue overflows, the mark/drop probability is increased. If the queue becomes empty, the probability is decreased. The <strong>Stochastic Fair Blue</strong> (SFB) algorithm is designed to protect TCP flows against non-responsive flows.</p><p>This SFB implementation maintains 8 levels of 16 bins each for accounting. Each flow is mapped into a bin of each level using a per-level hash value.</p><p>Every bin maintains a marking probability, which gets increased or decreased based on bin occupancy. If the number of packets exceeds the size of that bin, the marking probability is increased. If the number drops to zero, it is decreased.</p><p>The marking probability is based on the minimum value of all bins a flow is mapped into, thus, when a flow does not respond to marking or gradual packet drops, the marking probability quickly reaches one.</p><p>In this case, the flow is rate-limited to <strong>penalty_rate</strong> packets per second.</p>
+<p>The <strong>BLUE</strong> algorithm maintains a probability which is used to mark or drop packets that are to be queued.  If the queue overflows, the mark/drop probability is increased. If the queue becomes empty, the probability is decreased. The <strong>Stochastic Fair Blue</strong> (SFB) algorithm is designed to protect TCP flows against non-responsive flows.</p><p>This SFB implementation maintains 8 levels of 16 bins each for accounting. Each flow is mapped into a bin of each level using a per-level hash value.</p><p>Every bin maintains a marking probability, which gets increased or decreased based on bin occupancy.  If the number of packets exceeds the size of that bin, the marking probability is increased.  If the number drops to zero, it is decreased.</p><p>The marking probability is based on the minimum value of all bins a flow is mapped into, thus, when a flow does not respond to marking or gradual packet drops, the marking probability quickly reaches one.</p><p>In this case, the flow is rate-limited to <strong>penalty_rate</strong> packets per second.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">LIMITATIONS</h2>
         <div class="sectioncontent">
-<p>Due to SFBs nature, it is possible for responsive flows to share all of its bins with a non-responsive flow, causing the responsive flow to be misidentified as being non-responsive.</p><p>The probability of a responsive flow to be misidentified is dependent on the number of non-responsive flows, M. It is (1 - (1 - (1 / 16.0)) ** M) **8, so for example with 10 non-responsive flows approximately 0.2% of responsive flows will be misidentified.</p><p>To mitigate this, SFB performs performs periodic re-hashing to avoid misclassification for prolonged periods of time.</p><p>The default hashing method will use source and destination ip addresses and port numbers if possible, and also supports tunneling protocols. Alternatively, an external classifier can be configured, too.</p>
+<p>Due to SFBs nature, it is possible for responsive flows to share all of its bins with a non-responsive flow, causing the responsive flow to be misidentified as being non-responsive.</p><p>The probability of a responsive flow to be misidentified is dependent on the number of non-responsive flows, M.  It is (1 - (1 - (1 / 16.0)) ** M) **8, so for example with 10 non-responsive flows approximately 0.2% of responsive flows will be misidentified.</p><p>To mitigate this, SFB performs performs periodic re-hashing to avoid misclassification for prolonged periods of time.</p><p>The default hashing method will use source and destination ip addresses and port numbers if possible, and also supports tunneling protocols. Alternatively, an external classifier can be configured, too.</p>
         </div>
       </section>
 
@@ -144,37 +144,37 @@
     <p>db</p>
   </dt>
   <dd>
-    <p>Double buffering warmup wait time, in milliseconds. To avoid destroying the probability history when rehashing is performed, this implementation maintains a second set of levels/bins as described in section 4.4 of the SFB reference. While one set is used to manage the queue, a second set is warmed up: Whenever a flow is then determined to be non-responsive, the marking probabilities in the second set are updated. When the rehashing happens, these bins will be used to manage the queue and all non-responsive flows can be rate-limited immediately. This value determines how much time has to pass before the 2nd set will start to be warmed up. Defaults to one minute, should be lower than <strong></strong> rehash.</p>
+    <p>Double buffering warmup wait time, in milliseconds. To avoid destroying the probability history when rehashing is performed, this implementation maintains a second set of levels/bins as described in section 4.4 of the SFB reference. While one set is used to manage the queue, a second set is warmed up: Whenever a flow is then determined to be non-responsive, the marking probabilities in the second set are updated.  When the rehashing happens, these bins will be used to manage the queue and all non-responsive flows can be rate-limited immediately. This value determines how much time has to pass before the 2nd set will start to be warmed up. Defaults to one minute, should be lower than <strong></strong> rehash.</p>
   </dd>
   <dt>
     <p>limit</p>
   </dt>
   <dd>
-    <p>Hard limit on the real (not average) total queue size in packets. Further packets are dropped. Defaults to the transmit queue length of the device the qdisc is attached to.</p>
+    <p>Hard limit on the real (not average) total queue size in packets. Further packets are dropped.  Defaults to the transmit queue length of the device the qdisc is attached to.</p>
   </dd>
   <dt>
     <p>max</p>
   </dt>
   <dd>
-    <p>Maximum length of a buckets queue, in packets, before packets start being dropped. Should be sightly larger than <strong>target</strong> , but should not be set to values exceeding 1.5 times that of <strong>target .</strong> Defaults to 25.</p>
+    <p>Maximum length of a buckets queue, in packets, before packets start being dropped.  Should be sightly larger than <strong>target</strong> , but should not be set to values exceeding 1.5 times that of <strong>target .</strong> Defaults to 25.</p>
   </dd>
   <dt>
     <p>target</p>
   </dt>
   <dd>
-    <p>The desired average bin length. If the bin queue length reaches this value, the marking probability is increased by <strong>increment.</strong> The default value depends on the <strong>max</strong> setting, with max set to 25 <strong>target</strong> will default to 20.</p>
+    <p>The desired average bin length.  If the bin queue length reaches this value, the marking probability is increased by <strong>increment.</strong> The default value depends on the <strong>max</strong> setting, with max set to 25 <strong>target</strong> will default to 20.</p>
   </dd>
   <dt>
     <p>increment</p>
   </dt>
   <dd>
-    <p>A value used to increase the marking probability when the queue appears to be over-used. Must be between 0 and 1.0. Defaults to 0.00050.</p>
+    <p>A value used to increase the marking probability when the queue appears to be over-used.  Must be between 0 and 1.0.  Defaults to 0.00050.</p>
   </dd>
   <dt>
     <p>decrement</p>
   </dt>
   <dd>
-    <p>Value used to decrease the marking probability when the queue is found to be empty. Must be between 0 and 1.0. Defaults to 0.00005.</p>
+    <p>Value used to decrease the marking probability when the queue is found to be empty.  Must be between 0 and 1.0. Defaults to 0.00005.</p>
   </dd>
   <dt>
     <p>penalty_rate</p>
@@ -209,7 +209,7 @@
     <p>ratedrop</p>
   </dt>
   <dd>
-    <p>The number of packets dropped because of rate-limiting. If this value is high, there are many non-reactive flows being sent through sfb. In such cases, it might be better to embed sfb within a classful qdisc to better control such flows using a different, shaping qdisc.</p>
+    <p>The number of packets dropped because of rate-limiting. If this value is high, there are many non-reactive flows being sent through sfb.  In such cases, it might be better to embed sfb within a classful qdisc to better control such flows using a different, shaping qdisc.</p>
   </dd>
   <dt>
     <p>bucketdrop</p>
@@ -221,7 +221,7 @@
     <p>queuedrop</p>
   </dt>
   <dd>
-    <p>The number of packets dropped due to reaching limit. This should normally be 0.</p>
+    <p>The number of packets dropped due to reaching limit.  This should normally be 0.</p>
   </dd>
   <dt>
     <p>marked</p>
@@ -239,7 +239,7 @@
     <p>maxprob</p>
   </dt>
   <dd>
-    <p>The maximum per-flow drop probability. 1 means that some flows have been detected as non-reactive.</p>
+    <p>The maximum per-flow drop probability.  1 means that some flows have been detected as non-reactive.</p>
   </dd>
 
 </dl>
@@ -293,7 +293,7 @@
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="tc-route.8.html"><span aria-hidden="true">&larr;</span> tc-route.8: Route traffic control filter</a></li>
+   <li class="previous"><a href="tc-red.8.html"><span aria-hidden="true">&larr;</span> tc-red.8: Random early detection</a></li>
    <li class="next"><a href="tc-sfq.8.html">tc-sfq.8: Stochastic fairness queueing <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

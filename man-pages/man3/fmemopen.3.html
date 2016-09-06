@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="fmemopen (3) manual">
   <meta name="twitter:description" content="Open memory as stream">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-fmemopen-3.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-fmemopen-3.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man3/fmemopen.3.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="fmemopen (3) manual" />
   <meta property="og:description" content="Open memory as stream" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-fmemopen-3.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-fmemopen-3.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -109,14 +109,20 @@
 <strong>#include &lt;stdio.h&gt;</strong>
 
 <strong>FILE *fmemopen(void *</strong><em>buf</em><strong>, size_t </strong><em>size</em><strong>, const char *</strong><em>mode</em><strong>);</strong>
+
+<strong>FILE *open_memstream(char **</strong><em>ptr</em><strong>, size_t *</strong><em>sizeloc</em><strong>);</strong>
+
+<strong>#include &lt;wchar.h&gt;</strong>
+
+<strong>FILE *open_wmemstream(wchar_t **</strong><em>ptr</em><strong>, size_t *</strong><em>sizeloc</em><strong>);</strong>
 </pre>
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>fmemopen</strong>():</p>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>fmemopen</strong>(), <strong>open_memstream</strong>(), <strong>open_wmemstream</strong>():</p>
 <dl class='dl-vertical'>
   <dt>
     <p>Since glibc 2.10:</p>
   </dt>
   <dd>
-    <p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
+    <p>_XOPEN_SOURCE&nbsp;&gt;=&nbsp;700 || _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
   </dd>
   <dt>
     <p>Before glibc 2.10:</p>
@@ -133,116 +139,49 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The <strong>fmemopen</strong>() function opens a stream that permits the access specified by <em>mode</em>. The stream allows I/O to be performed on the string or memory buffer pointed to by <em>buf</em>.</p><p>The <em>mode</em> argument specifies the semantics of I/O on the stream, and is one of the following:</p>
-<dl class='dl-vertical'>
-  <dt>
-    <p><em>r</em></p>
-  </dt>
-  <dd>
-    <p>The stream is opened for reading.</p>
-  </dd>
-  <dt>
-    <p><em>w</em></p>
-  </dt>
-  <dd>
-    <p>The stream is opened for writing.</p>
-  </dd>
-  <dt>
-    <p><em>a</em></p>
-  </dt>
-  <dd>
-    <p>Append; open the stream for writing, with the initial buffer position set to the first null byte.</p>
-  </dd>
-  <dt>
-    <p><em>r+</em></p>
-  </dt>
-  <dd>
-    <p>Open the stream for reading and writing.</p>
-  </dd>
-  <dt>
-    <p><em>w+</em></p>
-  </dt>
-  <dd>
-    <p>Open the stream for reading and writing. The buffer contents are truncated (i.e., &apos;&#92;0&apos; is placed in the first byte of the buffer).</p>
-  </dd>
-  <dt>
-    <p><em>a+</em></p>
-  </dt>
-  <dd>
-    <p>Append; open the stream for reading and writing, with the initial buffer position set to the first null byte.</p>
-  </dd>
-
-</dl>
-<p>The stream maintains the notion of a current position, the location where the next I/O operation will be performed. The current position is implicitly updated by I/O operations. It can be explicitly updated using <a href="../man3/fseek.3.html"><strong>fseek</strong>(3)</a>, and determined using <a href="../man3/ftell.3.html"><strong>ftell</strong>(3)</a>. In all modes other than append, the initial position is set to the start of the buffer. In append mode, if no null byte is found within the buffer, then the initial position is <em>size+1</em>.</p><p>If <em>buf</em> is specified as NULL, then <strong>fmemopen</strong>() allocates a buffer of <em>size</em> bytes. This is useful for an application that wants to write data to a temporary buffer and then read it back again. The initial position is set to the start of the buffer. The buffer is automatically freed when the stream is closed. Note that the caller has no way to obtain a pointer to the temporary buffer allocated by this call (but see <a href="../man3/open_memstream.3.html"><strong>open_memstream</strong>(3)</a>).</p><p>If <em>buf</em> is not NULL, then it should point to a buffer of at least <em>len</em> bytes allocated by the caller.</p><p>When a stream that has been opened for writing is flushed (<a href="../man3/fflush.3.html"><strong>fflush</strong>(3)</a>) or closed (<a href="../man3/fclose.3.html"><strong>fclose</strong>(3)</a>), a null byte is written at the end of the buffer if there is space. The caller should ensure that an extra byte is available in the buffer (and that <em>size</em> counts that byte) to allow for this.</p><p>In a stream opened for reading, null bytes (&apos;&#92;0&apos;) in the buffer do not cause read operations to return an end-of-file indication. A read from the buffer will indicate end-of-file only when the current buffer position advances <em>size</em> bytes past the start of the buffer.</p><p>Write operations take place either at the current position (for modes other than append), or at the current size of the stream (for append modes).</p><p>Attempts to write more than <em>size</em> bytes to the buffer result in an error. By default, such errors will be visible (by the absence of data) only when the <em>stdio</em> buffer is flushed. Disabling buffering with the following call may be useful to detect errors at the time of an output operation:</p>
-<pre>
-    setbuf(stream, NULL);
-</pre>
-<p>Alternatively, the caller can explicitly set <em>buf</em> as the stdio stream buffer, at the same time informing stdio of the buffer's size, using:</p>
-<pre>
-    setbuffer(stream, buf, size);
-</pre>
-
+<p>The <strong>fmemopen</strong>() function opens a stream that permits the access specified by <em>mode</em>. The stream allows I/O to be performed on the string or memory buffer pointed to by <em>buf</em>. This buffer must be at least <em>size</em> bytes long.</p><p>The argument <em>mode</em> is the same as for <a href="../man3/fopen.3.html"><strong>fopen</strong>(3)</a>. If <em>mode</em> specifies an append mode, then the initial file position is set to the location of the first null byte (&apos;&#92;0&apos;) in the buffer; otherwise the initial file position is set to the start of the buffer. Since glibc 2.9, the letter &apos;b&apos; may be specified as the second character in <em>mode</em>. This provides "binary" mode: writes don't implicitly add a terminating null byte, and <a href="../man3/fseek.3.html"><strong>fseek</strong>(3)</a> <strong>SEEK_END</strong> is relative to the end of the buffer (i.e., the value specified by the <em>size</em> argument), rather than the current string length.</p><p>When a stream that has been opened for writing is flushed (<a href="../man3/fflush.3.html"><strong>fflush</strong>(3)</a>) or closed (<a href="../man3/fclose.3.html"><strong>fclose</strong>(3)</a>), a null byte is written at the end of the buffer if there is space. The caller should ensure that an extra byte is available in the buffer (and that <em>size</em> counts that byte) to allow for this.</p><p>Attempts to write more than <em>size</em> bytes to the buffer result in an error. (By default, such errors will be visible only when the <em>stdio</em> buffer is flushed. Disabling buffering with <em>setbuf(fp,&nbsp;NULL)</em> may be useful to detect errors at the time of an output operation. Alternatively, the caller can explicitly set <em>buf</em> as the stdio stream buffer, at the same time informing stdio of the buffer's size, using <em>setbuffer(fp, buf, size)</em>.)</p><p>In a stream opened for reading, null bytes (&apos;&#92;0&apos;) in the buffer do not cause read operations to return an end-of-file indication. A read from the buffer will only indicate end-of-file when the file pointer advances <em>size</em> bytes past the start of the buffer.</p><p>If <em>buf</em> is specified as NULL, then <strong>fmemopen</strong>() dynamically allocates a buffer <em>size</em> bytes long. This is useful for an application that wants to write data to a temporary buffer and then read it back again. The buffer is automatically freed when the stream is closed. Note that the caller has no way to obtain a pointer to the temporary buffer allocated by this call (but see <strong>open_memstream</strong>() below).</p><p>The <strong>open_memstream</strong>() function opens a stream for writing to a buffer. The buffer is dynamically allocated (as with <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a>), and automatically grows as required. After closing the stream, the caller should <a href="../man3/free.3.html"><strong>free</strong>(3)</a> this buffer.</p><p>When the stream is closed (<a href="../man3/fclose.3.html"><strong>fclose</strong>(3)</a>) or flushed (<a href="../man3/fflush.3.html"><strong>fflush</strong>(3)</a>), the locations pointed to by <em>ptr</em> and <em>sizeloc</em> are updated to contain, respectively, a pointer to the buffer and the current size of the buffer. These values remain valid only as long as the caller performs no further output on the stream. If further output is performed, then the stream must again be flushed before trying to access these variables.</p><p>A null byte is maintained at the end of the buffer. This byte is <em>not</em> included in the size value stored at <em>sizeloc</em>.</p><p>The stream's file position can be changed with <a href="../man3/fseek.3.html"><strong>fseek</strong>(3)</a> or <a href="../man3/fseeko.3.html"><strong>fseeko</strong>(3)</a>. Moving the file position past the end of the data already written fills the intervening space with zeros.</p><p>The <strong>open_wmemstream</strong>() is similar to <strong>open_memstream</strong>(), but operates on wide characters instead of bytes.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-<p>Upon successful completion, <strong>fmemopen</strong>() returns a <em>FILE</em> pointer. Otherwise, NULL is returned and <em>errno</em> is set to indicate the error.</p>
+<p>Upon successful completion <strong>fmemopen</strong>(), <strong>open_memstream</strong>() and <strong>open_wmemstream</strong>() return a <em>FILE</em> pointer. Otherwise, NULL is returned and <em>errno</em> is set to indicate the error.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">VERSIONS</h2>
         <div class="sectioncontent">
-<p><strong>fmemopen</strong>() was already available in glibc 1.0.x.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
-        <div class="sectioncontent">
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
-<tr>
-<th>Interface</th>
-<th>Attribute</th>
-<th>Value</th></tr>
-
-<tr>
-<td><strong>fmemopen</strong>(),  </td>
-<td>Thread safety</td>
-<td>MT-Safe</td></tr>
-</table>
+<p><strong>fmemopen</strong>() and <strong>open_memstream</strong>() were already available in glibc 1.0.x. <strong>open_wmemstream</strong>() is available since glibc 2.4.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p>POSIX.1-2008. This function is not specified in POSIX.1-2001, and is not widely available on other systems.</p><p>POSIX.1-2008 specifies that &apos;b&apos; in <em>mode</em> shall be ignored. However, Technical Corrigendum 1 adjusts the standard to allow implementation-specific treatment for this case, thus permitting the glibc treatment of &apos;b&apos;.</p>
+<p>POSIX.1-2008. These functions are not specified in POSIX.1-2001, and are not widely available on other systems.</p><p>POSIX.1-2008 specifies that &apos;b&apos; in <em>mode</em> shall be ignored. However, Technical Corrigendum 1 adjusts the standard to allow implementation-specific treatment for this case, thus permitting the glibc treatment of &apos;b&apos;.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>There is no file descriptor associated with the file stream returned by this function (i.e., <a href="../man3/fileno.3.html"><strong>fileno</strong>(3)</a> will return an error if called on the returned stream).</p><p>With version 2.22, binary mode (see below) was removed, many longstanding bugs in the implementation of <strong>fmemopen</strong>() were fixed, and a new versioned symbol was created for this interface.</p><h3>Binary mode</h3>
-<p>From version 2.9 to 2.21, the glibc implementation of <strong>fmemopen</strong>() supported a "binary" mode, enabled by specifying the letter &apos;b&apos; as the second character in <em>mode</em>. In this mode, writes don't implicitly add a terminating null byte, and <a href="../man3/fseek.3.html"><strong>fseek</strong>(3)</a> <strong>SEEK_END</strong> is relative to the end of the buffer (i.e., the value specified by the <em>size</em> argument), rather than the current string length.</p><p>An API bug afflicted the implementation of binary mode: to specify binary mode, the &apos;b&apos; must be the <em>second</em> character in <em>mode</em>. Thus, for example, "wb+" has the desired effect, but "w+b" does not. This is inconsistent with the treatment of <em>mode</em> by <a href="../man3/fopen.3.html"><strong>fopen</strong>(3)</a>.</p><p>Binary mode was removed in glibc 2.22; a &apos;b&apos; specified in <em>mode</em> has no effect.</p>
-
+<p>There is no file descriptor associated with the file stream returned by these functions (i.e., <a href="../man3/fileno.3.html"><strong>fileno</strong>(3)</a> will return an error if called on the returned stream).</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>In versions of glibc before 2.22, if <em>size</em> is specified as zero, <strong>fmemopen</strong>() fails with the error <strong>EINVAL</strong>. It would be more consistent if this case successfully created a stream that then returned end-of-file on the first attempt at reading; since version 2.22, the glibc implementation provides that behavior.</p><p>In versions of glibc before 2.22, specifying append mode ("a" or "a+") for <strong>fmemopen</strong>() sets the initial buffer position to the first null byte, but (if the current position is reset to a location other than the end of the stream) does not force subsequent writes to append at the end of the stream. This bug is fixed in glibc 2.22.</p><p>In versions of glibc before 2.22, if the <em>mode</em> argument to <strong>fmemopen</strong>() specifies append ("a" or "a+"), and the <em>size</em> argument does not cover a null byte in <em>buf</em>, then, according to POSIX.1-2008, the initial buffer position should be set to the next byte after the end of the buffer. However, in this case the glibc <strong>fmemopen</strong>() sets the buffer position to -1. This bug is fixed in glibc 2.22.</p><p>In versions of glibc before 2.22, when a call to <a href="../man3/fseek.3.html"><strong>fseek</strong>(3)</a> with a <em>whence</em> value of <strong>SEEK_END</strong> was performed on a stream created by <strong>fmemopen</strong>(), the <em>offset</em> was <em>subtracted</em> from the end-of-stream position, instead of being added. This bug is fixed in glibc 2.22.</p><p>The glibc 2.9 addition of "binary" mode for <strong>fmemopen</strong>() silently changed the ABI: previously, <strong>fmemopen</strong>() ignored &apos;b&apos; in <em>mode</em>.</p>
+<p>In glibc before version 2.7, seeking past the end of a stream created by <strong>open_memstream</strong>() does not enlarge the buffer; instead the <a href="../man3/fseek.3.html"><strong>fseek</strong>(3)</a> call fails, returning -1.</p><p>If <em>size</em> is specified as zero, <strong>fmemopen</strong>() fails with the error <strong>EINVAL</strong>. It would be more consistent if this case successfully created a stream that then returned end of file on the first attempt at reading. Furthermore, POSIX.1-2008 does not specify a failure for this case.</p><p>Specifying append mode ("a" or "a+") for <strong>fmemopen</strong>() sets the initial file position to the first null byte, but (if the file offset is reset to a location other than the end of the stream) does not force subsequent writes to append at the end of the stream.</p><p>If the <em>mode</em> argument to <strong>fmemopen</strong>() specifies append ("a" or "a+"), and the <em>size</em> argument does not cover a null byte in <em>buf</em>, then, according to POSIX.1-2008, the initial file position should be set to the next byte after the end of the buffer. However, in this case the glibc <strong>fmemopen</strong>() sets the file position to -1.</p><p>To specify binary mode for <strong>fmemopen</strong>() the &apos;b&apos; must be the <em>second</em> character in <em>mode</em>. Thus, for example, "wb+" has the desired effect, but "w+b" does not. This is inconsistent with the treatment of <em>mode</em> by <a href="../man3/fopen.3.html"><strong>fopen</strong>(3)</a>.</p><p>The glibc 2.9 addition of "binary" mode for <strong>fmemopen</strong>() silently changed the ABI: previously, <strong>fmemopen</strong>() ignored &apos;b&apos; in <em>mode</em>.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">EXAMPLE</h2>
         <div class="sectioncontent">
-<p>The program below uses <strong>fmemopen</strong>() to open an input buffer, and <a href="../man3/open_memstream.3.html"><strong>open_memstream</strong>(3)</a> to open a dynamically sized output buffer. The program scans its input string (taken from the program's first command-line argument) reading integers, and writes the squares of these integers to the output buffer. An example of the output produced by this program is the following:</p>
+<p>The program below uses <strong>fmemopen</strong>() to open an input buffer, and <strong>open_memstream</strong>() to open a dynamically sized output buffer. The program scans its input string (taken from the program's first command-line argument) reading integers, and writes the squares of these integers to the output buffer. An example of the output produced by this program is the following:</p>
 <pre>
 $<strong> ./a.out &apos;1 23 43&apos;</strong>
 size=11; ptr=1 529 1849
@@ -267,7 +206,7 @@ main(int argc, char *argv[])
     char *ptr;
 
     if (argc != 2) {
-        fprintf(stderr, "Usage: %s &apos;&lt;num&gt;...&apos;&#92;n", argv[0]);
+        fprintf(stderr, "Usage: %s &lt;file&gt;&#92;n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -288,12 +227,9 @@ main(int argc, char *argv[])
         if (s == -1)
             handle_error("fprintf");
     }
-
     fclose(in);
     fclose(out);
-
     printf("size=%zu; ptr=%s&#92;n", size, ptr);
-
     free(ptr);
     exit(EXIT_SUCCESS);
 }
@@ -306,12 +242,19 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO fmemopen&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man3/fopen.3.html"><strong>fopen</strong>(3)</a>, <a href="../man3/fopencookie.3.html"><strong>fopencookie</strong>(3)</a>, <a href="../man3/open_memstream.3.html"><strong>open_memstream</strong>(3)</a></p>
+<p><a href="../man3/fopen.3.html"><strong>fopen</strong>(3)</a>, <a href="../man3/fopencookie.3.html"><strong>fopencookie</strong>(3)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="fmaxl.3.html"><span aria-hidden="true">&larr;</span> fmaxl.3: Determine maximum of two floating-point numbers</a></li>
+   <li class="previous"><a href="fmemcmpi.3.html"><span aria-hidden="true">&larr;</span> fmemcmpi.3: Fuzzy comparison of two memory areas</a></li>
    <li class="next"><a href="fmin.3.html">fmin.3: Determine minimum of two floating-point numbers <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

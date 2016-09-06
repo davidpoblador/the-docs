@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="getcwd (3) manual">
   <meta name="twitter:description" content="Get current working directory">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-getcwd-3.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-getcwd-3.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man3/getcwd.3.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="getcwd (3) manual" />
   <meta property="og:description" content="Get current working directory" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-getcwd-3.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-getcwd-3.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -122,11 +122,12 @@
   <dd>
     
 <pre>
-(_XOPEN_SOURCE&nbsp;&gt;=&nbsp;500) && ! (_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L)
-    || /* Glibc since 2.19: */ _DEFAULT_SOURCE
-    || /* Glibc versions &lt;= 2.19: */ _BSD_SOURCE
+_BSD_SOURCE ||
+    (_XOPEN_SOURCE&nbsp;&gt;=&nbsp;500 ||
+        _XOPEN_SOURCE&nbsp;&&&nbsp;_XOPEN_SOURCE_EXTENDED) &&
+    !(_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L || _XOPEN_SOURCE&nbsp;&gt;=&nbsp;700)
 </pre>
-<p>Before glibc 2.12: _BSD_SOURCE || _XOPEN_SOURCE&nbsp;&gt;=&nbsp;500</p>
+<p>Before glibc 2.12: _BSD_SOURCE || _XOPEN_SOURCE&nbsp;&gt;=&nbsp;500 || _XOPEN_SOURCE&nbsp;&&&nbsp;_XOPEN_SOURCE_EXTENDED</p>
   </dd>
 
 </dl>
@@ -137,7 +138,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>These functions return a null-terminated string containing an absolute pathname that is the current working directory of the calling process. The pathname is returned as the function result and via the argument <em>buf</em>, if present.</p><p>If the current directory is not below the root directory of the current process (e.g., because the process set a new filesystem root using <a href="../man2/chroot.2.html"><strong>chroot</strong>(2)</a> without changing its current directory into the new root), then, since Linux 2.6.36, the returned path will be prefixed with the string "(unreachable)". Such behavior can also be caused by an unprivileged user by changing the current directory into another mount namespace. When dealing with paths from untrusted sources, callers of these functions should consider checking whether the returned path starts with '/' or '(' to avoid misinterpreting an unreachable path as a relative path.</p><p>The <strong>getcwd</strong>() function copies an absolute pathname of the current working directory to the array pointed to by <em>buf</em>, which is of length <em>size</em>.</p><p>If the length of the absolute pathname of the current working directory, including the terminating null byte, exceeds <em>size</em> bytes, NULL is returned, and <em>errno</em> is set to <strong>ERANGE</strong>; an application should check for this error, and allocate a larger buffer if necessary.</p><p>As an extension to the POSIX.1-2001 standard, glibc's <strong>getcwd</strong>() allocates the buffer dynamically using <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> if <em>buf</em> is NULL. In this case, the allocated buffer has the length <em>size</em> unless <em>size</em> is zero, when <em>buf</em> is allocated as big as necessary. The caller should <a href="../man3/free.3.html"><strong>free</strong>(3)</a> the returned buffer.</p><p><strong>get_current_dir_name</strong>() will <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> an array big enough to hold the absolute pathname of the current working directory. If the environment variable <strong>PWD</strong> is set, and its value is correct, then that value will be returned. The caller should <a href="../man3/free.3.html"><strong>free</strong>(3)</a> the returned buffer.</p><p><strong>getwd</strong>() does not <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> any memory. The <em>buf</em> argument should be a pointer to an array at least <strong>PATH_MAX</strong> bytes long. If the length of the absolute pathname of the current working directory, including the terminating null byte, exceeds <strong>PATH_MAX</strong> bytes, NULL is returned, and <em>errno</em> is set to <strong>ENAMETOOLONG</strong>. (Note that on some systems, <strong>PATH_MAX</strong> may not be a compile-time constant; furthermore, its value may depend on the filesystem, see <a href="../man3/pathconf.3.html"><strong>pathconf</strong>(3)</a>.) For portability and security reasons, use of <strong>getwd</strong>() is deprecated.</p>
+<p>These functions return a null-terminated string containing an absolute pathname that is the current working directory of the calling process. The pathname is returned as the function result and via the argument <em>buf</em>, if present.</p><p>The <strong>getcwd</strong>() function copies an absolute pathname of the current working directory to the array pointed to by <em>buf</em>, which is of length <em>size</em>.</p><p>If the length of the absolute pathname of the current working directory, including the terminating null byte, exceeds <em>size</em> bytes, NULL is returned, and <em>errno</em> is set to <strong>ERANGE</strong>; an application should check for this error, and allocate a larger buffer if necessary.</p><p>As an extension to the POSIX.1-2001 standard, glibc's <strong>getcwd</strong>() allocates the buffer dynamically using <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> if <em>buf</em> is NULL. In this case, the allocated buffer has the length <em>size</em> unless <em>size</em> is zero, when <em>buf</em> is allocated as big as necessary. The caller should <a href="../man3/free.3.html"><strong>free</strong>(3)</a> the returned buffer.</p><p><strong>get_current_dir_name</strong>() will <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> an array big enough to hold the absolute pathname of the current working directory. If the environment variable <strong>PWD</strong> is set, and its value is correct, then that value will be returned. The caller should <a href="../man3/free.3.html"><strong>free</strong>(3)</a> the returned buffer.</p><p><strong>getwd</strong>() does not <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a> any memory. The <em>buf</em> argument should be a pointer to an array at least <strong>PATH_MAX</strong> bytes long. If the length of the absolute pathname of the current working directory, including the terminating null byte, exceeds <strong>PATH_MAX</strong> bytes, NULL is returned, and <em>errno</em> is set to <strong>ENAMETOOLONG</strong>. (Note that on some systems, <strong>PATH_MAX</strong> may not be a compile-time constant; furthermore, its value may depend on the filesystem, see <a href="../man3/pathconf.3.html"><strong>pathconf</strong>(3)</a>.) For portability and security reasons, use of <strong>getwd</strong>() is deprecated.</p>
         </div>
       </section>
 
@@ -172,22 +173,16 @@
     <p>The <em>size</em> argument is zero and <em>buf</em> is not a null pointer.</p>
   </dd>
   <dt>
-    <p><strong>EINVAL</strong></p>
+    <p>EINVAL</p>
   </dt>
   <dd>
     <p><strong>getwd</strong>(): <em>buf</em> is NULL.</p>
   </dd>
   <dt>
-    <p><strong>ENAMETOOLONG</strong></p>
+    <p>ENAMETOOLONG</p>
   </dt>
   <dd>
     <p><strong>getwd</strong>(): The size of the null-terminated absolute pathname string exceeds <strong>PATH_MAX</strong> bytes.</p>
-  </dd>
-  <dt>
-    <p><strong>ENOMEM</strong></p>
-  </dt>
-  <dd>
-    <p>Out of memory.</p>
   </dd>
   <dt>
     <p><strong>ENOENT</strong></p>
@@ -208,28 +203,6 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
-        <div class="sectioncontent">
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
-<tr>
-<th>Interface</th>
-<th>Attribute</th>
-<th>Value</th></tr>
-
-<tr>
-<td><strong>getcwd</strong>(),   <strong>getwd</strong>()  </td>
-<td>Thread safety</td>
-<td>MT-Safe</td></tr>
-
-<tr>
-<td><strong>get_current_dir_name</strong>()  </td>
-<td>Thread safety</td>
-<td>MT-Safe env</td></tr>
-</table>
-        </div>
-      </section>
-
-      <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
 <p><strong>getcwd</strong>() conforms to POSIX.1-2001. Note however that POSIX.1-2001 leaves the behavior of <strong>getcwd</strong>() unspecified if <em>buf</em> is NULL.</p><p><strong>getwd</strong>() is present in POSIX.1-2001, but marked LEGACY. POSIX.1-2008 removes the specification of <strong>getwd</strong>(). Use <strong>getcwd</strong>() instead. POSIX.1-2001 does not define any errors for <strong>getwd</strong>().</p><p><strong>get_current_dir_name</strong>() is a GNU extension.</p>
@@ -246,7 +219,14 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO getcwd&hellip;</h2>
         <div class="sectioncontent">
-<p><strong>pwd</strong>(1), <a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a>, <a href="../man2/fchdir.2.html"><strong>fchdir</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>, <a href="../man3/free.3.html"><strong>free</strong>(3)</a>, <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a></p>
+<p><a href="../man2/chdir.2.html"><strong>chdir</strong>(2)</a>, <a href="../man2/fchdir.2.html"><strong>fchdir</strong>(2)</a>, <a href="../man2/open.2.html"><strong>open</strong>(2)</a>, <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>, <a href="../man3/free.3.html"><strong>free</strong>(3)</a>, <a href="../man3/malloc.3.html"><strong>malloc</strong>(3)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

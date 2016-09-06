@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="umount (8) manual">
   <meta name="twitter:description" content="Unmount file systems">
-  <meta name="twitter:image" content="https://www.carta.tech/images/util-linux-umount-8.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/mount-umount-8.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man8/umount.8.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="umount (8) manual" />
   <meta property="og:description" content="Unmount file systems" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/util-linux-umount-8.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/mount-umount-8.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/util-linux/">
-      <span itemprop="name">util-linux</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/mount/">
+      <span itemprop="name">mount</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -148,13 +148,13 @@
     <p><strong>--fake</strong></p>
   </dt>
   <dd>
-    <p>Causes everything to be done except for the actual system call or umount helper execution; this 'fakes' unmounting the filesystem.  It can be used to remove entries from <em>/etc/mtab</em> that were unmounted earlier with the <strong>-n</strong> option.</p>
+    <p>Causes everything to be done except for the actual system call; this 'fakes' unmounting the filesystem.  It can be used to remove entries from <em>/etc/mtab</em> that were unmounted earlier with the <strong>-n</strong> option.</p>
   </dd>
   <dt>
     <p><strong>-f</strong>,<strong> --force</strong></p>
   </dt>
   <dd>
-    <p>Force an unmount (in case of an unreachable NFS system).  (Requires kernel 2.1.116 or later.)</p><p>Note that this option does not guarantee that umount command does not hang. It's strongly recommended to use absolute paths without symlinks to avoid unwanted readlink and stat syscalls on unreachable NFS in umount.</p>
+    <p>Force an unmount (in case of an unreachable NFS system).  (Requires kernel 2.1.116 or later.)</p>
   </dd>
   <dt>
     <p><strong>-i</strong>,<strong> --internal-only</strong></p>
@@ -196,7 +196,7 @@
     <p><strong>-t</strong>,<strong> --types </strong><em>type</em>...</p>
   </dt>
   <dd>
-    <p>Indicate that the actions should only be taken on filesystems of the specified <em>type</em>. More than one type may be specified in a comma-separated list.  The list of filesystem types can be prefixed with <strong>no</strong> to indicate that no action should be taken for all of the mentioned types.</p><p>Note that <strong>umount</strong> reads information about mounted filesystems from kernel (/proc/mounts) and filesystem names may be different than filesystem names used in the /etc/fstab (e.g. "nfs4" vs. "nfs").</p>
+    <p>Indicate that the actions should only be taken on filesystems of the specified <em>type</em>. More than one type may be specified in a comma-separated list.  The list of filesystem types can be prefixed with <strong>no</strong> to indicate that no action should be taken for all of the mentioned types.</p>
   </dd>
   <dt>
     <p><strong>-v</strong>,<strong> --verbose</strong></p>
@@ -232,7 +232,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">EXTERNAL HELPERS</h2>
         <div class="sectioncontent">
-<p>The syntax of external unmount helpers is:</p><p><strong>umount.</strong><em>suffix</em> {<em>directory</em>|<em>device</em>} [<strong>-flnrv</strong>] [<strong>-t</strong> <em>type</em>.<em>subtype</em>]</p><p>where <em>suffix</em> is the filesystem type (or the value from a <strong>uhelper=</strong> or <strong>helper=</strong> marker in the mtab file). The <strong>-t</strong> option can be used for filesystems that have subtype support.  For example:</p><p><strong>umount.fuse -t fuse.sshfs</strong></p><p>A <strong>uhelper=</strong><em>something</em> marker (unprivileged helper) can appear in the <em>/etc/mtab</em> file when ordinary users need to be able to unmount a mountpoint that is not defined in <em>/etc/fstab</em> (for example for a device that was mounted by <strong>udisks</strong>(1)).</p><p>A <strong>helper=</strong><em>type</em> marker in the mtab file will redirect all unmount requests to the <strong>/sbin/umount.</strong><em>type</em> helper independently of UID.</p>
+<p>The syntax of external unmount helpers is:</p><p><strong>/sbin/umount.</strong><em>suffix</em> {<em>directory</em>|<em>device</em>} [<strong>-flnrv</strong>] [<strong>-t</strong> <em>type</em>.<em>subtype</em>]</p><p>where <em>suffix</em> is the filesystem type or a value from a "uhelper=" or "helper=" mtab option.  The <strong>-t</strong> option can be used for filesystems with subtypes support (for example <strong>/sbin/mount.fuse -t fuse.sshfs</strong>).</p><p>The <strong>uhelper=</strong> (unprivileged unmount helper) mount option can be used when non-root users need to be able to unmount a mountpoint which is not defined in <em>/etc/fstab</em> (e.g. devices mounted by udisk).</p><p>The <strong>helper=</strong> mount option redirects all unmount requests to the <strong>/sbin/umount.</strong><em>type</em> helper independently of UID.</p>
         </div>
       </section>
 
@@ -251,7 +251,7 @@
     <p><strong>/etc/fstab</strong></p>
   </dt>
   <dd>
-    <p>table of known filesystems</p>
+    <p>checked when option <strong>-O</strong> is given</p>
   </dd>
 
 </dl>
@@ -268,19 +268,19 @@
     LIBMOUNT_FSTAB=&lt;path&gt;
   </dt>
   <dd>
-    <p>overrides the default location of the fstab file (ignored for suid)</p>
+    <p>overrides the default location of the fstab file</p>
   </dd>
   <dt>
     LIBMOUNT_MTAB=&lt;path&gt;
   </dt>
   <dd>
-    <p>overrides the default location of the mtab file (ignored for suid)</p>
+    <p>overrides the default location of the mtab file</p>
   </dd>
   <dt>
-    LIBMOUNT_DEBUG=all
+    LIBMOUNT_DEBUG=0xffff
   </dt>
   <dd>
-    <p>enables libmount debug output</p>
+    <p>enables debug output</p>
   </dd>
 
 </dl>
@@ -310,8 +310,8 @@
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="tzselect.8.html"><span aria-hidden="true">&larr;</span> tzselect.8: Select a timezone</a></li>
-   <li class="next"><a href="update-pciids.8.html">update-pciids.8: Download new version of the pci id list <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="ulogd.8.html"><span aria-hidden="true">&larr;</span> ulogd.8: Netfilter/iptables logging daemon</a></li>
+   <li class="next"><a href="umount.crypt.8.html">umount.crypt.8: None <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

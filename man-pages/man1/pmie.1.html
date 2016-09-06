@@ -104,7 +104,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-<p><strong>pmie</strong> [<strong>-bCdefHqVvWxz</strong>] [<strong>-A</strong> <em>align</em>] [<strong>-a</strong> <em>archive</em>] [<strong>-c</strong> <em>filename</em>] [<strong>-h</strong> <em>host</em>] [<strong>-l</strong> <em>logfile</em>] [<strong>-j</strong> <em>stompfile</em>] [<strong>-n</strong> <em>pmnsfile</em>] [<strong>-O</strong> <em>offset</em>] [<strong>-S</strong> <em>starttime</em>] [<strong>-T</strong> <em>endtime</em>] [<strong>-t</strong> <em>interval</em>] [<strong>-U</strong> <em>username</em>] [<strong>-Z</strong> <em>timezone</em>] [<em>filename ...</em>]</p>
+<p><strong>pmie</strong> [<strong>-bCdefHVvWxz</strong>] [<strong>-A</strong> <em>align</em>] [<strong>-a</strong> <em>archive</em>] [<strong>-c</strong> <em>filename</em>] [<strong>-h</strong> <em>host</em>] [<strong>-l</strong> <em>logfile</em>] [<strong>-j</strong> <em>stompfile</em>] [<strong>-n</strong> <em>pmnsfile</em>] [<strong>-O</strong> <em>offset</em>] [<strong>-S</strong> <em>starttime</em>] [<strong>-T</strong> <em>endtime</em>] [<strong>-t</strong> <em>interval</em>] [<strong>-U</strong> <em>username</em>] [<strong>-Z</strong> <em>timezone</em>] [<em>filename ...</em>]</p>
         </div>
       </section>
 
@@ -117,7 +117,7 @@
     <p><strong>-a</strong></p>
   </dt>
   <dd>
-    <p><em>archive</em> which is a comma-separated list of names, each of which may be the base name of an archive or the name of a directory containing one or more archives written by <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>. Multiple instances of the <strong>-a</strong> flag may appear on the command line to specify a list of sets of archives. In this case, it is required that only one set of archives be present for any one host. Also, any explicit host names occurring in a <strong>pmie</strong> expression must match the host name recorded in one of the archive labels. In the case of multiple sets of archives, timestamps recorded in the archives are used to ensure temporal consistency.</p>
+    <p><em>archive</em> is the base name of a PCP archive log written by <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>. Multiple instances of the <strong>-a</strong> flag may appear on the command line to specify a set of archives. In this case, it is required that only one archive be present for any one host. Also, any explicit host names occurring in a <strong>pmie</strong> expression must match the host name recorded in one of the archive labels. In the case of multiple archives, timestamps recorded in the archives are used to ensure temporal consistency.</p>
   </dd>
   <dt>
     <p><strong>-b</strong></p>
@@ -160,10 +160,16 @@
     <p>If the <strong>-l</strong> option is specified and there is no <strong>-a</strong> option (ie. real-time monitoring) then <strong>pmie</strong> is run as a daemon in the background (in all other cases foreground is the default). The <strong>-f</strong> option forces <strong>pmie</strong> to be run in the foreground, independent of any other options.</p>
   </dd>
   <dt>
+    <p><strong>-H</strong></p>
+  </dt>
+  <dd>
+    <p>The default hostname written to the stats file will not be looked up via <a href="../man3/gethostbyname.3.html"><strong>gethostbyname</strong>(3)</a>, rather it will be written as-is. This option can be useful when host name aliases are in use at a site, and the logical name is more important than the physical host name.</p>
+  </dd>
+  <dt>
     <p><strong>-h</strong></p>
   </dt>
   <dd>
-    <p>By default performance data is fetched from the local host (in real-time mode) or the host for the first named set of archives on the command line (in archive mode).  The <em>host</em> argument overrides this default. It does not override hosts explicitly named in the expressions being evaluated.  The <em>host</em> argument is interpreted as a connection specification for <em>pmNewContext</em>, and is later mapped to the remote pmcd's self-reported host name for reporting purposes.  See also the %h vs. %c substitutions in rule action strings below.</p>
+    <p>By default performance data is fetched from the local host (in real-time mode) or the host for the first named archive on the command line (in archive mode).  The <em>host</em> argument overrides this default. It does not override hosts explicitly named in the expressions being evaluated.</p>
   </dd>
   <dt>
     <p><strong>-l</strong></p>
@@ -184,16 +190,10 @@
     <p>An alternative Performance Metrics Name Space (PMNS) is loaded from the file <em>pmnsfile</em>.</p>
   </dd>
   <dt>
-    <p><strong>-q</strong></p>
-  </dt>
-  <dd>
-    <p>Suppresses diagnostic messages that would be printed to standard output by default, especially the "evaluator exiting" message as this can confuse scripts.</p>
-  </dd>
-  <dt>
     <p><strong>-t</strong></p>
   </dt>
   <dd>
-    <p>The <em>interval</em> argument follows the syntax described in <a href="../man1/pcpintro.1.html"><strong>PCPIntro</strong>(1)</a>, and in the simplest form may be an unsigned integer (the implied units in this case are seconds). The value is used to determine the sample interval for expressions that do not explicitly set their sample interval using the <strong>pmie</strong> variable delta described below. The default is 10.0 seconds.</p>
+    <p>The <em>interval</em> argument follows the syntax described in <a href="../man1/PCPIntro.1.html"><strong>PCPIntro</strong>(1)</a>, and in the simplest form may be an unsigned integer (the implied units in this case are seconds). The value is used to determine the sample interval for expressions that do not explicitly set their sample interval using the <strong>pmie</strong> variable delta described below. The default is 10.0 seconds.</p>
   </dd>
   <dt>
     <p><strong>-U</strong> <em>username</em></p>
@@ -205,7 +205,7 @@
     <p><strong>-v</strong></p>
   </dt>
   <dd>
-    <p>Unless one of the verbose options <strong>-V</strong>, <strong>-v</strong> or <strong>-W</strong> appears on the command line, expressions are evaluated silently, the only output is as a result of any actions being executed.  In the verbose mode, specified using the <strong>-v</strong> flag, the value of each expression is printed as it is evaluated. The values are in canonical units; bytes in the dimension of ``space'', seconds in the dimension of ``time'' and events in the dimension of ``count''. See <a href="../man3/pmlookupdesc.3.html"><strong>pmLookupDesc</strong>(3)</a> for details of the supported dimension and scaling mechanisms for performance metrics. The verbose mode is useful in monitoring the value of given expressions, evaluating derived performance metrics, passing these values on to other tools for further processing and in debugging new expressions.</p>
+    <p>Unless one of the verbose options <strong>-V</strong>, <strong>-v</strong> or <strong>-W</strong> appears on the command line, expressions are evaluated silently, the only output is as a result of any actions being executed.  In the verbose mode, specified using the <strong>-v</strong> flag, the value of each expression is printed as it is evaluated. The values are in canonical units; bytes in the dimension of ``space'', seconds in the dimension of ``time'' and events in the dimension of ``count''. See <a href="../man3/pmLookupDesc.3.html"><strong>pmLookupDesc</strong>(3)</a> for details of the supported dimension and scaling mechanisms for performance metrics. The verbose mode is useful in monitoring the value of given expressions, evaluating derived performance metrics, passing these values on to other tools for further processing and in debugging new expressions.</p>
   </dd>
   <dt>
     <p><strong>-V</strong></p>
@@ -217,7 +217,7 @@
     <p><strong>-W</strong></p>
   </dt>
   <dd>
-    <p>This option has the same effect as the <strong>-V</strong> option described above, except that for boolean expressions, only those names and values that make the expression true are printed. These are the same names and values accessible to rule actions as the %h, %i, %c and %v bindings, as described below.</p>
+    <p>This option has the same effect as the <strong>-V</strong> option described above, except that for boolean expressions, only those names and values that make the expression true are printed. These are the same names and values accessible to rule actions as the %h, %i and %v bindings, as described below.</p>
   </dd>
   <dt>
     <p><strong>-x</strong></p>
@@ -229,17 +229,17 @@
     <p><strong>-Z</strong></p>
   </dt>
   <dd>
-    <p>Change the reporting timezone to <em>timezone</em> in the format of the environment variable <strong>TZ</strong> as described in <a href="../man7/environ.7.html"><strong>environ</strong>(7)</a>.</p>
+    <p>Change the reporting timezone to <em>timezone</em> in the format of the environment variable <strong>TZ</strong> as described in <strong>environ</strong>(5).</p>
   </dd>
   <dt>
     <p><strong>-z</strong></p>
   </dt>
   <dd>
-    <p>Change the reporting timezone to the timezone of the host that is the source of the performance metrics, as identified via either the <strong>-h</strong> option or the first named set of archives (as described above for the <strong>-a</strong> option).</p>
+    <p>Change the reporting timezone to the timezone of the host that is the source of the performance metrics, as identified via either the <strong>-h</strong> option or the first named archive (as described above for the <strong>-a</strong> option).</p>
   </dd>
 
 </dl>
-<p>The <strong>-S</strong>, <strong>-T</strong>, <strong>-O</strong>, and <strong>-A</strong> options may be used to define a time window to restrict the samples retrieved, set an initial origin within the time window, or specify a ``natural'' alignment of the sample times; refer to <a href="../man1/pcpintro.1.html"><strong>PCPIntro</strong>(1)</a> for a complete description of these options.</p><p>Output from <strong>pmie</strong> is directed to standard output and standard error as follows:</p>
+<p>The <strong>-S</strong>, <strong>-T</strong>, <strong>-O</strong>, and <strong>-A</strong> options may be used to define a time window to restrict the samples retrieved, set an initial origin within the time window, or specify a ``natural'' alignment of the sample times; refer to <a href="../man1/PCPIntro.1.html"><strong>PCPIntro</strong>(1)</a> for a complete description of these options.</p><p>Output from <strong>pmie</strong> is directed to standard output and standard error as follows:</p>
 <dl class='dl-vertical'>
   <dt>
     <p><strong>stdout</strong></p>
@@ -271,11 +271,11 @@ delta = 1 sec;
 kernel.all.pswitch / hinv.ncpu &gt; 10000 count/sec
 -&gt; alarm "high context switch rate %v";
 </pre>
-<p>If the high context switch rate is sustained for 10 consecutive samples, then launch <a href="../man1/top.1.html"><strong>top</strong>(1)</a> in an <strong>xterm</strong>(1) window to monitor processes, but do this at most once every 5 minutes:</p>
+<p>If the high context switch rate is sustained for 10 consecutive samples, then launch <strong>top</strong>(1) in an <strong>xwsh</strong>(1G) window to monitor processes, but do this at most once every 5 minutes:</p>
 <pre>
 all_sample (
     kernel.all.pswitch @0..9 &gt; 10 Kcount/sec * hinv.ncpu
-) -&gt; shell 5 min "xterm -e 'top'";
+) -&gt; shell 5 min "xwsh -e 'top'";
 </pre>
 <p>The following rules are evaluated once every 20 seconds:</p>
 <pre>
@@ -321,17 +321,16 @@ environ.temp @0 - environ.temp @1 &gt; 2
 <pre>
 // back to 30sec evaluations
 delta = 30 sec;
-sid = "ptg1";		# $ORACLE_SID setting
-lid = "223";		# latch ID from v$latch
-lru = "#'$sid/$lid cache buffers lru chain'";
+db = "oracle.ptg1";
 host = ":moomba.melbourne.sgi.com";
-gets = "oracle.latch.gets $host $lru";
-total = "oracle.latch.gets $host $lru +
-         oracle.latch.misses $host $lru +
-         oracle.latch.immisses $host $lru";
+lru = "#'cache buffers lru chain'";
+gets = "$db.latch.gets $host $lru";
+total = "$db.latch.gets $host $lru +
+         $db.latch.misses $host $lru +
+         $db.latch.immisses $host $lru";
 
 $total &gt; 100 && $gets / $total &lt; 0.2
--&gt; alarm "high lru latch contention in database $sid";
+-&gt; alarm "high lru latch contention";
 </pre>
 <p>The following <strong>ruleset</strong> will emit exactly one message depending on the availability and value of the 1-minute load average.</p>
 <pre>
@@ -347,18 +346,6 @@ otherwise -&gt;
          print "load average OK"
 ;
 </pre>
-<p>The following rule will emit a message when some filesystem is more than 75% full and is filling at a rate that if sustained would fill the filesystem to 100% in less than 30 minutes.</p>
-<pre>
-some_inst (
-    100 * filesys.used / filesys.capacity &gt; 75 &&
-    filesys.used + 30min * (rate filesys.used) &gt; filesys.capacity
-) -&gt; print "filesystem will be full within 30 mins:" " %i";
-</pre>
-<p>If the metric mypmda.errors counts errors then the following rule will emit a message if the rate of errors exceeds 1 per second provided the error count is less than 100.</p>
-<pre>
-mypmda.errors &gt; 1 && instant mypmda.errors &lt; 100
--&gt; print "high error rate: %v";
-</pre>
 
         </div>
       </section>
@@ -366,7 +353,7 @@ mypmda.errors &gt; 1 && instant mypmda.errors &lt; 100
       <section>
         <h2 class="font-effect-shadow-multiple">QUICK START</h2>
         <div class="sectioncontent">
-<p>The <strong>pmie</strong> specification language is powerful and large.</p><p>To expedite rapid development of <strong>pmie</strong> rules, the <a href="../man1/pmieconf.1.html"><strong>pmieconf</strong>(1)</a> tool provides a facility for generating a <strong>pmie</strong> configuration file from a set of generalized <strong>pmie</strong> rules. The supplied set of rules covers a wide range of performance scenarios.</p><p>The <em>Performance Co-Pilot User's and Administrator's Guide</em> provides a detailed tutorial-style chapter covering <strong>pmie</strong>.</p>
+<p>The <strong>pmie</strong> specification language is powerful and large.</p><p>To expedite rapid development of <strong>pmie</strong> rules, the <strong>pmieconf</strong>(1) tool provides a facility for generating a <strong>pmie</strong> configuration file from a set of generalized <strong>pmie</strong> rules. The supplied set of rules covers a wide range of performance scenarios.</p><p>The <em>Performance Co-Pilot User's and Administrator's Guide</em> provides a detailed tutorial-style chapter covering <strong>pmie</strong>.</p>
         </div>
       </section>
 
@@ -413,12 +400,7 @@ mypmda.errors &gt; 1 && instant mypmda.errors &lt; 100
 <td><strong>rate</strong></td>
 <td>Explicit rate conversion (rarely required)</td>
 <td></td></tr>
-
-<tr>
-<td><strong>instant</strong></td>
-<td>No automatic rate conversion (rarely required)</td>
-<td></td></tr>
-</table><p>The <strong>rate</strong> and <strong>instant</strong> operators are the logical inverse of one another, so an arithmetic expression <em>expr</em> is equal to <strong>rate instant</strong> <em>expr</em>. The more useful cases involve using <strong>rate</strong> with a metric that is not a counter to determine the rate of change over time or <strong>instant</strong> with a metric that is a counter to determine if the current value is above or below some threshold.</p><p>Aggregate operators may be used to aggregate or summarize along one dimension of a set-valued expression. The following aggregate operators map from a logical expression to a logical expression of lower dimension.</p><table class="table table-striped">
+</table><p>Aggregate operators may be used to aggregate or summarize along one dimension of a set-valued expression. The following aggregate operators map from a logical expression to a logical expression of lower dimension.</p><table class="table table-striped">
 <tr>
 <th>Operators</th>
 <th>Type</th>
@@ -438,7 +420,7 @@ mypmda.errors &gt; 1 && instant mypmda.errors &lt; 100
 <td><strong>N</strong><strong>%_inst</strong>          <strong>N</strong><strong>%_host</strong>          <strong>N</strong><strong>%_sample</strong>    </td>
 <td>Percentile</td>
 <td>True if at least <em>N</em> percent of set members are true in the associated dimension    </td></tr>
-</table><p>The following instantial operators may be used to filter or limit a set-valued logical expression, based on regular expression matching of instance names.  The logical expression must be a set involving the dimension of instances, and the regular expression is of the form used by <strong>egrep</strong>(1) or the Extended Regular Expressions of <a href="../man3/regcomp.3.html"><strong>regcomp</strong>(3)</a>.</p><table class="table table-striped">
+</table><p>The following instantial operators may be used to filter or limit a set-valued logical expression, based on regular expression matching of instance names.  The logical expression must be a set involving the dimension of instances, and the regular expression is of the form used by <a href="../man1/egrep.1.html"><strong>egrep</strong>(1)</a> or the Extended Regular Expressions of <strong>regcomp</strong>(3G).</p><table class="table table-striped">
 <tr>
 <th>Operators</th>
 <th>Explanation</th>
@@ -516,13 +498,7 @@ match_inst "^dks[23]d" disk.dev.total &gt; 20;
     <p><strong>%h</strong></p>
   </dt>
   <dd>
-    <p>Host name(s) that make the left-most top-level expression in the condition true.</p>
-  </dd>
-  <dt>
-    <p><strong>%c</strong></p>
-  </dt>
-  <dd>
-    <p>Connection specification string(s) or files for a PCP tool to reach the hosts or archives that make the left-most top-level expression in the condition true.</p>
+    <p>Host(s) that make the left-most top-level expression in the condition true.</p>
   </dd>
   <dt>
     <p><strong>%i</strong></p>
@@ -900,6 +876,12 @@ topic=PMIE              # JMS topic for pmie messages (optional)
   <dd>
     <p>the default set of <strong>pmie</strong> instances to start at boot time - refer to <a href="../man1/pmie_check.1.html"><strong>pmie_check</strong>(1)</a> for details</p>
   </dd>
+  <dt>
+    <p><strong>$PCP_SYSCONF_DIR/pmie/</strong><em>*</em></p>
+  </dt>
+  <dd>
+    <p>the predefined alarm action scripts ( .BR email , <strong>log</strong>, <strong>popup</strong> and <strong>syslog</strong>), the example action script ( .BR sample ) and the concurrent action control file ( .BR control.master ).</p>
+  </dd>
 
 </dl>
 
@@ -916,7 +898,7 @@ topic=PMIE              # JMS topic for pmie messages (optional)
       <section>
         <h2 class="font-effect-shadow-multiple">PCP ENVIRONMENT</h2>
         <div class="sectioncontent">
-<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a>.</p><p>When executing shell actions, <strong>pmie</strong> overrides two variables - IFS and PATH - in the environment of the child process. IFS is set to "&#92;t&#92;n". The PATH is set to a combination of a default path for all platforms ("/usr/sbin:/sbin:/usr/bin:/usr/sbin") and several configurable components. These are (in this order): <strong>$PCP_BIN_DIR</strong>, <strong>$PCP_BINADM_DIR</strong> and <strong>$PCP_PLATFORM_PATHS</strong>.</p><p>When executing popup alarm actions, <strong>pmie</strong> will use the value of <strong>$PCP_XCONFIRM_PROG</strong> as the visual notification program to run. This is typically set to <strong>pmconfirm</strong>(1), a cross-platform dialog box.</p>
+<p>Environment variables with the prefix <strong>PCP_</strong> are used to parameterize the file and directory names used by PCP. On each installation, the file <em>/etc/pcp.conf</em> contains the local values for these variables. The <strong>$PCP_CONF</strong> variable may be used to specify an alternative configuration file, as described in <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a>.</p>
         </div>
       </section>
 
@@ -937,7 +919,7 @@ topic=PMIE              # JMS topic for pmie messages (optional)
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO pmie&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man1/pcpintro.1.html"><strong>PCPIntro</strong>(1)</a>, <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>, <strong>pmconfirm</strong>(1), <a href="../man1/pmdumplog.1.html"><strong>pmdumplog</strong>(1)</a>, <a href="../man1/pmieconf.1.html"><strong>pmieconf</strong>(1)</a>, <a href="../man1/pmie_check.1.html"><strong>pmie_check</strong>(1)</a>, <a href="../man1/pminfo.1.html"><strong>pminfo</strong>(1)</a>, <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>, <a href="../man1/pmval.1.html"><strong>pmval</strong>(1)</a>, <a href="../man3/pmapi.3.html"><strong>PMAPI</strong>(3)</a>, <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a> and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
+<p><a href="../man1/PCPIntro.1.html"><strong>PCPIntro</strong>(1)</a>, <a href="../man1/pmcd.1.html"><strong>pmcd</strong>(1)</a>, <a href="../man1/pmdumplog.1.html"><strong>pmdumplog</strong>(1)</a>, <strong>pmieconf</strong>(1), <a href="../man1/pmie_check.1.html"><strong>pmie_check</strong>(1)</a>, <a href="../man1/pminfo.1.html"><strong>pminfo</strong>(1)</a>, <a href="../man1/pmlogger.1.html"><strong>pmlogger</strong>(1)</a>, <a href="../man1/pmval.1.html"><strong>pmval</strong>(1)</a>, <a href="../man3/PMAPI.3.html"><strong>PMAPI</strong>(3)</a>, <a href="../man5/pcp.conf.5.html"><strong>pcp.conf</strong>(5)</a> and <a href="../man5/pcp.env.5.html"><strong>pcp.env</strong>(5)</a>.</p>
         </div>
       </section>
 
@@ -946,14 +928,14 @@ topic=PMIE              # JMS topic for pmie messages (optional)
         <div class="sectioncontent">
 <p>For a more complete description of the <strong>pmie</strong> language, refer to the <strong>Performance Co-Pilot Users and Administrators Guide</strong>. This is available online from:</p>
 <pre>
-http://www.pcp.io/doc/pcp-users-and-administrators-guide.pdf
+http://www.performancecopilot.org/doc/pcp-users-and-administrators-guide.pdf
 </pre>
 
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="pmhostname.1.html"><span aria-hidden="true">&larr;</span> pmhostname.1: Report hostname</a></li>
+   <li class="previous"><a href="pmidi.1.html"><span aria-hidden="true">&larr;</span> pmidi.1: A midi file player for alsa.</a></li>
    <li class="next"><a href="pmie2col.1.html">pmie2col.1: Convert pmie output to multi-column format <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

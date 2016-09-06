@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&effect=destruction%7Cshadow-multiple" rel="stylesheet" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>erts_alloc: An erlang run-time system internal memory allocator library.</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/manpage.css" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="manifest" href="/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="An erlang run-time system internal memory allocator library.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@CartaTech">
+  <meta name="twitter:creator" content="@CartaTech">
+  <meta name="twitter:title" content="erts_alloc (3erl) manual">
+  <meta name="twitter:description" content="An erlang run-time system internal memory allocator library.">
+  <meta name="twitter:image" content="https://www.carta.tech/images/erlang-manpages-erts_alloc-3erl.png">
+  <meta property="og:url" content="https://www.carta.tech/man-pages/man3erl/erts_alloc.3erl.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="erts_alloc (3erl) manual" />
+  <meta property="og:description" content="An erlang run-time system internal memory allocator library." />
+  <meta property="fb:app_id" content="1241677679199500" />
+  <meta property="og:image" content="https://www.carta.tech/images/erlang-manpages-erts_alloc-3erl.png" />
+  <meta property="og:image:width" content="600" />
+  <meta property="og:image:height" content="315" />
+</head>
+<body>
+  <div class="container final">
+          <div class="page-header">
+        <h1 class="font-effect-destruction">erts_alloc<small> (3erl)</small></h1>
+        <p class="lead">An erlang run-time system internal memory allocator library.</p>
+      </div>
+
+    <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/">
+      <span itemprop="name">Carta.tech</span>
+    </a>
+    <meta itemprop="position" content="1" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/">
+      <span itemprop="name">Man Pages</span>
+    </a>
+    <meta itemprop="position" content="2" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3erl/">
+      <span itemprop="name">MISSING SECTION</span>
+    </a>
+    <meta itemprop="position" content="3" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3erl/erts_alloc.3erl.html">
+      <span itemprop="name">erts_alloc: An erlang run-time system internal memory allocator library.</span>
+    </a>
+    <meta itemprop="position" content="4" />
+  </li>
+</ol>
+<ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/">
+      <span itemprop="name">Carta.tech</span>
+    </a>
+    <meta itemprop="position" content="1" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/">
+      <span itemprop="name">Packages</span>
+    </a>
+    <meta itemprop="position" content="2" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/erlang-manpages/">
+      <span itemprop="name">erlang-manpages</span>
+    </a>
+    <meta itemprop="position" content="3" />
+  </li>
+  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/man-pages/man3erl/erts_alloc.3erl.html">
+      <span itemprop="name">erts_alloc: An erlang run-time system internal memory allocator library.</span>
+    </a>
+    <meta itemprop="position" content="4" />
+  </li>
+</ol>
+    
+      <section>
+        <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
+        <div class="sectioncontent">
+<p><em>erts_alloc</em> is an Erlang Run-Time System internal memory allocator library. <em>erts_alloc</em> provides the Erlang Run-Time System with a number of memory allocators.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">ALLOCATORS</h2>
+        <div class="sectioncontent">
+<p>Currently the following allocators are present:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>temp_alloc</em>: Allocator used for temporary allocations.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>eheap_alloc</em>: Allocator used for Erlang heap data, such as Erlang process heaps.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>binary_alloc</em>: Allocator used for Erlang binary data.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>ets_alloc</em>: Allocator used for ETS data.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>driver_alloc</em>: Allocator used for driver data.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>sl_alloc</em>: Allocator used for memory blocks that are expected to be short-lived.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>ll_alloc</em>: Allocator used for memory blocks that are expected to be long-lived, for example Erlang code.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>fix_alloc</em>: A fast allocator used for some frequently used fixed size data types.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>std_alloc</em>: Allocator used for most memory blocks not allocated via any of the other allocators described above.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>sys_alloc</em>: This is normally the default <em>malloc</em> implementation used on the specific OS.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>mseg_alloc</em>: A memory segment allocator. <em>mseg_alloc</em> is used by other allocators for allocating memory segments and is currently only available on systems that have the <em>mmap</em> system call. Memory segments that are deallocated are kept for a while in a segment cache before they are destroyed. When segments are allocated, cached segments are used if possible instead of creating new segments. This in order to reduce the number of system calls made.</p>
+  </dd>
+
+</dl>
+<p><em>sys_alloc</em> is always enabled and cannot be disabled. <em>mseg_alloc</em> is always enabled if it is available and an allocator that uses it is enabled. All other allocators can be <strong>enabled or disabled</strong>. By default all allocators are enabled. When an allocator is disabled, <em>sys_alloc</em> is used instead of the disabled allocator.</p><p>The main idea with the <em>erts_alloc</em> library is to separate memory blocks that are used differently into different memory areas, and by this achieving less memory fragmentation. By putting less effort in finding a good fit for memory blocks that are frequently allocated than for those less frequently allocated, a performance gain can be achieved.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">THE ALLOC_UTIL FRAMEWORK</h2>
+        <div class="sectioncontent">
+<p>Internally a framework called <em>alloc_util</em> is used for implementing allocators. <em>sys_alloc</em>, and <em>mseg_alloc</em> do not use this framework; hence, the following does <em>not</em> apply to them.</p><p>An allocator manages multiple areas, called carriers, in which memory blocks are placed. A carrier is either placed in a separate memory segment (allocated via <em>mseg_alloc</em>), or in the heap segment (allocated via <em>sys_alloc</em>). Multiblock carriers are used for storage of several blocks. Singleblock carriers are used for storage of one block. Blocks that are larger than the value of the singleblock carrier threshold (<strong>sbct</strong>) parameter are placed in singleblock carriers. Blocks that are smaller than the value of the <em>sbct</em> parameter are placed in multiblock carriers. Normally an allocator creates a "main multiblock carrier". Main multiblock carriers are never deallocated. The size of the main multiblock carrier is determined by the value of the <strong>mmbcs</strong> parameter.</p><p>Sizes of multiblock carriers allocated via <em>mseg_alloc</em> are decided based on the values of the largest multiblock carrier size (<strong>lmbcs</strong>), the smallest multiblock carrier size (<strong>smbcs</strong>), and the multiblock carrier growth stages (<strong>mbcgs</strong>) parameters. If <em>nc</em> is the current number of multiblock carriers (the main multiblock carrier excluded) managed by an allocator, the size of the next <em>mseg_alloc</em> multiblock carrier allocated by this allocator will roughly be <em>smbcs+nc*(lmbcs-smbcs)/mbcgs</em> when <em>nc &lt;= mbcgs</em>, and <em>lmbcs</em> when <em>nc &gt; mbcgs</em>. If the value of the <em>sbct</em> parameter should be larger than the value of the <em>lmbcs</em> parameter, the allocator may have to create multiblock carriers that are larger than the value of the <em>lmbcs</em> parameter, though. Singleblock carriers allocated via <em>mseg_alloc</em> are sized to whole pages.</p><p>Sizes of carriers allocated via <em>sys_alloc</em> are decided based on the value of the <em>sys_alloc</em> carrier size (<strong>ycs</strong>) parameter. The size of a carrier is the least number of multiples of the value of the <em>ycs</em> parameter that satisfies the request.</p><p>Coalescing of free blocks are always performed immediately. Boundary tags (headers and footers) in free blocks are used which makes the time complexity for coalescing constant.</p><p>The memory allocation strategy used for multiblock carriers by an allocator is configurable via the <strong>as</strong> parameter. Currently the following strategies are available:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p>Best fit: Strategy: Find the smallest block that satisfies the requested block size.</p><p>Implementation: A balanced binary search tree is used. The time complexity is proportional to log N, where N is the number of sizes of free blocks.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p>Address order best fit: Strategy: Find the smallest block that satisfies the requested block size. If multiple blocks are found, choose the one with the lowest address.</p><p>Implementation: A balanced binary search tree is used. The time complexity is proportional to log N, where N is the number of free blocks.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p>Address order first fit: Strategy: Find the block with the lowest address that satisfies the requested block size.</p><p>Implementation: A balanced binary search tree is used. The time complexity is proportional to log N, where N is the number of free blocks.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p>Address order first fit carrier best fit: Strategy: Find the <em>carrier</em> with the lowest address that can satisfy the requested block size, then find a block within that carrier using the "best fit" strategy.</p><p>Implementation: Balanced binary search trees are used. The time complexity is proportional to log N, where N is the number of free blocks.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p>Address order first fit carrier address order best fit: Strategy: Find the <em>carrier</em> with the lowest address that can satisfy the requested block size, then find a block within that carrier using the "adress order best fit" strategy.</p><p>Implementation: Balanced binary search trees are used. The time complexity is proportional to log N, where N is the number of free blocks.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p>Good fit: Strategy: Try to find the best fit, but settle for the best fit found during a limited search.</p><p>Implementation: The implementation uses segregated free lists with a maximum block search depth (in each list) in order to find a good fit fast. When the maximum block search depth is small (by default 3) this implementation has a time complexity that is constant. The maximum block search depth is configurable via the <strong>mbsd</strong> parameter.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p>A fit: Strategy: Do not search for a fit, inspect only one free block to see if it satisfies the request. This strategy is only intended to be used for temporary allocations.</p><p>Implementation: Inspect the first block in a free-list. If it satisfies the request, it is used; otherwise, a new carrier is created. The implementation has a time complexity that is constant.</p><p>As of erts version 5.6.1 the emulator will refuse to use this strategy on other allocators than <em>temp_alloc</em>. This since it will only cause problems for other allocators.</p>
+  </dd>
+
+</dl>
+<p>Apart from the ordinary allocators described above a number of pre-allocators are used for some specific data types. These pre-allocators pre-allocate a fixed amount of memory for certain data types when the run-time system starts. As long as pre-allocated memory is available, it will be used. When no pre-allocated memory is available, memory will be allocated in ordinary allocators. These pre-allocators are typically much faster than the ordinary allocators, but can only satisfy a limited amount of requests.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">SYSTEM FLAGS EFFECTING ERTS_ALLOC</h2>
+        <div class="sectioncontent">
+<p><strong></strong> Warning:</p><p>Only use these flags if you are absolutely sure what you are doing. Unsuitable settings may cause serious performance degradation and even a system crash at any time during operation.</p><p>Memory allocator system flags have the following syntax: <em>+M&lt;S&gt;&lt;P&gt; &lt;V&gt;</em> where <em>&lt;S&gt;</em> is a letter identifying a subsystem, <em>&lt;P&gt;</em> is a parameter, and <em>&lt;V&gt;</em> is the value to use. The flags can be passed to the Erlang emulator (<strong>erl</strong>) as command line arguments.</p><p>System flags effecting specific allocators have an upper-case letter as <em>&lt;S&gt;</em>. The following letters are used for the currently present allocators:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>B: binary_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>D: std_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>E: ets_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>F: fix_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>H: eheap_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>L: ll_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>M: mseg_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>R: driver_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>S: sl_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>T: temp_alloc</em></p>
+  </dd>
+
+</dl>
+
+<dl class='dl-vertical'>
+  <dt>
+    <p>*</p>
+  </dt>
+  <dd>
+    <p><em>Y: sys_alloc</em></p>
+  </dd>
+
+</dl>
+<p>The following flags are available for configuration of <em>mseg_alloc</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MMamcbf &lt;size&gt;</em>:  Absolute max cache bad fit (in kilobytes). A segment in the memory segment cache is not reused if its size exceeds the requested size with more than the value of this parameter. Default value is 4096.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MMrmcbf &lt;ratio&gt;</em>:  Relative max cache bad fit (in percent). A segment in the memory segment cache is not reused if its size exceeds the requested size with more than relative max cache bad fit percent of the requested size. Default value is 20.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MMsco true|false</em>:  Set <strong>super carrier</strong> only flag. This flag defaults to <em>true</em>. When a super carrier is used and this flag is <em>true</em>, <em>mseg_alloc</em> will only create carriers in the super carrier. Note that the <em>alloc_util</em> framework may create <em>sys_alloc</em> carriers, so if you want all carriers to be created in the super carrier, you therefore want to disable use of <em>sys_alloc</em> carriers by also passing <strong></strong><em>+Musac false</em>. When the flag is <em>false</em>, <em>mseg_alloc</em> will try to create carriers outside of the super carrier when the super carrier is full.</p><p><em>NOTE</em>: Setting this flag to <em>false</em> may not be supported on all systems. This flag will in that case be ignored.</p><p><em>NOTE</em>: The super carrier cannot be enabled nor disabled on halfword heap systems. This flag will be ignored on halfword heap systems.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MMscrfsd &lt;amount&gt;</em>:  Set <strong>super carrier</strong> reserved free segment descriptors. This parameter defaults to <em>65536</em>. This parameter determines the amount of memory to reserve for free segment descriptors used by the super carrier. If the system runs out of reserved memory for free segment descriptors, other memory will be used. This may however cause fragmentation issues, so you want to ensure that this never happens. The maximum amount of free segment descriptors used can be retrieved from the <em>erts_mmap</em> tuple part of the result from calling <strong>erlang:system_info({allocator, mseg_alloc})</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MMscrpm true|false</em>:  Set <strong>super carrier</strong> reserve physical memory flag. This flag defaults to <em>true</em>. When this flag is <em>true</em>, physical memory will be reserved for the whole super carrier at once when it is created. The reservation will after that be left unchanged. When this flag is set to <em>false</em> only virtual address space will be reserved for the super carrier upon creation. The system will attempt to reserve physical memory upon carrier creations in the super carrier, and attempt to unreserve physical memory upon carrier destructions in the super carrier.</p><p><em>NOTE</em>: What reservation of physical memory actually means highly depends on the operating system, and how it is configured. For example, different memory overcommit settings on Linux drastically change the behaviour. Also note, setting this flag to <em>false</em> may not be supported on all systems. This flag will in that case be ignored.</p><p><em>NOTE</em>: The super carrier cannot be enabled nor disabled on halfword heap systems. This flag will be ignored on halfword heap systems.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MMscs &lt;size in MB&gt;</em>:  Set super carrier size (in MB). The super carrier size defaults to zero; i.e, the super carrier is by default disabled. The super carrier is a large continuous area in the virtual address space. <em>mseg_alloc</em> will always try to create new carriers in the super carrier if it exists. Note that the <em>alloc_util</em> framework may create <em>sys_alloc</em> carriers. For more information on this, see the documentation of the <strong></strong><em>+MMsco</em> flag.</p><p><em>NOTE</em>: The super carrier cannot be enabled nor disabled on halfword heap systems. This flag will be ignored on halfword heap systems.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MMmcs &lt;amount&gt;</em>:  Max cached segments. The maximum number of memory segments stored in the memory segment cache. Valid range is 0-30. Default value is 10.</p>
+  </dd>
+
+</dl>
+<p>The following flags are available for configuration of <em>sys_alloc</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MYe true</em>:  Enable <em>sys_alloc</em>. Note: <em>sys_alloc</em> cannot be disabled.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MYm libc</em>: <em>malloc</em> library to use. Currently only <em>libc</em> is available. <em>libc</em> enables the standard <em>libc</em> malloc implementation. By default <em>libc</em> is used.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MYtt &lt;size&gt;</em>:  Trim threshold size (in kilobytes). This is the maximum amount of free memory at the top of the heap (allocated by <em>sbrk</em>) that will be kept by <em>malloc</em> (not released to the operating system). When the amount of free memory at the top of the heap exceeds the trim threshold, <em>malloc</em> will release it (by calling <em>sbrk</em>). Trim threshold is given in kilobytes. Default trim threshold is 128. <em>Note:</em> This flag will only have any effect when the emulator has been linked with the GNU C library, and uses its <em>malloc</em> implementation.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+MYtp &lt;size&gt;</em>:  Top pad size (in kilobytes). This is the amount of extra memory that will be allocated by <em>malloc</em> when <em>sbrk</em> is called to get more memory from the operating system. Default top pad size is 0. <em>Note:</em> This flag will only have any effect when the emulator has been linked with the GNU C library, and uses its <em>malloc</em> implementation.</p>
+  </dd>
+
+</dl>
+<p>The following flags are available for configuration of allocators based on <em>alloc_util</em>. If <em>u</em> is used as subsystem identifier (i.e., <em>&lt;S&gt; = u</em>) all allocators based on <em>alloc_util</em> will be effected. If <em>B</em>, <em>D</em>, <em>E</em>, <em>F</em>, <em>H</em>, <em>L</em>, <em>R</em>, <em>S</em>, or <em>T</em> is used as subsystem identifier, only the specific allocator identified will be effected:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;acul &lt;utilization&gt;|de</em>:  Abandon carrier utilization limit. A valid <em>&lt;utilization&gt;</em> is an integer in the range <em>[0, 100]</em> representing utilization in percent. When a utilization value larger than zero is used, allocator instances are allowed to abandon multiblock carriers. If <em>de</em> (default enabled) is passed instead of a <em>&lt;utilization&gt;</em>, a recomended non zero utilization value will be used. The actual value chosen depend on allocator type and may be changed between ERTS versions. Currently the default equals <em>de</em>, but this may be changed in the future. Carriers will be abandoned when memory utilization in the allocator instance falls below the utilization value used. Once a carrier has been abandoned, no new allocations will be made in it. When an allocator instance gets an increased multiblock carrier need, it will first try to fetch an abandoned carrier from an allocator instances of the same allocator type. If no abandoned carrier could be fetched, it will create a new empty carrier. When an abandoned carrier has been fetched it will function as an ordinary carrier. This feature has special requirements on the <strong>allocation strategy</strong> used. Currently only the strategies <em>aoff</em>, <em>aoffcbf</em> and <em>aoffcaobf</em> support abandoned carriers. This feature also requires <strong>multiple thread specific instances</strong> to be enabled. When enabling this feature, multiple thread specific instances will be enabled if not already enabled, and the <em>aoffcbf</em> strategy will be enabled if current strategy does not support abandoned carriers. This feature can be enabled on all allocators based on the <em>alloc_util</em> framework with the exception of <em>temp_alloc</em> (which would be pointless).</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;as bf|aobf|aoff|aoffcbf|aoffcaobf|gf|af</em>:  Allocation strategy. Valid strategies are <em>bf</em> (best fit), <em>aobf</em> (address order best fit), <em>aoff</em> (address order first fit), <em>aoffcbf</em> (address order first fit carrier best fit), <em>aoffcaobf</em> (address order first fit carrier address order best fit), <em>gf</em> (good fit), and <em>af</em> (a fit). See <strong>the description of allocation strategies</strong> in "the <em>alloc_util</em> framework" section.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;asbcst &lt;size&gt;</em>:  Absolute singleblock carrier shrink threshold (in kilobytes). When a block located in an <em>mseg_alloc</em> singleblock carrier is shrunk, the carrier will be left unchanged if the amount of unused memory is less than this threshold; otherwise, the carrier will be shrunk. See also <strong>rsbcst</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;e true|false</em>:  Enable allocator <em>&lt;S&gt;</em>.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;lmbcs &lt;size&gt;</em>:  Largest (<em>mseg_alloc</em>) multiblock carrier size (in kilobytes). See <strong>the description on how sizes for mseg_alloc multiblock carriers are decided</strong> in "the <em>alloc_util</em> framework" section. On 32-bit Unix style OS this limit can not be set higher than 128 megabyte.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;mbcgs &lt;ratio&gt;</em>:  (<em>mseg_alloc</em>) multiblock carrier growth stages. See <strong>the description on how sizes for mseg_alloc multiblock carriers are decided</strong> in "the <em>alloc_util</em> framework" section.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;mbsd &lt;depth&gt;</em>:  Max block search depth. This flag has effect only if the good fit strategy has been selected for allocator <em>&lt;S&gt;</em>. When the good fit strategy is used, free blocks are placed in segregated free-lists. Each free list contains blocks of sizes in a specific range. The max block search depth sets a limit on the maximum number of blocks to inspect in a free list during a search for suitable block satisfying the request.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;mmbcs &lt;size&gt;</em>:  Main multiblock carrier size. Sets the size of the main multiblock carrier for allocator <em>&lt;S&gt;</em>. The main multiblock carrier is allocated via <em>sys_alloc</em> and is never deallocated.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;mmmbc &lt;amount&gt;</em>:  Max <em>mseg_alloc</em> multiblock carriers. Maximum number of multiblock carriers allocated via <em>mseg_alloc</em> by allocator <em>&lt;S&gt;</em>. When this limit has been reached, new multiblock carriers will be allocated via <em>sys_alloc</em>.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;mmsbc &lt;amount&gt;</em>:  Max <em>mseg_alloc</em> singleblock carriers. Maximum number of singleblock carriers allocated via <em>mseg_alloc</em> by allocator <em>&lt;S&gt;</em>. When this limit has been reached, new singleblock carriers will be allocated via <em>sys_alloc</em>.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;ramv &lt;bool&gt;</em>:  Realloc always moves. When enabled, reallocate operations will more or less be translated into an allocate, copy, free sequence. This often reduce memory fragmentation, but costs performance.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;rmbcmt &lt;ratio&gt;</em>:  Relative multiblock carrier move threshold (in percent). When a block located in a multiblock carrier is shrunk, the block will be moved if the ratio of the size of the returned memory compared to the previous size is more than this threshold; otherwise, the block will be shrunk at current location.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;rsbcmt &lt;ratio&gt;</em>:  Relative singleblock carrier move threshold (in percent). When a block located in a singleblock carrier is shrunk to a size smaller than the value of the <strong>sbct</strong> parameter, the block will be left unchanged in the singleblock carrier if the ratio of unused memory is less than this threshold; otherwise, it will be moved into a multiblock carrier.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;rsbcst &lt;ratio&gt;</em>:  Relative singleblock carrier shrink threshold (in percent). When a block located in an <em>mseg_alloc</em> singleblock carrier is shrunk, the carrier will be left unchanged if the ratio of unused memory is less than this threshold; otherwise, the carrier will be shrunk. See also <strong>asbcst</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;sbct &lt;size&gt;</em>:  Singleblock carrier threshold. Blocks larger than this threshold will be placed in singleblock carriers. Blocks smaller than this threshold will be placed in multiblock carriers. On 32-bit Unix style OS this threshold can not be set higher than 8 megabytes.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;smbcs &lt;size&gt;</em>:  Smallest (<em>mseg_alloc</em>) multiblock carrier size (in kilobytes). See <strong>the description on how sizes for mseg_alloc multiblock carriers are decided</strong> in "the <em>alloc_util</em> framework" section.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+M&lt;S&gt;t true|false</em>: Multiple, thread specific instances of the allocator. This option will only have any effect on the runtime system with SMP support. Default behaviour on the runtime system with SMP support is <em>NoSchedulers+1</em> instances. Each scheduler will use a lock-free instance of its own and other threads will use a common instance.</p><p>It was previously (before ERTS version 5.9) possible to configure a smaller amount of thread specific instances than schedulers. This is, however, not possible any more.</p>
+  </dd>
+
+</dl>
+<p>Currently the following flags are available for configuration of <em>alloc_util</em>, i.e. all allocators based on <em>alloc_util</em> will be effected:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+Muycs &lt;size&gt;</em>: <em>sys_alloc</em> carrier size. Carriers allocated via <em>sys_alloc</em> will be allocated in sizes which are multiples of the <em>sys_alloc</em> carrier size. This is not true for main multiblock carriers and carriers allocated during a memory shortage, though.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+Mummc &lt;amount&gt;</em>:  Max <em>mseg_alloc</em> carriers. Maximum number of carriers placed in separate memory segments. When this limit has been reached, new carriers will be placed in memory retrieved from <em>sys_alloc</em>.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+Musac &lt;bool&gt;</em>:  Allow <em>sys_alloc</em> carriers. By default <em>true</em>. If set to <em>false</em>, <em>sys_alloc</em> carriers will never be created by allocators using the <em>alloc_util</em> framework.</p>
+  </dd>
+
+</dl>
+<p>Instrumentation flags:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+Mim true|false</em>:  A map over current allocations is kept by the emulator. The allocation map can be retrieved via the <em>instrument</em> module. <em>+Mim true</em> implies <em>+Mis true</em>. <em>+Mim true</em> is the same as <strong>-instr</strong>.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+Mis true|false</em>:  Status over allocated memory is kept by the emulator. The allocation status can be retrieved via the <em>instrument</em> module.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+Mit X</em>:  Reserved for future use. Do <em>not</em> use this flag.</p>
+  </dd>
+
+</dl>
+<p><strong></strong> Note:</p><p>When instrumentation of the emulator is enabled, the emulator uses more memory and runs slower.</p><p>Other flags:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+Mea min|max|r9c|r10b|r11b|config</em>:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>min</em>:  Disables all allocators that can be disabled.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>max</em>:  Enables all allocators (currently default).</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>r9c|r10b|r11b</em>:  Configures all allocators as they were configured in respective OTP release. These will eventually be removed.</p>
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><em>config</em>:  Disables features that cannot be enabled while creating an allocator configuration with <strong>erts_alloc_config(3erl)</strong>. Note, this option should only be used while running <em>erts_alloc_config</em>, <em>not</em> when using the created configuration.</p>
+  </dd>
+
+</dl>
+
+  </dd>
+  <dt>
+    <p><strong></strong></p>
+  </dt>
+  <dd>
+    <p><strong></strong><em>+Mlpm all|no</em>: Lock physical memory. The default value is <em>no</em>, i.e., no physical memory will be locked. If set to <em>all</em>, all memory mappings made by the runtime system, will be locked into physical memory. If set to <em>all</em>, the runtime system will fail to start if this feature is not supported, the user has not got enough privileges, or the user is not allowed to lock enough physical memory. The runtime system will also fail with an out of memory condition if the user limit on the amount of locked memory is reached.</p>
+  </dd>
+
+</dl>
+<p>Only some default values have been presented here. <strong>erlang:system_info(allocator)</strong>, and <strong>erlang:system_info({allocator, Alloc})</strong> can be used in order to obtain currently used settings and current status of the allocators.</p><p><strong></strong> Note:</p><p>Most of these flags are highly implementation dependent, and they may be changed or removed without prior notice.</p><p><em>erts_alloc</em> is not obliged to strictly use the settings that have been passed to it (it may even ignore them).</p><p><strong>erts_alloc_config(3erl)</strong> is a tool that can be used to aid creation of an <em>erts_alloc</em> configuration that is suitable for a limited number of runtime scenarios.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">RELATED TO erts_alloc&hellip;</h2>
+        <div class="sectioncontent">
+<p><strong>erts_alloc_config(3erl)</strong>, <a href="../man1/erl.1.html"><strong>erl</strong>(1)</a></strong>, <strong>instrument(3erl)</strong>, <strong>erlang(3erl)</strong></p>
+        </div>
+      </section>
+<nav>
+  <ul class="pager">
+   <li class="previous"><a href="error_logger.3erl.html"><span aria-hidden="true">&larr;</span> error_logger.3erl: Erlang error logger</a></li>
+   <li class="next"><a href="erts_alloc_config.3erl.html">erts_alloc_config.3erl: Configuration tool for erts_alloc <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>
+
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-60781387-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>

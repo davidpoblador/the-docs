@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="mmap (2) manual">
   <meta name="twitter:description" content="Map or unmap files or devices into memory">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-mmap-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-mmap-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/mmap.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="mmap (2) manual" />
   <meta property="og:description" content="Map or unmap files or devices into memory" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-mmap-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-mmap-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -153,7 +153,7 @@
     <p><strong>MAP_SHARED</strong></p>
   </dt>
   <dd>
-    <p>Share this mapping. Updates to the mapping are visible to other processes that map this file, and are carried through to the underlying file. (To precisely control when updates are carried through to the underlying file requires the use of <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a>.)</p>
+    <p>Share this mapping. Updates to the mapping are visible to other processes that map this file, and are carried through to the underlying file. The file may not actually be updated until <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a> or <strong>munmap</strong>() is called.</p>
   </dd>
   <dt>
     <p><strong>MAP_PRIVATE</strong></p>
@@ -163,7 +163,7 @@
   </dd>
 
 </dl>
-<p>Both of these flags are described in POSIX.1-2001 and POSIX.1-2008.</p><p>In addition, zero or more of the following values can be ORed in <em>flags</em>:</p>
+<p>Both of these flags are described in POSIX.1-2001.</p><p>In addition, zero or more of the following values can be ORed in <em>flags</em>:</p>
 <dl class='dl-vertical'>
   <dt>
     <p><strong>MAP_32BIT</strong> (since Linux 2.4.20, 2.6)</p>
@@ -217,30 +217,19 @@
     <p><strong>MAP_HUGETLB</strong> (since Linux 2.6.32)</p>
   </dt>
   <dd>
-    <p>Allocate the mapping using "huge pages." See the Linux kernel source file <em>Documentation/vm/hugetlbpage.txt</em> for further information, as well as NOTES, below.</p>
-  </dd>
-  <dt>
-    <p><strong>MAP_HUGE_2MB</strong>, <strong>MAP_HUGE_1GB</strong> (since Linux 3.8)</p>
-  </dt>
-  <dd>
-    <p>Used in conjunction with <strong>MAP_HUGETLB</strong> to select alternative hugetlb page sizes (respectively, 2 MB and 1 GB) on systems that support multiple hugetlb page sizes.</p><p>More generally, the desired huge page size can be configured by encoding the base-2 logarithm of the desired page size in the six bits at the offset <strong>MAP_HUGE_SHIFT</strong>. (A value of zero in this bit field provides the default huge page size; the default huge page size can be discovered vie the <em>Hugepagesize</em> field exposed by <em>/proc/meminfo</em>.) Thus, the above two constants are defined as:</p>
-<pre>
-#define MAP_HUGE_2MB    (21 &lt;&lt; MAP_HUGE_SHIFT)
-#define MAP_HUGE_1GB    (30 &lt;&lt; MAP_HUGE_SHIFT)
-</pre>
-<p>The range of huge page sizes that are supported by the system can be discovered by listing the subdirectories in <em>/sys/kernel/mm/hugepages</em>.</p>
+    <p>Allocate the mapping using "huge pages." See the Linux kernel source file <em>Documentation/vm/hugetlbpage.txt</em> for further information.</p>
   </dd>
   <dt>
     <p><strong>MAP_LOCKED</strong> (since Linux 2.5.37)</p>
   </dt>
   <dd>
-    <p>Mark the mmaped region to be locked in the same way as <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a>. This implementation will try to populate (prefault) the whole range but the mmap call doesn't fail with <strong>ENOMEM</strong> if this fails. Therefore major faults might happen later on. So the semantic is not as strong as <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a>. One should use <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a> plus <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a> when major faults are not acceptable after the initialization of the mapping. The <strong>MAP_LOCKED</strong> flag is ignored in older kernels.</p>
+    <p>Lock the pages of the mapped region into memory in the manner of <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a>. This flag is ignored in older kernels.</p>
   </dd>
   <dt>
     <p><strong>MAP_NONBLOCK</strong> (since Linux 2.5.46)</p>
   </dt>
   <dd>
-    <p>Only meaningful in conjunction with <strong>MAP_POPULATE</strong>. Don't perform read-ahead: create page tables entries only for pages that are already present in RAM. Since Linux 2.6.23, this flag causes <strong>MAP_POPULATE</strong> to do nothing. One day, the combination of <strong>MAP_POPULATE</strong> and <strong>MAP_NONBLOCK</strong> may be reimplemented.</p>
+    <p>Only meaningful in conjunction with <strong>MAP_POPULATE</strong>. Don't perform read-ahead: create page tables entries only for pages that are already present in RAM. Since Linux 2.6.23, this flag causes <strong>MAP_POPULATE</strong> to do nothing. One day the combination of <strong>MAP_POPULATE</strong> and <strong>MAP_NONBLOCK</strong> may be reimplemented.</p>
   </dd>
   <dt>
     <p><strong>MAP_NORESERVE</strong></p>
@@ -252,7 +241,7 @@
     <p><strong>MAP_POPULATE</strong> (since Linux 2.5.46)</p>
   </dt>
   <dd>
-    <p>Populate (prefault) page tables for a mapping. For a file mapping, this causes read-ahead on the file. This will help to reduce blocking on page faults later. <strong>MAP_POPULATE</strong> is supported for private mappings only since Linux 2.6.23.</p>
+    <p>Populate (prefault) page tables for a mapping. For a file mapping, this causes read-ahead on the file. Later accesses to the mapping will not be blocked by page faults. <strong>MAP_POPULATE</strong> is supported for private mappings only since Linux 2.6.23.</p>
   </dd>
   <dt>
     <p><strong>MAP_STACK</strong> (since Linux 2.6.27)</p>
@@ -268,8 +257,10 @@
   </dd>
 
 </dl>
-<p>Of the above flags, only <strong>MAP_FIXED</strong> is specified in POSIX.1-2001 and POSIX.1-2008. However, most systems also support <strong>MAP_ANONYMOUS</strong> (or its synonym <strong>MAP_ANON</strong>).</p><p>Some systems document the additional flags <strong>MAP_AUTOGROW</strong>, <strong>MAP_AUTORESRV</strong>, <strong>MAP_COPY</strong>, and <strong>MAP_LOCAL</strong>.</p><p>Memory mapped by <strong>mmap</strong>() is preserved across <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, with the same attributes.</p><p>A file is mapped in multiples of the page size. For a file that is not a multiple of the page size, the remaining memory is zeroed when mapped, and writes to that region are not written out to the file. The effect of changing the size of the underlying file of a mapping on the pages that correspond to added or removed regions of the file is unspecified.</p><h3>munmap()</h3>
-<p>The <strong>munmap</strong>() system call deletes the mappings for the specified address range, and causes further references to addresses within the range to generate invalid memory references. The region is also automatically unmapped when the process is terminated. On the other hand, closing the file descriptor does not unmap the region.</p><p>The address <em>addr</em> must be a multiple of the page size (but <em>length</em> need not be). All pages containing a part of the indicated range are unmapped, and subsequent references to these pages will generate <strong>SIGSEGV</strong>. It is not an error if the indicated range does not contain any mapped pages.</p>
+<p>Of the above flags, only <strong>MAP_FIXED</strong> is specified in POSIX.1-2001. However, most systems also support <strong>MAP_ANONYMOUS</strong> (or its synonym <strong>MAP_ANON</strong>).</p><p>Some systems document the additional flags <strong>MAP_AUTOGROW</strong>, <strong>MAP_AUTORESRV</strong>, <strong>MAP_COPY</strong>, and <strong>MAP_LOCAL</strong>.</p><p>Memory mapped by <strong>mmap</strong>() is preserved across <a href="../man2/fork.2.html"><strong>fork</strong>(2)</a>, with the same attributes.</p><p>A file is mapped in multiples of the page size. For a file that is not a multiple of the page size, the remaining memory is zeroed when mapped, and writes to that region are not written out to the file. The effect of changing the size of the underlying file of a mapping on the pages that correspond to added or removed regions of the file is unspecified.</p><h3>munmap()</h3>
+<p>The <strong>munmap</strong>() system call deletes the mappings for the specified address range, and causes further references to addresses within the range to generate invalid memory references. The region is also automatically unmapped when the process is terminated. On the other hand, closing the file descriptor does not unmap the region.</p><p>The address <em>addr</em> must be a multiple of the page size. All pages containing a part of the indicated range are unmapped, and subsequent references to these pages will generate <strong>SIGSEGV</strong>. It is not an error if the indicated range does not contain any mapped pages.</p>
+<h3>Timestamps changes for file-backed mappings</h3>
+<p>For file-backed mappings, the <em>st_atime</em> field for the mapped file may be updated at any time between the <strong>mmap</strong>() and the corresponding unmapping; the first reference to a mapped page will update the field if it has not been already.</p><p>The <em>st_ctime</em> and <em>st_mtime</em> field for a file mapped with <strong>PROT_WRITE</strong> and <strong>MAP_SHARED</strong> will be updated after a write to the mapped region, and before a subsequent <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a> with the <strong>MS_SYNC</strong> or <strong>MS_ASYNC</strong> flag, if one occurs.</p>
 
         </div>
       </section>
@@ -277,7 +268,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RETURN VALUE</h2>
         <div class="sectioncontent">
-<p>On success, <strong>mmap</strong>() returns a pointer to the mapped area. On error, the value <strong>MAP_FAILED</strong> (that is, <em>(void&nbsp;*)&nbsp;-1</em>) is returned, and <em>errno</em> is set to indicate the cause of the error.</p><p>On success, <strong>munmap</strong>() returns 0. On failure, it returns -1, and <em>errno</em> is set to indicate the cause of the error (probably to <strong>EINVAL</strong>).</p>
+<p>On success, <strong>mmap</strong>() returns a pointer to the mapped area. On error, the value <strong>MAP_FAILED</strong> (that is, <em>(void&nbsp;*)&nbsp;-1</em>) is returned, and <em>errno</em> is set appropriately. On success, <strong>munmap</strong>() returns 0, on failure -1, and <em>errno</em> is set (probably to <strong>EINVAL</strong>).</p>
         </div>
       </section>
 
@@ -326,7 +317,7 @@
     <p><strong>ENFILE</strong></p>
   </dt>
   <dd>
-    <p>The system-wide limit on the total number of open files has been reached.</p>
+    <p>The system limit on the total number of open files has been reached.</p>
   </dd>
   <dt>
     <p><strong>ENODEV</strong></p>
@@ -338,25 +329,13 @@
     <p><strong>ENOMEM</strong></p>
   </dt>
   <dd>
-    <p>No memory is available.</p>
-  </dd>
-  <dt>
-    <p><strong>ENOMEM</strong></p>
-  </dt>
-  <dd>
-    <p>The process's maximum number of mappings would have been exceeded. This error can also occur for <a href="../man2/munmap.2.html"><strong>munmap</strong>(2)</a>, when unmapping a region in the middle of an existing mapping, since this results in two smaller mappings on either side of the region being unmapped.</p>
+    <p>No memory is available, or the process's maximum number of mappings would have been exceeded.</p>
   </dd>
   <dt>
     <p><strong>EPERM</strong></p>
   </dt>
   <dd>
     <p>The <em>prot</em> argument asks for <strong>PROT_EXEC</strong> but the mapped area belongs to a file on a filesystem that was mounted no-exec.</p>
-  </dd>
-  <dt>
-    <p><strong>EPERM</strong></p>
-  </dt>
-  <dd>
-    <p>The operation was prevented by a file seal; see <a href="../man2/fcntl.2.html"><strong>fcntl</strong>(2)</a>.</p>
   </dd>
   <dt>
     <p><strong>ETXTBSY</strong></p>
@@ -393,26 +372,9 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
-        <div class="sectioncontent">
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
-<tr>
-<th>Interface</th>
-<th>Attribute</th>
-<th>Value</th></tr>
-
-<tr>
-<td><strong>mmap</strong>(),   <strong>munmap</strong>()  </td>
-<td>Thread safety</td>
-<td>MT-Safe</td></tr>
-</table>
-        </div>
-      </section>
-
-      <section>
         <h2 class="font-effect-shadow-multiple">CONFORMING TO</h2>
         <div class="sectioncontent">
-<p>POSIX.1-2001, POSIX.1-2008, SVr4, 4.4BSD.</p>
+<p>SVr4, 4.4BSD, POSIX.1-2001.</p>
         </div>
       </section>
 
@@ -426,11 +388,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>On some hardware architectures (e.g., i386), <strong>PROT_WRITE</strong> implies <strong>PROT_READ</strong>. It is architecture dependent whether <strong>PROT_READ</strong> implies <strong>PROT_EXEC</strong> or not. Portable programs should always set <strong>PROT_EXEC</strong> if they intend to execute code in the new mapping.</p><p>The portable way to create a mapping is to specify <em>addr</em> as 0 (NULL), and omit <strong>MAP_FIXED</strong> from <em>flags</em>. In this case, the system chooses the address for the mapping; the address is chosen so as not to conflict with any existing mapping, and will not be 0. If the <strong>MAP_FIXED</strong> flag is specified, and <em>addr</em> is 0 (NULL), then the mapped address will be 0 (NULL).</p><p>Certain <em>flags</em> constants are defined only if suitable feature test macros are defined (possibly by default): <strong>_DEFAULT_SOURCE</strong> with glibc 2.19 or later; or <strong>_BSD_SOURCE</strong> or <strong>_SVID_SOURCE</strong> in glibc 2.19 and earlier. (Requiring <strong>_GNU_SOURCE</strong> also suffices, and requiring that macro specifically would have been more logical, since these flags are all Linux-specific.) The relevant flags are: <strong>MAP_32BIT</strong>, <strong>MAP_ANONYMOUS</strong> (and the synonym <strong>MAP_ANON</strong>), <strong>MAP_DENYWRITE</strong>, <strong>MAP_EXECUTABLE</strong>, <strong>MAP_FILE</strong>, <strong>MAP_GROWSDOWN</strong>, <strong>MAP_HUGETLB</strong>, <strong>MAP_LOCKED</strong>, <strong>MAP_NONBLOCK</strong>, <strong>MAP_NORESERVE</strong>, <strong>MAP_POPULATE</strong>, and <strong>MAP_STACK</strong>.</p><h3>Timestamps changes for file-backed mappings</h3>
-<p>For file-backed mappings, the <em>st_atime</em> field for the mapped file may be updated at any time between the <strong>mmap</strong>() and the corresponding unmapping; the first reference to a mapped page will update the field if it has not been already.</p><p>The <em>st_ctime</em> and <em>st_mtime</em> field for a file mapped with <strong>PROT_WRITE</strong> and <strong>MAP_SHARED</strong> will be updated after a write to the mapped region, and before a subsequent <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a> with the <strong>MS_SYNC</strong> or <strong>MS_ASYNC</strong> flag, if one occurs.</p>
-<h3>Huge page (Huge TLB) mappings</h3>
-<p>For mappings that employ huge pages, the requirements for the arguments of <strong>mmap</strong>() and <strong>munmap</strong>() differ somewhat from the requirements for mappings that use the native system page size.</p><p>For <strong>mmap</strong>(), <em>offset</em> must be a multiple of the underlying huge page size. The system automatically aligns <em>length</em> to be a multiple of the underlying huge page size.</p><p>For <strong>munmap</strong>(), <em>addr</em> and <em>length</em> must both be a multiple of the underlying huge page size.</p>
-<h3>C library/kernel differences</h3>
+<p>On some hardware architectures (e.g., i386), <strong>PROT_WRITE</strong> implies <strong>PROT_READ</strong>. It is architecture dependent whether <strong>PROT_READ</strong> implies <strong>PROT_EXEC</strong> or not. Portable programs should always set <strong>PROT_EXEC</strong> if they intend to execute code in the new mapping.</p><p>The portable way to create a mapping is to specify <em>addr</em> as 0 (NULL), and omit <strong>MAP_FIXED</strong> from <em>flags</em>. In this case, the system chooses the address for the mapping; the address is chosen so as not to conflict with any existing mapping, and will not be 0. If the <strong>MAP_FIXED</strong> flag is specified, and <em>addr</em> is 0 (NULL), then the mapped address will be 0 (NULL).</p><p>Certain <em>flags</em> constants are defined only if either <strong>_BSD_SOURCE</strong> or <strong>_SVID_SOURCE</strong> is defined. (Requiring <strong>_GNU_SOURCE</strong> also suffices, and requiring that macro specifically would have been more logical, since these flags are all Linux-specific.) The relevant flags are: <strong>MAP_32BIT</strong>, <strong>MAP_ANONYMOUS</strong> (and the synonym <strong>MAP_ANON</strong>), <strong>MAP_DENYWRITE</strong>, <strong>MAP_EXECUTABLE</strong>, <strong>MAP_FILE</strong>, <strong>MAP_GROWSDOWN</strong>, <strong>MAP_HUGETLB</strong>, <strong>MAP_LOCKED</strong>, <strong>MAP_NONBLOCK</strong>, <strong>MAP_NORESERVE</strong>, <strong>MAP_POPULATE</strong>, and <strong>MAP_STACK</strong>.</p><h3>C library/kernel ABI differences</h3>
 <p>This page describes the interface provided by the glibc <strong>mmap</strong>() wrapper function. Originally, this function invoked a system call of the same name. Since kernel 2.4, that system call has been superseded by <a href="../man2/mmap2.2.html"><strong>mmap2</strong>(2)</a>, and nowadays the glibc <strong>mmap</strong>() wrapper function invokes <a href="../man2/mmap2.2.html"><strong>mmap2</strong>(2)</a> with a suitably adjusted value for <em>offset</em>.</p>
 
         </div>
@@ -439,7 +397,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>On Linux, there are no guarantees like those suggested above under <strong>MAP_NORESERVE</strong>. By default, any process can be killed at any moment when the system runs out of memory.</p><p>In kernels before 2.6.7, the <strong>MAP_POPULATE</strong> flag has effect only if <em>prot</em> is specified as <strong>PROT_NONE</strong>.</p><p>SUSv3 specifies that <strong>mmap</strong>() should fail if <em>length</em> is 0. However, in kernels before 2.6.12, <strong>mmap</strong>() succeeded in this case: no mapping was created and the call returned <em>addr</em>. Since kernel 2.6.12, <strong>mmap</strong>() fails with the error <strong>EINVAL</strong> for this case.</p><p>POSIX specifies that the system shall always zero fill any partial page at the end of the object and that system will never write any modification of the object beyond its end. On Linux, when you write data to such partial page after the end of the object, the data stays in the page cache even after the file is closed and unmapped and even though the data is never written to the file itself, subsequent mappings may see the modified content. In some cases, this could be fixed by calling <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a> before the unmap takes place; however, this doesn't work on tmpfs (for example, when using POSIX shared memory interface documented in <a href="../man7/shm_overview.7.html"><strong>shm_overview</strong>(7)</a>).</p>
+<p>On Linux there are no guarantees like those suggested above under <strong>MAP_NORESERVE</strong>. By default, any process can be killed at any moment when the system runs out of memory.</p><p>In kernels before 2.6.7, the <strong>MAP_POPULATE</strong> flag has effect only if <em>prot</em> is specified as <strong>PROT_NONE</strong>.</p><p>SUSv3 specifies that <strong>mmap</strong>() should fail if <em>length</em> is 0. However, in kernels before 2.6.12, <strong>mmap</strong>() succeeded in this case: no mapping was created and the call returned <em>addr</em>. Since kernel 2.6.12, <strong>mmap</strong>() fails with the error <strong>EINVAL</strong> for this case.</p><p>POSIX specifies that the system shall always zero fill any partial page at the end of the object and that system will never write any modification of the object beyond its end. On Linux, when you write data to such partial page after the end of the object, the data stays in the page cache even after the file is closed and unmapped and even though the data is never written to the file itself, subsequent mappings may see the modified content. In some cases, this could be fixed by calling <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a> before the unmap takes place; however, this doesn't work on tmpfs (for example, when using POSIX shared memory interface documented in <a href="../man7/shm_overview.7.html"><strong>shm_overview</strong>(7)</a>).</p>
         </div>
       </section>
 
@@ -514,9 +472,6 @@ main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    munmap(addr, length + offset - pa_offset);
-    close(fd);
-
     exit(EXIT_SUCCESS);
 }
 </pre>
@@ -528,7 +483,14 @@ main(int argc, char *argv[])
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO mmap&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man2/getpagesize.2.html"><strong>getpagesize</strong>(2)</a>, <a href="../man2/memfd_create.2.html"><strong>memfd_create</strong>(2)</a>, <a href="../man2/mincore.2.html"><strong>mincore</strong>(2)</a>, <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a>, <a href="../man2/mmap2.2.html"><strong>mmap2</strong>(2)</a>, <a href="../man2/mprotect.2.html"><strong>mprotect</strong>(2)</a>, <a href="../man2/mremap.2.html"><strong>mremap</strong>(2)</a>, <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a>, <a href="../man2/remap_file_pages.2.html"><strong>remap_file_pages</strong>(2)</a>, <a href="../man2/setrlimit.2.html"><strong>setrlimit</strong>(2)</a>, <a href="../man2/shmat.2.html"><strong>shmat</strong>(2)</a>, <a href="../man3/shm_open.3.html"><strong>shm_open</strong>(3)</a>, <a href="../man7/shm_overview.7.html"><strong>shm_overview</strong>(7)</a></p><p>The descriptions of the following files in <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>: <em>/proc/[pid]/maps</em>, <em>/proc/[pid]/map_files</em>, and <em>/proc/[pid]/smaps</em>.</p><p>B.O. Gallmeister, POSIX.4, O'Reilly, pp. 128-129 and 389-391.</p>
+<p><a href="../man2/getpagesize.2.html"><strong>getpagesize</strong>(2)</a>, <a href="../man2/mincore.2.html"><strong>mincore</strong>(2)</a>, <a href="../man2/mlock.2.html"><strong>mlock</strong>(2)</a>, <a href="../man2/mmap2.2.html"><strong>mmap2</strong>(2)</a>, <a href="../man2/mprotect.2.html"><strong>mprotect</strong>(2)</a>, <a href="../man2/mremap.2.html"><strong>mremap</strong>(2)</a>, <a href="../man2/msync.2.html"><strong>msync</strong>(2)</a>, <a href="../man2/remap_file_pages.2.html"><strong>remap_file_pages</strong>(2)</a>, <a href="../man2/setrlimit.2.html"><strong>setrlimit</strong>(2)</a>, <a href="../man2/shmat.2.html"><strong>shmat</strong>(2)</a>, <a href="../man3/shm_open.3.html"><strong>shm_open</strong>(3)</a>, <a href="../man7/shm_overview.7.html"><strong>shm_overview</strong>(7)</a></p><p>The descriptions of the following files in <a href="../man5/proc.5.html"><strong>proc</strong>(5)</a>: <em>/proc/[pid]/maps</em>, <em>/proc/[pid]/map_files</em>, and <em>/proc/[pid]/smaps</em>.</p><p>B.O. Gallmeister, POSIX.4, O'Reilly, pp. 128-129 and 389-391.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

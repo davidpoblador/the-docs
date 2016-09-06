@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="mkdir (2) manual">
   <meta name="twitter:description" content="Create a directory">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-mkdir-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-mkdir-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/mkdir.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="mkdir (2) manual" />
   <meta property="og:description" content="Create a directory" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-mkdir-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-mkdir-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -122,7 +122,7 @@
     <p>Since glibc 2.10:</p>
   </dt>
   <dd>
-    <p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
+    <p>_XOPEN_SOURCE&nbsp;&gt;=&nbsp;700 || _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200809L</p>
   </dd>
   <dt>
     <p>Before glibc 2.10:</p>
@@ -139,7 +139,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p><strong>mkdir</strong>() attempts to create a directory named <em>pathname</em>.</p><p>The argument <em>mode</em> specifies the mode for the new directory (see <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>). It is modified by the process's <em>umask</em> in the usual way: in the absence of a default ACL, the mode of the created directory is (<em>mode</em> & ~<em>umask</em> & 0777). Whether other <em>mode</em> bits are honored for the created directory depends on the operating system. For Linux, see NOTES below.</p><p>The newly created directory will be owned by the effective user ID of the process. If the directory containing the file has the set-group-ID bit set, or if the filesystem is mounted with BSD group semantics (<em>mount -o bsdgroups</em> or, synonymously <em>mount -o grpid</em>), the new directory will inherit the group ownership from its parent; otherwise it will be owned by the effective group ID of the process.</p><p>If the parent directory has the set-group-ID bit set, then so will the newly created directory.</p><h3>mkdirat()</h3>
+<p><strong>mkdir</strong>() attempts to create a directory named <em>pathname</em>.</p><p>The argument <em>mode</em> specifies the permissions to use. It is modified by the process's <em>umask</em> in the usual way: the permissions of the created directory are (<em>mode</em> & ~<em>umask</em> & 0777). Other mode bits of the created directory depend on the operating system. For Linux, see below.</p><p>The newly created directory will be owned by the effective user ID of the process. If the directory containing the file has the set-group-ID bit set, or if the filesystem is mounted with BSD group semantics (<em>mount -o bsdgroups</em> or, synonymously <em>mount -o grpid</em>), the new directory will inherit the group ownership from its parent; otherwise it will be owned by the effective group ID of the process.</p><p>If the parent directory has the set-group-ID bit set, then so will the newly created directory.</p><h3>mkdirat()</h3>
 <p>The <strong>mkdirat</strong>() system call operates in exactly the same way as <strong>mkdir</strong>(), except for the differences described here.</p><p>If the pathname given in <em>pathname</em> is relative, then it is interpreted relative to the directory referred to by the file descriptor <em>dirfd</em> (rather than relative to the current working directory of the calling process, as is done by <strong>mkdir</strong>() for a relative pathname).</p><p>If <em>pathname</em> is relative and <em>dirfd</em> is the special value <strong>AT_FDCWD</strong>, then <em>pathname</em> is interpreted relative to the current working directory of the calling process (like <strong>mkdir</strong>()).</p><p>If <em>pathname</em> is absolute, then <em>dirfd</em> is ignored.</p><p>See <a href="../man2/openat.2.html"><strong>openat</strong>(2)</a> for an explanation of the need for <strong>mkdirat</strong>().</p>
 
         </div>
@@ -280,7 +280,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>Under Linux, apart from the permission bits, the <strong>S_ISVTX</strong> <em>mode</em> bit is also honored.</p><p>There are many infelicities in the protocol underlying NFS. Some of these affect <strong>mkdir</strong>().</p><h3>Glibc notes</h3>
+<p>Under Linux, apart from the permission bits, only the <strong>S_ISVTX</strong> mode bit is honored. That is, under Linux the created directory actually gets mode (<em>mode</em> & ~<em>umask</em> & 01777). See also <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>.</p><p>There are many infelicities in the protocol underlying NFS. Some of these affect <strong>mkdir</strong>().</p><h3>Glibc notes</h3>
 <p>On older kernels where <strong>mkdirat</strong>() is unavailable, the glibc wrapper function falls back to the use of <strong>mkdir</strong>(). When <em>pathname</em> is a relative pathname, glibc constructs a pathname based on the symbolic link in <em>/proc/self/fd</em> that corresponds to the <em>dirfd</em> argument.</p>
 
         </div>
@@ -289,7 +289,14 @@
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO mkdir&hellip;</h2>
         <div class="sectioncontent">
-<p><strong>mkdir</strong>(1), <a href="../man2/chmod.2.html"><strong>chmod</strong>(2)</a>, <a href="../man2/chown.2.html"><strong>chown</strong>(2)</a>, <a href="../man2/mknod.2.html"><strong>mknod</strong>(2)</a>, <a href="../man2/mount.2.html"><strong>mount</strong>(2)</a>, <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a>, <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a>, <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>, <strong>acl</strong>(5) <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a></p>
+<p><a href="../man1/mkdir.1.html"><strong>mkdir</strong>(1)</a>, <a href="../man2/chmod.2.html"><strong>chmod</strong>(2)</a>, <a href="../man2/chown.2.html"><strong>chown</strong>(2)</a>, <a href="../man2/mknod.2.html"><strong>mknod</strong>(2)</a>, <a href="../man2/mount.2.html"><strong>mount</strong>(2)</a>, <a href="../man2/rmdir.2.html"><strong>rmdir</strong>(2)</a>, <a href="../man2/stat.2.html"><strong>stat</strong>(2)</a>, <a href="../man2/umask.2.html"><strong>umask</strong>(2)</a>, <a href="../man2/unlink.2.html"><strong>unlink</strong>(2)</a>, <a href="../man7/path_resolution.7.html"><strong>path_resolution</strong>(7)</a></p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>

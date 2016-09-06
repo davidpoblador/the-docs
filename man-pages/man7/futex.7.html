@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="futex (7) manual">
   <meta name="twitter:description" content="Fast user-space locking">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-futex-7.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-futex-7.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man7/futex.7.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="futex (7) manual" />
   <meta property="og:description" content="Fast user-space locking" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-futex-7.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-futex-7.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages/">
+      <span itemprop="name">manpages</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -115,7 +115,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The Linux kernel provides futexes ("Fast user-space mutexes") as a building block for fast user-space locking and semaphores. Futexes are very basic and lend themselves well for building higher-level locking abstractions such as mutexes, condition variables, read-write locks, barriers, and semaphores.</p><p>Most programmers will in fact not be using futexes directly but will instead rely on system libraries built on them, such as the Native POSIX Thread Library (NPTL) (see <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a>).</p><p>A futex is identified by a piece of memory which can be shared between processes or threads. In these different processes, the futex need not have identical addresses. In its bare form, a futex has semaphore semantics; it is a counter that can be incremented and decremented atomically; processes can wait for the value to become positive.</p><p>Futex operation occurs entirely in user space for the noncontended case. The kernel is involved only to arbitrate the contended case. As any sane design will strive for noncontention, futexes are also optimized for this situation.</p><p>In its bare form, a futex is an aligned integer which is touched only by atomic assembler instructions. This integer is four bytes long on all platforms. Processes can share this integer using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, via shared memory segments, or because they share memory space, in which case the application is commonly called multithreaded.</p><h3>Semantics</h3>
+<p>The Linux kernel provides futexes ("Fast user-space mutexes") as a building block for fast user-space locking and semaphores. Futexes are very basic and lend themselves well for building higher level locking abstractions such as POSIX mutexes.</p><p>This page does not set out to document all design decisions but restricts itself to issues relevant for application and library development. Most programmers will in fact not be using futexes directly but instead rely on system libraries built on them, such as the NPTL pthreads implementation.</p><p>A futex is identified by a piece of memory which can be shared between different processes. In these different processes, it need not have identical addresses. In its bare form, a futex has semaphore semantics; it is a counter that can be incremented and decremented atomically; processes can wait for the value to become positive.</p><p>Futex operation is entirely user space for the noncontended case. The kernel is involved only to arbitrate the contended case. As any sane design will strive for noncontention, futexes are also optimized for this situation.</p><p>In its bare form, a futex is an aligned integer which is touched only by atomic assembler instructions. Processes can share this integer using <a href="../man2/mmap.2.html"><strong>mmap</strong>(2)</a>, via shared memory segments or because they share memory space, in which case the application is commonly called multithreaded.</p><h3>Semantics</h3>
 <p>Any futex operation starts in user space, but it may be necessary to communicate with the kernel using the <a href="../man2/futex.2.html"><strong>futex</strong>(2)</a> system call.</p><p>To "up" a futex, execute the proper assembler instructions that will cause the host CPU to atomically increment the integer. Afterward, check if it has in fact changed from 0 to 1, in which case there were no waiters and the operation is done. This is the noncontended case which is fast and should be common.</p><p>In the contended case, the atomic increment changed the counter from -1  (or some other negative number). If this is detected, there are waiters. User space should now set the counter to 1 and instruct the kernel to wake up any waiters using the <strong>FUTEX_WAKE</strong> operation.</p><p>Waiting on a futex, to "down" it, is the reverse operation. Atomically decrement the counter and check if it changed to 0, in which case the operation is done and the futex was uncontended. In all other circumstances, the process should set the counter to -1 and request that the kernel wait for another process to up the futex. This is done using the <strong>FUTEX_WAIT</strong> operation.</p><p>The <a href="../man2/futex.2.html"><strong>futex</strong>(2)</a> system call can optionally be passed a timeout specifying how long the kernel should wait for the futex to be upped. In this case, semantics are more complex and the programmer is referred to <a href="../man2/futex.2.html"><strong>futex</strong>(2)</a> for more details. The same holds for asynchronous futex waiting.</p>
 
         </div>
@@ -131,20 +131,27 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>To reiterate, bare futexes are not intended as an easy-to-use abstraction for end users. Implementors are expected to be assembly literate and to have read the sources of the futex user-space library referenced below.</p><p>This man page illustrates the most common use of the <a href="../man2/futex.2.html"><strong>futex</strong>(2)</a> primitives; it is by no means the only one.</p>
+<p>To reiterate, bare futexes are not intended as an easy to use abstraction for end-users. Implementors are expected to be assembly literate and to have read the sources of the futex user-space library referenced below.</p><p>This man page illustrates the most common use of the <a href="../man2/futex.2.html"><strong>futex</strong>(2)</a> primitives: it is by no means the only one.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO futex&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man2/clone.2.html"><strong>clone</strong>(2)</a>, <a href="../man2/futex.2.html"><strong>futex</strong>(2)</a>, <a href="../man2/get_robust_list.2.html"><strong>get_robust_list</strong>(2)</a>, <a href="../man2/set_robust_list.2.html"><strong>set_robust_list</strong>(2)</a>, <a href="../man2/set_tid_address.2.html"><strong>set_tid_address</strong>(2)</a>, <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a></p><p><em>Fuss, Futexes and Furwocks: Fast Userlevel Locking in Linux</em> (proceedings of the Ottawa Linux Symposium 2002), futex example library, futex-*.tar.bz2</p>
+<p><a href="../man2/futex.2.html"><strong>futex</strong>(2)</a></p><p><em>Fuss, Futexes and Furwocks: Fast Userlevel Locking in Linux</em> (proceedings of the Ottawa Linux Symposium 2002), futex example library, futex-*.tar.bz2</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="fifo.7.html"><span aria-hidden="true">&larr;</span> fifo.7: First-in first-out special file, named pipe</a></li>
-   <li class="next"><a href="glibc.7.html">glibc.7: Overview of standard c libraries on linux <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="funview.7.html"><span aria-hidden="true">&larr;</span> funview.7: Database view support for tables</a></li>
+   <li class="next"><a href="gammu-smsd-dbi.7.html">gammu-smsd-dbi.7: Gammu-smsd(1) backend using dbi abstraction layer to use any supported database as a message storage <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

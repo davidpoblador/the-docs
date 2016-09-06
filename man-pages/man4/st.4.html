@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="st (4) manual">
   <meta name="twitter:description" content="Scsi tape device">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-st-4.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-st-4.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man4/st.4.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="st (4) manual" />
   <meta property="og:description" content="Scsi tape device" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-st-4.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-st-4.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages/">
+      <span itemprop="name">manpages</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -132,7 +132,7 @@ mknod -m 666 /dev/nst0m c 9 192
 mknod -m 666 /dev/nst0a c 9 224
 </pre>
 <p>There is no corresponding block device.</p><p>The driver uses an internal buffer that has to be large enough to hold at least one tape block. In kernels before 2.1.121, the buffer is allocated as one contiguous block. This limits the block size to the largest contiguous block of memory the kernel allocator can provide. The limit is currently 128 kB for 32-bit architectures and 256 kB for 64-bit architectures. In newer kernels the driver allocates the buffer in several parts if necessary. By default, the maximum number of parts is 16. This means that the maximum block size is very large (2 MB if allocation of 16 blocks of 128 kB succeeds).</p><p>The driver's internal buffer size is determined by a compile-time constant which can be overridden with a kernel startup option. In addition to this, the driver tries to allocate a larger temporary buffer at run time if necessary. However, run-time allocation of large contiguous blocks of memory may fail and it is advisable not to rely too much on dynamic buffer allocation with kernels older than 2.1.121 (this applies also to demand-loading the driver with kerneld or kmod).</p><p>The driver does not specifically support any tape drive brand or model. After system start-up the tape device options are defined by the drive firmware. For example, if the drive firmware selects fixed-block mode, the tape device uses fixed-block mode. The options can be changed with explicit <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> calls and remain in effect when the device is closed and reopened. Setting the options affects both the auto-rewind and the nonrewind device.</p><p>Different options can be specified for the different devices within the subgroup of four. The options take effect when the device is opened. For example, the system administrator can define one device that writes in fixed-block mode with a certain block size, and one which writes in variable-block mode (if the drive supports both modes).</p><p>The driver supports <strong>tape partitions</strong> if they are supported by the drive. (Note that the tape partitions have nothing to do with disk partitions. A partitioned tape can be seen as several logical tapes within one medium.) Partition support has to be enabled with an <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a>. The tape location is preserved within each partition across partition changes. The partition used for subsequent tape operations is selected with an <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a>. The partition switch is executed together with the next tape operation in order to avoid unnecessary tape movement. The maximum number of partitions on a tape is defined by a compile-time constant (originally four). The driver contains an <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> that can format a tape with either one or two partitions.</p><p>Device <em>/dev/tape</em> is usually created as a hard or soft link to the default tape device on the system.</p><p>Starting from kernel 2.6.2, the driver exports in the sysfs directory <em>/sys/class/scsi_tape</em> the attached devices and some parameters assigned to the devices.</p><h3>Data transfer</h3>
-<p>The driver supports operation in both fixed-block mode and variable-block mode (if supported by the drive). In fixed-block mode the drive writes blocks of the specified size and the block size is not dependent on the byte counts of the write system calls. In variable-block mode one tape block is written for each write call and the byte count determines the size of the corresponding tape block. Note that the blocks on the tape don't contain any information about the writing mode: when reading, the only important thing is to use commands that accept the block sizes on the tape.</p><p>In variable-block mode the read byte count does not have to match the tape block size exactly. If the byte count is larger than the next block on tape, the driver returns the data and the function returns the actual block size. If the block size is larger than the byte count, an error is returned.</p><p>In fixed-block mode the read byte counts can be arbitrary if buffering is enabled, or a multiple of the tape block size if buffering is disabled. Kernels before 2.1.121 allow writes with arbitrary byte count if buffering is enabled. In all other cases (kernel before 2.1.121 with buffering disabled or newer kernel) the write byte count must be a multiple of the tape block size.</p><p>In the 2.6 kernel, the driver tries to use direct transfers between the user buffer and the device. If this is not possible, the driver's internal buffer is used. The reasons for not using direct transfers include improper alignment of the user buffer (default is 512 bytes but this can be changed by the HBA driver), one or more pages of the user buffer not reachable by the SCSI adapter, and so on.</p><p>A filemark is automatically written to tape if the last tape operation before close was a write.</p><p>When a filemark is encountered while reading, the following happens. If there are data remaining in the buffer when the filemark is found, the buffered data is returned. The next read returns zero bytes. The following read returns data from the next file. The end of recorded data is signaled by returning zero bytes for two consecutive read calls. The third read returns an error.</p>
+<p>The driver supports operation in both fixed-block mode and variable-block mode (if supported by the drive). In fixed-block mode the drive writes blocks of the specified size and the block size is not dependent on the byte counts of the write system calls. In variable-block mode one tape block is written for each write call and the byte count determines the size of the corresponding tape block. Note that the blocks on the tape don't contain any information about the writing mode: when reading, the only important thing is to use commands that accept the block sizes on the tape.</p><p>In variable-block mode the read byte count does not have to match the tape block size exactly. If the byte count is larger than the next block on tape, the driver returns the data and the function returns the actual block size. If the block size is larger than the byte count, the requested amount of data from the start of the block is returned and the rest of the block is discarded.</p><p>In fixed-block mode the read byte counts can be arbitrary if buffering is enabled, or a multiple of the tape block size if buffering is disabled. Kernels before 2.1.121 allow writes with arbitrary byte count if buffering is enabled. In all other cases (kernel before 2.1.121 with buffering disabled or newer kernel) the write byte count must be a multiple of the tape block size.</p><p>In the 2.6 kernel, the driver tries to use direct transfers between the user buffer and the device. If this is not possible, the driver's internal buffer is used. The reasons for not using direct transfers include improper alignment of the user buffer (default is 512 bytes but this can be changed by the HBA driver), one or more pages of the user buffer not reachable by the SCSI adapter, and so on.</p><p>A filemark is automatically written to tape if the last tape operation before close was a write.</p><p>When a filemark is encountered while reading, the following happens. If there are data remaining in the buffer when the filemark is found, the buffered data is returned. The next read returns zero bytes. The following read returns data from the next file. The end of recorded data is signaled by returning zero bytes for two consecutive read calls. The third read returns an error.</p>
 <h3>Ioctls</h3>
 <p>The driver supports three <a href="../man2/ioctl.2.html"><strong>ioctl</strong>(2)</a> requests. Requests not recognized by the <strong>st</strong> driver are passed to the <strong>SCSI</strong> driver. The definitions below are from <em>/usr/include/linux/mtio.h</em>:</p>
 <h3>MTIOCTOP &ndash; perform a tape operation</h3>
@@ -228,7 +228,7 @@ struct mtop {
     <p><strong>MTMKPART</strong></p>
   </dt>
   <dd>
-    <p>Format the tape into one or two partitions. If <em>mt_count</em> is positive, it gives the size of partition 1 and partition 0 contains the rest of the tape. If <em>mt_count</em> is zero, the tape is formatted into one partition. From kernel version 4.6, a negative <em>mt_count</em> specifies the size of partition 0 and the rest of the tape contains partition 1. The physical ordering of partitions depends on the drive. This command is not allowed for a drive unless the partition support is enabled for the drive (see <strong>MT_ST_CAN_PARTITIONS</strong> below).</p>
+    <p>Format the tape into one or two partitions. If <em>mt_count</em> is nonzero, it gives the size of the first partition and the second partition contains the rest of the tape. If <em>mt_count</em> is zero, the tape is formatted into one partition. This command is not allowed for a drive unless the partition support is enabled for the drive (see <strong>MT_ST_CAN_PARTITIONS</strong> below).</p>
   </dd>
   <dt>
     <p><strong>MTNOP</strong></p>
@@ -437,7 +437,7 @@ mt_cmd.mt_count = MT_ST_BOOLEANS |
         MT_ST_BUFFER_WRITES | MT_ST_ASYNC_WRITES;
 ioctl(fd, MTIOCTOP, mt_cmd);
 </pre>
-</li><li><p>The default block size for a device can be set with <strong>MT_ST_DEF_BLKSIZE</strong> and the default density code can be set with <strong>MT_ST_DEFDENSITY</strong>. The values for the parameters are or'ed with the operation code.</p></li><li><p>With kernels 2.1.x and later, the timeout values can be set with the subcommand <strong>MT_ST_SET_TIMEOUT</strong> ORed with the timeout in seconds. The long timeout (used for rewinds and other commands that may take a long time) can be set with <strong>MT_ST_SET_LONG_TIMEOUT</strong>. The kernel defaults are very long to make sure that a successful command is not timed out with any drive. Because of this, the driver may seem stuck even if it is only waiting for the timeout. These commands can be used to set more practical values for a specific drive. The timeouts set for one device apply for all devices linked to the same drive.</p></li><li><p>Starting from kernels 2.4.19 and 2.5.43, the driver supports a status bit which indicates whether the drive requests cleaning. The method used by the drive to return cleaning information is set using the <strong>MT_ST_SEL_CLN</strong> subcommand. If the value is zero, the cleaning bit is always zero. If the value is one, the TapeAlert data defined in the SCSI-3 standard is used (not yet implemented). Values 2-17 are reserved. If the lowest eight bits are &gt;= 18, bits from the extended sense data are used. The bits 9-16 specify a mask to select the bits to look at and the bits 17-23 specify the bit pattern to look for. If the bit pattern is zero, one or more bits under the mask indicate the cleaning request. If the pattern is nonzero, the pattern must match the masked sense data byte.</p></li>
+</li><li><p>The default block size for a device can be set with <strong>MT_ST_DEF_BLKSIZE</strong> and the default density code can be set with <strong>MT_ST_DEFDENSITY</strong>. The values for the parameters are or'ed with the operation code.</p></li><li><p>With kernels 2.1.x and later, the timeout values can be set with the subcommand <strong>MT_ST_SET_TIMEOUT</strong> ORed with the timeout in seconds. The long timeout (used for rewinds and other commands that may take a long time) can be set with <strong>MT_ST_SET_LONG_TIMEOUT</strong>. The kernel defaults are very long to make sure that a successful command is not timed out with any drive. Because of this the driver may seem stuck even if it is only waiting for the timeout. These commands can be used to set more practical values for a specific drive. The timeouts set for one device apply for all devices linked to the same drive.</p></li><li><p>Starting from kernels 2.4.19 and 2.5.43, the driver supports a status bit which indicates whether the drive requests cleaning. The method used by the drive to return cleaning information is set using the <strong>MT_ST_SEL_CLN</strong> subcommand. If the value is zero, the cleaning bit is always zero. If the value is one, the TapeAlert data defined in the SCSI-3 standard is used (not yet implemented). Values 2-17 are reserved. If the lowest eight bits are &gt;= 18, bits from the extended sense data are used. The bits 9-16 specify a mask to select the bits to look at and the bits 17-23 specify the bit pattern to look for. If the bit pattern is zero, one or more bits under the mask indicate the cleaning request. If the pattern is nonzero, the pattern must match the masked sense data byte.</p></li>
 </ul>
   </dd>
 
@@ -640,7 +640,7 @@ struct mtpos {
     2.
   </dt>
   <dd>
-    <p>Many programs (e.g., <a href="../man1/tar.1.html"><strong>tar</strong>(1)</a>) allow the user to specify the blocking factor on the command line. Note that this determines the physical block size on tape only in variable-block mode.</p>
+    <p>Many programs (e.g., <strong>tar</strong>(1)) allow the user to specify the blocking factor on the command line. Note that this determines the physical block size on tape only in variable-block mode.</p>
   </dd>
   <dt>
     3.
@@ -672,10 +672,17 @@ struct mtpos {
 <p><strong>mt</strong>(1)</p><p>The file <em>drivers/scsi/README.st</em> or <em>Documentation/scsi/st.txt</em> (kernel &gt;= 2.6) in the Linux kernel source tree contains the most recent information about the driver and its configuration possibilities</p>
         </div>
       </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
    <li class="previous"><a href="sk98lin.4.html"><span aria-hidden="true">&larr;</span> sk98lin.4: Marvell/syskonnect gigabit ethernet driver v6.21</a></li>
-   <li class="next"><a href="tty.4.html">tty.4: Controlling terminal <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="next"><a href="synaptics.4.html">synaptics.4: Touchpad input driver <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

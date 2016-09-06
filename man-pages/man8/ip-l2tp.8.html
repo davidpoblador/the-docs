@@ -104,7 +104,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">SYNOPSIS</h2>
         <div class="sectioncontent">
-<p><strong>ip</strong> [ <em>OPTIONS</em> ] <strong>l2tp</strong>  { <em>COMMAND</em> |  <strong>help</strong> }</p><p><strong>ip l2tp add tunnel</strong></p><p><strong>remote</strong><em> ADDR </em><strong>local</strong><em> ADDR </em></p><p><strong>tunnel_id</strong> <em>ID</em> <strong>peer_tunnel_id</strong> <em>ID</em></p><p>[ <strong>encap</strong> { <strong>ip</strong> | <strong>udp</strong> } ]</p><p>[ <strong>udp_sport</strong> <em>PORT</em>  ] [ <strong>udp_dport</strong> <em>PORT</em>  ]</p><p><strong>ip l2tp add session</strong> [ <strong>name</strong> <em>NAME</em>  ]</p><p><strong>tunnel_id</strong> <em>ID</em> <strong>session_id</strong> <em>ID</em> <strong>peer_session_id</strong> <em>ID</em></p><p>[ <strong>cookie</strong> <em>HEXSTR</em>  ] [ <strong>peer_cookie</strong> <em>HEXSTR</em>  ]</p><p>[ <strong>l2spec_type</strong> { <strong>none</strong> | <strong>default</strong> } ]</p><p>[ <strong>offset</strong> <em>OFFSET</em>  ] [ <strong>peer_offset</strong> <em>OFFSET</em>  ]</p><p><strong>ip l2tp del tunnel</strong> <strong>tunnel_id</strong> <em>ID</em></p><p><strong>ip l2tp del session</strong> <strong>tunnel_id</strong> <em>ID</em> <strong>session_id</strong> <em>ID</em></p><p><strong>ip l2tp show tunnel</strong> [ <strong>tunnel_id</strong> <em>ID</em> ]</p><p><strong>ip l2tp show session</strong> [ <strong>tunnel_id</strong> <em>ID</em>.B<em> ] [</em> <strong>session_id</strong> <em>ID</em> ]</p><p><em>NAME</em> :=  <em>STRING</em> <em>ADDR</em> := { <em>IP_ADDRESS</em> | <strong>any</strong> } <em>PORT</em> := { <em>NUMBER</em> } <em>ID</em> := { <em>NUMBER</em> } <em>HEXSTR</em> := { 8 or 16 hex digits (4 / 8 bytes) }</p>
+<p><strong>ip</strong> [ <em>OPTIONS</em> ] <strong>l2tp</strong>  { <em>COMMAND</em> |  <strong>help</strong> }</p><p><strong>ip l2tp add tunnel</strong></p><p><strong>remote</strong> [ <em>ADDR</em> ] <strong>local</strong> [ <em>ADDR</em> ]</p><p><strong>tunnel_id</strong> <em>ID</em> <strong>peer_tunnel_id</strong> <em>ID</em></p><p>[ <strong>encap</strong> { <strong>ip</strong> | <strong>udp</strong> } ]</p><p>[ <strong>udp_sport</strong> <em>PORT</em>  ] [ <strong>udp_dport</strong> <em>PORT</em>  ]</p><p><strong>ip l2tp add session</strong> [ <strong>name</strong> <em>NAME</em>  ]</p><p><strong>tunnel_id</strong> <em>ID</em> <strong>session_id</strong> <em>ID</em> <strong>peer_session_id</strong> <em>ID</em></p><p>[ <strong>cookie</strong> <em>HEXSTR</em>  ] [ <strong>peer_cookie</strong> <em>HEXSTR</em>  ]</p><p>[ <strong>l2spec_type</strong> { <strong>none</strong> | <strong>default</strong> } ]</p><p>[ <strong>offset</strong> <em>OFFSET</em>  ] [ <strong>peer_offset</strong> <em>OFFSET</em>  ]</p><p><strong>ip l2tp del tunnel</strong> <strong>tunnel_id</strong> <em>ID</em></p><p><strong>ip l2tp del session</strong> <strong>tunnel_id</strong> <em>ID</em> <strong>session_id</strong> <em>ID</em></p><p><strong>ip l2tp show tunnel</strong> <strong>[ tunnel_id</strong> <em>ID</em> <strong>]</strong></p><p><strong>ip l2tp show session</strong> <strong>[ tunnel_id</strong> <em>ID</em> <strong>] [ session_id</strong> <em>ID</em> <strong>]</strong></p><p><em>NAME</em> :=  <em>STRING</em> <em>ADDR</em> := { <em>IP_ADDRESS</em> } <em>PORT</em> := { <em>NUMBER</em> } <em>ID</em> := { <em>NUMBER</em> } <em>HEXSTR</em> := { 8 or 16 hex digits (4 / 8 bytes) }</p>
         </div>
       </section>
 
@@ -339,13 +339,13 @@ site-A:# ip link set l2tpeth0.5 master brvlan5
 site-A:# ip link set eth1.5 master brvlan5
 site-A:# ip link set brvlan5 up
 </pre>
-<p>Adding the L2TP interface to a bridge causes the bridge to forward traffic over the L2TP pseudowire just like it forwards over any other interface. The bridge learns MAC addresses of hosts attached to each interface and intelligently forwards frames from one bridge port to another. IP addresses are not assigned to the l2tpethN interfaces. If the bridge is correctly configured at both sides of the L2TP pseudowire, it should be possible to reach hosts in the peer's bridged network.</p><p>When raw ethernet frames are bridged across an L2TP tunnel, large frames may be fragmented and forwarded as individual IP fragments to the recipient, depending on the MTU of the physical interface used by the tunnel. When the ethernet frames carry protocols which are reassembled by the recipient, like IP, this isn't a problem. However, such fragmentation can cause problems for protocols like PPPoE where the recipient expects to receive ethernet frames exactly as transmitted. In such cases, it is important that frames leaving the tunnel are reassembled back into a single frame before being forwarded on. To do so, enable netfilter connection tracking (conntrack) or manually load the Linux netfilter defrag modules at each tunnel endpoint.</p>
+<p>Adding the L2TP interface to a bridge causes the bridge to forward traffic over the L2TP pseudowire just like it forwards over any other interface. The bridge learns MAC addresses of hosts attached to each interface and intelligently forwards frames from one bridge port to another. IP addresses are not assigned to the l2tpethN interfaces. If the bridge is correctly configured at both sides of the L2TP pseudowire, it should be possible to reach hosts in the peer's bridged network.</p><p>When raw ethernet frames are bridged across an L2TP tunnel, large frames may be fragmented and forwarded as individual IP fragments to the recipient, depending on the MTU of the physical interface used by the tunnel. When the ethernet frames carry protocols which are reassembled by the recipient, like IP, this isn't a problem. However, such fragmentation can cause problems for protocols like PPPoE where the recipient expects to receive ethernet frames exactly as transmitted. In such cases, it is important that frames leaving the tunnel are reassembled back into a single frame before being forwarded on. To do so, enable netfilter connection tracking (conntrack) or manually load the Linux netfilter degrag modules at each tunnel endpoint.</p>
 <pre>
-site-A:# modprobe nf_defrag_ipv4
+site-A:# modprobe nf_degrag_ipv4
 
-site-B:# modprobe nf_defrag_ipv4
+site-B:# modprobe nf_degrag_ipv4
 </pre>
-<p>If L2TP is being used over IPv6, use the IPv6 defrag module.</p>
+<p>If L2TP is being used over IPv6, use the IPv6 degrag module.</p>
 
         </div>
       </section>
@@ -372,8 +372,8 @@ site-B:# modprobe nf_defrag_ipv4
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="ip-gue.8.html"><span aria-hidden="true">&larr;</span> ip-gue.8: Foo-over-udp receive port configuration  ip-gue - generic udp encapsulation receive port configuration</a></li>
-   <li class="next"><a href="ip-macsec.8.html">ip-macsec.8: Macsec device configuration <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="ip-addrlabel.8.html"><span aria-hidden="true">&larr;</span> ip-addrlabel.8: Protocol address label management</a></li>
+   <li class="next"><a href="ip-link.8.html">ip-link.8: Network device configuration <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

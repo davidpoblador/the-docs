@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="quotactl (2) manual">
   <meta name="twitter:description" content="Manipulate disk quotas">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-quotactl-2.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-quotactl-2.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man2/quotactl.2.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="quotactl (2) manual" />
   <meta property="og:description" content="Manipulate disk quotas" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-quotactl-2.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-quotactl-2.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -170,8 +170,8 @@ struct dqblk {          /* Definition since Linux 2.4.22 */
                                   quota blocks alloc */
     uint64_t dqb_bsoftlimit;   /* preferred limit on
                                   disk quota blocks */
-    uint64_t dqb_curspace;     /* current occupied space
-                                  (in bytes) */
+    uint64_t dqb_curspace;     /* current quota block
+                                  count */
     uint64_t dqb_ihardlimit;   /* maximum number of
                                   allocated inodes */
     uint64_t dqb_isoftlimit;   /* preferred inode limit */
@@ -203,34 +203,13 @@ struct dqblk {          /* Definition since Linux 2.4.22 */
 <p>The <em>dqb_valid</em> field is a bit mask that is set to indicate the entries in the <em>dqblk</em> structure that are valid. Currently, the kernel fills in all entries of the <em>dqblk</em> structure and marks them as valid in the <em>dqb_valid</em> field. Unprivileged users may retrieve only their own quotas; a privileged user (<strong>CAP_SYS_ADMIN</strong>) can retrieve the quotas of any user.</p>
   </dd>
   <dt>
-    <p><strong>Q_GETNEXTQUOTA</strong> (since Linux 4.6)</p>
-  </dt>
-  <dd>
-    <p>This operation is the same as <strong>Q_GETQUOTA</strong>, but it returns quota information for the next ID greater than or equal to <em>id</em> that has a quota set.</p><p>The <em>addr</em> argument is a pointer to a <em>nextdqblk</em> structure whose fields are as for the <em>dqblk</em>, except for the addition of a <em>dqb_id</em> field that is used to return the ID for which quota information is being returned:</p>
-<pre>
-struct nextdqblk {
-    uint64_t dqb_bhardlimit;
-    uint64_t dqb_bsoftlimit;
-    uint64_t dqb_curspace;
-    uint64_t dqb_ihardlimit;
-    uint64_t dqb_isoftlimit;
-    uint64_t dqb_curinodes;
-    uint64_t dqb_btime;
-    uint64_t dqb_itime;
-    uint32_t dqb_valid;
-    uint32_t dqb_id;
-};
-</pre>
-
-  </dd>
-  <dt>
     <p><strong>Q_SETQUOTA</strong></p>
   </dt>
   <dd>
     <p>Set quota information for user or group <em>id</em>, using the information supplied in the <em>dqblk</em> structure pointed to by <em>addr</em>. The <em>dqb_valid</em> field of the <em>dqblk</em> structure indicates which entries in the structure have been set by the caller. This operation supersedes the <strong>Q_SETQLIM</strong> and <strong>Q_SETUSE</strong> operations in the previous quota interfaces. This operation requires privilege (<strong>CAP_SYS_ADMIN</strong>).</p>
   </dd>
   <dt>
-    <p><strong>Q_GETINFO</strong> (since Linux 2.4.22)</p>
+    <p><strong>Q_GETINFO</strong></p>
   </dt>
   <dd>
     <p>Get information (like grace times) about quotafile. The <em>addr</em> argument should be a pointer to a <em>dqinfo</em> structure. This structure is defined in <em>&lt;sys/quota.h&gt;</em> as follows:</p>
@@ -269,13 +248,13 @@ struct dqinfo {         /* Defined since kernel 2.4.22 */
 <p>The <em>dqi_valid</em> field in the <em>dqinfo</em> structure indicates the entries in the structure that are valid. Currently, the kernel fills in all entries of the <em>dqinfo</em> structure and marks them all as valid in the <em>dqi_valid</em> field. The <em>id</em> argument is ignored.</p>
   </dd>
   <dt>
-    <p><strong>Q_SETINFO</strong> (since Linux 2.4.22)</p>
+    <p><strong>Q_SETINFO</strong></p>
   </dt>
   <dd>
     <p>Set information about quotafile. The <em>addr</em> argument should be a pointer to a <em>dqinfo</em> structure. The <em>dqi_valid</em> field of the <em>dqinfo</em> structure indicates the entries in the structure that have been set by the caller. This operation supersedes the <strong>Q_SETGRACE</strong> and <strong>Q_SETFLAGS</strong> operations in the previous quota interfaces. The <em>id</em> argument is ignored. This operation requires privilege (<strong>CAP_SYS_ADMIN</strong>).</p>
   </dd>
   <dt>
-    <p><strong>Q_GETFMT</strong> (since Linux 2.4.22)</p>
+    <p><strong>Q_GETFMT</strong></p>
   </dt>
   <dd>
     <p>Get quota format used on the specified filesystem. The <em>addr</em> argument should be a pointer to a 4-byte buffer where the format number will be stored.</p>
@@ -287,10 +266,10 @@ struct dqinfo {         /* Defined since kernel 2.4.22 */
     <p>Update the on-disk copy of quota usages for a filesystem. If <em>special</em> is NULL, then all filesystems with active quotas are sync'ed. The <em>addr</em> and <em>id</em> arguments are ignored.</p>
   </dd>
   <dt>
-    <p><strong>Q_GETSTATS</strong> (supported up to Linux 2.4.21)</p>
+    <p><strong>Q_GETSTATS</strong></p>
   </dt>
   <dd>
-    <p>Get statistics and other generic information about the quota subsystem. The <em>addr</em> argument should be a pointer to a <em>dqstats</em> structure in which data should be stored. This structure is defined in <em>&lt;sys/quota.h&gt;</em>. The <em>special</em> and <em>id</em> arguments are ignored.</p><p>This operation is obsolete and was removed in Linux 2.4.22. Files in <em>/proc/sys/fs/quota/</em> carry the information instead.</p>
+    <p>Get statistics and other generic information about the quota subsystem. The <em>addr</em> argument should be a pointer to a <em>dqstats</em> structure in which data should be stored. This structure is defined in <em>&lt;sys/quota.h&gt;</em>. The <em>special</em> and <em>id</em> arguments are ignored. This operation is obsolete and not supported by recent kernels. Files in <em>/proc/sys/fs/quota/</em> carry the information instead.</p>
   </dd>
 
 </dl>
@@ -315,12 +294,6 @@ struct dqinfo {         /* Defined since kernel 2.4.22 */
     <p>Get disk quota limits and current usage for user <em>id</em>. The <em>addr</em> argument is a pointer to an <em>fs_disk_quota</em> structure (defined in <em>&lt;xfs/xqm.h&gt;</em>). Unprivileged users may retrieve only their own quotas; a privileged user (<strong>CAP_SYS_ADMIN</strong>) may retrieve the quotas of any user.</p>
   </dd>
   <dt>
-    <p><strong>Q_XGETNEXTQUOTA</strong> (since Linux 4.6)</p>
-  </dt>
-  <dd>
-    <p>This operation is the same as <strong>Q_XGETQUOTA</strong>, but it returns quota information for the next ID greater than or equal to <em>id</em> that has a quota set.</p>
-  </dd>
-  <dt>
     <p><strong>Q_XSETQLIM</strong></p>
   </dt>
   <dd>
@@ -340,7 +313,7 @@ struct dqinfo {         /* Defined since kernel 2.4.22 */
   </dd>
 
 </dl>
-<p>There is no command equivalent to <strong>Q_SYNC</strong> for XFS since <strong>sync</strong>(1) writes quota information to disk (in addition to the other filesystem metadata that it writes out).</p>
+<p>There is no command equivalent to <strong>Q_SYNC</strong> for XFS since <a href="../man1/sync.1.html"><strong>sync</strong>(1)</a> writes quota information to disk (in addition to the other filesystem metadata that it writes out).</p>
         </div>
       </section>
 
@@ -357,18 +330,6 @@ struct dqinfo {         /* Defined since kernel 2.4.22 */
 
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>EACCES</strong></p>
-  </dt>
-  <dd>
-    <p><em>cmd</em> is <strong>Q_QUOTAON</strong>, and the quota file pointed to by <em>addr</em> exists, but is not a regular file or is not on the filesystem pointed to by <em>special</em>.</p>
-  </dd>
-  <dt>
-    <p><strong>EBUSY</strong></p>
-  </dt>
-  <dd>
-    <p><em>cmd</em> is <strong>Q_QUOTAON</strong>, but another <strong>Q_QUOTAON</strong> had already been performed.</p>
-  </dd>
-  <dt>
     <p><strong>EFAULT</strong></p>
   </dt>
   <dd>
@@ -379,12 +340,6 @@ struct dqinfo {         /* Defined since kernel 2.4.22 */
   </dt>
   <dd>
     <p><em>cmd</em> or <em>type</em> is invalid.</p>
-  </dd>
-  <dt>
-    <p><strong>EINVAL</strong></p>
-  </dt>
-  <dd>
-    <p><em>cmd</em> is <strong>Q_QUOTAON</strong>, but the specified quota file is corrupted.</p>
   </dd>
   <dt>
     <p><strong>ENOENT</strong></p>
@@ -411,28 +366,48 @@ struct dqinfo {         /* Defined since kernel 2.4.22 */
     <p>The caller lacked the required privilege (<strong>CAP_SYS_ADMIN</strong>) for the specified operation.</p>
   </dd>
   <dt>
-    <p><strong>ERANGE</strong></p>
-  </dt>
-  <dd>
-    <p><em>cmd</em> is <strong>Q_SETQUOTA</strong>, but the specified limits are out of the range allowed by the quota format.</p>
-  </dd>
-  <dt>
     <p><strong>ESRCH</strong></p>
   </dt>
   <dd>
     <p>No disk quota is found for the indicated user. Quotas have not been turned on for this filesystem.</p>
   </dd>
+
+</dl>
+<p>If <em>cmd</em> is <strong>Q_SETQUOTA</strong>, <strong>quotactl</strong>() may also set <em>errno</em> to:</p>
+<dl class='dl-vertical'>
   <dt>
-    <p><strong>ESRCH</strong></p>
+    <p><strong>ERANGE</strong></p>
   </dt>
   <dd>
-    <p><em>cmd</em> is <strong>Q_QUOTAON</strong>, but the specified quota format was not found.</p>
+    <p>Specified limits are out of range allowed by quota format.</p>
+  </dd>
+
+</dl>
+<p>If <em>cmd</em> is <strong>Q_QUOTAON</strong>, <strong>quotactl</strong>() may also set <em>errno</em> to:</p>
+<dl class='dl-vertical'>
+  <dt>
+    <p><strong>EACCES</strong></p>
+  </dt>
+  <dd>
+    <p>The quota file pointed to by <em>addr</em> exists, but is not a regular file; or, the quota file pointed to by <em>addr</em> exists, but is not on the filesystem pointed to by <em>special</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>EBUSY</strong></p>
+  </dt>
+  <dd>
+    <p><strong>Q_QUOTAON</strong> attempted, but another <strong>Q_QUOTAON</strong> had already been performed.</p>
+  </dd>
+  <dt>
+    <p><strong>EINVAL</strong></p>
+  </dt>
+  <dd>
+    <p>The quota file is corrupted.</p>
   </dd>
   <dt>
     <p><strong>ESRCH</strong></p>
   </dt>
   <dd>
-    <p><em>cmd</em> is <strong>Q_GETNEXTQUOTA</strong> or <strong>Q_XGETNEXTQUOTA</strong>, but there is no ID greater than or equal to <em>id</em> that has an active quota.</p>
+    <p>Specified quota format was not found.</p>
   </dd>
 
 </dl>
@@ -446,9 +421,16 @@ struct dqinfo {         /* Defined since kernel 2.4.22 */
 <p><a href="../man1/quota.1.html"><strong>quota</strong>(1)</a>, <a href="../man2/getrlimit.2.html"><strong>getrlimit</strong>(2)</a>, <a href="../man8/quotacheck.8.html"><strong>quotacheck</strong>(8)</a>, <a href="../man8/quotaon.8.html"><strong>quotaon</strong>(8)</a></p>
         </div>
       </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="query_module.2.html"><span aria-hidden="true">&larr;</span> query_module.2: Query the kernel for various bits pertaining to modules</a></li>
+   <li class="previous"><a href="pwritev.2.html"><span aria-hidden="true">&larr;</span> pwritev.2: Read or write data into multiple buffers</a></li>
    <li class="next"><a href="read.2.html">read.2: Read from a file descriptor <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>

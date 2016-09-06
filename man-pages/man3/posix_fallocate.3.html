@@ -31,13 +31,13 @@
   <meta name="twitter:creator" content="@CartaTech">
   <meta name="twitter:title" content="posix_fallocate (3) manual">
   <meta name="twitter:description" content="Allocate file space">
-  <meta name="twitter:image" content="https://www.carta.tech/images/man-pages-posix_fallocate-3.png">
+  <meta name="twitter:image" content="https://www.carta.tech/images/manpages-dev-posix_fallocate-3.png">
   <meta property="og:url" content="https://www.carta.tech/man-pages/man3/posix_fallocate.3.html" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="posix_fallocate (3) manual" />
   <meta property="og:description" content="Allocate file space" />
   <meta property="fb:app_id" content="1241677679199500" />
-  <meta property="og:image" content="https://www.carta.tech/images/man-pages-posix_fallocate-3.png" />
+  <meta property="og:image" content="https://www.carta.tech/images/manpages-dev-posix_fallocate-3.png" />
   <meta property="og:image:width" content="600" />
   <meta property="og:image:height" content="315" />
 </head>
@@ -88,8 +88,8 @@
     <meta itemprop="position" content="2" />
   </li>
   <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/man-pages/">
-      <span itemprop="name">man-pages</span>
+    <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="/packages/manpages-dev/">
+      <span itemprop="name">manpages-dev</span>
     </a>
     <meta itemprop="position" content="3" />
   </li>
@@ -110,14 +110,14 @@
 
 <strong>int posix_fallocate(int </strong><em>fd</em><strong>, off_t </strong><em>offset</em><strong>, off_t </strong><em>len</em><strong>);</strong>
 </pre>
-<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>posix_fallocate</strong>():</p><p>_POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L</p>
+<p>Feature Test Macro Requirements for glibc (see <a href="../man7/feature_test_macros.7.html"><strong>feature_test_macros</strong>(7)</a>):</p><p><strong>posix_fallocate</strong>():</p><p>_XOPEN_SOURCE&nbsp;&gt;=&nbsp;600 || _POSIX_C_SOURCE&nbsp;&gt;=&nbsp;200112L</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>The function <strong>posix_fallocate</strong>() ensures that disk space is allocated for the file referred to by the file descriptor <em>fd</em> for the bytes in the range starting at <em>offset</em> and continuing for <em>len</em> bytes. After a successful call to <strong>posix_fallocate</strong>(), subsequent writes to bytes in the specified range are guaranteed not to fail because of lack of disk space.</p><p>If the size of the file is less than <em>offset</em>+<em>len</em>, then the file is increased to this size; otherwise the file size is left unchanged.</p>
+<p>The function <strong>posix_fallocate</strong>() ensures that disk space is allocated for the file referred to by the descriptor <em>fd</em> for the bytes in the range starting at <em>offset</em> and continuing for <em>len</em> bytes. After a successful call to <strong>posix_fallocate</strong>(), subsequent writes to bytes in the specified range are guaranteed not to fail because of lack of disk space.</p><p>If the size of the file is less than <em>offset</em>+<em>len</em>, then the file is increased to this size; otherwise the file size is left unchanged.</p>
         </div>
       </section>
 
@@ -149,7 +149,7 @@
     <p><strong>EINVAL</strong></p>
   </dt>
   <dd>
-    <p><em>offset</em> was less than 0, or <em>len</em> was less than or equal to 0, or the underlying filesystem does not support the operation.</p>
+    <p><em>offset</em> was less than 0, or <em>len</em> was less than or equal to 0.</p>
   </dd>
   <dt>
     <p><strong>ENODEV</strong></p>
@@ -169,12 +169,6 @@
   <dd>
     <p><em>fd</em> refers to a pipe.</p>
   </dd>
-  <dt>
-    <p><strong>EINTR</strong></p>
-  </dt>
-  <dd>
-    <p>A signal was caught during execution.</p>
-  </dd>
 
 </dl>
 
@@ -191,17 +185,9 @@
       <section>
         <h2 class="font-effect-shadow-multiple">ATTRIBUTES</h2>
         <div class="sectioncontent">
-<p>For an explanation of the terms used in this section, see <a href="../man7/attributes.7.html"><strong>attributes</strong>(7)</a>.</p><table class="table table-striped">
-<tr>
-<th>Interface</th>
-<th>Attribute</th>
-<th>Value</th></tr>
+<h3>Multithreading (see <a href="../man7/pthreads.7.html"><strong>pthreads</strong>(7)</a>)</h3>
+<p>The <strong>posix_fallocate</strong>() function is thread-safe.</p>
 
-<tr>
-<td><strong>posix_fallocate</strong>()  </td>
-<td>Thread safety</td>
-<td>MT-Safe (but see NOTES)</td></tr>
-</table>
         </div>
       </section>
 
@@ -213,24 +199,22 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">NOTES</h2>
-        <div class="sectioncontent">
-<p>In the glibc implementation, <strong>posix_fallocate</strong>() is implemented using the <a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a> system call, which is MT-safe. If the underlying filesystem does not support <a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a>, then the operation is emulated with the following caveats:</p><ul>
-<li><p>The emulation is inefficient.</p></li><li><p>There is a race condition where concurrent writes from another thread or process could be overwritten with null bytes.</p></li><li><p>There is a race condition where concurrent file size increases by another thread or process could result in a file whose size is smaller than expected.</p></li><li><p>If <em>fd</em> has been opened with the <strong>O_APPEND</strong> or <strong>O_WRONLY</strong> flags, the function will fail with the error <strong>EBADF.</strong></p></li>
-</ul><p>In general, the emulation is not MT-safe. On Linux, applications may use <a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a> if they cannot tolerate the emulation caveats. In general, this is only recommended if the application plans to terminate the operation if <strong>EOPNOTSUPP</strong> is returned, otherwise the application itself will need to implement a fallback with all the same problems as the emulation provided by glibc.</p>
-        </div>
-      </section>
-
-      <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO posix_fallocate&hellip;</h2>
         <div class="sectioncontent">
 <p><a href="../man1/fallocate.1.html"><strong>fallocate</strong>(1)</a>, <a href="../man2/fallocate.2.html"><strong>fallocate</strong>(2)</a>, <a href="../man2/lseek.2.html"><strong>lseek</strong>(2)</a>, <a href="../man2/posix_fadvise.2.html"><strong>posix_fadvise</strong>(2)</a></p>
         </div>
       </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">COLOPHON</h2>
+        <div class="sectioncontent">
+<p>This page is part of release 3.74 of the Linux <em>man-pages</em> project. A description of the project, information about reporting bugs, and the latest version of this page, can be found at http://www.kernel.org/doc/man-pages/.</p>
+        </div>
+      </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="popen.3.html"><span aria-hidden="true">&larr;</span> popen.3: Pipe stream to or from a process</a></li>
-   <li class="next"><a href="posix_madvise.3.html">posix_madvise.3: Give advice about patterns of memory usage <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="positive_definite_constraint.hpp.3.html"><span aria-hidden="true">&larr;</span> positive_definite_constraint.hpp.3: Src/mlpack/methods/gmm/positive_definite_constraint.hpp -</a></li>
+   <li class="next"><a href="posix_memalign.3.html">posix_memalign.3: Allocate aligned memory <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

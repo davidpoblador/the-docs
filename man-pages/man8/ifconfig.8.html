@@ -118,7 +118,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">Address Families</h2>
         <div class="sectioncontent">
-<p>If the first argument after the interface name is recognized as the name of a supported address family, that address family is used for decoding and displaying all protocol addresses.  Currently supported address families include <strong>inet</strong> (TCP/IP, default), <strong>inet6</strong> (IPv6), <strong>ax25</strong> (AMPR Packet Radio), <strong>ddp</strong> (Appletalk Phase 2), <strong>ipx</strong> (Novell IPX) and <strong>netrom</strong> (AMPR Packet radio). All numbers supplied as parts in IPv4 dotted decimal notation may be decimal, octal, or hexadecimal, as specified in the ISO C standard (that is, a leading 0x or 0X implies hexadecimal; otherwise, a leading '0' implies octal; otherwise, the number is interpreted as decimal). Use of hexadecimal and octal numbers is not RFC-compliant and therefore its use is discouraged.</p>
+<p>If the first argument after the interface name is recognized as the name of a supported address family, that address family is used for decoding and displaying all protocol addresses.  Currently supported address families include <strong>inet</strong> (TCP/IP, default), <strong>inet6</strong> (IPv6), <strong>ax25</strong> (AMPR Packet Radio), <strong>ddp</strong> (Appletalk Phase 2), <strong>ipx</strong> (Novell IPX) and <strong>netrom</strong> (AMPR Packet radio).</p>
         </div>
       </section>
 
@@ -149,13 +149,13 @@
     <p><strong>interface</strong></p>
   </dt>
   <dd>
-    <p>The name of the interface.  This is usually a driver name followed by a unit number, for example <strong>eth0</strong> for the first Ethernet interface. If your kernel supports alias interfaces, you can specify them with syntax like <strong>eth0:0</strong> for the first alias of eth0. You can use them to assign more addresses. To delete an alias interface use <strong>ifconfig eth0:0 down</strong>. Note: for every scope (i.e. same net with address/netmask combination) all aliases are deleted, if you delete the first (primary).</p>
+    <p>The name of the interface.  This is usually a driver name followed by a unit number, for example <strong>eth0</strong> for the first Ethernet interface. If your kernel supports alias interfaces, you can specify them with <strong>eth0:0</strong> for the first alias of eth0. You can use them to assign a second address. To delete an alias interface use <strong>ifconfig eth0:0 down</strong>. Note: for every scope (i.e. same net with address/netmask combination) all aliases are deleted, if you delete the first (primary).</p>
   </dd>
   <dt>
     <p><strong>up</strong></p>
   </dt>
   <dd>
-    <p>This flag causes the interface to be activated.  It is implicitly specified if an address is assigned to the interface; you can suppress this behavior when using an alias interface by appending an <strong>-</strong> to the alias (e.g. <strong>eth0:0-</strong>). It is also suppressed when using the IPv4 0.0.0.0 address as the kernel will use this to implicitly delete alias interfaces.</p>
+    <p>This flag causes the interface to be activated.  It is implicitly specified if an address is assigned to the interface.</p>
   </dd>
   <dt>
     <p><strong>down</strong></p>
@@ -180,6 +180,12 @@
   </dt>
   <dd>
     <p>Enable or disable <strong>all-multicast</strong> mode.  If selected, all multicast packets on the network will be received by the interface.</p>
+  </dd>
+  <dt>
+    <p><strong>metric N</strong></p>
+  </dt>
+  <dd>
+    <p>This parameter sets the interface metric.</p>
   </dd>
   <dt>
     <p><strong>mtu N</strong></p>
@@ -212,7 +218,7 @@
     <p>Remove an IPv6 address from an interface.</p>
   </dd>
   <dt>
-    <p><strong>tunnel ::aa.bb.cc.dd</strong></p>
+    <p><strong>tunnel aa.bb.cc.dd</strong></p>
   </dt>
   <dd>
     <p>Create a new SIT (IPv6-in-IPv4) device, tunnelling to the given destination.</p>
@@ -286,28 +292,28 @@
       <section>
         <h2 class="font-effect-shadow-multiple">NOTES</h2>
         <div class="sectioncontent">
-<p>Since kernel release 2.2 there are no explicit interface statistics for alias interfaces anymore. The statistics printed for the original address are shared with all alias addresses on the same device. If you want per-address statistics you should add explicit accounting rules for the address using the <strong>iptables</strong>(8) command.</p><p>Since net-tools 1.60-4 ifconfig is printing byte counters and human readable counters with IEC 60027-2 units. So 1 KiB are 2^10 byte. Note, the numbers are truncated to one decimal (which can by quite a large error if you consider 0.1 PiB is 112.589.990.684.262 bytes :)</p><p>Interrupt problems with Ethernet device drivers fail with EAGAIN <em>(SIOCSIIFLAGS: Resource temporarily unavailable)</em> it is most likely a interrupt conflict. See <em>http://www.scyld.com/expert/irq-conflict.html</em> for more information.</p>
+<p>Since kernel release 2.2 there are no explicit interface statistics for alias interfaces anymore. The statistics printed for the original address are shared with all alias addresses on the same device. If you want per-address statistics you should add explicit accounting rules for the address using the <strong>ipchains</strong>(8) or <a href="../man8/iptables.8.html"><strong>iptables</strong>(8)</a> command.</p><p>Since net-tools 1.60-4 ifconfig is printing byte counters and human readable counters with IEC 60027-2 units. So 1 KiB are 2^10 byte. Note, the numbers are truncated to one decimal (which can by quite a large error if you consider 0.1 PiB is 112.589.990.684.262 bytes :)</p><p>Interrupt problems with Ethernet device drivers fail with EAGAIN <em>(SIOCSIIFLAGS: Resource temporarily unavailable)</em> it is most likely a interrupt conflict. See <em>http://www.scyld.com/expert/irq-conflict.html</em> for more information.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">FILES</h2>
         <div class="sectioncontent">
-<p><em>/proc/net/dev</em></p><p><em>/proc/net/if_inet6</em></p>
+<p><em>/proc/net/socket</em></p><p><em>/proc/net/dev</em></p><p><em>/proc/net/if_inet6</em></p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>Ifconfig uses the ioctl access method to get the full address information, which limits hardware addresses to 8 bytes. Because Infiniband hardware address has 20 bytes, only the first 8 bytes are displayed correctly. Please use <strong>ip link</strong> command from <strong>iproute2</strong> package to display link layer informations including the hardware address.</p><p>While appletalk DDP and IPX addresses will be displayed they cannot be altered by this command.</p>
+<p>While appletalk DDP and IPX addresses will be displayed they cannot be altered by this command.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO ifconfig&hellip;</h2>
         <div class="sectioncontent">
-<p><a href="../man8/route.8.html"><strong>route</strong>(8)</a>, <a href="../man8/netstat.8.html"><strong>netstat</strong>(8)</a>, <a href="../man8/arp.8.html"><strong>arp</strong>(8)</a>, <a href="../man8/rarp.8.html"><strong>rarp</strong>(8)</a>, <strong>iptables</strong>(8), <strong>ifup</strong>(8), <strong>interfaces</strong>(5).</p><p>http://physics.nist.gov/cuu/Units/binary.html - Prefixes for binary multiples</p>
+<p><a href="../man8/route.8.html"><strong>route</strong>(8)</a>, <a href="../man8/netstat.8.html"><strong>netstat</strong>(8)</a>, <a href="../man8/arp.8.html"><strong>arp</strong>(8)</a>, <a href="../man8/rarp.8.html"><strong>rarp</strong>(8)</a>, <strong>ipchains</strong>(8), <a href="../man8/iptables.8.html"><strong>iptables</strong>(8)</a>, <a href="../man8/ifup.8.html"><strong>ifup</strong>(8)</a>, <a href="../man5/interfaces.5.html"><strong>interfaces</strong>(5)</a>.</p><p>http://physics.nist.gov/cuu/Units/binary.html - Prefixes for binary multiples</p>
         </div>
       </section>
 
@@ -319,8 +325,8 @@
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="ifcfg.8.html"><span aria-hidden="true">&larr;</span> ifcfg.8: Simplistic script which replaces ifconfig ip management</a></li>
-   <li class="next"><a href="ifpps.8.html">ifpps.8: Top-like networking and system statistics <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="ifcico.8.html"><span aria-hidden="true">&larr;</span> ifcico.8: Establish connections with other ftn nodes.</a></li>
+   <li class="next"><a href="ifupdown-ifdown.8.html">ifdown.8: Bring a network interface up  ifdown - take a network interface down  ifquery - parse interface configuration <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

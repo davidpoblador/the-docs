@@ -111,13 +111,13 @@
       <section>
         <h2 class="font-effect-shadow-multiple">DESCRIPTION</h2>
         <div class="sectioncontent">
-<p>Unshares the indicated namespaces from the parent process and then executes the specified <em>program</em>.</p><p>The namespaces can optionally be made persistent by bind mounting /proc/<em>pid</em>/ns/<em>type</em> files to a filesystem path and entered with <a href="../man1/nsenter.1.html"><strong>nsenter</strong>(1)</a> even after the <em>program</em> terminates. Once a persistent namespace is no longer needed, it can be unpersisted with <a href="../man8/umount.8.html"><strong>umount</strong>(8)</a>. See the <strong>EXAMPLES</strong> section for more details.</p><p>The namespaces to be unshared are indicated via options.  Unshareable namespaces are:</p>
+<p>Unshares the indicated namespaces from the parent process and then executes the specified <em>program</em>.  The namespaces to be unshared are indicated via options.  Unshareable namespaces are:</p>
 <dl class='dl-vertical'>
   <dt>
     <p><strong>mount namespace</strong></p>
   </dt>
   <dd>
-    <p>Mounting and unmounting filesystems will not affect the rest of the system (<strong>CLONE_NEWNS</strong> flag), except for filesystems which are explicitly marked as shared (with <strong>mount --make-shared</strong>; see <em>/proc/self/mountinfo</em> or <strong>findmnt -o+PROPAGATION</strong> for the <strong>shared</strong> flags).</p><p><strong>unshare</strong> since util-linux version 2.27 automatically sets propagation to <strong>private</strong> in a new mount namespace to make sure that the new namespace is really unshared.  It's possible to disable this feature with option <strong>--propagation unchanged</strong>. Note that <strong>private</strong> is the kernel default.</p>
+    <p>Mounting and unmounting filesystems will not affect the rest of the system (<strong>CLONE_NEWNS</strong> flag), except for filesystems which are explicitly marked as shared (with <strong>mount --make-shared</strong>; see <em>/proc/self/mountinfo</em> for the <strong>shared</strong> flags).</p><p>It's recommended to use <strong>mount --make-rprivate</strong> or <strong>mount --make-rslave</strong> after <strong>unshare --mount</strong> to make sure that mountpoints in the new namespace are really unshared from the parental namespace.</p>
   </dd>
   <dt>
     <p><strong>UTS namespace</strong></p>
@@ -141,13 +141,7 @@
     <p><strong>pid namespace</strong></p>
   </dt>
   <dd>
-    <p>Children will have a distinct set of PID-to-process mappings from their parent. (<strong>CLONE_NEWPID</strong> flag)</p>
-  </dd>
-  <dt>
-    <p><strong>cgroup namespace</strong></p>
-  </dt>
-  <dd>
-    <p>The process will have a virtualized view of <em>/proc/self/cgroup</em>, and new cgroup mounts will be rooted at the namespace cgroup root. (<strong>CLONE_NEWCGROUP</strong> flag)</p>
+    <p>Children will have a distinct set of PID to process mappings from their parent. (<strong>CLONE_NEWPID</strong> flag)</p>
   </dd>
   <dt>
     <p><strong>user namespace</strong></p>
@@ -167,123 +161,64 @@
 
 <dl class='dl-vertical'>
   <dt>
-    <p><strong>-i</strong>,<strong> --ipc</strong>[<strong>=</strong><em>file</em>]</p>
-  </dt>
-  <dd>
-    <p>Unshare the IPC namespace.  If <em>file</em> is specified, then a persistent namespace is created by a bind mount.</p>
-  </dd>
-  <dt>
-    <p><strong>-m</strong>,<strong> --mount</strong>[<strong>=</strong><em>file</em>]</p>
-  </dt>
-  <dd>
-    <p>Unshare the mount namespace.  If <em>file</em> is specified, then a persistent namespace is created by a bind mount. Note that <em>file</em> has to be located on a filesystem with the propagation flag set to <strong>private</strong>.  Use the command <strong>findmnt -o+PROPAGATION</strong> when not sure about the current setting.  See also the examples below.</p>
-  </dd>
-  <dt>
-    <p><strong>-n</strong>,<strong> --net</strong>[<strong>=</strong><em>file</em>]</p>
-  </dt>
-  <dd>
-    <p>Unshare the network namespace.  If <em>file</em> is specified, then a persistent namespace is created by a bind mount.</p>
-  </dd>
-  <dt>
-    <p><strong>-p</strong>,<strong> --pid</strong>[<strong>=</strong><em>file</em>]</p>
-  </dt>
-  <dd>
-    <p>Unshare the PID namespace.  If <em>file</em> is specified then persistent namespace is created by a bind mount.  See also the <strong>--fork</strong> and <strong>--mount-proc</strong> options.</p>
-  </dd>
-  <dt>
-    <p><strong>-u</strong>,<strong> --uts</strong>[<strong>=</strong><em>file</em>]</p>
-  </dt>
-  <dd>
-    <p>Unshare the UTS namespace.  If <em>file</em> is specified, then a persistent namespace is created by a bind mount.</p>
-  </dd>
-  <dt>
-    <p><strong>-U</strong>,<strong> --user</strong>[<strong>=</strong><em>file</em>]</p>
-  </dt>
-  <dd>
-    <p>Unshare the user namespace.  If <em>file</em> is specified, then a persistent namespace is created by a bind mount.</p>
-  </dd>
-  <dt>
-    <p><strong>-C</strong>,<strong> --cgroup</strong>[=<em>file</em>]</p>
-  </dt>
-  <dd>
-    <p>Unshare the cgroup namespace. If <em>file</em> is specified then persistent namespace is created by bind mount.</p>
-  </dd>
-  <dt>
-    <p><strong>-f</strong>,<strong> --fork</strong></p>
-  </dt>
-  <dd>
-    <p>Fork the specified <em>program</em> as a child process of <strong>unshare</strong> rather than running it directly.  This is useful when creating a new PID namespace.</p>
-  </dd>
-  <dt>
-    <p><strong>--mount-proc</strong>[<strong>=</strong><em>mountpoint</em>]</p>
-  </dt>
-  <dd>
-    <p>Just before running the program, mount the proc filesystem at <em>mountpoint</em> (default is /proc).  This is useful when creating a new PID namespace.  It also implies creating a new mount namespace since the /proc mount would otherwise mess up existing programs on the system.  The new proc filesystem is explicitly mounted as private (with MS_PRIVATE|MS_REC).</p>
-  </dd>
-  <dt>
-    <p><strong>-r</strong>,<strong> --map-root-user</strong></p>
-  </dt>
-  <dd>
-    <p>Run the program only after the current effective user and group IDs have been mapped to the superuser UID and GID in the newly created user namespace.  This makes it possible to conveniently gain capabilities needed to manage various aspects of the newly created namespaces (such as configuring interfaces in the network namespace or mounting filesystems in the mount namespace) even when run unprivileged.  As a mere convenience feature, it does not support more sophisticated use cases, such as mapping multiple ranges of UIDs and GIDs. This option implies <strong>--setgroups=deny</strong>.</p>
-  </dd>
-  <dt>
-    <p><strong>--propagation private</strong>|<strong>shared</strong>|<strong>slave</strong>|<strong>unchanged</strong></p>
-  </dt>
-  <dd>
-    <p>Recursively set the mount propagation flag in the new mount namespace.  The default is to set the propagation to <em>private</em>.  It is possible to disable this feature with the argument <strong>unchanged</strong>.  The option is silently ignored when the mount namespace (<strong>--mount</strong>) is not requested.</p>
-  </dd>
-  <dt>
-    <p><strong>--setgroups allow</strong>|<strong>deny</strong></p>
-  </dt>
-  <dd>
-    <p>Allow or deny the <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> syscall in a user namespace.</p><p>To be able to call <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a>, the calling process must at least have CAP_SETGID. But since Linux 3.19 a further restriction applies: the kernel gives permission to call <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> only after the GID map (<strong>/proc/</strong><em>pid</em><strong>/gid_map</strong>) has been set. The GID map is writable by root when <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> is enabled (i.e. <strong>allow</strong>, the default), and the GID map becomes writable by unprivileged processes when <a href="../man2/setgroups.2.html"><strong>setgroups</strong>(2)</a> is permanently disabled (with <strong>deny</strong>).</p>
-  </dd>
-  <dt>
-    <p><strong>-V</strong>,<strong> --version</strong></p>
-  </dt>
-  <dd>
-    <p>Display version information and exit.</p>
-  </dd>
-  <dt>
     <p><strong>-h</strong>,<strong> --help</strong></p>
   </dt>
   <dd>
     <p>Display help text and exit.</p>
   </dd>
-
-</dl>
-
-        </div>
-      </section>
-
-      <section>
-        <h2 class="font-effect-shadow-multiple">EXAMPLES</h2>
-        <div class="sectioncontent">
-
-<dl class='dl-vertical'>
   <dt>
-    <p><strong># unshare --fork --pid --mount-proc readlink /proc/self</strong> 1</p>
+    <p><strong>-i</strong>,<strong> --ipc</strong></p>
   </dt>
   <dd>
-    <p>Establish a PID namespace, ensure we're PID 1 in it against a newly mounted procfs instance.</p>
+    <p>Unshare the IPC namespace.</p>
   </dd>
   <dt>
-    <p><strong>$ unshare --map-root-user --user sh -c whoami</strong> root</p>
+    <p><strong>-m</strong>,<strong> --mount</strong></p>
   </dt>
   <dd>
-    <p>Establish a user namespace as an unprivileged user with a root user within it.</p>
+    <p>Unshare the mount namespace.</p>
   </dd>
   <dt>
-    <p><strong># touch /root/uts-ns</strong> <strong># unshare --uts=/root/uts-ns hostname FOO</strong> <strong># nsenter --uts=/root/uts-ns hostname</strong> FOO <strong># umount /root/uts-ns</strong></p>
+    <p><strong>-n</strong>,<strong> --net</strong></p>
   </dt>
   <dd>
-    <p>Establish a persistent UTS namespace, and modify the hostname.  The namespace is then entered with <strong>nsenter</strong>.  The namespace is destroyed by unmounting the bind reference.</p>
+    <p>Unshare the network namespace.</p>
   </dd>
   <dt>
-    <p><strong># mount --bind /root/namespaces /root/namespaces</strong> <strong># mount --make-private /root/namespaces</strong> <strong># touch /root/namespaces/mnt</strong> <strong># unshare --mount=/root/namespaces/mnt</strong></p>
+    <p><strong>-p</strong>,<strong> --pid</strong></p>
   </dt>
   <dd>
-    <p>Establish a persistent mount namespace referenced by the bind mount /root/namespaces/mnt.  This example shows a portable solution, because it makes sure that the bind mount is created on a shared filesystem.</p>
+    <p>Unshare the pid namespace. See also the <strong>--fork</strong> and <strong>--mount-proc</strong> options.</p>
+  </dd>
+  <dt>
+    <p><strong>-u</strong>,<strong> --uts</strong></p>
+  </dt>
+  <dd>
+    <p>Unshare the UTS namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>-U</strong>,<strong> --user</strong></p>
+  </dt>
+  <dd>
+    <p>Unshare the user namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>-f</strong>,<strong> --fork</strong></p>
+  </dt>
+  <dd>
+    <p>Fork the specified <em>program</em> as a child process of <strong>unshare</strong> rather than running it directly.  This is useful when creating a new pid namespace.</p>
+  </dd>
+  <dt>
+    <p><strong>--mount-proc</strong>[=<em>mountpoint</em>]</p>
+  </dt>
+  <dd>
+    <p>Just before running the program, mount the proc filesystem at <em>mountpoint</em> (default is /proc).  This is useful when creating a new pid namespace.  It also implies creating a new mount namespace since the /proc mount would otherwise mess up existing programs on the system.  The new proc filesystem is explicitly mounted as private (by MS_PRIVATE|MS_REC).</p>
+  </dd>
+  <dt>
+    <p><strong>-r</strong>,<strong> --map-root-user</strong></p>
+  </dt>
+  <dd>
+    <p>Run the program only after the current effective user and group IDs have been mapped to the superuser UID and GID in the newly created user namespace.  This makes it possible to conveniently gain capabilities needed to manage various aspects of the newly created namespaces (such as configuring interfaces in the network namespace or mounting filesystems in the mount namespace) even when run unprivileged.  As a mere convenience feature, it does not support more sophisticated use cases, such as mapping multiple ranges of UIDs and GIDs.</p>
   </dd>
 
 </dl>
@@ -299,9 +234,16 @@
       </section>
 
       <section>
-        <h2 class="font-effect-shadow-multiple">AUTHORS</h2>
+        <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>Mikhail Gusarov</p><p>Karel Zak</p>
+<p>None known so far.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-effect-shadow-multiple">AUTHOR</h2>
+        <div class="sectioncontent">
+<p>Mikhail Gusarov &lt;dottedmag@dottedmag.net&gt;</p>
         </div>
       </section>
 
@@ -313,8 +255,8 @@
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="unicode_stop.1.html"><span aria-hidden="true">&larr;</span> unicode_stop.1: Revert keyboard and console from unicode mode</a></li>
-   <li class="next"><a href="updatedb.1.html">updatedb.1: Update a file name database <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="unshar.1.html"><span aria-hidden="true">&larr;</span> unshar.1: Unpack a shar archive</a></li>
+   <li class="next"><a href="unshield.1.html">unshield.1: Extract cab files from an installshield installer archive <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 

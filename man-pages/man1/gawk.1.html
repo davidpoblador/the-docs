@@ -221,7 +221,7 @@
     <p><strong>-\^-debug</strong>[<strong>=</strong><em>file</em>]</p>
   </dt>
   <dd>
-    <p>Enable debugging of \*(AK programs. By default, the debugger reads commands interactively from the keyboard (standard input). The optional <em>file</em> argument specifies a file with a list of commands for the debugger to execute non-interactively.</p>
+    <p>Enable debugging of \*(AK programs. By default, the debugger reads commands interactively from the terminal. The optional <em>file</em> argument specifies a file with a list of commands for the debugger to execute non-interactively.</p>
   </dd>
   <dt>
     <p><strong>-e </strong><em>program-text</em></p>
@@ -353,7 +353,7 @@
     <p><strong>-\^-pretty-print</strong>[<strong>=</strong><em>file</em>]</p>
   </dt>
   <dd>
-    <p>Output a pretty printed version of the program to <em>file</em>. If no <em>file</em> is provided, <em>gawk</em> uses a file named <strong>awkprof.out</strong> in the current directory. Implies <strong>-\^-no-optimize</strong>.</p>
+    <p>Output a pretty printed version of the program to <em>file</em>. If no <em>file</em> is provided, <em>gawk</em> uses a file named <strong>awkprof.out</strong> in the current directory.</p>
   </dd>
   <dt>
     <p><strong>-O</strong></p>
@@ -365,7 +365,7 @@
     <p><strong>-\^-optimize</strong></p>
   </dt>
   <dd>
-    <p>Enable <em>gawk</em>'s default optimizations upon the internal representation of the program. Currently, this includes simple constant-folding, and tail call elimination for recursive functions. This option is on by default.</p>
+    <p>Enable optimizations upon the internal representation of the program. Currently, this includes simple constant-folding, and tail call elimination for recursive functions. The <em>gawk</em> maintainer hopes to add additional optimizations over time.</p>
   </dd>
   <dt>
     <p><strong>-p</strong>[<em>prof-file</em>]</p>
@@ -377,7 +377,7 @@
     <p><strong>-\^-profile</strong>[<strong>=</strong><em>prof-file</em>]</p>
   </dt>
   <dd>
-    <p>Start a profiling session, and send the profiling data to <em>prof-file</em>. The default is <strong>awkprof.out</strong>. The profile contains execution counts of each statement in the program in the left margin and function call counts for each user-defined function. Implies <strong>-\^-no-optimize</strong>.</p>
+    <p>Start a profiling session, and send the profiling data to <em>prof-file</em>. The default is <strong>awkprof.out</strong>. The profile contains execution counts of each statement in the program in the left margin and function call counts for each user-defined function.</p>
   </dd>
   <dt>
     <p><strong>-P</strong></p>
@@ -396,6 +396,12 @@
   </dt>
   <dd>
     <p><strong>&#92;x</strong> escape sequences are not recognized.</p>
+  </dd>
+  <dt>
+    <p>&bull;</p>
+  </dt>
+  <dd>
+    <p>Only space and tab act as field separators when <strong>FS</strong> is set to a single space, newline does not.</p>
   </dd>
   <dt>
     <p>&bull;</p>
@@ -430,18 +436,6 @@
   </dt>
   <dd>
     <p>Enable the use of <em>interval expressions</em> in regular expression matching (see <strong>Regular Expressions</strong>, below). Interval expressions were not traditionally available in the \*(AK language.  The \*(PX standard added them, to make <em>awk</em> and <em>egrep</em> consistent with each other. They are enabled by default, but this option remains for use with <strong>-\^-traditional</strong>.</p>
-  </dd>
-  <dt>
-    <p><strong>-s</strong></p>
-  </dt>
-  <dd>
-    
-  </dd>
-  <dt>
-    <p><strong>-\^-no-optimize</strong></p>
-  </dt>
-  <dd>
-    <p>Disable <em>gawk</em>'s default optimizations upon the internal representation of the program.</p>
   </dd>
   <dt>
     <p><strong>-S</strong></p>
@@ -494,7 +488,7 @@
       <section>
         <h2 class="font-effect-shadow-multiple">AWK PROGRAM EXECUTION</h2>
         <div class="sectioncontent">
-<p>An \*(AK program consists of a sequence of pattern-action statements and optional function definitions.</p><p><strong>@include "</strong><em>filename</em><strong>"</strong></p><p><strong>@load "</strong><em>filename</em><strong>"</strong></p><p><em>pattern</em><strong>	{ </strong><em>action statements</em><strong> }</strong></p><p><strong>function </strong><em>name</em><strong>(</strong><em>parameter list</em><strong>) { </strong><em>statements</em><strong> }</strong></p><p><em>Gawk</em> first reads the program source from the <em>program-file</em>(s) if specified, from arguments to <strong>-\^-source</strong>, or from the first non-option argument on the command line. The <strong>-f</strong> and <strong>-\^-source</strong> options may be used multiple times on the command line. <em>Gawk</em> reads the program text as if all the <em>program-file</em>s and command line source texts had been concatenated together.  This is useful for building libraries of \*(AK functions, without having to include them in each new \*(AK program that uses them.  It also provides the ability to mix library functions with command line programs.</p><p>In addition, lines beginning with <strong>@include</strong> may be used to include other source files into your program, making library use even easier.  This is equivalent to using the <strong>-i</strong> option.</p><p>Lines beginning with <strong>@load</strong> may be used to load shared libraries into your program.  This is equivalent to using the <strong>-l</strong> option.</p><p>The environment variable <strong>AWKPATH</strong> specifies a search path to use when finding source files named with the <strong>-f</strong> and <strong>-i</strong> options.  If this variable does not exist, the default path is <strong>".:/usr/local/share/awk"</strong>. (The actual directory may vary, depending upon how <em>gawk</em> was built and installed.) If a file name given to the <strong>-f</strong> option contains a &ldquo;/&rdquo; character, no path search is performed.</p><p>The environment variable <strong>AWKLIBPATH</strong> specifies a search path to use when finding source files named with the <strong>-l</strong> option.  If this variable does not exist, the default path is <strong>"/usr/local/lib/gawk"</strong>. (The actual directory may vary, depending upon how <em>gawk</em> was built and installed.)</p><p><em>Gawk</em> executes \*(AK programs in the following order. First, all variable assignments specified via the <strong>-v</strong> option are performed. Next, <em>gawk</em> compiles the program into an internal form. Then, <em>gawk</em> executes the code in the <strong>BEGIN</strong> rule(s) (if any), and then proceeds to read each file named in the <strong>ARGV</strong> array (up to <strong>ARGV[ARGC]</strong>). If there are no files named on the command line, <em>gawk</em> reads the standard input.</p><p>If a filename on the command line has the form <em>var</em><strong>=</strong><em>val</em> it is treated as a variable assignment.  The variable <em>var</em> will be assigned the value <em>val</em>. (This happens after any <strong>BEGIN</strong> rule(s) have been run.) Command line variable assignment is most useful for dynamically assigning values to the variables \*(AK uses to control how input is broken into fields and records. It is also useful for controlling state if multiple passes are needed over a single data file.</p><p>If the value of a particular element of <strong>ARGV</strong> is empty (<strong>""</strong>), <em>gawk</em> skips over it.</p><p>For each input file, if a <strong>BEGINFILE</strong> rule exists, <em>gawk</em> executes the associated code before processing the contents of the file. Similarly, <em>gawk</em> executes the code associated with <strong>ENDFILE</strong> after processing the file.</p><p>For each record in the input, <em>gawk</em> tests to see if it matches any <em>pattern</em> in the \*(AK program. For each pattern that the record matches, <em>gawk</em> executes the associated <em>action</em>. The patterns are tested in the order they occur in the program.</p><p>Finally, after all the input is exhausted, <em>gawk</em> executes the code in the <strong>END</strong> rule(s) (if any).</p><h3>Command Line Directories</h3>
+<p>An \*(AK program consists of a sequence of pattern-action statements and optional function definitions.</p><p><strong>@include "</strong><em>filename</em><strong>"</strong></p><p><strong>@load "</strong><em>filename</em><strong>"</strong></p><p><em>pattern</em><strong>	{ </strong><em>action statements</em><strong> }</strong></p><p><strong>function </strong><em>name</em><strong>(</strong><em>parameter list</em><strong>) { </strong><em>statements</em><strong> }</strong></p><p><em>Gawk</em> first reads the program source from the <em>program-file</em>(s) if specified, from arguments to <strong>-\^-source</strong>, or from the first non-option argument on the command line. The <strong>-f</strong> and <strong>-\^-source</strong> options may be used multiple times on the command line. <em>Gawk</em> reads the program text as if all the <em>program-file</em>s and command line source texts had been concatenated together.  This is useful for building libraries of \*(AK functions, without having to include them in each new \*(AK program that uses them.  It also provides the ability to mix library functions with command line programs.</p><p>In addition, lines beginning with <strong>@include</strong> may be used to include other source files into your program, making library use even easier.  This is equivalent to using the <strong>-i</strong> option.</p><p>Lines beginning with <strong>@load</strong> may be used to load shared libraries into your program.  This is equivalent to using the <strong>-l</strong> option.</p><p>The environment variable <strong>AWKPATH</strong> specifies a search path to use when finding source files named with the <strong>-f</strong> and <strong>-i</strong> options.  If this variable does not exist, the default path is <strong>".:/usr/local/share/awk"</strong>. (The actual directory may vary, depending upon how <em>gawk</em> was built and installed.) If a file name given to the <strong>-f</strong> option contains a &ldquo;/&rdquo; character, no path search is performed.</p><p>The environment variable <strong>AWKLIBPATH</strong> specifies a search path to use when finding source files named with the <strong>-l</strong> option.  If this variable does not exist, the default path is <strong>".:/usr/local/lib/gawk"</strong>. (The actual directory may vary, depending upon how <em>gawk</em> was built and installed.)</p><p><em>Gawk</em> executes \*(AK programs in the following order. First, all variable assignments specified via the <strong>-v</strong> option are performed. Next, <em>gawk</em> compiles the program into an internal form. Then, <em>gawk</em> executes the code in the <strong>BEGIN</strong> rule(s) (if any), and then proceeds to read each file named in the <strong>ARGV</strong> array (up to <strong>ARGV[ARGC]</strong>). If there are no files named on the command line, <em>gawk</em> reads the standard input.</p><p>If a filename on the command line has the form <em>var</em><strong>=</strong><em>val</em> it is treated as a variable assignment.  The variable <em>var</em> will be assigned the value <em>val</em>. (This happens after any <strong>BEGIN</strong> rule(s) have been run.) Command line variable assignment is most useful for dynamically assigning values to the variables \*(AK uses to control how input is broken into fields and records. It is also useful for controlling state if multiple passes are needed over a single data file.</p><p>If the value of a particular element of <strong>ARGV</strong> is empty (<strong>""</strong>), <em>gawk</em> skips over it.</p><p>For each input file, if a <strong>BEGINFILE</strong> rule exists, <em>gawk</em> executes the associated code before processing the contents of the file. Similarly, <em>gawk</em> executes the code associated with <strong>ENDFILE</strong> after processing the file.</p><p>For each record in the input, <em>gawk</em> tests to see if it matches any <em>pattern</em> in the \*(AK program. For each pattern that the record matches, <em>gawk</em> executes the associated <em>action</em>. The patterns are tested in the order they occur in the program.</p><p>Finally, after all the input is exhausted, <em>gawk</em> executes the code in the <strong>END</strong> rule(s) (if any).</p><h3>Command Line Directories</h3>
 <p>According to POSIX, files named on the <em>awk</em> command line must be text files.  The behavior is ``undefined'' if they are not.  Most versions of <em>awk</em> treat a directory on the command line as a fatal error.</p><p>Starting with version 4.0 of <em>gawk</em>, a directory on the command line produces a warning, but is otherwise skipped.  If either of the <strong>-\^-posix</strong> or <strong>-\^-traditional</strong> options is given, then <em>gawk</em> reverts to treating directories on the command line as a fatal error.</p>
 
         </div>
@@ -506,7 +500,7 @@
 <p>\*(AK variables are dynamic; they come into existence when they are first used.  Their values are either floating-point numbers or strings, or both, depending upon how they are used.  \*(AK also has one dimensional arrays; arrays with multiple dimensions may be simulated. <em>Gawk</em> provides true arrays of arrays; see <strong>Arrays</strong>, below. Several pre-defined variables are set as a program runs; these are described as needed and summarized below.</p><h3>Records</h3>
 <p>Normally, records are separated by newline characters.  You can control how records are separated by assigning values to the built-in variable <strong>RS</strong>. If <strong>RS</strong> is any single character, that character separates records. Otherwise, <strong>RS</strong> is a regular expression.  Text in the input that matches this regular expression separates the record. However, in compatibility mode, only the first character of its string value is used for separating records. If <strong>RS</strong> is set to the null string, then records are separated by blank lines. When <strong>RS</strong> is set to the null string, the newline character always acts as a field separator, in addition to whatever value <strong>FS</strong> may have.</p>
 <h3>Fields</h3>
-<p>As each input record is read, <em>gawk</em> splits the record into <em>fields</em>, using the value of the <strong>FS</strong> variable as the field separator. If <strong>FS</strong> is a single character, fields are separated by that character. If <strong>FS</strong> is the null string, then each individual character becomes a separate field. Otherwise, <strong>FS</strong> is expected to be a full regular expression. In the special case that <strong>FS</strong> is a single space, fields are separated by runs of spaces and/or tabs and/or newlines. <strong>NOTE</strong>: The value of <strong>IGNORECASE</strong> (see below) also affects how fields are split when <strong>FS</strong> is a regular expression, and how records are separated when <strong>RS</strong> is a regular expression.</p><p>If the <strong>FIELDWIDTHS</strong> variable is set to a space separated list of numbers, each field is expected to have fixed width, and <em>gawk</em> splits up the record using the specified widths.  The value of <strong>FS</strong> is ignored. Assigning a new value to <strong>FS</strong> or <strong>FPAT</strong> overrides the use of <strong>FIELDWIDTHS</strong>.</p><p>Similarly, if the <strong>FPAT</strong> variable is set to a string representing a regular expression, each field is made up of text that matches that regular expression. In this case, the regular expression describes the fields themselves, instead of the text that separates the fields. Assigning a new value to <strong>FS</strong> or <strong>FIELDWIDTHS</strong> overrides the use of <strong>FPAT</strong>.</p><p>Each field in the input record may be referenced by its position: <strong>$1</strong>, <strong>$2</strong>, and so on. <strong>$0</strong> is the whole record. Fields need not be referenced by constants:</p><p>n = 5</p><p>print $n</p><p>prints the fifth field in the input record.</p><p>The variable <strong>NF</strong> is set to the total number of fields in the input record.</p><p>References to non-existent fields (i.e., fields after <strong>$NF</strong>) produce the null-string.  However, assigning to a non-existent field (e.g., <strong>$(NF+2) = 5</strong>) increases the value of <strong>NF</strong>, creates any intervening fields with the null string as their values, and causes the value of <strong>$0</strong> to be recomputed, with the fields being separated by the value of <strong>OFS</strong>. References to negative numbered fields cause a fatal error. Decrementing <strong>NF</strong> causes the values of fields past the new value to be lost, and the value of <strong>$0</strong> to be recomputed, with the fields being separated by the value of <strong>OFS</strong>.</p><p>Assigning a value to an existing field causes the whole record to be rebuilt when <strong>$0</strong> is referenced. Similarly, assigning a value to <strong>$0</strong> causes the record to be resplit, creating new values for the fields.</p>
+<p>As each input record is read, <em>gawk</em> splits the record into <em>fields</em>, using the value of the <strong>FS</strong> variable as the field separator. If <strong>FS</strong> is a single character, fields are separated by that character. If <strong>FS</strong> is the null string, then each individual character becomes a separate field. Otherwise, <strong>FS</strong> is expected to be a full regular expression. In the special case that <strong>FS</strong> is a single space, fields are separated by runs of spaces and/or tabs and/or newlines. (But see the section <strong>POSIX COMPATIBILITY</strong>, below). <strong>NOTE</strong>: The value of <strong>IGNORECASE</strong> (see below) also affects how fields are split when <strong>FS</strong> is a regular expression, and how records are separated when <strong>RS</strong> is a regular expression.</p><p>If the <strong>FIELDWIDTHS</strong> variable is set to a space separated list of numbers, each field is expected to have fixed width, and <em>gawk</em> splits up the record using the specified widths.  The value of <strong>FS</strong> is ignored. Assigning a new value to <strong>FS</strong> or <strong>FPAT</strong> overrides the use of <strong>FIELDWIDTHS</strong>.</p><p>Similarly, if the <strong>FPAT</strong> variable is set to a string representing a regular expression, each field is made up of text that matches that regular expression. In this case, the regular expression describes the fields themselves, instead of the text that separates the fields. Assigning a new value to <strong>FS</strong> or <strong>FIELDWIDTHS</strong> overrides the use of <strong>FPAT</strong>.</p><p>Each field in the input record may be referenced by its position: <strong>$1</strong>, <strong>$2</strong>, and so on. <strong>$0</strong> is the whole record. Fields need not be referenced by constants:</p><p>n = 5</p><p>print $n</p><p>prints the fifth field in the input record.</p><p>The variable <strong>NF</strong> is set to the total number of fields in the input record.</p><p>References to non-existent fields (i.e., fields after <strong>$NF</strong>) produce the null-string.  However, assigning to a non-existent field (e.g., <strong>$(NF+2) = 5</strong>) increases the value of <strong>NF</strong>, creates any intervening fields with the null string as their values, and causes the value of <strong>$0</strong> to be recomputed, with the fields being separated by the value of <strong>OFS</strong>. References to negative numbered fields cause a fatal error. Decrementing <strong>NF</strong> causes the values of fields past the new value to be lost, and the value of <strong>$0</strong> to be recomputed, with the fields being separated by the value of <strong>OFS</strong>.</p><p>Assigning a value to an existing field causes the whole record to be rebuilt when <strong>$0</strong> is referenced. Similarly, assigning a value to <strong>$0</strong> causes the record to be resplit, creating new values for the fields.</p>
 <h3>Built-in Variables</h3>
 <p><em>Gawk\^</em>'s built-in variables are:</p>
 <dl class='dl-vertical'>
@@ -544,13 +538,13 @@
     <p><strong>ENVIRON</strong></p>
   </dt>
   <dd>
-    <p>An array containing the values of the current environment. The array is indexed by the environment variables, each element being the value of that variable (e.g., <strong>ENVIRON["HOME"]</strong> might be <strong>"/home/arnold"</strong>).</p><p>In POSIX mode, changing this array does not affect the environment seen by programs which <em>gawk</em> spawns via redirection or the <strong>system()</strong> function. Otherwise, <em>gawk</em> updates its real environment so that programs it spawns see the changes.</p>
+    <p>An array containing the values of the current environment. The array is indexed by the environment variables, each element being the value of that variable (e.g., <strong>ENVIRON["HOME"]</strong> might be <strong>"/home/arnold"</strong>). Changing this array does not affect the environment seen by programs which <em>gawk</em> spawns via redirection or the <strong>system()</strong> function.</p>
   </dd>
   <dt>
     <p><strong>ERRNO</strong></p>
   </dt>
   <dd>
-    <p>If a system error occurs either doing a redirection for <strong>getline</strong>, during a read for <strong>getline</strong>, or during a <strong>close()</strong>, then <strong>ERRNO</strong> will contain a string describing the error. The value is subject to translation in non-English locales. If the string in <strong>ERRNO</strong> corresponds to a system error in the <a href="../man3/errno.3.html"><strong>errno</strong>(3)</a> variable, then the numeric value can be found in <strong>PROCINFO["errno"].</strong> For non-system errors, <strong>PROCINFO["errno"]</strong> will be zero.</p>
+    <p>If a system error occurs either doing a redirection for <strong>getline</strong>, during a read for <strong>getline</strong>, or during a <strong>close()</strong>, then <strong>ERRNO</strong> will contain a string describing the error. The value is subject to translation in non-English locales.</p>
   </dd>
   <dt>
     <p><strong>FIELDWIDTHS</strong></p>
@@ -649,10 +643,10 @@
     <p>The value of the <a href="../man2/getegid.2.html"><strong>getegid</strong>(2)</a> system call.</p>
   </dd>
   <dt>
-    <p><strong>PROCINFO["errno"]</strong></p>
+    <p><strong>PROCINFO["strftime"]</strong></p>
   </dt>
   <dd>
-    <p>The value of <a href="../man3/errno.3.html"><strong>errno</strong>(3)</a> when <strong>ERRNO</strong> is set to the associated error message.</p>
+    <p>The default time format string for <strong>strftime()</strong>.</p>
   </dd>
   <dt>
     <p><strong>PROCINFO["euid"]</strong></p>
@@ -667,12 +661,6 @@
     <p><strong>"FS"</strong> if field splitting with <strong>FS</strong> is in effect, <strong>"FPAT"</strong> if field splitting with <strong>FPAT</strong> is in effect, or <strong>"FIELDWIDTHS"</strong> if field splitting with <strong>FIELDWIDTHS</strong> is in effect.</p>
   </dd>
   <dt>
-    <p><strong>PROCINFO["gid"]</strong></p>
-  </dt>
-  <dd>
-    <p>The value of the <a href="../man2/getgid.2.html"><strong>getgid</strong>(2)</a> system call.</p>
-  </dd>
-  <dt>
     <p><strong>PROCINFO["identifiers"]</strong></p>
   </dt>
   <dd>
@@ -685,16 +673,10 @@
     <p>The identifier is an array.</p>
   </dd>
   <dt>
-    <p><strong>"builtin"</strong></p>
-  </dt>
-  <dd>
-    <p>The identifier is a built-in function.</p>
-  </dd>
-  <dt>
     <p><strong>"extension"</strong></p>
   </dt>
   <dd>
-    <p>The identifier is an extension function loaded via <strong>@load</strong> or <strong>-l</strong>.</p>
+    <p>The identifier is an extension function loaded via <strong>@load</strong>.</p>
   </dd>
   <dt>
     <p><strong>"scalar"</strong></p>
@@ -719,6 +701,12 @@
 
   </dd>
   <dt>
+    <p><strong>PROCINFO["gid"]</strong></p>
+  </dt>
+  <dd>
+    <p>The value of the <a href="../man2/getgid.2.html"><strong>getgid</strong>(2)</a> system call.</p>
+  </dd>
+  <dt>
     <p><strong>PROCINFO["pgrpid"]</strong></p>
   </dt>
   <dd>
@@ -737,106 +725,64 @@
     <p>The parent process ID of the current process.</p>
   </dd>
   <dt>
-    <p><strong>PROCINFO["strftime"]</strong></p>
-  </dt>
-  <dd>
-    <p>The default time format string for <strong>strftime()</strong>.</p>
-  </dd>
-  <dt>
     <p><strong>PROCINFO["uid"]</strong></p>
   </dt>
   <dd>
     <p>The value of the <a href="../man2/getuid.2.html"><strong>getuid</strong>(2)</a> system call.</p>
   </dd>
   <dt>
-    <p><strong>PROCINFO["version"]</strong></p>
+    <p><strong>PROCINFO["sorted_in"]</strong></p>
   </dt>
   <dd>
-    <p>the version of <em>gawk</em>.</p>
-  </dd>
-
-</dl>
-<p>The following elements are present if loading dynamic extensions is available:</p>
-<dl class='dl-vertical'>
-  <dt>
-    <p><strong>PROCINFO["api_major"]</strong></p>
-  </dt>
-  <dd>
-    <p>The major version of the extension API.</p>
+    <p>If this element exists in <strong>PROCINFO</strong>, then its value controls the order in which array elements are traversed in <strong>for</strong> loops. Supported values are <strong>"@ind_str_asc"</strong>, <strong>"@ind_num_asc"</strong>, <strong>"@val_type_asc"</strong>, <strong>"@val_str_asc"</strong>, <strong>"@val_num_asc"</strong>, <strong>"@ind_str_desc"</strong>, <strong>"@ind_num_desc"</strong>, <strong>"@val_type_desc"</strong>, <strong>"@val_str_desc"</strong>, <strong>"@val_num_desc"</strong>, and <strong>"@unsorted"</strong>. The value can also be the name of any comparison function defined as follows:</p><p><strong>function cmp_func(i1, v1, i2, v2)</strong></p><p>where <em>i1</em> and <em>i2</em> are the indices, and <em>v1</em> and <em>v2</em> are the corresponding values of the two elements being compared. It should return a number less than, equal to, or greater than 0, depending on how the elements of the array are to be ordered.</p>
   </dd>
   <dt>
-    <p><strong>PROCINFO["api_minor"]</strong></p>
-  </dt>
-  <dd>
-    <p>The minor version of the extension API.</p>
-  </dd>
-
-</dl>
-<p>The following elements are available if MPFR support is compiled into <em>gawk\^</em>:</p>
-<dl class='dl-vertical'>
-  <dt>
-    <p><strong>PROCINFO["gmp_version"]</strong></p>
-  </dt>
-  <dd>
-    <p>The version of the GNU MP library used for arbitrary precision number support in <em>gawk</em>.</p>
-  </dd>
-  <dt>
-    <p><strong>PROCINFO["mpfr_version"]</strong></p>
-  </dt>
-  <dd>
-    <p>The version of the GNU MPFR library used for arbitrary precision number support in <em>gawk</em>.</p>
-  </dd>
-  <dt>
-    <p><strong>PROCINFO["prec_max"]</strong></p>
-  </dt>
-  <dd>
-    <p>The maximum precision supported by the GNU MPFR library for arbitrary precision floating-point numbers.</p>
-  </dd>
-  <dt>
-    <p><strong>PROCINFO["prec_min"]</strong></p>
-  </dt>
-  <dd>
-    <p>The minimum precision allowed by the GNU MPFR library for arbitrary precision floating-point numbers.</p>
-  </dd>
-
-</dl>
-<p>The following elements may set by a program to change <em>gawk</em>'s behavior:</p>
-<dl class='dl-vertical'>
-  <dt>
-    <p><strong>PROCINFO["NONFATAL"]</strong></p>
-  </dt>
-  <dd>
-    <p>If this exists, then I/O errors for all output redirections become nonfatal.</p>
-  </dd>
-  <dt>
-    <p><strong>PROCINFO["</strong><em>output_name</em><strong>", "NONFATAL"]</strong></p>
-  </dt>
-  <dd>
-    <p>Make output errors for <em>output_name</em> be nonfatal.</p>
-  </dd>
-  <dt>
-    <p><strong>PROCINFO["</strong><em>command</em><strong>", "pty"]</strong></p>
-  </dt>
-  <dd>
-    <p>Use a pseudo-tty for two-way communication with <em>command</em> instead of setting up two one-way pipes.</p>
-  </dd>
-  <dt>
-    <p><strong>PROCINFO["</strong><em>input</em><strong>", "READ_TIMEOUT"]</strong></p>
+    <p><strong>PROCINFO["input", "READ_TIMEOUT"]</strong></p>
   </dt>
   <dd>
     <p>The timeout in milliseconds for reading data from <em>input</em>, where <em>input</em> is a redirection string or a filename. A value of zero or less than zero means no timeout.</p>
   </dd>
   <dt>
-    <p><strong>PROCINFO["</strong><em>input\^</em><strong>", "RETRY"]</strong></p>
+    <p><strong>PROCINFO["mpfr_version"]</strong></p>
   </dt>
   <dd>
-    <p>If an I/O error that may be retried occurs when reading data from <em>input</em>, and this array entry exists, then <strong>getline</strong> will return -2 instead of following the default behavior of returning -1 and configuring <em>input</em> to return no further data. An I/O error that may be retried is one where <a href="../man3/errno.3.html"><strong>errno</strong>(3)</a> has the value EAGAIN, EWOULDBLOCK, EINTR, or ETIMEDOUT. This may be useful in conjunction with <strong>PROCINFO["</strong><em>input\^</em><strong>", "READ_TIMEOUT"]</strong> or situations where a file descriptor has been configured to behave in a non-blocking fashion.</p>
+    <p>The version of the GNU MPFR library used for arbitrary precision number support in <em>gawk</em>. This entry is not present if MPFR support is not compiled into <em>gawk</em>.</p>
   </dd>
   <dt>
-    <p><strong>PROCINFO["sorted_in"]</strong></p>
+    <p><strong>PROCINFO["gmp_version"]</strong></p>
   </dt>
   <dd>
-    <p>If this element exists in <strong>PROCINFO</strong>, then its value controls the order in which array elements are traversed in <strong>for</strong> loops. Supported values are <strong>"@ind_str_asc"</strong>, <strong>"@ind_num_asc"</strong>, <strong>"@val_type_asc"</strong>, <strong>"@val_str_asc"</strong>, <strong>"@val_num_asc"</strong>, <strong>"@ind_str_desc"</strong>, <strong>"@ind_num_desc"</strong>, <strong>"@val_type_desc"</strong>, <strong>"@val_str_desc"</strong>, <strong>"@val_num_desc"</strong>, and <strong>"@unsorted"</strong>. The value can also be the name (as a <em>string</em>) of any comparison function defined as follows:</p><p><strong>function cmp_func(i1, v1, i2, v2)</strong></p><p>where <em>i1</em> and <em>i2</em> are the indices, and <em>v1</em> and <em>v2</em> are the corresponding values of the two elements being compared. It should return a number less than, equal to, or greater than 0, depending on how the elements of the array are to be ordered.</p>
+    <p>The version of the GNU MP library used for arbitrary precision number support in <em>gawk</em>. This entry is not present if MPFR support is not compiled into <em>gawk</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>PROCINFO["prec_max"]</strong></p>
+  </dt>
+  <dd>
+    <p>The maximum precision supported by the GNU MPFR library for arbitrary precision floating-point numbers. This entry is not present if MPFR support is not compiled into <em>gawk</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>PROCINFO["prec_min"]</strong></p>
+  </dt>
+  <dd>
+    <p>The minimum precision allowed by the GNU MPFR library for arbitrary precision floating-point numbers. This entry is not present if MPFR support is not compiled into <em>gawk</em>.</p>
+  </dd>
+  <dt>
+    <p><strong>PROCINFO["api_major"]</strong></p>
+  </dt>
+  <dd>
+    <p>The major version of the extension API. This entry is not present if loading dynamic extensions is not available.</p>
+  </dd>
+  <dt>
+    <p><strong>PROCINFO["api_minor"]</strong></p>
+  </dt>
+  <dd>
+    <p>The minor version of the extension API. This entry is not present if loading dynamic extensions is not available.</p>
+  </dd>
+  <dt>
+    <p><strong>PROCINFO["version"]</strong></p>
+  </dt>
+  <dd>
+    <p>the version of <em>gawk</em>.</p>
   </dd>
 
 </dl>
@@ -977,7 +923,7 @@ b = a ""
     <p><strong>&#92;x</strong><em>\^hex digits</em></p>
   </dt>
   <dd>
-    <p>The character represented by the string of hexadecimal digits following the <strong>&#92;x</strong>. Up to two following hexadecimal digits are considered part of the escape sequence. E.g., <strong>"&#92;x1B"</strong> is the \s-1ASCII\s+1 \s-1ESC\s+1 (escape) character.</p>
+    <p>The character represented by the string of hexadecimal digits following the <strong>&#92;x</strong>. As in ISO C, all following hexadecimal digits are considered part of the escape sequence. (This feature should tell us something about language design by committee.) E.g., <strong>"&#92;x1B"</strong> is the \s-1ASCII\s+1 \s-1ESC\s+1 (escape) character.</p>
   </dd>
   <dt>
     <p><strong>&#92;</strong><em>ddd</em></p>
@@ -1017,7 +963,7 @@ b = a ""
 <strong>!</strong><em> pattern</em>
 <em>pattern1</em><strong>, </strong><em>pattern2</em>
 </pre>
-<p><strong>BEGIN</strong> and <strong>END</strong> are two special kinds of patterns which are not tested against the input. The action parts of all <strong>BEGIN</strong> patterns are merged as if all the statements had been written in a single <strong>BEGIN</strong> rule.  They are executed before any of the input is read.  Similarly, all the <strong>END</strong> rules are merged, and executed when all the input is exhausted (or when an <strong>exit</strong> statement is executed). <strong>BEGIN</strong> and <strong>END</strong> patterns cannot be combined with other patterns in pattern expressions. <strong>BEGIN</strong> and <strong>END</strong> patterns cannot have missing action parts.</p><p><strong>BEGINFILE</strong> and <strong>ENDFILE</strong> are additional special patterns whose bodies are executed before reading the first record of each command line input file and after reading the last record of each file. Inside the <strong>BEGINFILE</strong> rule, the value of <strong>ERRNO</strong> will be the empty string if the file was opened successfully. Otherwise, there is some problem with the file and the code should use <strong>nextfile</strong> to skip it. If that is not done, <em>gawk</em> produces its usual fatal error for files that cannot be opened.</p><p>For <strong>/</strong><em>regular expression</em><strong>/</strong> patterns, the associated statement is executed for each input record that matches the regular expression. Regular expressions are the same as those in <strong>egrep</strong>(1), and are summarized below.</p><p>A <em>relational expression</em> may use any of the operators defined below in the section on actions. These generally test whether certain fields match certain regular expressions.</p><p>The <strong>&&</strong>, <strong>||</strong>, and <strong>!</strong> operators are logical AND, logical OR, and logical NOT, respectively, as in C. They do short-circuit evaluation, also as in C, and are used for combining more primitive pattern expressions.  As in most languages, parentheses may be used to change the order of evaluation.</p><p>The <strong>?\^:</strong> operator is like the same operator in C.  If the first pattern is true then the pattern used for testing is the second pattern, otherwise it is the third.  Only one of the second and third patterns is evaluated.</p><p>The <em>pattern1</em><strong>, </strong><em>pattern2</em> form of an expression is called a <em>range pattern</em>. It matches all input records starting with a record that matches <em>pattern1</em>, and continuing until a record that matches <em>pattern2</em>, inclusive.  It does not combine with any other sort of pattern expression.</p>
+<p><strong>BEGIN</strong> and <strong>END</strong> are two special kinds of patterns which are not tested against the input. The action parts of all <strong>BEGIN</strong> patterns are merged as if all the statements had been written in a single <strong>BEGIN</strong> rule.  They are executed before any of the input is read.  Similarly, all the <strong>END</strong> rules are merged, and executed when all the input is exhausted (or when an <strong>exit</strong> statement is executed). <strong>BEGIN</strong> and <strong>END</strong> patterns cannot be combined with other patterns in pattern expressions. <strong>BEGIN</strong> and <strong>END</strong> patterns cannot have missing action parts.</p><p><strong>BEGINFILE</strong> and <strong>ENDFILE</strong> are additional special patterns whose bodies are executed before reading the first record of each command line input file and after reading the last record of each file. Inside the <strong>BEGINFILE</strong> rule, the value of <strong>ERRNO</strong> will be the empty string if the file was opened successfully. Otherwise, there is some problem with the file and the code should use <strong>nextfile</strong> to skip it. If that is not done, <em>gawk</em> produces its usual fatal error for files that cannot be opened.</p><p>For <strong>/</strong><em>regular expression</em><strong>/</strong> patterns, the associated statement is executed for each input record that matches the regular expression. Regular expressions are the same as those in <a href="../man1/egrep.1.html"><strong>egrep</strong>(1)</a>, and are summarized below.</p><p>A <em>relational expression</em> may use any of the operators defined below in the section on actions. These generally test whether certain fields match certain regular expressions.</p><p>The <strong>&&</strong>, <strong>||</strong>, and <strong>!</strong> operators are logical AND, logical OR, and logical NOT, respectively, as in C. They do short-circuit evaluation, also as in C, and are used for combining more primitive pattern expressions.  As in most languages, parentheses may be used to change the order of evaluation.</p><p>The <strong>?\^:</strong> operator is like the same operator in C.  If the first pattern is true then the pattern used for testing is the second pattern, otherwise it is the third.  Only one of the second and third patterns is evaluated.</p><p>The <em>pattern1</em><strong>, </strong><em>pattern2</em> form of an expression is called a <em>range pattern</em>. It matches all input records starting with a record that matches <em>pattern1</em>, and continuing until a record that matches <em>pattern2</em>, inclusive.  It does not combine with any other sort of pattern expression.</p>
 <h3>Regular Expressions</h3>
 <p>Regular expressions are the extended kind found in <em>egrep</em>. They are composed of characters as follows:</p>
 <dl class='dl-vertical'>
@@ -1267,7 +1213,7 @@ b = a ""
     <p>Equivalence Classes</p>
   </dt>
   <dd>
-    <p>An equivalence class is a locale-specific name for a list of characters that are equivalent.  The name is enclosed in <strong>[=</strong> and <strong>=]</strong>. For example, the name <strong>e</strong> might be used to represent all of &ldquo;e&rdquo;, &ldquo;e\h'-\w:e:u'\'&rdquo;, and &ldquo;e\h'-\w:e:u'&#96;&rdquo;. In this case, <strong>[[=e=]]</strong> is a regular expression that matches any of <strong>e</strong>, <strong>e\h'-\w:e:u'\'</strong>, or <strong>e\h'-\w:e:u'&#96;</strong>.</p>
+    <p>An equivalence class is a locale-specific name for a list of characters that are equivalent.  The name is enclosed in <strong>[=</strong> and <strong>=]</strong>. For example, the name <strong>e</strong> might be used to represent all of &ldquo;e,&rdquo; &ldquo;e\h'-\w:e:u'\',&rdquo; and &ldquo;e\h'-\w:e:u'&#96;.&rdquo; In this case, <strong>[[=e=]]</strong> is a regular expression that matches any of <strong>e</strong>, <strong>e\h'-\w:e:u'\'</strong>, or <strong>e\h'-\w:e:u'&#96;</strong>.</p>
   </dd>
 
 </dl>
@@ -1516,7 +1462,7 @@ b = a ""
     <p><strong>system(</strong><em>cmd-line</em><strong>)</strong></p>
   </dt>
   <dd>
-    <p>Execute the command <em>cmd-line</em>, and return the exit status. (This may not be available on non-\*(PX systems.) See the manual for the full details on the exit status.</p>
+    <p>Execute the command <em>cmd-line</em>, and return the exit status. (This may not be available on non-\*(PX systems.)</p>
   </dd>
   <dt>
     <p><strong>fflush(</strong>[<em>file\^</em>]<strong>)</strong></p>
@@ -1548,7 +1494,7 @@ b = a ""
   </dd>
 
 </dl>
-<p>The <strong>getline</strong> command returns 1 on success, 0 on end of file, and -1 on an error. If the <a href="../man3/errno.3.html"><strong>errno</strong>(3)</a> value indicates that the I/O operation may be retried, and <strong>PROCINFO["</strong><em>input\^</em><strong>", "RETRY"]</strong> is set, then -2 will be returned instead of -1, and further calls to <strong>getline</strong> may be attempted. Upon an error, <strong>ERRNO</strong> is set to a string describing the problem.</p><p><strong>NOTE</strong>: Failure in opening a two-way socket results in a non-fatal error being returned to the calling function. If using a pipe, co-process, or socket to <strong>getline</strong>, or from <strong>print</strong> or <strong>printf</strong> within a loop, you <em>must</em> use <strong>close()</strong> to create new instances of the command or socket. \*(AK does not automatically close pipes, sockets, or co-processes when they return EOF.</p>
+<p>The <strong>getline</strong> command returns 1 on success, 0 on end of file, and -1 on an error. Upon an error, <strong>ERRNO</strong> is set to a string describing the problem.</p><p><strong>NOTE</strong>: Failure in opening a two-way socket results in a non-fatal error being returned to the calling function. If using a pipe, co-process, or socket to <strong>getline</strong>, or from <strong>print</strong> or <strong>printf</strong> within a loop, you <em>must</em> use <strong>close()</strong> to create new instances of the command or socket. \*(AK does not automatically close pipes, sockets, or co-processes when they return EOF.</p>
 <h3>The \fIprintf\fP\^ Statement</h3>
 <p>The \*(AK versions of the <strong>printf</strong> statement and <strong>sprintf()</strong> function (see below) accept the following conversion specification formats:</p>
 <dl class='dl-vertical'>
@@ -1777,12 +1723,6 @@ b = a ""
     <p>Truncate to integer.</p>
   </dd>
   <dt>
-    <p><strong>intdiv(</strong><em>num</em><strong>, </strong><em>denom</em><strong>, </strong><em>result</em><strong>)</strong></p>
-  </dt>
-  <dd>
-    <p>Truncate <em>num</em> and <em>denom</em> to integers. Return the quotient of <em>num</em> divided by <em>denom</em> in <em>result</em><strong>["quotient"]</strong> and the remainder in in <em>result</em><strong>["remainder"]</strong>. This is a <em>gawk</em> extension, primarily of value when working with arbitrarily large integers.</p>
-  </dd>
-  <dt>
     <p><strong>log(</strong><em>expr</em><strong>)</strong></p>
   </dt>
   <dd>
@@ -1924,7 +1864,7 @@ b = a ""
     <p><strong>strftime(</strong>[<em>format </em>[<strong>, </strong><em>timestamp</em>[<strong>, </strong><em>utc-flag</em>]]]<strong>)</strong></p>
   </dt>
   <dd>
-    <p>Format <em>timestamp</em> according to the specification in <em>format</em>. If <em>utc-flag</em> is present and is non-zero or non-null, the result is in UTC, otherwise the result is in local time. The <em>timestamp</em> should be of the same form as returned by <strong>systime()</strong>. If <em>timestamp</em> is missing, the current time of day is used. If <em>format</em> is missing, a default format equivalent to the output of <strong>date</strong>(1) is used. The default format is available in <strong>PROCINFO["strftime"]</strong>. See the specification for the <strong>strftime()</strong> function in ISO C for the format conversions that are guaranteed to be available.</p>
+    <p>Format <em>timestamp</em> according to the specification in <em>format</em>. If <em>utc-flag</em> is present and is non-zero or non-null, the result is in UTC, otherwise the result is in local time. The <em>timestamp</em> should be of the same form as returned by <strong>systime()</strong>. If <em>timestamp</em> is missing, the current time of day is used. If <em>format</em> is missing, a default format equivalent to the output of <a href="../man1/date.1.html"><strong>date</strong>(1)</a> is used. The default format is available in <strong>PROCINFO["strftime"]</strong>. See the specification for the <strong>strftime()</strong> function in ISO C for the format conversions that are guaranteed to be available.</p>
   </dd>
   <dt>
     <p><strong>systime()</strong></p>
@@ -1977,7 +1917,7 @@ b = a ""
 
 </dl>
 
-<h3>Type Functions</h3>
+<h3>Type Function</h3>
 <p>The following function is for use with multidimensional arrays.</p>
 <dl class='dl-vertical'>
   <dt>
@@ -1985,16 +1925,6 @@ b = a ""
   </dt>
   <dd>
     <p>Return true if <em>x</em> is an array, false otherwise.</p>
-  </dd>
-
-</dl>
-<p>You can tell the type of any variable or array element with the following function:</p>
-<dl class='dl-vertical'>
-  <dt>
-    <p><strong>typeof(</strong><em>x</em><strong>)</strong></p>
-  </dt>
-  <dd>
-    <p>Return a string indicating the type of <em>x</em>. The string will be one of <strong>"array"</strong>, <strong>"number"</strong>, <strong>"regexp"</strong>, <strong>"string"</strong>, <strong>"strnum"</strong>, or <strong>"undefined"</strong>.</p>
   </dd>
 
 </dl>
@@ -2041,7 +1971,7 @@ function  f(p, q,     a, b)	# a and b are local
 </pre>
 <p>The left parenthesis in a function call is required to immediately follow the function name, without any intervening whitespace. This avoids a syntactic ambiguity with the concatenation operator. This restriction does not apply to the built-in functions listed above.</p><p>Functions may call each other and may be recursive. Function parameters used as local variables are initialized to the null string and the number zero upon function invocation.</p><p>Use <strong>return</strong><em> expr</em> to return a value from a function.  The return value is undefined if no value is provided, or if the function returns by &ldquo;falling off&rdquo; the end.</p><p>As a <em>gawk</em> extension, functions may be called indirectly. To do this, assign the name of the function to be called, as a string, to a variable. Then use the variable as if it were the name of a function, prefixed with an <strong>@</strong> sign, like so:</p>
 <pre>
-function myfunc()
+function  myfunc()
 {
 	print "myfunc called"
 	.\|.\|.
@@ -2053,7 +1983,7 @@ function myfunc()
 	.\|.\|.
 }
 </pre>
-<p>As of version 4.1.2, this works with user-defined functions, built-in functions, and extension functions.</p><p>If <strong>-\^-lint</strong> has been provided, <em>gawk</em> warns about calls to undefined functions at parse time, instead of at run time. Calling an undefined function at run time is a fatal error.</p><p>The word <strong>func</strong> may be used in place of <strong>function</strong>, although this is deprecated.</p>
+<p>If <strong>-\^-lint</strong> has been provided, <em>gawk</em> warns about calls to undefined functions at parse time, instead of at run time. Calling an undefined function at run time is a fatal error.</p><p>The word <strong>func</strong> may be used in place of <strong>function</strong>, although this is deprecated.</p>
         </div>
       </section>
 
@@ -2313,14 +2243,14 @@ function myfunc()
       <section>
         <h2 class="font-effect-shadow-multiple">BUGS</h2>
         <div class="sectioncontent">
-<p>The <strong>-F</strong> option is not necessary given the command line variable assignment feature; it remains only for backwards compatibility.</p>
+<p>The <strong>-F</strong> option is not necessary given the command line variable assignment feature; it remains only for backwards compatibility.</p><p>Syntactically invalid single character programs tend to overflow the parse stack, generating a rather unhelpful message.  Such programs are surprisingly difficult to diagnose in the completely general case, and the effort to do so really is not worth it.</p>
         </div>
       </section>
 
       <section>
         <h2 class="font-effect-shadow-multiple">RELATED TO gawk&hellip;</h2>
         <div class="sectioncontent">
-<p><strong>egrep</strong>(1), <strong>sed</strong>(1), <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a>, <a href="../man2/getppid.2.html"><strong>getppid</strong>(2)</a>, <a href="../man2/getpgrp.2.html"><strong>getpgrp</strong>(2)</a>, <a href="../man2/getuid.2.html"><strong>getuid</strong>(2)</a>, <a href="../man2/geteuid.2.html"><strong>geteuid</strong>(2)</a>, <a href="../man2/getgid.2.html"><strong>getgid</strong>(2)</a>, <a href="../man2/getegid.2.html"><strong>getegid</strong>(2)</a>, <a href="../man2/getgroups.2.html"><strong>getgroups</strong>(2)</a>, <a href="../man3/usleep.3.html"><strong>usleep</strong>(3)</a></p><p><em>The AWK Programming Language</em>, Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger, Addison-Wesley, 1988.  ISBN 0-201-07981-X.</p><p>\*(EP, Edition 4.1, shipped with the <em>gawk</em> source. The current version of this document is available online at <strong>http://www.gnu.org/software/gawk/manual</strong>.</p>
+<p><a href="../man1/egrep.1.html"><strong>egrep</strong>(1)</a>, <a href="../man1/sed.1.html"><strong>sed</strong>(1)</a>, <a href="../man2/getpid.2.html"><strong>getpid</strong>(2)</a>, <a href="../man2/getppid.2.html"><strong>getppid</strong>(2)</a>, <a href="../man2/getpgrp.2.html"><strong>getpgrp</strong>(2)</a>, <a href="../man2/getuid.2.html"><strong>getuid</strong>(2)</a>, <a href="../man2/geteuid.2.html"><strong>geteuid</strong>(2)</a>, <a href="../man2/getgid.2.html"><strong>getgid</strong>(2)</a>, <a href="../man2/getegid.2.html"><strong>getegid</strong>(2)</a>, <a href="../man2/getgroups.2.html"><strong>getgroups</strong>(2)</a>, <a href="../man3/usleep.3.html"><strong>usleep</strong>(3)</a></p><p><em>The AWK Programming Language</em>, Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger, Addison-Wesley, 1988.  ISBN 0-201-07981-X.</p><p>\*(EP, Edition 4.1, shipped with the <em>gawk</em> source. The current version of this document is available online at <strong>http://www.gnu.org/software/gawk/manual</strong>.</p>
         </div>
       </section>
 
@@ -2366,13 +2296,13 @@ Run an external command for particular lines of data:
       <section>
         <h2 class="font-effect-shadow-multiple">COPYING PERMISSIONS</h2>
         <div class="sectioncontent">
-<p>Copyright &copy; 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016 Free Software Foundation, Inc.</p><p>Permission is granted to make and distribute verbatim copies of this manual page provided the copyright notice and this permission notice are preserved on all copies.</p><p>Permission is granted to copy and distribute modified versions of this manual page under the conditions for verbatim copying, provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.</p><p>Permission is granted to copy and distribute translations of this manual page into another language, under the above conditions for modified versions, except that this permission notice may be stated in a translation approved by the Foundation.</p>
+<p>Copyright &copy; 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.</p><p>Permission is granted to make and distribute verbatim copies of this manual page provided the copyright notice and this permission notice are preserved on all copies.</p><p>Permission is granted to copy and distribute modified versions of this manual page under the conditions for verbatim copying, provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.</p><p>Permission is granted to copy and distribute translations of this manual page into another language, under the above conditions for modified versions, except that this permission notice may be stated in a translation approved by the Foundation.</p>
         </div>
       </section>
 <nav>
   <ul class="pager">
-   <li class="previous"><a href="ganglia2pcp.1.html"><span aria-hidden="true">&larr;</span> ganglia2pcp.1: Import ganglia data and create a pcp archive</a></li>
-   <li class="next"><a href="genpmda.1.html">genpmda.1: Performance co-pilot pmda generator <span aria-hidden="true">&rarr;</span></a></li>
+   <li class="previous"><a href="gausssum.1.html"><span aria-hidden="true">&larr;</span> gausssum.1: Parses the output of a gaussian, gamess or hyperchem job</a></li>
+   <li class="next"><a href="gba3.1.html">gba3.1: Gambas archiver <span aria-hidden="true">&rarr;</span></a></li>
   </ul>
 </nav>
 
