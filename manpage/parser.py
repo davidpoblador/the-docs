@@ -97,6 +97,10 @@ class FileMacroIterator(object):
 class ManpageParser(object):
     """Man Page Parser Class"""
 
+    line_replacement = {
+        r".B \-{font|fn} \ffontname\fP": r".B \-{font|fn} \fIfontname\fP",
+    }
+
     def __init__(self, path):
         basename = os.path.basename(path)
 
@@ -133,6 +137,9 @@ class ManpageParser(object):
             iterator = FileMacroIterator(fp)
             for line in iterator:
                 line = line.rstrip()
+
+                # Fix buggy lines
+                line = ManpageParser.line_replacement.get(line, line)
 
                 if line and len(line) > 2:
                     if line[-1] == "\\":
